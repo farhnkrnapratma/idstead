@@ -51,16 +51,16 @@
 
     const variantStyles = {
         default:
-            'glass-button hover:text-accent-text hover:border-accent active:inset-shadow-button-pressed disabled:hover:text-text-primary',
-        ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:inset-shadow-button-pressed disabled:hover:bg-transparent disabled:hover:text-text-secondary',
+            'glass-button hover:text-fg-accent hover:border-accent active:inset-shadow-button-pressed disabled:hover:text-fg',
+        ghost: 'text-fg-secondary hover:text-fg hover:bg-surface-hover active:inset-shadow-button-pressed disabled:hover:bg-transparent disabled:hover:text-fg-secondary',
         borderless:
-            'bg-transparent text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary',
+            'bg-transparent text-fg-secondary hover:text-fg-accent disabled:hover:text-fg-secondary',
         overlay:
-            'rounded-full border border-border-default bg-surface-card text-accent-text shadow-sm hover:bg-accent hover:text-text-on-accent',
+            'rounded-full border border-line bg-surface text-fg-accent shadow-sm hover:bg-accent hover:text-on-accent',
         floating:
-            'rounded-full glass-button text-text-primary shadow-md hover:text-accent-text active:inset-shadow-button-pressed md:shadow-lg',
+            'rounded-full glass-button text-fg shadow-md hover:text-fg-accent active:inset-shadow-button-pressed md:shadow-lg',
         'floating-accent':
-            'rounded-full glass-button border-accent/40 bg-surface-card/90 text-accent-text shadow-md hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed md:shadow-lg'
+            'rounded-full glass-button border-accent/40 bg-surface/90 text-fg-accent shadow-md hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed md:shadow-lg'
     };
 
     const sizeStyles = {

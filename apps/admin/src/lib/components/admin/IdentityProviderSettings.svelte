@@ -236,12 +236,12 @@
         <Card
             variant="bordered"
             density="compact"
-            class="flex flex-col gap-2 border-border-subtle! bg-surface-card!">
-            <p class="type-body text-text-secondary">
-                Issuer <span class="font-mono text-text-primary">{data.issuer}</span>
+            class="flex flex-col gap-2 border-line-subtle! bg-surface!">
+            <p class="type-body text-fg-secondary">
+                Issuer <span class="font-mono text-fg">{data.issuer}</span>
             </p>
             <div class="flex flex-wrap items-center gap-2">
-                <span class="truncate font-mono text-xs text-text-muted">{data.discoveryUrl}</span>
+                <span class="truncate font-mono text-xs text-fg-muted">{data.discoveryUrl}</span>
                 <Button
                     type="ghost"
                     size="xs"
@@ -278,7 +278,7 @@
                 {@const client = row as unknown as OidcClient}
                 {#if key === 'name'}
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-semibold text-text-primary">{client.name}</span>
+                        <span class="font-semibold text-fg">{client.name}</span>
                         <Tag>{client.confidential ? 'Confidential' : 'Public'}</Tag>
                     </div>
                 {:else if key === 'clientId'}
@@ -335,7 +335,7 @@
             {#snippet cell(row, key)}
                 {@const grant = row as unknown as OidcGrant}
                 {#if key === 'clientName'}
-                    <span class="font-semibold text-text-primary">{grant.clientName}</span>
+                    <span class="font-semibold text-fg">{grant.clientName}</span>
                 {:else if key === 'scopes'}
                     <div class="flex flex-wrap gap-1">
                         {#each grant.scopes as scope (scope)}
@@ -348,7 +348,7 @@
                     {#if grant.lastUsedAt}
                         <RelativeTime date={grant.lastUsedAt} />
                     {:else}
-                        <span class="text-text-muted">Never</span>
+                        <span class="text-fg-muted">Never</span>
                     {/if}
                 {:else if key === 'actions'}
                     <div class="flex justify-end">

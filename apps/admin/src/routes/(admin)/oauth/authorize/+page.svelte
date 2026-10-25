@@ -64,14 +64,14 @@
         <Card class="flex w-full max-w-sm flex-col gap-5">
             <div class="flex flex-col gap-2">
                 <div
-                    class="flex size-10 items-center justify-center rounded-md bg-surface-hover text-text-secondary">
+                    class="flex size-10 items-center justify-center rounded-md bg-surface-hover text-fg-secondary">
                     <ShieldCheck class="size-5" />
                 </div>
                 <h1 class="type-card-title text-lg">
                     {outcome.client.name} wants to sign you in
                 </h1>
-                <p class="type-body text-text-secondary">
-                    You will be sent back to <span class="font-mono text-text-primary"
+                <p class="type-body text-fg-secondary">
+                    You will be sent back to <span class="font-mono text-fg"
                         >{outcome.client.host}</span>
                     with the details below.
                 </p>
@@ -82,15 +82,14 @@
                     <li class="flex gap-3">
                         <Check class="mt-0.5 size-4 shrink-0 text-success" />
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-sm font-semibold text-text-primary"
-                                >{item.label}</span>
-                            <span class="text-xs text-text-muted">{item.claims.join(', ')}</span>
+                            <span class="text-sm font-semibold text-fg">{item.label}</span>
+                            <span class="text-xs text-fg-muted">{item.claims.join(', ')}</span>
                         </div>
                     </li>
                 {/each}
             </ul>
 
-            <p class="text-xs text-text-muted">
+            <p class="text-xs text-fg-muted">
                 You can revoke this at any time under Connected apps.
             </p>
 

@@ -69,7 +69,7 @@
         {:else}
             <div
                 class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                <ImageIcon class="size-10 text-text-muted" />
+                <ImageIcon class="size-10 text-fg-muted" />
             </div>
         {/if}
     </div>
@@ -95,7 +95,7 @@
                             {/if}
                             {#if isNew}
                                 <span
-                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
+                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-info-subtle text-fg-accent"
                                     title="New post"
                                     role="img"
                                     aria-label="New post">
@@ -118,7 +118,7 @@
                 views={post.views_count} />
 
             {#if post.excerpt}
-                <p class="type-body text-text-secondary">{post.excerpt}</p>
+                <p class="type-body text-fg-secondary">{post.excerpt}</p>
             {/if}
 
             {#if post.tags && post.tags.length > 0}
@@ -131,7 +131,7 @@
         </div>
 
         <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-            <hr class="border-border-subtle/25" />
+            <hr class="border-line-subtle/25" />
             <Button
                 href={postPath}
                 isLoading={isOpening}

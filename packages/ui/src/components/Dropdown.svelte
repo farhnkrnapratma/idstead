@@ -269,8 +269,8 @@
                 resolvedSize === 'sm' ? 'box-border h-8 px-2' : 'box-border h-9 px-3',
                 (fullWidth || stackOnMobile) && 'w-full',
                 stackOnMobile && 'sm:w-auto',
-                !disabled && 'hover:text-accent-text',
-                isOpen && 'border-accent/60 bg-surface-card text-accent-text',
+                !disabled && 'hover:text-fg-accent',
+                isOpen && 'border-accent/60 bg-surface text-fg-accent',
                 isFloating && 'h-12 pt-5 pb-1.5 text-sm leading-5'
             )}>
             <span
@@ -284,7 +284,7 @@
                 <span
                     class="col-start-1 row-start-1 inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
                     {#if label}
-                        <span class="truncate font-normal text-text-muted">{label}:</span>
+                        <span class="truncate font-normal text-fg-muted">{label}:</span>
                     {/if}
                     {#if selectedOption?.shortLabel}
                         <span class="truncate sm:hidden">{selectedOption.shortLabel}</span>
@@ -298,7 +298,7 @@
                 class={cn(
                     'inline-flex shrink-0 items-center justify-center transition-transform duration-200 ease-out',
                     slotSize,
-                    isOpen ? 'rotate-180 text-accent-text' : 'text-text-muted',
+                    isOpen ? 'rotate-180 text-fg-accent' : 'text-fg-muted',
                     isFloating && !hasValue && !isOpen && 'invisible'
                 )}>
                 <ChevronDown class="size-3" />
@@ -313,9 +313,9 @@
                     hasValue || isOpen ?
                         'top-1.5 text-2xs leading-none font-semibold'
                     :   'top-1/2 -translate-y-1/2 text-sm',
-                    isOpen ? 'text-accent-text'
-                    : hasValue ? 'text-text-muted'
-                    : 'text-text-secondary/70'
+                    isOpen ? 'text-fg-accent'
+                    : hasValue ? 'text-fg-muted'
+                    : 'text-fg-secondary/70'
                 )}>
                 {floatingLabel}
                 {#if showAsterisk}
@@ -404,8 +404,8 @@
                             'flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium transition-colors focus-visible:outline-none',
                             rowPadding,
                             selected ?
-                                'bg-accent/10 font-semibold text-accent-text'
-                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
+                                'bg-accent/10 font-semibold text-fg-accent'
+                            :   'text-fg hover:bg-surface-hover hover:text-fg-accent focus-visible:bg-surface-hover focus-visible:text-fg-accent'
                         )}>
                         <span class="min-w-0 truncate">{option.label}</span>
                         <span
@@ -415,17 +415,17 @@
                             )}>
                             {#if multiple}
                                 {#if selected}
-                                    <SquareCheck class="size-3.5 text-accent-text" />
+                                    <SquareCheck class="size-3.5 text-fg-accent" />
                                 {:else}
-                                    <Square class="size-3.5 text-text-muted" />
+                                    <Square class="size-3.5 text-fg-muted" />
                                 {/if}
                             {:else if selected}
-                                <Check class="size-3.5 text-accent-text" />
+                                <Check class="size-3.5 text-fg-accent" />
                             {/if}
                         </span>
                     </button>
                 {:else}
-                    <p class="px-2 py-3 text-center text-2xs text-text-muted">No matches found</p>
+                    <p class="px-2 py-3 text-center text-2xs text-fg-muted">No matches found</p>
                 {/each}
             </div>
         {/if}

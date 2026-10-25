@@ -67,7 +67,7 @@
         onclick={onDirectionToggle}
         keyboardShortcut={buttonKey('sortDirection')}
         shortcutLabel="Sort direction"
-        class="shrink-0 text-text-secondary hover:text-accent-text">
+        class="shrink-0 text-fg-secondary hover:text-fg-accent">
         {#if currentDirection === 'asc'}
             <ArrowUpNarrowWide class="size-4" />
         {:else}

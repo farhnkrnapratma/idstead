@@ -583,8 +583,7 @@
         <fieldset
             disabled={isSubmitting || !!pendingSave || loadFailed}
             class="contents">
-            <div
-                class="rounded-md border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
+            <div class="rounded-md border border-line-subtle bg-surface p-4 text-left sm:p-5">
                 <h2 class="mb-3 type-card-title select-none">Post details</h2>
 
                 <div class="flex flex-col gap-4">

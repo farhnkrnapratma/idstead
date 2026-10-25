@@ -39,10 +39,10 @@
     data-unread={unread}
     class={cn(
         'group relative flex min-w-0 items-start gap-3 px-3 py-2 font-sans transition-colors',
-        bordered && 'rounded-md border border-border-subtle',
+        bordered && 'rounded-md border border-line-subtle',
         unread ?
             'bg-notification-unread hover:bg-notification-unread-hover'
-        :   'bg-surface-card hover:bg-surface-hover'
+        :   'bg-surface hover:bg-surface-hover'
     )}>
     {#if onSelect}
         <button
@@ -76,7 +76,7 @@
             {disabled}
             aria-label="Delete notification"
             title="Permanently delete notification"
-            class="absolute top-1/2 right-1.5 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
+            class="absolute top-1/2 right-1.5 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-fg-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
             onclick={onDelete}><X class="size-4" /></button>
     {/if}
 </div>

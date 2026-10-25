@@ -17,10 +17,10 @@
 
 <div
     class={cn(
-        'flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs font-medium text-text-muted',
+        'flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs font-medium text-fg-muted',
         className
     )}>
-    <span class="inline-flex shrink-0 items-center text-text-muted">
+    <span class="inline-flex shrink-0 items-center text-fg-muted">
         {copyrightLine(name, new Date().getFullYear())}
     </span>
     {#each siteLinks as item (item.label)}

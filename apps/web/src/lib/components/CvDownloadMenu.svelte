@@ -200,12 +200,12 @@
                                 aria-hidden="true" />
                         </span>
                         <p class="flex min-w-0 flex-1 flex-col">
-                            <span class="text-text-primary">
+                            <span class="text-fg">
                                 Signed by
                                 {signature.signer.map(user => formatUserId(user)).join(', ')}
                             </span>
                             {#if signedDate}
-                                <span class="text-text-muted">on {signedDate}</span>
+                                <span class="text-fg-muted">on {signedDate}</span>
                             {/if}
                         </p>
                     </div>
@@ -215,10 +215,10 @@
                         label="Fingerprint" />
                 </section>
             {:else}
-                <p class="flex gap-3 text-text-secondary">
+                <p class="flex gap-3 text-fg-secondary">
                     <span class="flex h-lh shrink-0 items-center">
                         <ShieldAlert
-                            class="size-4 text-text-muted"
+                            class="size-4 text-fg-muted"
                             aria-hidden="true" />
                     </span>
                     <span>Not signed yet. You can still check it against its checksum.</span>
@@ -247,12 +247,12 @@
                 </h3>
                 <ol
                     role="list"
-                    class="flex flex-col gap-3 text-text-secondary">
+                    class="flex flex-col gap-3 text-fg-secondary">
                     {#each steps as step, index (step.text)}
                         <li class="flex flex-col gap-2">
                             <div class="flex gap-3">
                                 <span
-                                    class="flex size-5 shrink-0 items-center justify-center rounded-full border border-border-subtle text-2xs font-semibold text-text-secondary tabular-nums"
+                                    class="flex size-5 shrink-0 items-center justify-center rounded-full border border-line-subtle text-2xs font-semibold text-fg-secondary tabular-nums"
                                     aria-hidden="true">{index + 1}</span>
                                 <span class="min-w-0 flex-1">{step.text}</span>
                             </div>

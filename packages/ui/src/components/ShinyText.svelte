@@ -20,7 +20,7 @@
         speed = 2,
         class: className = '',
         color = 'var(--color-accent)',
-        shineColor = '#ffffff',
+        shineColor = 'var(--color-white)',
         spread = 120,
         yoyo = false,
         pauseOnHover = false,

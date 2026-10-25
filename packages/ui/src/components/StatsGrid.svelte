@@ -39,7 +39,7 @@
                 role={item.onclick ? undefined : 'group'}
                 onclick={item.onclick}
                 class={cn(
-                    'group flex h-full min-w-0 flex-col gap-3 rounded-md border border-border-subtle bg-surface-card p-4 text-left transition-colors',
+                    'group flex h-full min-w-0 flex-col gap-3 rounded-md border border-line-subtle bg-surface p-4 text-left transition-colors',
                     item.onclick
                         && 'cursor-pointer hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring'
                 )}>
@@ -47,27 +47,27 @@
                     {#if item.componentIcon}
                         {@const Icon = item.componentIcon}
                         <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
+                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent"
                             ><Icon class="size-4" /></span>
                     {/if}
-                    <span class="min-w-0 truncate text-xs font-bold text-text-secondary"
+                    <span class="min-w-0 truncate text-xs font-bold text-fg-secondary"
                         >{item.label}</span>
                     {#if item.onclick}
                         <ChevronRight
-                            class="ml-auto size-4 shrink-0 text-text-muted transition-[color,translate] group-hover:text-accent-text motion-safe:group-hover:translate-x-0.5"
+                            class="ml-auto size-4 shrink-0 text-fg-muted transition-[color,translate] group-hover:text-fg-accent motion-safe:group-hover:translate-x-0.5"
                             aria-hidden="true" />
                     {/if}
                 </span>
                 <span class="flex min-w-0 flex-col gap-1.5">
                     <span
-                        class="block text-3xl leading-none font-extrabold tracking-tight text-text-primary tabular-nums"
+                        class="block text-3xl leading-none font-extrabold tracking-tight text-fg tabular-nums"
                         >{item.value}</span>
-                    <span class="block min-h-lh truncate text-xs text-text-muted"
+                    <span class="block min-h-lh truncate text-xs text-fg-muted"
                         >{item.description ?? ''}</span>
                 </span>
                 {#if item.ratio !== undefined}
                     <span
-                        class="mt-auto block h-1 w-full overflow-hidden rounded-full bg-border-subtle"
+                        class="mt-auto block h-1 w-full overflow-hidden rounded-full bg-line-subtle"
                         aria-hidden="true">
                         <span
                             class="block h-full rounded-full bg-accent"
@@ -79,33 +79,32 @@
             <button
                 type="button"
                 onclick={item.onclick}
-                class="group flex min-w-0 cursor-pointer flex-col items-start gap-1.5 rounded-md border border-border-subtle bg-surface-card p-3 text-left transition-colors hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring sm:p-4">
+                class="group flex min-w-0 cursor-pointer flex-col items-start gap-1.5 rounded-md border border-line-subtle bg-surface p-3 text-left transition-colors hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring sm:p-4">
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
-                        class="flex size-8 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
+                        class="flex size-8 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent"
                         ><Icon class="size-4" /></span>
                 {/if}
-                <span class="text-2xl font-extrabold tracking-tight text-text-primary"
-                    >{item.value}</span>
-                <span class="text-xs font-bold text-text-primary">{item.label}</span>
-                {#if item.description}<span class="text-2xs text-text-secondary"
+                <span class="text-2xl font-extrabold tracking-tight text-fg">{item.value}</span>
+                <span class="text-xs font-bold text-fg">{item.label}</span>
+                {#if item.description}<span class="text-2xs text-fg-secondary"
                         >{item.description}</span
                     >{/if}
             </button>
         {:else}
             <div
-                class="flex flex-col items-center justify-center rounded-md border border-border-subtle bg-surface/50 p-4 text-center shadow-xs">
+                class="flex flex-col items-center justify-center rounded-md border border-line-subtle bg-surface/50 p-4 text-center shadow-xs">
                 {#if item.icon}
                     <i
-                        class="bi {item.icon} mb-1 text-lg text-accent-text"
+                        class="bi {item.icon} mb-1 text-lg text-fg-accent"
                         aria-hidden="true"></i>
                 {/if}
-                <span class="font-mono text-2xl font-extrabold tracking-tight text-text-primary"
+                <span class="font-mono text-2xl font-extrabold tracking-tight text-fg"
                     >{item.value}</span>
-                <span class="mt-0.5 text-xs font-bold text-text-secondary">{item.label}</span>
+                <span class="mt-0.5 text-xs font-bold text-fg-secondary">{item.label}</span>
                 {#if item.description}
-                    <span class="mt-0.5 text-2xs text-text-muted">{item.description}</span>
+                    <span class="mt-0.5 text-2xs text-fg-muted">{item.description}</span>
                 {/if}
             </div>
         {/if}

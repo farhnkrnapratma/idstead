@@ -66,7 +66,7 @@
         'var(--color-activity-helpful)',
         'var(--color-activity-report)',
         'var(--color-activity-unhelpful)',
-        'var(--color-copilot-purple)',
+        'var(--color-activity-message)',
         'var(--color-report-sexual)'
     ];
 
@@ -114,17 +114,17 @@
 </script>
 
 <div
-    class="mdrs-chart-card relative my-6 flex flex-col gap-2 rounded-md glass-card border border-border-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
+    class="mdrs-chart-card relative my-6 flex flex-col gap-2 rounded-md glass-card border border-line-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
     <div class="mdrs-chart-header flex items-start justify-between gap-2">
         {#if spec.title || spec.subtitle}
             <div class="flex min-w-0 flex-col gap-0.5">
                 {#if spec.title}
-                    <div class="mdrs-chart-title text-sm leading-tight font-bold text-text-primary">
+                    <div class="mdrs-chart-title text-sm leading-tight font-bold text-fg">
                         {spec.title}
                     </div>
                 {/if}
                 {#if spec.subtitle}
-                    <div class="mdrs-chart-subtitle text-xs leading-tight text-text-muted">
+                    <div class="mdrs-chart-subtitle text-xs leading-tight text-fg-muted">
                         {spec.subtitle}
                     </div>
                 {/if}
@@ -143,7 +143,7 @@
                     aria-label="Chart options"
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
-                    class="mdrs-menu-button flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                    class="mdrs-menu-button flex size-7 cursor-pointer items-center justify-center rounded-md text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring"
                     onclick={toggle}>
                     <EllipsisVertical class="size-4" />
                 </button>
@@ -176,7 +176,7 @@
                         <Axis
                             placement="left"
                             grid={{
-                                stroke: 'var(--color-border-subtle)',
+                                stroke: 'var(--color-line-subtle)',
                                 dashArray: '3 3',
                                 opacity: 0.4
                             }}
@@ -193,8 +193,8 @@
                         {#snippet children({ data })}
                             {#if data}
                                 <div class="mdrs-chart-tooltip">
-                                    <div class="font-medium text-text-primary">{data[xKey]}</div>
-                                    <div class="font-mono font-semibold text-accent-text">
+                                    <div class="font-medium text-fg">{data[xKey]}</div>
+                                    <div class="font-mono font-semibold text-fg-accent">
                                         {data[yKey]}
                                     </div>
                                 </div>
@@ -228,7 +228,7 @@
                         <Axis
                             placement="left"
                             grid={{
-                                stroke: 'var(--color-border-subtle)',
+                                stroke: 'var(--color-line-subtle)',
                                 dashArray: '3 3',
                                 opacity: 0.4
                             }}
@@ -248,18 +248,18 @@
                             stroke={seriesList[0]?.color || defaultColors[0]} />
                         <Highlight
                             points={{
-                                class: 'fill-surface-card stroke-2',
+                                class: 'fill-surface stroke-2',
                                 stroke: seriesList[0]?.color || defaultColors[0],
                                 r: 4
                             }}
-                            lines={{ class: 'stroke-border-subtle stroke-dasharray-2' }} />
+                            lines={{ class: 'stroke-line-subtle stroke-dasharray-2' }} />
                     </Svg>
                     <Tooltip.Root variant="none">
                         {#snippet children({ data })}
                             {#if data}
                                 <div class="mdrs-chart-tooltip">
-                                    <div class="font-medium text-text-primary">{data[xKey]}</div>
-                                    <div class="font-mono font-semibold text-accent-text">
+                                    <div class="font-medium text-fg">{data[xKey]}</div>
+                                    <div class="font-mono font-semibold text-fg-accent">
                                         {data[yKey]}
                                     </div>
                                 </div>
@@ -302,10 +302,10 @@
                                 {#snippet children({ data })}
                                     {#if data}
                                         <div class="mdrs-chart-tooltip">
-                                            <div class="font-medium text-text-primary">
+                                            <div class="font-medium text-fg">
                                                 {data.label}
                                             </div>
-                                            <div class="font-mono font-semibold text-accent-text">
+                                            <div class="font-mono font-semibold text-fg-accent">
                                                 {data.value}
                                             </div>
                                         </div>
@@ -321,9 +321,8 @@
                                 <span
                                     class="size-2.5 shrink-0 rounded-full"
                                     style="background-color: {item.color};"></span>
-                                <span class="truncate text-text-secondary">{item.label}:</span>
-                                <span
-                                    class="ml-auto font-mono font-medium text-text-primary sm:ml-0"
+                                <span class="truncate text-fg-secondary">{item.label}:</span>
+                                <span class="ml-auto font-mono font-medium text-fg sm:ml-0"
                                     >{item.value}</span>
                             </div>
                         {/each}
@@ -348,7 +347,7 @@
                         <Axis
                             placement="left"
                             grid={{
-                                stroke: 'var(--color-border-subtle)',
+                                stroke: 'var(--color-line-subtle)',
                                 dashArray: '3 3',
                                 opacity: 0.4
                             }}
@@ -364,25 +363,24 @@
                         {/each}
                         <Highlight
                             points={{
-                                class: 'fill-surface-card stroke-2',
+                                class: 'fill-surface stroke-2',
                                 stroke: seriesList[0]?.color || defaultColors[0],
                                 r: 4
                             }}
-                            lines={{ class: 'stroke-border-subtle stroke-dasharray-2' }} />
+                            lines={{ class: 'stroke-line-subtle stroke-dasharray-2' }} />
                     </Svg>
                     <Tooltip.Root variant="none">
                         {#snippet children({ data })}
                             {#if data}
                                 <div class="mdrs-chart-tooltip">
-                                    <div class="font-medium text-text-primary">{data[xKey]}</div>
+                                    <div class="font-medium text-fg">{data[xKey]}</div>
                                     {#each seriesList as s (s.key)}
                                         <div class="flex items-center gap-1.5 font-mono text-xs">
                                             <span
                                                 class="size-2 rounded-full"
                                                 style="background-color: {s.color};"></span>
-                                            <span class="text-text-muted">{s.label}:</span>
-                                            <span class="font-semibold text-text-primary"
-                                                >{data[s.key]}</span>
+                                            <span class="text-fg-muted">{s.label}:</span>
+                                            <span class="font-semibold text-fg">{data[s.key]}</span>
                                         </div>
                                     {/each}
                                 </div>
@@ -400,7 +398,7 @@
                         <span
                             class="size-2.5 shrink-0 rounded-full"
                             style="background-color: {s.color};"></span>
-                        <span class="text-text-secondary">{s.label}</span>
+                        <span class="text-fg-secondary">{s.label}</span>
                     </div>
                 {/each}
             </div>

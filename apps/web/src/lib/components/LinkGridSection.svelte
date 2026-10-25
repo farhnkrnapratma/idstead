@@ -64,29 +64,29 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         use:shortcut={{ group: shortcutGroup, label: item.label }}
-                        class="group relative flex flex-col gap-0.5 rounded-md glass-card border border-border-subtle/60 p-2 transition-all duration-200 hover:border-accent/40 hover:bg-surface-hover hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:p-3">
+                        class="group relative flex flex-col gap-0.5 rounded-md glass-card border border-line-subtle/60 p-2 transition-all duration-200 hover:border-accent/40 hover:bg-surface-hover hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:p-3">
                         <div
                             class="flex flex-1 items-center justify-between gap-3 sm:flex-col sm:items-stretch">
                             <div class="contents items-start justify-between gap-3 sm:flex">
                                 {#if item.icon}
                                     <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-black/5 text-text-muted transition-colors duration-200 group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-accent-text dark:bg-white/5">
+                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-fg/5 text-fg-muted transition-colors duration-200 group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-fg-accent">
                                         <BrandIcon
                                             icon={item.icon}
                                             class="size-5 text-xl leading-none sm:size-6 sm:text-2xl" />
                                     </div>
                                 {/if}
                                 <SquareArrowOutUpRight
-                                    class="order-last size-3 shrink-0 text-text-muted/60 transition-colors duration-200 group-hover:text-accent-text sm:order-0" />
+                                    class="order-last size-3 shrink-0 text-fg-muted/60 transition-colors duration-200 group-hover:text-fg-accent sm:order-0" />
                             </div>
                             <div class="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
                                 <span
-                                    class="truncate text-sm font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="truncate text-sm font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     {item.label}
                                 </span>
                                 {#if item.value}
                                     <span
-                                        class="truncate font-mono text-2xs text-text-muted transition-colors group-hover:text-text-secondary"
+                                        class="truncate font-mono text-2xs text-fg-muted transition-colors group-hover:text-fg-secondary"
                                         title={item.value}>
                                         {item.value}
                                     </span>
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         {#if item.description}
-                            <span class="mt-0.5 text-2xs wrap-break-word text-text-secondary">
+                            <span class="mt-0.5 text-2xs wrap-break-word text-fg-secondary">
                                 {item.description}
                             </span>
                         {/if}

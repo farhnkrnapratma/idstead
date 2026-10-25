@@ -20,7 +20,7 @@ describe('A11y focus highlight', () => {
             /:root\[data-focus-highlight='true'\]:not\(\[data-admin-page='true'\]\)\s*:focus\s*\{/
         );
         expect(globalCss).toContain(
-            'rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-a11y-focus! outline-solid!'
+            'rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-highlight! outline-solid!'
         );
     });
 

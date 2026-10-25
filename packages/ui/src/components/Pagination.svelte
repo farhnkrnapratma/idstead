@@ -86,7 +86,7 @@
             {#if entry === 'ellipsis'}
                 <span
                     class={cn(
-                        'inline-flex shrink-0 items-center justify-center text-xs font-semibold text-text-muted',
+                        'inline-flex shrink-0 items-center justify-center text-xs font-semibold text-fg-muted',
                         pageClass
                     )}
                     aria-hidden="true">

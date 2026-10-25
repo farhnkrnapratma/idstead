@@ -59,7 +59,7 @@
                         class={titleClass}>{title}</svelte:element>
                 {/if}
                 {#if description}
-                    <p class="mt-1 type-body text-text-secondary">{description}</p>
+                    <p class="mt-1 type-body text-fg-secondary">{description}</p>
                 {/if}
             </div>
             {#if headerActions}

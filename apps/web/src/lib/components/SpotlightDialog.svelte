@@ -1229,7 +1229,7 @@
             style:max-height={visualViewportHeight !== null ?
                 `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
             :   undefined}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-fg/8"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
@@ -1237,7 +1237,7 @@
             inert={showHelp}
             onkeydown={handleDialogTab}>
             <div
-                class="flex items-center justify-between border-b border-border-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
+                class="flex items-center justify-between border-b border-line-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
                 <input
                     bind:this={inputEl}
                     bind:value={rawQuery}
@@ -1249,7 +1249,7 @@
                     spellcheck="false"
                     autocomplete="off"
                     placeholder="Search or type / for commands..."
-                    class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-mono text-xs font-medium text-text-primary shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:text-text-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
+                    class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-mono text-xs font-medium text-fg shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:text-fg-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
                     aria-label="Search query"
                     aria-autocomplete="list"
                     aria-controls="search-results"
@@ -1273,9 +1273,7 @@
                         <CaseSensitive
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isCaseSensitive ? 'text-accent-text' : (
-                                    'text-text-muted hover:text-text-primary'
-                                )
+                                isCaseSensitive ? 'text-fg-accent' : 'text-fg-muted hover:text-fg'
                             )} />
                     </Button>
 
@@ -1294,9 +1292,7 @@
                         <WholeWord
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isWholeWord ? 'text-accent-text' : (
-                                    'text-text-muted hover:text-text-primary'
-                                )
+                                isWholeWord ? 'text-fg-accent' : 'text-fg-muted hover:text-fg'
                             )} />
                     </Button>
 
@@ -1315,9 +1311,7 @@
                         <Regex
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isRegex ? 'text-accent-text' : (
-                                    'text-text-muted hover:text-text-primary'
-                                )
+                                isRegex ? 'text-fg-accent' : 'text-fg-muted hover:text-fg'
                             )} />
                     </Button>
                 </div>
@@ -1330,7 +1324,7 @@
                     <div class={cn('px-2.5 pt-2.5', deduplicatedResults.length === 0 && 'pb-2.5')}>
                         <div
                             class="flex items-center justify-between gap-2 px-2 pb-1.5 select-none">
-                            <span class="text-xxs font-bold tracking-wider text-text-muted">
+                            <span class="text-xxs font-bold tracking-wider text-fg-muted">
                                 Recents
                             </span>
                         </div>
@@ -1354,15 +1348,15 @@
                                     class={cn(
                                         'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                         activeIndex === idx ?
-                                            'bg-accent/10 text-text-primary dark:bg-accent/20'
-                                        :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                                            'bg-accent/10 text-fg dark:bg-accent/20'
+                                        :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
                                     )}>
                                     <div class="flex min-w-0 flex-1 items-center gap-1.5">
                                         <div
                                             class={cn(
                                                 'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                activeIndex === idx ? 'text-accent-text' : (
-                                                    'text-text-secondary group-hover:text-accent-text'
+                                                activeIndex === idx ? 'text-fg-accent' : (
+                                                    'text-fg-secondary group-hover:text-fg-accent'
                                                 )
                                             )}>
                                             <EntryIcon class="size-3.5" />
@@ -1382,26 +1376,26 @@
                                                 <span class="shrink-0 font-mono text-xs">
                                                     {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                             class={chunk.match ?
-                                                                'font-semibold text-accent-text'
-                                                            :   'font-medium text-text-primary'}
+                                                                'font-semibold text-fg-accent'
+                                                            :   'font-medium text-fg'}
                                                             >{chunk.text}</span
                                                         >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent-text'
-                                                                :   'font-normal text-text-muted/60'}
+                                                                    'font-semibold text-fg-accent'
+                                                                :   'font-normal text-fg-muted/60'}
                                                                 >{chunk.text}</span
                                                             >{/each}{/if}
                                                 </span>
                                                 {#if historyDisplay.subtitle}
                                                     <span
-                                                        class="text-2xs text-text-muted/40 select-none"
+                                                        class="text-2xs text-fg-muted/40 select-none"
                                                         >—</span>
                                                     <span
-                                                        class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                                                        class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                         {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                             {#if chunk.match}
                                                                 <span
-                                                                    class="font-semibold text-accent-text"
+                                                                    class="font-semibold text-fg-accent"
                                                                     >{chunk.text}</span>
                                                             {:else}
                                                                 <span>{chunk.text}</span>
@@ -1413,24 +1407,24 @@
                                         {:else}
                                             <div class="flex min-w-0 flex-1 items-center gap-2">
                                                 <span
-                                                    class="max-w-[45%] shrink-0 truncate text-xs font-medium text-text-primary sm:max-w-[55%]">
+                                                    class="max-w-[45%] shrink-0 truncate text-xs font-medium text-fg sm:max-w-[55%]">
                                                     {#each getHighlightChunks(historyDisplay.title, rawQuery) as chunk, cIdx (cIdx)}
                                                         <span
                                                             class={chunk.match ?
-                                                                'font-semibold text-accent-text'
+                                                                'font-semibold text-fg-accent'
                                                             :   ''}>{chunk.text}</span>
                                                     {/each}
                                                 </span>
                                                 {#if historyDisplay.subtitle}
                                                     <span
-                                                        class="text-2xs text-text-muted/40 select-none"
+                                                        class="text-2xs text-fg-muted/40 select-none"
                                                         >—</span>
                                                     <span
-                                                        class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                                                        class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                         {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                             {#if chunk.match}
                                                                 <span
-                                                                    class="font-semibold text-accent-text"
+                                                                    class="font-semibold text-fg-accent"
                                                                     >{chunk.text}</span>
                                                             {:else}
                                                                 <span>{chunk.text}</span>
@@ -1455,7 +1449,7 @@
                                             <CornerDownLeft
                                                 strokeWidth={1.5}
                                                 class={cn(
-                                                    'size-3 text-accent-text transition-opacity group-hover:opacity-100',
+                                                    'size-3 text-fg-accent transition-opacity group-hover:opacity-100',
                                                     activeIndex === idx ? 'opacity-100' : (
                                                         'opacity-0'
                                                     )
@@ -1472,11 +1466,11 @@
                     <div class="space-y-2 p-3">
                         {#each [1, 2, 3] as placeholderId (placeholderId)}
                             <div
-                                class="flex animate-pulse items-center gap-3 rounded-md border border-border-subtle bg-surface-hover p-2.5 select-none">
-                                <div class="size-4 shrink-0 rounded-md bg-border-default"></div>
+                                class="flex animate-pulse items-center gap-3 rounded-md border border-line-subtle bg-surface-hover p-2.5 select-none">
+                                <div class="size-4 shrink-0 rounded-md bg-line"></div>
                                 <div class="flex-1 space-y-1.5">
-                                    <div class="h-3 w-2/5 rounded bg-border-default"></div>
-                                    <div class="h-2.5 w-3/5 rounded bg-border-subtle"></div>
+                                    <div class="h-3 w-2/5 rounded bg-line"></div>
+                                    <div class="h-2.5 w-3/5 rounded bg-line-subtle"></div>
                                 </div>
                             </div>
                         {/each}
@@ -1485,19 +1479,19 @@
                     {#if rawQuery.length === 0}
                         <div
                             class="flex h-full flex-col items-center justify-center gap-1 px-4 py-8 text-center select-none">
-                            <p class="text-xs font-medium text-text-muted">
+                            <p class="text-xs font-medium text-fg-muted">
                                 Search or run any commands
                             </p>
-                            <p class="text-2xs text-text-muted">
-                                Type <span class="font-mono text-accent-text">/</span> for commands,
+                            <p class="text-2xs text-fg-muted">
+                                Type <span class="font-mono text-fg-accent">/</span> for commands,
                                 or
-                                <span class="font-mono text-accent-text">/help</span> for the guide
+                                <span class="font-mono text-fg-accent">/help</span> for the guide
                             </p>
                         </div>
                     {:else}
                         <div
                             class="flex h-full flex-col items-center justify-center px-4 py-10 text-center select-none">
-                            <p class="text-xs font-medium text-text-muted">No results found</p>
+                            <p class="text-xs font-medium text-fg-muted">No results found</p>
                         </div>
                     {/if}
                 {:else if deduplicatedResults.length > 0}
@@ -1513,12 +1507,11 @@
                                     filteredHistory.length > 0 || gIdx > 0 ? 'pt-1.5' : 'pt-2.5'
                                 )}>
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="text-xxs font-bold tracking-wider text-text-muted">
+                                    <span class="text-xxs font-bold tracking-wider text-fg-muted">
                                         {group.label}
                                     </span>
                                     {#if group.hasPrev || group.hasNext}
-                                        <div
-                                            class="flex items-center gap-1 text-2xs text-text-muted">
+                                        <div class="flex items-center gap-1 text-2xs text-fg-muted">
                                             <button
                                                 type="button"
                                                 aria-label="Previous {group.label} page"
@@ -1566,15 +1559,16 @@
                                         class={cn(
                                             'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                             activeIndex === globalIdx ?
-                                                'bg-accent/10 text-text-primary dark:bg-accent/20'
-                                            :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                                                'bg-accent/10 text-fg dark:bg-accent/20'
+                                            :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
                                         )}>
                                         <div class="flex min-w-0 flex-1 items-center gap-1.5">
                                             <div
                                                 class={cn(
                                                     'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                    activeIndex === globalIdx ? 'text-accent-text'
-                                                    :   'text-text-secondary group-hover:text-accent-text'
+                                                    activeIndex === globalIdx ? 'text-fg-accent' : (
+                                                        'text-fg-secondary group-hover:text-fg-accent'
+                                                    )
                                                 )}>
                                                 <ItemIcon class="size-3.5" />
                                             </div>
@@ -1593,26 +1587,26 @@
                                                     <span class="shrink-0 font-mono text-xs">
                                                         {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent-text'
-                                                                :   'font-medium text-text-primary'}
+                                                                    'font-semibold text-fg-accent'
+                                                                :   'font-medium text-fg'}
                                                                 >{chunk.text}</span
                                                             >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                     class={chunk.match ?
-                                                                        'font-semibold text-accent-text'
-                                                                    :   'font-normal text-text-muted/60'}
+                                                                        'font-semibold text-fg-accent'
+                                                                    :   'font-normal text-fg-muted/60'}
                                                                     >{chunk.text}</span
                                                                 >{/each}{/if}
                                                     </span>
                                                     {#if item.subtitle}
                                                         <span
-                                                            class="text-2xs text-text-muted/40 select-none"
+                                                            class="text-2xs text-fg-muted/40 select-none"
                                                             >—</span>
                                                         <span
-                                                            class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                                                            class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                             {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                                 {#if chunk.match}
                                                                     <span
-                                                                        class="font-semibold text-accent-text"
+                                                                        class="font-semibold text-fg-accent"
                                                                         >{chunk.text}</span>
                                                                 {:else}
                                                                     <span>{chunk.text}</span>
@@ -1624,24 +1618,24 @@
                                             {:else}
                                                 <div class="flex min-w-0 flex-1 items-center gap-2">
                                                     <span
-                                                        class="max-w-[45%] shrink-0 truncate text-xs font-medium text-text-primary sm:max-w-[55%]">
+                                                        class="max-w-[45%] shrink-0 truncate text-xs font-medium text-fg sm:max-w-[55%]">
                                                         {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
                                                             <span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent-text'
+                                                                    'font-semibold text-fg-accent'
                                                                 :   ''}>{chunk.text}</span>
                                                         {/each}
                                                     </span>
                                                     {#if item.subtitle}
                                                         <span
-                                                            class="text-2xs text-text-muted/40 select-none"
+                                                            class="text-2xs text-fg-muted/40 select-none"
                                                             >—</span>
                                                         <span
-                                                            class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                                                            class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                             {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                                 {#if chunk.match}
                                                                     <span
-                                                                        class="font-semibold text-accent-text"
+                                                                        class="font-semibold text-fg-accent"
                                                                         >{chunk.text}</span>
                                                                 {:else}
                                                                     <span>{chunk.text}</span>
@@ -1666,7 +1660,7 @@
                                                 <CornerDownLeft
                                                     strokeWidth={1.5}
                                                     class={cn(
-                                                        'size-3 text-accent-text transition-opacity group-hover:opacity-100',
+                                                        'size-3 text-fg-accent transition-opacity group-hover:opacity-100',
                                                         activeIndex === globalIdx ? 'opacity-100'
                                                         :   'opacity-0'
                                                     )} />
@@ -1681,8 +1675,8 @@
             </div>
 
             <div
-                class="hidden flex-none items-center justify-between gap-2 border-t border-border-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
-                <div class="flex min-w-0 flex-1 items-center text-2xs font-medium text-text-muted">
+                class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
+                <div class="flex min-w-0 flex-1 items-center text-2xs font-medium text-fg-muted">
                     {#if isLoading}
                         <span>Searching…</span>
                     {:else}
@@ -1690,11 +1684,10 @@
                         <span>{totalCount} result{totalCount === 1 ? '' : 's'}</span>
                     {/if}
                 </div>
-                <div
-                    class="flex shrink-0 items-center gap-2.5 text-2xs font-medium text-text-muted">
+                <div class="flex shrink-0 items-center gap-2.5 text-2xs font-medium text-fg-muted">
                     <span class="flex items-center gap-1">
                         <kbd
-                            class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+                            class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
                             <ArrowDownUp
                                 class="size-9"
                                 strokeWidth={3} />
@@ -1710,7 +1703,7 @@
                     {/if}
                     <span class="flex items-center gap-1">
                         <kbd
-                            class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+                            class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
                             <CornerDownLeft
                                 class="size-9"
                                 strokeWidth={3} />
@@ -1719,7 +1712,7 @@
                     </span>
                     <span class="flex items-center gap-1">
                         <kbd
-                            class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
+                            class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-fg-muted dark:border-fg/8">
                             esc
                         </kbd>
                         <span class="hidden sm:inline">close</span>
@@ -1747,15 +1740,15 @@
 
         <div
             bind:this={helpDialogEl}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-fg/8"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
             aria-label="Reference guide"
             onkeydown={handleHelpKeydown}>
             <div
-                class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2.5">
-                <span class="text-xs font-bold tracking-wide text-text-primary select-none">
+                class="flex items-center justify-between border-b border-line-subtle/40 px-4 py-2.5">
+                <span class="text-xs font-bold tracking-wide text-fg select-none">
                     Reference Guide
                 </span>
                 <button
@@ -1765,7 +1758,7 @@
                         helpActiveIndex = -1;
                         tick().then(() => inputEl?.focus());
                     }}
-                    class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                    class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                     aria-label="Close guide">
                     <X class="size-3.5" />
                 </button>
@@ -1790,33 +1783,32 @@
                                     class={cn(
                                         'group flex w-full cursor-pointer flex-col gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                         helpActiveIndex === cmdIdx ?
-                                            'bg-accent/10 text-text-primary dark:bg-accent/20'
-                                        :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                                            'bg-accent/10 text-fg dark:bg-accent/20'
+                                        :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
                                     )}>
                                     <div class="flex min-w-0 items-start gap-1.5">
                                         <div
                                             class={cn(
                                                 'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                helpActiveIndex === cmdIdx ? 'text-accent-text' : (
-                                                    'text-text-secondary group-hover:text-accent-text'
+                                                helpActiveIndex === cmdIdx ? 'text-fg-accent' : (
+                                                    'text-fg-secondary group-hover:text-fg-accent'
                                                 )
                                             )}>
                                             <CmdIcon class="size-3.5" />
                                         </div>
                                         <div
                                             class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1 py-1">
-                                            <span
-                                                class="font-mono text-xs font-medium text-text-primary">
+                                            <span class="font-mono text-xs font-medium text-fg">
                                                 {cmd.command}{#if cmd.argHint}<span
-                                                        class="ml-1 font-normal text-text-muted">
+                                                        class="ml-1 font-normal text-fg-muted">
                                                         {cmd.argHint}</span
                                                     >{/if}
                                             </span>
                                             <span
-                                                class="hidden text-2xs text-text-muted/40 select-none sm:inline"
+                                                class="hidden text-2xs text-fg-muted/40 select-none sm:inline"
                                                 >—</span>
                                             <span
-                                                class="min-w-0 basis-full font-sans text-2xs text-text-muted sm:flex-1 sm:basis-auto">
+                                                class="min-w-0 basis-full font-sans text-2xs text-fg-muted sm:flex-1 sm:basis-auto">
                                                 {cmd.description}
                                             </span>
                                         </div>
@@ -1834,7 +1826,7 @@
                                             class="flex flex-wrap items-center gap-1 pl-7.5 font-mono text-3xs">
                                             {#each cmd.validArgs as arg (arg)}
                                                 <span
-                                                    class="inline-flex items-center rounded bg-surface-hover px-1 py-0.5 leading-normal text-text-secondary"
+                                                    class="inline-flex items-center rounded bg-surface-hover px-1 py-0.5 leading-normal text-fg-secondary"
                                                     >{arg}</span>
                                             {/each}
                                         </div>
@@ -1852,43 +1844,43 @@
                             class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
                             <div class="flex min-w-0 items-center gap-2">
                                 <div
-                                    class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                                    class="flex size-6 shrink-0 items-center justify-center text-fg-secondary select-none">
                                     <CaseSensitive class="size-3.5" />
                                 </div>
-                                <span class="font-medium text-text-primary">Match case</span>
-                                <span class="text-text-muted/40 select-none">—</span>
-                                <span class="hidden font-sans text-text-muted sm:inline"
+                                <span class="font-medium text-fg">Match case</span>
+                                <span class="text-fg-muted/40 select-none">—</span>
+                                <span class="hidden font-sans text-fg-muted sm:inline"
                                     >Case-sensitive search toggle</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent-text">Aa</span>
+                            <span class="font-mono text-3xs text-fg-accent">Aa</span>
                         </div>
                         <div
                             class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
                             <div class="flex min-w-0 items-center gap-2">
                                 <div
-                                    class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                                    class="flex size-6 shrink-0 items-center justify-center text-fg-secondary select-none">
                                     <WholeWord class="size-3.5" />
                                 </div>
-                                <span class="font-medium text-text-primary">Whole word</span>
-                                <span class="text-text-muted/40 select-none">—</span>
-                                <span class="hidden font-sans text-text-muted sm:inline"
+                                <span class="font-medium text-fg">Whole word</span>
+                                <span class="text-fg-muted/40 select-none">—</span>
+                                <span class="hidden font-sans text-fg-muted sm:inline"
                                     >Match exact whole words</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent-text">ab</span>
+                            <span class="font-mono text-3xs text-fg-accent">ab</span>
                         </div>
                         <div
                             class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
                             <div class="flex min-w-0 items-center gap-2">
                                 <div
-                                    class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                                    class="flex size-6 shrink-0 items-center justify-center text-fg-secondary select-none">
                                     <Regex class="size-3.5" />
                                 </div>
-                                <span class="font-medium text-text-primary">Regex mode</span>
-                                <span class="text-text-muted/40 select-none">—</span>
-                                <span class="hidden font-sans text-text-muted sm:inline"
+                                <span class="font-medium text-fg">Regex mode</span>
+                                <span class="text-fg-muted/40 select-none">—</span>
+                                <span class="hidden font-sans text-fg-muted sm:inline"
                                     >Regular expression pattern matching</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent-text">.*</span>
+                            <span class="font-mono text-3xs text-fg-accent">.*</span>
                         </div>
                     </div>
                 </div>
@@ -1905,10 +1897,10 @@
                         }}>
                         <div class="flex min-w-0 items-center gap-2">
                             <div
-                                class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                                class="flex size-6 shrink-0 items-center justify-center text-fg-secondary select-none">
                                 <Keyboard class="size-3.5" />
                             </div>
-                            <span class="font-sans text-2xs text-text-secondary">
+                            <span class="font-sans text-2xs text-fg-secondary">
                                 Browse keyboard shortcuts on this page
                             </span>
                         </div>
@@ -1922,31 +1914,31 @@
             </div>
 
             <div
-                class="hidden flex-none items-center justify-end gap-2.5 border-t border-border-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
+                class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
                 <span class="flex items-center gap-1">
                     <kbd
-                        class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+                        class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
                         <ArrowDownUp
                             class="size-9"
                             strokeWidth={3} />
                     </kbd>
-                    <span class="text-text-muted">navigate</span>
+                    <span class="text-fg-muted">navigate</span>
                 </span>
                 <span class="flex items-center gap-1">
                     <kbd
-                        class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+                        class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
                         <CornerDownLeft
                             class="size-9"
                             strokeWidth={3} />
                     </kbd>
-                    <span class="text-text-muted">execute</span>
+                    <span class="text-fg-muted">execute</span>
                 </span>
                 <span class="flex items-center gap-1">
                     <kbd
-                        class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
+                        class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-fg-muted dark:border-fg/8">
                         esc
                     </kbd>
-                    <span class="text-text-muted">close</span>
+                    <span class="text-fg-muted">close</span>
                 </span>
             </div>
         </div>

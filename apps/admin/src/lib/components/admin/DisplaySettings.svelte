@@ -68,7 +68,7 @@
 
 <Card
     variant="bordered"
-    class="border-border-subtle! bg-surface-card!">
+    class="border-line-subtle! bg-surface!">
     <FormSection
         title="Theme"
         titleClass="type-card-title"
@@ -78,7 +78,7 @@
             <div
                 role="tablist"
                 aria-label="Theme"
-                class="inline-flex w-fit items-center gap-0.5 rounded-md border border-border-subtle/50 bg-surface p-0.5">
+                class="inline-flex w-fit items-center gap-0.5 rounded-md border border-line-subtle/50 bg-surface p-0.5">
                 {#each themes as theme (theme.value)}
                     <button
                         type="button"
@@ -88,8 +88,8 @@
                         class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             themeStore.current === theme.value
                         ) ?
-                            'bg-accent-contrast-bg text-text-on-accent shadow-xs'
-                        :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
+                            'bg-accent-strong text-on-accent shadow-xs'
+                        :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'}">
                         <theme.icon class="size-3.5" />
                         {theme.label}
                     </button>
@@ -101,7 +101,7 @@
 
 <Card
     variant="bordered"
-    class="border-border-subtle! bg-surface-card!">
+    class="border-line-subtle! bg-surface!">
     <FormSection
         title="Dates & times"
         titleClass="type-card-title"
@@ -116,7 +116,7 @@
         {/snippet}
 
         <div
-            class="grid overflow-hidden rounded-md border border-border-subtle/50 bg-surface-card sm:grid-cols-[1fr_1.3fr]">
+            class="grid overflow-hidden rounded-md border border-line-subtle/50 bg-surface sm:grid-cols-[1fr_1.3fr]">
             <div class="flex flex-col gap-2 p-3">
                 <Dropdown
                     id="display-date-format"
@@ -135,11 +135,11 @@
             </div>
             <dl
                 aria-live="polite"
-                class="flex flex-col justify-center gap-y-1.5 border-t border-border-subtle/50 p-3 text-xs sm:border-t-0 sm:border-l">
+                class="flex flex-col justify-center gap-y-1.5 border-t border-line-subtle/50 p-3 text-xs sm:border-t-0 sm:border-l">
                 {#each previews as row (row.label)}
                     <div class="flex items-baseline gap-2">
-                        <dt class="w-20 shrink-0 text-text-muted">{row.label}</dt>
-                        <dd class="truncate font-semibold text-text-primary">{row.text}</dd>
+                        <dt class="w-20 shrink-0 text-fg-muted">{row.label}</dt>
+                        <dd class="truncate font-semibold text-fg">{row.text}</dd>
                     </div>
                 {/each}
             </dl>
@@ -148,11 +148,11 @@
         <div class="flex flex-col gap-2">
             <span
                 id="display-mode-label"
-                class="text-xs font-semibold text-text-primary">Show timestamps as</span>
+                class="text-xs font-semibold text-fg">Show timestamps as</span>
             <div
                 role="tablist"
                 aria-labelledby="display-mode-label"
-                class="inline-flex w-fit items-center gap-0.5 self-start rounded-md border border-border-subtle/50 bg-surface p-0.5">
+                class="inline-flex w-fit items-center gap-0.5 self-start rounded-md border border-line-subtle/50 bg-surface p-0.5">
                 {#each dateModeTabs as item (item.value)}
                     <button
                         type="button"
@@ -162,14 +162,14 @@
                         class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             prefs.mode === item.value
                         ) ?
-                            'bg-accent-contrast-bg text-text-on-accent shadow-xs'
-                        :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
+                            'bg-accent-strong text-on-accent shadow-xs'
+                        :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'}">
                         <item.icon class="size-3.5" />
                         {item.label}
                     </button>
                 {/each}
             </div>
-            <p class="type-body text-text-muted">
+            <p class="type-body text-fg-muted">
                 Relative shows “10 hours ago”. Smart is relative for the last 7 days and absolute
                 after that. Charts and the calendar always use absolute dates.
             </p>

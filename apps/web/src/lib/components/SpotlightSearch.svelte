@@ -83,12 +83,12 @@
             onfocus={() => spotlightStore.prefetch()}
             class={cn(
                 variant === 'expanded' ?
-                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-accent/50 hover:text-accent-text sm:h-9 sm:px-3'
+                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-fg-secondary hover:border-accent/50 hover:text-fg-accent sm:h-9 sm:px-3'
                 : variant === 'icon' ?
-                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-9'
+                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9'
                 : variant === 'responsive' ?
-                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-auto sm:justify-between sm:gap-2 sm:px-3'
-                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
+                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-auto sm:justify-between sm:gap-2 sm:px-3'
+                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
                 className
             )}
             aria-label={variant === 'icon' ? 'Search' : undefined}
@@ -96,36 +96,36 @@
             {#if variant === 'expanded'}
                 <div class="flex min-w-0 items-center gap-2">
                     <Search class="size-4 shrink-0" />
-                    <span class="truncate font-sans text-xs text-text-muted">Search...</span>
+                    <span class="truncate font-sans text-xs text-fg-muted">Search...</span>
                 </div>
                 <kbd
-                    class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
+                    class="inline-flex h-5 items-center justify-center rounded-md border border-line-subtle/50 bg-canvas/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-fg-secondary shadow-2xs">
                     /
                 </kbd>
             {:else if variant === 'icon'}
                 <Search class="size-4 shrink-0" />
             {:else if variant === 'responsive'}
                 <div class="flex min-w-0 items-center gap-2">
-                    <Search class="size-4 shrink-0 sm:text-text-muted" />
+                    <Search class="size-4 shrink-0 sm:text-fg-muted" />
                     <span class="sr-only sm:hidden">Search</span>
-                    <span class="hidden truncate font-sans text-xs text-text-muted sm:inline"
+                    <span class="hidden truncate font-sans text-xs text-fg-muted sm:inline"
                         >Search...</span>
                 </div>
                 <div class="ml-1.5 hidden items-center gap-1 sm:flex">
                     <ShortcutBadge combo="Mod+K" />
-                    <span class="text-xxs text-text-muted">or</span>
+                    <span class="text-xxs text-fg-muted">or</span>
                     <ShortcutBadge combo="/" />
                 </div>
             {:else}
                 <div class="flex min-w-0 items-center gap-2">
-                    <Search class="size-4 shrink-0 lg:text-text-muted" />
+                    <Search class="size-4 shrink-0 lg:text-fg-muted" />
                     <span class="sr-only lg:hidden">Search</span>
-                    <span class="hidden truncate font-sans text-xs text-text-muted lg:inline"
+                    <span class="hidden truncate font-sans text-xs text-fg-muted lg:inline"
                         >Search...</span>
                 </div>
                 <div class="ml-1.5 hidden items-center gap-1 lg:flex">
                     <ShortcutBadge combo="Mod+K" />
-                    <span class="text-xxs text-text-muted">or</span>
+                    <span class="text-xxs text-fg-muted">or</span>
                     <ShortcutBadge combo="/" />
                 </div>
             {/if}

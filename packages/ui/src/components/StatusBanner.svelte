@@ -20,10 +20,10 @@
     }: Props = $props();
 
     const variantStyles = {
-        info: 'border-border-subtle/50 bg-surface/70 text-text-primary',
-        success: 'border-success/30 bg-success-subtle/20 text-text-primary',
-        warning: 'border-warning/30 bg-warning/10 text-text-primary',
-        error: 'border-danger/30 bg-danger-subtle/20 text-text-primary'
+        info: 'border-line-subtle/50 bg-surface/70 text-fg',
+        success: 'border-success/30 bg-success-subtle/20 text-fg',
+        warning: 'border-warning/30 bg-warning/10 text-fg',
+        error: 'border-danger/30 bg-danger-subtle/20 text-fg'
     };
 </script>
 
@@ -42,7 +42,7 @@
     {:else if variant === 'error'}
         <OctagonAlert class="mt-0.5 size-4 shrink-0 self-start text-danger" />
     {:else}
-        <Info class="mt-0.5 size-4 shrink-0 self-start text-text-muted" />
+        <Info class="mt-0.5 size-4 shrink-0 self-start text-fg-muted" />
     {/if}
     <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         {#if title}

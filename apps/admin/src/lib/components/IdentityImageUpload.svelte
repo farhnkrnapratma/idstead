@@ -162,10 +162,9 @@
     <div class="flex min-h-7 items-center justify-between gap-3">
         <h3
             id={`${id}-title`}
-            class="text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+            class="text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
             {title}
-            {#if useGenerated && !preview}<span class="font-normal text-text-muted"
-                    >(generated)</span
+            {#if useGenerated && !preview}<span class="font-normal text-fg-muted">(generated)</span
                 >{/if}
         </h3>
         {#if canRemove && !preview}
@@ -194,7 +193,7 @@
             )}>
             <div
                 class={cn(
-                    'relative shrink-0 self-start overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem]',
+                    'relative shrink-0 self-start overflow-hidden rounded-md border border-line-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem]',
                     aspect === 'square' ? 'aspect-square w-40' : 'aspect-2/1 w-80 max-w-full'
                 )}>
                 {#if source}
@@ -221,11 +220,11 @@
                         :   `${title} unavailable`}>
                         {#if generating}
                             <LoaderCircle
-                                class="size-10 animate-spin text-text-muted"
+                                class="size-10 animate-spin text-fg-muted"
                                 aria-hidden="true" />
                         {:else}
                             <ImageOff
-                                class="size-10 text-text-muted"
+                                class="size-10 text-fg-muted"
                                 aria-hidden="true" />
                         {/if}
                     </div>
@@ -246,7 +245,7 @@
         </div>
     </div>
     <p
-        class="text-xs text-text-muted"
+        class="text-xs text-fg-muted"
         aria-live="polite">
         {preview ? readyNote : note}
     </p>

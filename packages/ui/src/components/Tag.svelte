@@ -21,10 +21,10 @@
     }: Props = $props();
 
     const variantStyles = {
-        neutral: 'text-text-muted border border-text-muted/20',
-        subtle: 'bg-text-muted/10 text-text-muted',
-        accent: 'bg-accent-subtle text-accent-text border border-accent/20',
-        'accent-active': 'bg-accent text-text-on-accent border border-accent/20'
+        neutral: 'text-fg-muted border border-fg-muted/20',
+        subtle: 'bg-fg-muted/10 text-fg-muted',
+        accent: 'bg-accent-subtle text-fg-accent border border-accent/20',
+        'accent-active': 'bg-accent text-on-accent border border-accent/20'
     };
 
     const sizeStyles = {

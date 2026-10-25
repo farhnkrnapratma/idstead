@@ -82,8 +82,8 @@
             aria-expanded={isOpen}
             onclick={() => (isOpen = !isOpen)}
             class={cn(
-                'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent-text'
+                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                isOpen && 'border-accent text-fg-accent'
             )}>
             <PersonStanding class="size-4" />
         </IconButton>
@@ -110,18 +110,18 @@
                     <div class="flex items-center justify-between">
                         <span
                             id="a11y-settings-heading"
-                            class="text-xs font-bold tracking-tight text-text-primary">
+                            class="text-xs font-bold tracking-tight text-fg">
                             Accessibility
                         </span>
                         <button
                             type="button"
                             onclick={a11yStore.reset}
-                            class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-accent-text">
+                            class="cursor-pointer text-2xs font-medium text-fg-secondary transition-colors hover:text-fg-accent">
                             Reset to default
                         </button>
                     </div>
 
-                    <p class="text-3xs text-text-muted">
+                    <p class="text-3xs text-fg-muted">
                         Customize display preferences for improved accessibility. Settings marked
                         Device are on because of your system settings; change them anytime.
                     </p>
@@ -129,26 +129,25 @@
                     <div
                         role="group"
                         aria-label="Text size"
-                        class="flex items-center justify-between rounded-md border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
-                        <span class="text-xs text-text-secondary">Text size</span>
+                        class="flex items-center justify-between rounded-md border border-line-subtle bg-surface-hover/50 px-2.5 py-1.5">
+                        <span class="text-xs text-fg-secondary">Text size</span>
                         <div class="flex items-center gap-2">
                             <button
                                 type="button"
                                 onclick={decreaseFontScale}
                                 disabled={a11yStore.current.fontScale <= 100}
-                                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface text-xs font-bold text-fg hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Decrease text size">
                                 -
                             </button>
-                            <span
-                                class="min-w-8 text-center font-mono text-xs font-medium text-text-primary">
+                            <span class="min-w-8 text-center font-mono text-xs font-medium text-fg">
                                 {a11yStore.current.fontScale}%
                             </span>
                             <button
                                 type="button"
                                 onclick={increaseFontScale}
                                 disabled={a11yStore.current.fontScale >= 150}
-                                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface text-xs font-bold text-fg hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Increase text size">
                                 +
                             </button>
@@ -164,7 +163,7 @@
                             {@const fromDevice = a11yStore.enabledByDevice(item.key)}
                             <div class="group/item flex items-center justify-between gap-2 py-0.5">
                                 <span
-                                    class="flex min-w-0 items-center gap-1.5 truncate text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
+                                    class="flex min-w-0 items-center gap-1.5 truncate text-xs font-normal text-fg-secondary transition-colors group-hover/item:text-fg">
                                     {item.label}
                                     {#if fromDevice}
                                         <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
@@ -187,14 +186,14 @@
                                         class={cn(
                                             'absolute size-6.5 transition-[transform,opacity] duration-150',
                                             checked ? 'scale-75 opacity-0' : (
-                                                'scale-100 text-text-muted opacity-100 group-hover/item:text-text-secondary'
+                                                'scale-100 text-fg-muted opacity-100 group-hover/item:text-fg-secondary'
                                             )
                                         )} />
                                     <ToggleRight
                                         class={cn(
                                             'absolute size-6.5 transition-[transform,opacity] duration-150',
                                             checked ?
-                                                'scale-100 text-accent-text opacity-100'
+                                                'scale-100 text-fg-accent opacity-100'
                                             :   'scale-75 opacity-0'
                                         )} />
                                 </button>

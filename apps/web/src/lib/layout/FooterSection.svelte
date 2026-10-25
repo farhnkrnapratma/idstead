@@ -79,7 +79,7 @@
 
 <footer
     class={cn(
-        'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 font-sans text-xs text-text-muted',
+        'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 font-sans text-xs text-fg-muted',
         width === 'standard' ? 'pb-8' : 'pb-0',
         widthStyles[width],
         className
@@ -91,9 +91,9 @@
                     <nav
                         aria-label="Footer navigation"
                         class="flex min-w-0 flex-col gap-2">
-                        <h4 class="text-xs font-semibold text-text-primary">Navigation</h4>
+                        <h4 class="text-xs font-semibold text-fg">Navigation</h4>
                         <ul
-                            class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
+                            class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
                             {#each resolvedNavItems as item (item.url)}
                                 <li class="text-xs">
                                     {#if onNavClick}
@@ -104,7 +104,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none">
+                                            class="relative cursor-pointer text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-none">
                                             {item.label}
                                         </button>
                                     {:else}
@@ -114,7 +114,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none">
+                                            class="relative cursor-pointer text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-none">
                                             {item.label}
                                         </a>
                                     {/if}
@@ -127,14 +127,14 @@
                 <nav
                     aria-label="Site links"
                     class="flex min-w-0 flex-col gap-2">
-                    <h4 class="text-xs font-semibold text-text-primary">Site</h4>
+                    <h4 class="text-xs font-semibold text-fg">Site</h4>
                     <ul
-                        class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
+                        class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
                         {#each siteLinks as item (item.label)}
                             <li class="text-xs">
                                 <FooterSiteLink
                                     {item}
-                                    class="text-xs font-normal text-text-secondary" />
+                                    class="text-xs font-normal text-fg-secondary" />
                             </li>
                         {/each}
                     </ul>
@@ -142,7 +142,7 @@
             </div>
 
             {#if resolvedSocials.length > 0}
-                <div class="border-t border-border-subtle pt-4 sm:pt-5">
+                <div class="border-t border-line-subtle pt-4 sm:pt-5">
                     <div class="flex flex-wrap gap-2">
                         {#each resolvedSocials as item (item.url + item.platform)}
                             <a
@@ -152,7 +152,7 @@
                                 aria-label={item.platform}
                                 title={item.platform}
                                 use:shortcut={{ group: 'social', label: item.platform }}
-                                class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
+                                class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-fg-muted transition-all hover:bg-surface-hover hover:text-fg-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
                                 <BrandIcon
                                     icon={item.icon}
                                     class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
@@ -163,9 +163,9 @@
             {/if}
 
             <div
-                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-border-subtle pt-4 sm:pt-5">
+                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-line-subtle pt-4 sm:pt-5">
                 <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 select-none">
-                    <span class="text-xs font-medium text-text-muted">{copyright}</span>
+                    <span class="text-xs font-medium text-fg-muted">{copyright}</span>
                     <StatusBadge
                         host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
                         code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
@@ -182,10 +182,10 @@
                             tooltipAlign="right"
                             size="sm"
                             onclick={onToggleReadingMode}
-                            class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                            class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
                                 readingMode
                             ) ?
-                                'border-accent text-accent-text'
+                                'border-accent text-fg-accent'
                             :   ''}">
                             <BookOpenText class="size-4" />
                         </IconButton>

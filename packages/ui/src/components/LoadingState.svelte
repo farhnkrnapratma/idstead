@@ -29,7 +29,7 @@
         <div class="flex animate-pulse flex-wrap items-center justify-between gap-4">
             <div class="space-y-1.5">
                 <div class="h-7 w-28 rounded-md bg-surface-hover"></div>
-                <div class="h-3 w-48 rounded bg-border-subtle/50"></div>
+                <div class="h-3 w-48 rounded bg-line-subtle/50"></div>
             </div>
             <div class="h-9 w-28 rounded-md bg-surface-hover"></div>
         </div>
@@ -37,10 +37,10 @@
         <div class="animate-pulse space-y-3 rounded-md glass-card p-4 shadow-sm">
             <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                 <div class="h-8 w-full rounded-md bg-surface-hover/80 sm:w-60"></div>
-                <div class="h-4 w-28 rounded bg-border-subtle/50"></div>
+                <div class="h-4 w-28 rounded bg-line-subtle/50"></div>
             </div>
             <div
-                class="flex flex-col gap-2.5 border-t border-border-subtle/30 pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                class="flex flex-col gap-2.5 border-t border-line-subtle/30 pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div class="w-full sm:w-auto">
                     <div class="h-9 w-full rounded-md bg-surface-hover/70 sm:w-28"></div>
                 </div>
@@ -55,23 +55,23 @@
                 <div
                     class="flex animate-pulse flex-col overflow-hidden rounded-md glass-card shadow-sm">
                     <div
-                        class="flex aspect-2/1 w-full items-center justify-center border-b border-border-subtle/25 bg-surface-hover/60">
+                        class="flex aspect-2/1 w-full items-center justify-center border-b border-line-subtle/25 bg-surface-hover/60">
                         <div class="size-8 rounded-full bg-surface-hover/80"></div>
                     </div>
 
                     <div class="flex flex-col gap-3 p-4">
                         <div class="flex items-center gap-2">
                             <div class="h-4 w-16 rounded-full bg-accent/15"></div>
-                            <div class="h-3 w-20 rounded bg-border-subtle/50"></div>
-                            <div class="h-3 w-14 rounded bg-border-subtle/40"></div>
-                            <div class="h-3 w-10 rounded bg-border-subtle/40"></div>
+                            <div class="h-3 w-20 rounded bg-line-subtle/50"></div>
+                            <div class="h-3 w-14 rounded bg-line-subtle/40"></div>
+                            <div class="h-3 w-10 rounded bg-line-subtle/40"></div>
                         </div>
 
                         <div class="h-5 w-3/4 rounded bg-surface-hover"></div>
 
                         <div class="space-y-1.5">
-                            <div class="h-3 w-full rounded bg-border-subtle/50"></div>
-                            <div class="h-3 w-4/5 rounded bg-border-subtle/35"></div>
+                            <div class="h-3 w-full rounded bg-line-subtle/50"></div>
+                            <div class="h-3 w-4/5 rounded bg-line-subtle/35"></div>
                         </div>
 
                         <div class="flex items-center gap-1.5 pt-1">
@@ -95,13 +95,13 @@
         aria-busy="true"
         class={cn('w-full space-y-4 select-none', className)}>
         <div
-            class="animate-pulse rounded-md border border-border-subtle bg-surface-card p-6 text-left shadow-sm">
+            class="animate-pulse rounded-md border border-line-subtle bg-surface p-6 text-left shadow-sm">
             <div class="mb-6 h-5 w-36 rounded bg-surface-hover"></div>
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <div class="flex flex-col gap-2.5 lg:col-span-5">
-                    <div class="h-3.5 w-24 rounded bg-border-subtle/50"></div>
+                    <div class="h-3.5 w-24 rounded bg-line-subtle/50"></div>
                     <div
-                        class="flex aspect-2/1 w-full items-center justify-center rounded-md border border-border-subtle/50 bg-surface-hover/60">
+                        class="flex aspect-2/1 w-full items-center justify-center rounded-md border border-line-subtle/50 bg-surface-hover/60">
                         <div class="size-8 rounded-full bg-surface-hover/80"></div>
                     </div>
                     <div class="h-8 w-full rounded-md bg-surface-hover/40"></div>
@@ -109,22 +109,22 @@
 
                 <div class="flex flex-col gap-4 lg:col-span-7">
                     <div class="space-y-1.5">
-                        <div class="h-3 w-16 rounded bg-border-subtle/50"></div>
+                        <div class="h-3 w-16 rounded bg-line-subtle/50"></div>
                         <div class="h-9 w-full rounded-md bg-surface-hover/60"></div>
                     </div>
 
                     <div class="space-y-1.5">
-                        <div class="h-3 w-12 rounded bg-border-subtle/50"></div>
+                        <div class="h-3 w-12 rounded bg-line-subtle/50"></div>
                         <div class="h-9 w-full rounded-md bg-surface-hover/60"></div>
                     </div>
 
                     <div class="space-y-1.5">
-                        <div class="h-3 w-20 rounded bg-border-subtle/50"></div>
+                        <div class="h-3 w-20 rounded bg-line-subtle/50"></div>
                         <div class="h-16 w-full rounded-md bg-surface-hover/60"></div>
                     </div>
 
                     <div class="space-y-1.5">
-                        <div class="h-3 w-14 rounded bg-border-subtle/50"></div>
+                        <div class="h-3 w-14 rounded bg-line-subtle/50"></div>
                         <div class="h-9 w-full rounded-md bg-surface-hover/60"></div>
                     </div>
                 </div>
@@ -132,9 +132,9 @@
         </div>
 
         <div
-            class="animate-pulse overflow-hidden rounded-md border border-border-subtle bg-surface-card shadow-sm">
+            class="animate-pulse overflow-hidden rounded-md border border-line-subtle bg-surface shadow-sm">
             <div
-                class="flex h-13 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
+                class="flex h-13 items-center justify-between border-b border-line-subtle bg-surface px-4">
                 <div class="flex gap-2">
                     <div class="h-7 w-16 rounded-md bg-surface-hover"></div>
                     <div class="h-7 w-18 rounded-md bg-surface-hover/50"></div>
@@ -146,7 +146,7 @@
                 </div>
             </div>
 
-            <div class="min-h-75 space-y-3 bg-surface-base p-6">
+            <div class="min-h-75 space-y-3 bg-canvas p-6">
                 <div class="h-4 w-3/4 rounded bg-surface-hover/40"></div>
                 <div class="h-4 w-1/2 rounded bg-surface-hover/30"></div>
                 <div class="h-4 w-5/6 rounded bg-surface-hover/40"></div>
@@ -154,8 +154,7 @@
                 <div class="h-4 w-4/5 rounded bg-surface-hover/40"></div>
             </div>
 
-            <div
-                class="flex h-10 items-center gap-2 border-t border-border-subtle bg-surface-card px-4">
+            <div class="flex h-10 items-center gap-2 border-t border-line-subtle bg-surface px-4">
                 <div class="size-5 rounded bg-surface-hover/50"></div>
                 <div class="size-5 rounded bg-surface-hover/50"></div>
                 <div class="size-5 rounded bg-surface-hover/50"></div>
@@ -184,7 +183,7 @@
                     <div class="size-8 shrink-0 rounded-full bg-surface-hover"></div>
                     <div class="flex-1 space-y-2">
                         <div class="h-3.5 w-2/5 rounded bg-surface-hover"></div>
-                        <div class="h-2.5 w-4/5 rounded bg-border-subtle/50"></div>
+                        <div class="h-2.5 w-4/5 rounded bg-line-subtle/50"></div>
                     </div>
                 </div>
             </div>
@@ -204,12 +203,12 @@
         )}>
         <div
             class={cn(
-                'animate-spin rounded-full border-border-subtle border-t-accent',
+                'animate-spin rounded-full border-line-subtle border-t-accent',
                 sizeStyles[size]
             )}>
         </div>
         {#if label}
-            <span class="text-xs font-medium text-text-muted">{label}</span>
+            <span class="text-xs font-medium text-fg-muted">{label}</span>
         {/if}
     </div>
 {/if}

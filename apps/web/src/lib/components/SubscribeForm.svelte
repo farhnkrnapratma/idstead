@@ -26,13 +26,13 @@
                 class="relative size-20 shrink-0 items-center justify-center sm:flex"
                 aria-hidden="true">
                 <div
-                    class="absolute inset-0 border-border-subtle/80 bg-surface-elevated/40 sm:rounded-full sm:border sm:border-dashed">
+                    class="absolute inset-0 border-line-subtle/80 bg-surface/40 sm:rounded-full sm:border sm:border-dashed">
                 </div>
                 <Mail
-                    class="absolute top-4 left-4 size-9 fill-accent/15 text-accent-text"
+                    class="absolute top-4 left-4 size-9 fill-accent/15 text-fg-accent"
                     strokeWidth={1.5} />
                 <Paperclip
-                    class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-green-3"
+                    class="absolute right-3 bottom-3 size-8 rounded-full bg-surface p-1 text-success"
                     strokeWidth={1.75} />
             </div>
             <div>
@@ -42,28 +42,26 @@
                     <ShinyText
                         text={title}
                         color="var(--color-accent)"
-                        shineColor="var(--color-text-on-accent)"
+                        shineColor="var(--color-on-accent)"
                         speed={3} />
                 </h4>
-                <p class="col-span-2 type-body text-pretty text-text-secondary">
+                <p class="col-span-2 type-body text-pretty text-fg-secondary">
                     {description}
                 </p>
             </div>
         </div>
-        <div class="border-t border-border-subtle/60 px-3.5 py-3 sm:px-4">
+        <div class="border-t border-line-subtle/60 px-3.5 py-3 sm:px-4">
             <div
                 role="status"
                 aria-atomic="true">
                 {#if isDone}
                     <div class="flex items-start gap-3 py-1">
                         <MailCheck
-                            class="mt-0.5 size-5 shrink-0 text-success-strong"
+                            class="mt-0.5 size-5 shrink-0 text-fg-success"
                             aria-hidden="true" />
                         <div>
-                            <p class="text-base font-semibold text-text-primary">
-                                Check your inbox
-                            </p>
-                            <p class="mt-1 text-sm leading-relaxed text-text-secondary">
+                            <p class="text-base font-semibold text-fg">Check your inbox</p>
+                            <p class="mt-1 text-sm leading-relaxed text-fg-secondary">
                                 Open the confirmation email to finish subscribing.
                             </p>
                         </div>

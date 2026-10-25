@@ -272,10 +272,10 @@
 </header>
 
 {#snippet authMethodDivider()}
-    <div class="my-1 flex items-center gap-3 text-xs text-text-muted">
-        <span class="h-px flex-1 bg-border-subtle"></span>
+    <div class="my-1 flex items-center gap-3 text-xs text-fg-muted">
+        <span class="h-px flex-1 bg-line-subtle"></span>
         <span>or</span>
-        <span class="h-px flex-1 bg-border-subtle"></span>
+        <span class="h-px flex-1 bg-line-subtle"></span>
     </div>
 {/snippet}
 
@@ -306,8 +306,8 @@
                     class="mb-3 flex size-10 items-center justify-center rounded-full bg-accent-subtle text-accent">
                     <ShieldUser class="size-5" />
                 </div>
-                <h1 class="text-xl font-bold text-text-primary">Admin Portal</h1>
-                <p class="mt-1 text-xs text-text-secondary">
+                <h1 class="text-xl font-bold text-fg">Admin Portal</h1>
+                <p class="mt-1 text-xs text-fg-secondary">
                     {needsMfa ? 'Two-step verification' : 'Sign in to access your admin dashboard.'}
                 </p>
             </div>
@@ -317,7 +317,7 @@
                     novalidate
                     onsubmit={submitMfaCode}
                     class="flex w-full flex-col gap-2.5">
-                    <p class="text-xs text-text-secondary">
+                    <p class="text-xs text-fg-secondary">
                         Enter the 6-digit code from your authenticator app.
                     </p>
                     <FormField
@@ -349,14 +349,14 @@
                                 aria-hidden="true">
                                 {#each mfaDigits as index (index)}
                                     <span
-                                        class={`flex h-full min-w-0 flex-1 items-center justify-center rounded-md border bg-surface-card/85 text-xl font-medium text-text-primary tabular-nums shadow-2xs transition-colors dark:bg-surface-card/70 ${
+                                        class={`flex h-full min-w-0 flex-1 items-center justify-center rounded-md border bg-surface/85 text-xl font-medium text-fg tabular-nums shadow-2xs transition-colors dark:bg-surface/70 ${
                                             mfaError ? 'border-danger ring-1 ring-danger/20'
                                             : (
                                                 mfaInputFocused
                                                 && index === Math.min(mfaCode.length, 5)
                                             ) ?
                                                 'border-accent ring-2 ring-accent/20'
-                                            :   'border-border-subtle/50 dark:border-white/10'
+                                            :   'border-line-subtle/50 dark:border-fg/10'
                                         }`}>{mfaCode[index] ?? ''}</span>
                                 {/each}
                             </div>

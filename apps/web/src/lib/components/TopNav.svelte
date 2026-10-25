@@ -33,12 +33,12 @@
 </script>
 
 <nav
-    class="fixed inset-x-2 top-2 z-60 flex h-12 items-center justify-between rounded-md glass-card border border-border-subtle/30 px-3 font-sans shadow-2xs sm:inset-x-3 sm:top-3 sm:h-14 sm:px-5"
+    class="fixed inset-x-2 top-2 z-60 flex h-12 items-center justify-between rounded-md glass-card border border-line-subtle/30 px-3 font-sans shadow-2xs sm:inset-x-3 sm:top-3 sm:h-14 sm:px-5"
     aria-label={ariaLabel}>
     <a
         href={backHref}
         use:shortcut={{ combo: buttonKey('back'), label: backLabel }}
-        class="relative inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
+        class="relative inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-line-subtle/50 bg-surface px-2.5 text-xs font-semibold whitespace-nowrap text-fg shadow-2xs transition-colors hover:bg-surface-hover hover:text-fg-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
         <ArrowLeft class="size-3.5 shrink-0" />
         {backLabel}
     </a>
@@ -57,10 +57,10 @@
                 tooltipAlign="right"
                 size="sm"
                 onclick={onToggleReadingMode}
-                class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
                     readingMode
                 ) ?
-                    'border-accent text-accent-text'
+                    'border-accent text-fg-accent'
                 :   ''}">
                 <BookOpenText class="size-4" />
             </IconButton>

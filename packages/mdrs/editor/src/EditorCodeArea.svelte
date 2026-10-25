@@ -129,7 +129,7 @@
         style:--editor-gutter-width={gutterWidth}>
         {#if preferences.showLineNumbers}
             <div
-                class="editor-gutter-track pointer-events-none sticky left-0 z-10 box-border flex shrink-0 flex-col border-r border-border-subtle bg-surface-base font-mono text-xs select-none"
+                class="editor-gutter-track pointer-events-none sticky left-0 z-10 box-border flex shrink-0 flex-col border-r border-line-subtle bg-canvas font-mono text-xs select-none"
                 style:width="var(--editor-gutter-width)"
                 style:min-width="var(--editor-gutter-width)"
                 style:max-width="var(--editor-gutter-width)"
@@ -175,7 +175,7 @@
                 onfocus={updateCursor}
                 {onblur}
                 onkeydown={handleKeyDown}
-                class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! wrap-normal! [word-break:normal]! whitespace-pre! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
+                class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! wrap-normal! [word-break:normal]! whitespace-pre! text-transparent caret-fg outline-hidden! [grid-area:editor] placeholder:text-fg-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
             ></textarea>
         </div>
     </div>
@@ -233,7 +233,7 @@
                 onfocus={updateCursor}
                 {onblur}
                 onkeydown={handleKeyDown}
-                class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! break-normal! wrap-break-word! whitespace-pre-wrap! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
+                class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! break-normal! wrap-break-word! whitespace-pre-wrap! text-transparent caret-fg outline-hidden! [grid-area:editor] placeholder:text-fg-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
                 style:padding-left={preferences.showLineNumbers ?
                     'calc(var(--editor-gutter-width) + 0.5rem)'
                 :   '0.5rem'}></textarea>

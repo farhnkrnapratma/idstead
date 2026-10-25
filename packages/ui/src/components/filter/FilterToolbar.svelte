@@ -45,7 +45,7 @@
     aria-label={title || 'Filter and sort options'}
     class={cn(
         'relative z-20 flex flex-col gap-2.5 select-none',
-        embedded ? 'border-b border-border-subtle px-4 pb-3' : 'rounded-md glass-card p-3 sm:p-4',
+        embedded ? 'border-b border-line-subtle px-4 pb-3' : 'rounded-md glass-card p-3 sm:p-4',
         className
     )}>
     <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center">

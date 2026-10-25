@@ -1,7 +1,7 @@
 @layer base {
     :root {
-        --mdrs-color-heading: var(--color-text-primary);
-        --mdrs-color-body: var(--color-text-secondary);
+        --mdrs-color-heading: var(--color-fg);
+        --mdrs-color-body: var(--color-fg-secondary);
         --mdrs-color-link: var(--color-accent);
         --mdrs-color-link-hover: var(--color-accent-hover);
         --mdrs-step-line-width: 1px;
@@ -101,12 +101,12 @@
     }
 
     .mdrs-list-marker {
-        @apply flex h-5.5 w-2.5 shrink-0 translate-y-[0.5px] items-center justify-center text-text-secondary;
+        @apply flex h-5.5 w-2.5 shrink-0 translate-y-[0.5px] items-center justify-center text-fg-secondary;
     }
 
     .mdrs-list-marker::before {
         content: '';
-        @apply size-1.5 rounded-full bg-text-secondary;
+        @apply size-1.5 rounded-full bg-fg-secondary;
     }
 
     .mdrs-list-content,
@@ -115,7 +115,7 @@
     }
 
     .mdrs-task-icon {
-        @apply flex h-5.5 w-4 shrink-0 translate-y-[0.5px] items-center justify-center text-text-muted;
+        @apply flex h-5.5 w-4 shrink-0 translate-y-[0.5px] items-center justify-center text-fg-muted;
     }
 
     .mdrs-task-icon .mdrs-icon {
@@ -127,7 +127,7 @@
     }
 
     .mdrs-task--in-progress > .mdrs-task-icon {
-        @apply text-warning-strong;
+        @apply text-fg-warning;
     }
 
     .mdrs-task--failed > .mdrs-task-icon {
@@ -135,11 +135,11 @@
     }
 
     .mdrs-task--important > .mdrs-task-icon {
-        @apply text-copilot;
+        @apply text-discovery;
     }
 
     .mdrs-task--question > .mdrs-task-icon {
-        @apply text-a11y-focus;
+        @apply text-highlight;
     }
 
     .mdrs-task--skipped > .mdrs-task-content {
@@ -151,15 +151,15 @@
     }
 
     .mdrs blockquote {
-        @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+        @apply my-6 rounded-md border border-line/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-fg-secondary;
     }
 
     .mdrs blockquote p {
-        @apply my-1 text-text-secondary;
+        @apply my-1 text-fg-secondary;
     }
 
     .mdrs pre {
-        @apply mt-6 mb-6 scrollbar-none overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3 py-1.5 font-mono text-code leading-snug break-normal whitespace-pre [-ms-overflow-style:none];
+        @apply mt-6 mb-6 scrollbar-none overflow-x-auto rounded-md border border-line-subtle bg-surface-hover px-3 py-1.5 font-mono text-code leading-snug break-normal whitespace-pre [-ms-overflow-style:none];
     }
 
     .mdrs pre[data-mdrs-enhanced='true'] {
@@ -171,7 +171,7 @@
     }
 
     .mdrs code:not(pre code) {
-        @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
+        @apply rounded bg-code-inline px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
     }
 
     .mdrs :is(h1, h2, h3, h4, h5, h6) code:not(pre code) {
@@ -195,7 +195,7 @@
     }
 
     .mdrs a:not(.mdrs-anchor, .mdrs-footnote-backref, [data-mdrs-fn-ref]) {
-        @apply text-accent-text underline decoration-1 underline-offset-[0.2em] hover:decoration-2;
+        @apply text-fg-accent underline decoration-1 underline-offset-[0.2em] hover:decoration-2;
     }
 
     .mdrs-external-link .mdrs-icon {
@@ -215,7 +215,7 @@
     }
 
     .mdrs-heading a.mdrs-anchor {
-        @apply relative ml-[0.35rem]! inline-flex! cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-muted! no-underline! opacity-0 transition-colors select-none;
+        @apply relative ml-[0.35rem]! inline-flex! cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-colors select-none;
     }
 
     .mdrs-heading a.mdrs-anchor svg {
@@ -232,12 +232,12 @@
     .mdrs-heading a.mdrs-anchor:focus-visible,
     .mdrs-heading a.mdrs-anchor.mdrs-is-active,
     .mdrs-heading:target a.mdrs-anchor {
-        @apply text-accent-text! opacity-100!;
+        @apply text-fg-accent! opacity-100!;
     }
 
     .mdrs-heading a.mdrs-anchor::after {
         content: attr(data-tooltip);
-        @apply pointer-events-none absolute top-[calc(100%+0.5rem)] left-1/2 z-70 -translate-x-1/2 rounded-md border border-border-subtle bg-surface-card px-2 py-1 font-sans text-3xs leading-normal font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity;
+        @apply pointer-events-none absolute top-[calc(100%+0.5rem)] left-1/2 z-70 -translate-x-1/2 rounded-md border border-line-subtle bg-surface px-2 py-1 font-sans text-3xs leading-normal font-medium whitespace-nowrap text-fg opacity-0 shadow-lg transition-opacity;
     }
 
     .mdrs-heading a.mdrs-anchor:hover::after,
@@ -246,15 +246,15 @@
     }
 
     .mdrs table {
-        @apply my-6 table w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
+        @apply my-6 table w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-line-subtle text-left text-xs shadow-2xs;
     }
 
     .mdrs thead {
-        @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
+        @apply border-b border-line-subtle bg-surface-hover/80 font-semibold tracking-wider text-fg uppercase;
     }
 
     .mdrs th {
-        @apply px-2.5 py-2 text-center font-semibold whitespace-nowrap text-text-primary;
+        @apply px-2.5 py-2 text-center font-semibold whitespace-nowrap text-fg;
     }
 
     .mdrs tbody tr {
@@ -262,7 +262,7 @@
     }
 
     .mdrs td {
-        @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
+        @apply border-r border-line-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-fg-secondary last:border-r-0;
         overflow-wrap: break-word;
         word-break: break-word;
     }
@@ -280,7 +280,7 @@
     }
 
     .mdrs-table {
-        @apply my-6 overflow-x-auto rounded-md border border-border-subtle shadow-2xs;
+        @apply my-6 overflow-x-auto rounded-md border border-line-subtle shadow-2xs;
     }
 
     .mdrs .mdrs-table > table {
@@ -288,7 +288,7 @@
     }
 
     .mdrs hr {
-        @apply my-8 h-px border-0 bg-border-subtle;
+        @apply my-8 h-px border-0 bg-line-subtle;
     }
 
     .mdrs img {
@@ -304,7 +304,7 @@
     }
 
     .mdrs dt {
-        @apply mt-3 font-semibold text-text-primary first:mt-0;
+        @apply mt-3 font-semibold text-fg first:mt-0;
     }
 
     .mdrs dd {
@@ -316,7 +316,7 @@
     }
 
     .mdrs figcaption {
-        @apply mt-2 text-center text-xs text-text-muted;
+        @apply mt-2 text-center text-xs text-fg-muted;
     }
 
     .mdrs q {
@@ -347,12 +347,12 @@
 
     .mdrs-alert-content,
     .mdrs-callout-content {
-        @apply leading-relaxed text-text-secondary;
+        @apply leading-relaxed text-fg-secondary;
     }
 
     .mdrs-alert-content > p,
     .mdrs-callout-content > p {
-        @apply my-1 text-text-secondary;
+        @apply my-1 text-fg-secondary;
     }
 
     .mdrs-alert-content > *:first-child,
@@ -366,15 +366,15 @@
     }
 
     .mdrs-alert--note {
-        @apply border-security/40 bg-security-subtle text-text-secondary;
+        @apply border-info/40 bg-info-subtle text-fg-secondary;
     }
 
     .mdrs-alert--note .mdrs-alert-title {
-        @apply text-accent-text;
+        @apply text-fg-accent;
     }
 
     .mdrs-alert--tip {
-        @apply border-success/40 bg-success-subtle text-text-secondary;
+        @apply border-success/40 bg-success-subtle text-fg-secondary;
     }
 
     .mdrs-alert--tip .mdrs-alert-title {
@@ -382,23 +382,23 @@
     }
 
     .mdrs-alert--important {
-        @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
+        @apply border-discovery/40 bg-discovery-subtle text-fg-secondary;
     }
 
     .mdrs-alert--important .mdrs-alert-title {
-        @apply text-copilot;
+        @apply text-discovery;
     }
 
     .mdrs-alert--warning {
-        @apply border-warning/40 bg-warning-subtle text-text-secondary;
+        @apply border-warning/40 bg-warning-subtle text-fg-secondary;
     }
 
     .mdrs-alert--warning .mdrs-alert-title {
-        @apply text-warning-strong;
+        @apply text-fg-warning;
     }
 
     .mdrs-alert--caution {
-        @apply border-danger/40 bg-danger-subtle text-text-secondary;
+        @apply border-danger/40 bg-danger-subtle text-fg-secondary;
     }
 
     .mdrs-alert--caution .mdrs-alert-title {
@@ -406,11 +406,11 @@
     }
 
     .mdrs-callout {
-        @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-xs text-text-secondary transition-colors duration-200 sm:text-sm;
+        @apply my-6 rounded-md border border-line/40 bg-surface-hover/30 p-4 text-xs text-fg-secondary transition-colors duration-200 sm:text-sm;
     }
 
     .mdrs-callout-title {
-        @apply text-text-primary;
+        @apply text-fg;
         margin-bottom: 0.375rem !important;
     }
 
@@ -425,7 +425,7 @@
     }
 
     .mdrs-footnotes {
-        @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
+        @apply mt-10 border-t border-line-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-fg-secondary;
     }
 
     .mdrs-footnotes ol {
@@ -445,17 +445,17 @@
     }
 
     .mdrs [data-mdrs-fn-ref] {
-        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 pt-[0.12em] pb-[0.3em] font-mono text-[0.8em] leading-none font-medium text-accent-text no-underline hover:underline;
+        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 pt-[0.12em] pb-[0.3em] font-mono text-[0.8em] leading-none font-medium text-fg-accent no-underline hover:underline;
     }
 
     .mdrs-footnote-backref {
-        @apply mr-1.5 -ml-1.5 inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-accent-text no-underline transition-colors select-none hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
+        @apply mr-1.5 -ml-1.5 inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-fg-accent no-underline transition-colors select-none hover:bg-info/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-info active:bg-info/25;
         vertical-align: baseline;
         line-height: 1;
     }
 
     .mdrs-footnote-backref-static {
-        @apply mr-1 inline-flex items-center font-mono text-text-muted select-none;
+        @apply mr-1 inline-flex items-center font-mono text-fg-muted select-none;
         vertical-align: baseline;
         line-height: 1;
     }
@@ -477,7 +477,7 @@
     }
 
     .mdrs-footnotes li:target .mdrs-footnote-backref {
-        @apply bg-security/20 no-underline;
+        @apply bg-info/20 no-underline;
     }
 
     .mdrs-math--block {
@@ -498,7 +498,7 @@
     }
 
     .mdrs-mermaid {
-        @apply relative my-6 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md transition-all duration-200;
+        @apply relative my-6 overflow-hidden rounded-md glass-card border border-line-subtle/60 text-fg shadow-md backdrop-blur-md transition-all duration-200;
     }
 
     .mdrs-mermaid-display {
@@ -506,7 +506,7 @@
     }
 
     .mdrs-mermaid-loading {
-        @apply flex items-center gap-2 text-xs text-text-muted;
+        @apply flex items-center gap-2 text-xs text-fg-muted;
     }
 
     .mdrs-mermaid-svg {
@@ -522,7 +522,7 @@
     }
 
     .mdrs-menu-button {
-        @apply flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring;
+        @apply flex size-7 cursor-pointer items-center justify-center rounded-md text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring;
     }
 
     .mdrs-menu-button .mdrs-icon {
@@ -530,7 +530,7 @@
     }
 
     .mdrs-menu {
-        @apply absolute top-full right-0 z-20 mt-1.5 hidden min-w-36 flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md;
+        @apply absolute top-full right-0 z-20 mt-1.5 hidden min-w-36 flex-col rounded-md border border-line-subtle bg-surface p-1 shadow-lg backdrop-blur-md;
     }
 
     .mdrs-menu.mdrs-is-open {
@@ -538,7 +538,7 @@
     }
 
     .mdrs-menu-item {
-        @apply flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary;
+        @apply flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg;
     }
 
     .mdrs-menu-item .mdrs-icon {
@@ -546,7 +546,7 @@
     }
 
     .mdrs-menu-item .mdrs-is-done {
-        @apply font-semibold text-accent-text opacity-100;
+        @apply font-semibold text-fg-accent opacity-100;
     }
 
     .mdrs-chart {
@@ -554,11 +554,11 @@
     }
 
     .mdrs-chart-loading {
-        @apply flex h-40 items-center justify-center rounded-md glass-card border border-border-subtle/60 text-xs text-text-muted;
+        @apply flex h-40 items-center justify-center rounded-md glass-card border border-line-subtle/60 text-xs text-fg-muted;
     }
 
     .mdrs-chart-empty {
-        @apply flex h-40 items-center justify-center dashed-surface text-xs text-text-muted;
+        @apply flex h-40 items-center justify-center dashed-surface text-xs text-fg-muted;
     }
 
     .mdrs-chart-tooltip {
@@ -570,7 +570,7 @@
     }
 
     .mdrs-embed {
-        @apply my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-border-subtle/60 shadow-md backdrop-blur-md;
+        @apply my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-line-subtle/60 shadow-md backdrop-blur-md;
     }
 
     .mdrs-embed iframe {
@@ -588,7 +588,7 @@
 
     .mdrs-step {
         counter-increment: mdrs-step-counter;
-        @apply relative pb-6 pl-8 text-text-secondary;
+        @apply relative pb-6 pl-8 text-fg-secondary;
     }
 
     .mdrs-step:last-child {
@@ -627,12 +627,8 @@
         width: var(--mdrs-step-badge-size);
         height: var(--mdrs-step-badge-size);
         line-height: var(--mdrs-step-badge-size);
-        background-color: color-mix(
-            in srgb,
-            var(--color-text-primary) 8%,
-            var(--color-surface-base)
-        );
-        @apply z-10 flex items-center justify-center rounded border border-border-subtle/70 text-center font-mono text-xs font-medium text-text-primary tabular-nums select-none;
+        background-color: color-mix(in srgb, var(--color-fg) 8%, var(--color-canvas));
+        @apply z-10 flex items-center justify-center rounded border border-line-subtle/70 text-center font-mono text-xs font-medium text-fg tabular-nums select-none;
     }
 
     .mdrs-step::after {
@@ -642,7 +638,7 @@
         left: calc(var(--mdrs-step-badge-size) / 2 - 0.5px);
         width: var(--mdrs-step-line-width);
         bottom: calc(-1 * var(--mdrs-step-badge-size));
-        @apply pointer-events-none bg-border-subtle;
+        @apply pointer-events-none bg-line-subtle;
     }
 
     .mdrs-step:last-child::after {
@@ -650,7 +646,7 @@
     }
 
     .mdrs-step > :is(h2, h3, h4) {
-        @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
+        @apply relative mt-0! mb-2 flex items-center font-bold text-fg;
     }
 
     .mdrs-step > :is(h2, h3, h4),
@@ -663,7 +659,7 @@
     }
 
     .mdrs-steps-list > li.mdrs-step {
-        @apply relative my-0! list-none! pb-6 pl-8 text-text-secondary;
+        @apply relative my-0! list-none! pb-6 pl-8 text-fg-secondary;
     }
 
     .mdrs-steps-list > li.mdrs-step:last-child {
@@ -675,7 +671,7 @@
     }
 
     .mdrs-tabs-header {
-        @apply relative flex min-h-8 items-end border-b border-border-subtle select-none;
+        @apply relative flex min-h-8 items-end border-b border-line-subtle select-none;
     }
 
     .mdrs-tabs-nav,
@@ -700,7 +696,7 @@
     }
 
     .mdrs-snippets {
-        @apply my-6 rounded-md border border-border-subtle shadow-2xs;
+        @apply my-6 rounded-md border border-line-subtle shadow-2xs;
     }
 
     .mdrs-snippets[data-mdrs-code-theme] {
@@ -708,7 +704,7 @@
     }
 
     .mdrs-snippets-header {
-        @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none;
+        @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-line-subtle px-3 pt-0 pb-0 select-none;
     }
 
     .mdrs-snippets-header[data-mdrs-code-theme] {
@@ -725,11 +721,11 @@
     }
 
     .mdrs-tab.mdrs-is-active {
-        @apply border-b-accent text-accent-text;
+        @apply border-b-accent text-fg-accent;
     }
 
     .mdrs-tab:not(.mdrs-is-active) {
-        @apply border-b-transparent text-text-muted hover:text-text-primary;
+        @apply border-b-transparent text-fg-muted hover:text-fg;
     }
 
     .mdrs-snippets-body {
@@ -761,41 +757,41 @@
     }
 
     .mdrs details {
-        @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
-        border: 1px solid var(--color-border-subtle);
+        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md backdrop-blur-md;
+        border: 1px solid var(--color-line-subtle);
     }
 
     .mdrs-details {
-        @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
+        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md backdrop-blur-md;
     }
 
     .dark .mdrs details,
     .dark .mdrs-details {
-        border-color: rgba(255, 255, 255, 0.1);
+        border-color: --alpha(var(--color-fg) / 10%);
     }
 
     .mdrs-details-summary,
     .mdrs details > summary {
-        @apply relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
+        @apply relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-fg transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
     }
 
     .mdrs-details[open] > .mdrs-details-summary,
     .mdrs details[open] > summary {
-        border-bottom: 1px solid var(--color-border-subtle) !important;
+        border-bottom: 1px solid var(--color-line-subtle) !important;
         @apply bg-surface-hover/30;
     }
 
     .dark .mdrs-details[open] > .mdrs-details-summary,
     .dark .mdrs details[open] > summary {
-        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        border-bottom-color: --alpha(var(--color-fg) / 10%) !important;
     }
 
     .mdrs-details-title {
-        @apply inline-flex translate-y-px items-center text-sm leading-none font-medium text-text-primary;
+        @apply inline-flex translate-y-px items-center text-sm leading-none font-medium text-fg;
     }
 
     .mdrs-details-icon {
-        @apply inline-flex shrink-0 items-center justify-center text-text-muted;
+        @apply inline-flex shrink-0 items-center justify-center text-fg-muted;
     }
 
     .mdrs-details-icon .mdrs-icon {
@@ -812,7 +808,7 @@
     }
 
     .mdrs-details-body {
-        @apply px-3.5 py-3 font-sans text-sm leading-relaxed font-normal text-text-secondary;
+        @apply px-3.5 py-3 font-sans text-sm leading-relaxed font-normal text-fg-secondary;
     }
 
     .mdrs-details[open] > .mdrs-details-body {
@@ -839,7 +835,7 @@
     }
 
     .mdrs :is(.mdrs-details-body, details) p {
-        @apply my-2 text-sm leading-relaxed text-text-secondary;
+        @apply my-2 text-sm leading-relaxed text-fg-secondary;
     }
 
     .mdrs :is(.mdrs-details-body, details) :is(ul, ol) {
@@ -879,7 +875,7 @@
     }
 
     .mdrs-code-header {
-        @apply m-0 flex min-h-7 items-center justify-between rounded-t-md border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none;
+        @apply m-0 flex min-h-7 items-center justify-between rounded-t-md border border-line-subtle px-3 py-0.5 text-xs font-semibold text-fg-secondary select-none;
     }
 
     .mdrs-code-header--minimal {
@@ -903,11 +899,11 @@
     }
 
     .mdrs-code-badge {
-        @apply pointer-events-none absolute top-1.5 right-3.5 z-10 max-w-[60%] truncate font-mono text-[11px] whitespace-nowrap text-text-muted/70 lowercase select-none;
+        @apply pointer-events-none absolute top-1.5 right-3.5 z-10 max-w-[60%] truncate font-mono text-[11px] whitespace-nowrap text-fg-muted/70 lowercase select-none;
     }
 
     .mdrs-code-body {
-        @apply m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border border-border-subtle;
+        @apply m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border border-line-subtle;
     }
 
     .mdrs-code-body--in-tabs {
@@ -937,7 +933,7 @@
     }
 
     .mdrs-code-gutter {
-        @apply shrink-0 border-r border-border-subtle/30 bg-transparent pt-0 pb-1.5 font-mono text-code leading-snug select-none;
+        @apply shrink-0 border-r border-line-subtle/30 bg-transparent pt-0 pb-1.5 font-mono text-code leading-snug select-none;
     }
 
     .mdrs-code-gutter--command {
@@ -945,11 +941,11 @@
     }
 
     .mdrs-code-line-number {
-        @apply flex flex-col justify-start px-2.5 text-right font-mono text-text-muted/60;
+        @apply flex flex-col justify-start px-2.5 text-right font-mono text-fg-muted/60;
     }
 
     .mdrs-code-prompt {
-        @apply flex flex-col justify-start pr-0.5 pl-3 text-right font-mono font-normal text-accent-text select-none;
+        @apply flex flex-col justify-start pr-0.5 pl-3 text-right font-mono font-normal text-fg-accent select-none;
     }
 
     .mdrs-code[data-mdrs-code-theme] .mdrs-code-line--marked,
@@ -974,15 +970,15 @@
     }
 
     .mdrs-code-button {
-        @apply relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent leading-none text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary;
+        @apply relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent leading-none text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg;
     }
 
     .mdrs-code-button .mdrs-is-done {
-        @apply text-accent-text;
+        @apply text-fg-accent;
     }
 
     .mdrs-code-theme-icon {
-        @apply inline-flex items-center justify-center text-text-secondary;
+        @apply inline-flex items-center justify-center text-fg-secondary;
     }
 
     .mdrs-code-menu {
@@ -1000,31 +996,31 @@
     }
 
     .mdrs-code-menu-item {
-        @apply relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover;
+        @apply relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-fg transition-colors hover:bg-surface-hover;
     }
 
     .mdrs-code-menu-check {
-        @apply flex size-4 shrink-0 items-center justify-center text-text-muted transition-colors;
+        @apply flex size-4 shrink-0 items-center justify-center text-fg-muted transition-colors;
     }
 
     .mdrs-code-menu-item:hover .mdrs-code-menu-check:not(.mdrs-is-checked) {
-        @apply text-text-secondary;
+        @apply text-fg-secondary;
     }
 
     .mdrs-code-menu-check.mdrs-is-checked {
-        @apply text-accent-text;
+        @apply text-fg-accent;
     }
 
     .mdrs-code-menu-divider {
-        @apply my-1 h-px bg-border-subtle;
+        @apply my-1 h-px bg-line-subtle;
     }
 
     .mdrs-code-menu-link {
-        @apply flex w-full cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary;
+        @apply flex w-full cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-xs text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg;
     }
 
     .mdrs-code-menu-hint {
-        @apply text-text-muted;
+        @apply text-fg-muted;
     }
 
     .mdrs-code-scrollbar {
@@ -1032,11 +1028,11 @@
     }
 
     .mdrs-code-scrollbar--bordered {
-        @apply border-x border-b border-border-subtle;
+        @apply border-x border-b border-line-subtle;
     }
 
     .mdrs-code-scrollbar-track {
-        @apply relative h-1.5 w-full cursor-pointer touch-none bg-border-subtle/30 select-none;
+        @apply relative h-1.5 w-full cursor-pointer touch-none bg-line-subtle/30 select-none;
     }
 
     .mdrs-code-scrollbar-thumb {

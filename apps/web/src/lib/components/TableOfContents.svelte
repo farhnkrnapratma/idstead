@@ -207,7 +207,7 @@
 
         result = result.replace(
             /`([^`]+)`/g,
-            '<code class="rounded bg-surface-hover/80 px-1 py-0.5 font-mono text-[0.85em] font-normal text-text-primary">$1</code>'
+            '<code class="rounded bg-surface-hover/80 px-1 py-0.5 font-mono text-[0.85em] font-normal text-fg">$1</code>'
         );
 
         result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -228,7 +228,7 @@
             class="relative flex min-h-full flex-col pl-3"
             role="list">
             <div
-                class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-0 border-l border-border-tree transition-none"
+                class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-0 border-l border-line-subtle transition-none"
                 aria-hidden="true">
             </div>
 
@@ -254,13 +254,13 @@
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
-                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-accent-text {(
+                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-fg-accent {(
                             isSub
                         ) ?
                             'font-normal'
-                        :   'font-medium'} {isActive ? 'bg-accent/10 text-accent-text'
-                        : isSub ? 'text-text-secondary hover:bg-surface-hover/30'
-                        : 'text-text-primary hover:bg-surface-hover/30'}"
+                        :   'font-medium'} {isActive ? 'bg-accent/10 text-fg-accent'
+                        : isSub ? 'text-fg-secondary hover:bg-surface-hover/30'
+                        : 'text-fg hover:bg-surface-hover/30'}"
                         style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
                         {#if isSub}
                             <span
@@ -268,7 +268,7 @@
                                     isActive
                                 ) ?
                                     'border-accent'
-                                :   'border-border-tree'}"
+                                :   'border-line-subtle'}"
                                 style:width="{branchWidth}px"
                                 aria-hidden="true"></span>
                         {/if}
@@ -287,23 +287,23 @@
     {#if collapsible}
         <details
             class={cn(
-                'group mdrs-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none',
+                'group mdrs-details my-0 overflow-hidden rounded-md glass-card border border-line-subtle/60 text-fg shadow-md backdrop-blur-md select-none',
                 className
             )}
             open={!defaultCollapsed}>
             <summary
-                class="mdrs-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+                class="mdrs-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-fg transition-colors select-none group-open:border-line-subtle hover:bg-surface-hover/50 dark:group-open:border-fg/10 [&::-webkit-details-marker]:hidden">
                 <span class="inline-flex items-center gap-2">
-                    <TableOfContentsIcon class="size-4 shrink-0 text-text-primary" />
+                    <TableOfContentsIcon class="size-4 shrink-0 text-fg" />
 
                     <span
-                        class="mdrs-details-title translate-y-px text-sm leading-none font-medium text-text-primary">
+                        class="mdrs-details-title translate-y-px text-sm leading-none font-medium text-fg">
                         {title}
                     </span>
                 </span>
 
                 <span
-                    class="mdrs-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
+                    class="mdrs-details-icon inline-flex shrink-0 items-center justify-center text-fg-muted"
                     aria-hidden="true">
                     <ChevronsUpDown class="size-3.5 group-open:hidden" />
 
@@ -312,7 +312,7 @@
             </summary>
 
             <div
-                class="mdrs-details-body px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary">
+                class="mdrs-details-body px-3.5 py-3 text-sm leading-relaxed font-normal text-fg-secondary">
                 {@render tocList()}
             </div>
         </details>
@@ -320,7 +320,7 @@
         <nav
             aria-label="Table of contents"
             class={cn('flex flex-col rounded-md glass-card p-4 select-none', className)}>
-            <div class="mb-2 shrink-0 text-sm font-normal text-text-primary select-none">
+            <div class="mb-2 shrink-0 text-sm font-normal text-fg select-none">
                 {title}
             </div>
 
@@ -334,11 +334,11 @@
 
     :global(nav[aria-label='Table of contents'] code),
     :global(details.mdrs-details code) {
-        @apply rounded-md bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.85em] font-normal text-inherit;
+        @apply rounded-md bg-code-inline px-1.5 py-0.5 font-mono text-[0.85em] font-normal text-inherit;
     }
 
     :global(nav[aria-label='Table of contents'] kbd),
     :global(details.mdrs-details kbd) {
-        @apply rounded-md border border-border-subtle bg-surface-card px-1 py-0.5 font-mono text-[0.75em];
+        @apply rounded-md border border-line-subtle bg-surface px-1 py-0.5 font-mono text-[0.75em];
     }
 </style>

@@ -19,7 +19,7 @@
         UP: { label: 'All systems operational', dot: 'bg-success' },
         HASISSUES: { label: 'Experiencing issues', dot: 'bg-danger' },
         UNDERMAINTENANCE: { label: 'Under maintenance', dot: 'bg-warning' },
-        UNKNOWN: { label: 'Status unavailable', dot: 'bg-text-muted' }
+        UNKNOWN: { label: 'Status unavailable', dot: 'bg-fg-muted' }
     } as const;
 
     let status = $state<keyof typeof statuses | null>(null);
@@ -61,7 +61,7 @@
         target="_blank"
         rel="noopener noreferrer"
         class={cn(
-            'inline-flex max-w-full items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-2.5 py-1 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+            'inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
             className
         )}>
         <span

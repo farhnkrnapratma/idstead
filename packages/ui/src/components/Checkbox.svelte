@@ -34,25 +34,23 @@
         class="sr-only"
         {...restProps} />
     <span
-        class="flex size-4 h-5 shrink-0 items-center justify-center text-text-muted transition-colors group-hover:text-text-primary"
+        class="flex size-4 h-5 shrink-0 items-center justify-center text-fg-muted transition-colors group-hover:text-fg"
         aria-hidden="true">
         {#if checked}
-            <SquareCheck class="size-4 text-accent-text" />
+            <SquareCheck class="size-4 text-fg-accent" />
         {:else}
-            <Square
-                class="size-4 text-text-muted transition-colors group-hover:text-text-secondary" />
+            <Square class="size-4 text-fg-muted transition-colors group-hover:text-fg-secondary" />
         {/if}
     </span>
     {#if label || description}
         <div class="flex flex-col">
             {#if label}
-                <span
-                    class="flex min-h-5 items-center text-sm leading-none font-semibold text-text-primary">
+                <span class="flex min-h-5 items-center text-sm leading-none font-semibold text-fg">
                     {label}
                 </span>
             {/if}
             {#if description}
-                <span class="mt-0.5 text-xs text-text-muted">{description}</span>
+                <span class="mt-0.5 text-xs text-fg-muted">{description}</span>
             {/if}
         </div>
     {/if}

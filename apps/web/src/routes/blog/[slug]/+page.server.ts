@@ -63,7 +63,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
     }
     if (!post) throw error(404, 'Blog post not found');
 
-    let html = '<p class="text-red-500">Error: Could not render post content.</p>';
+    let html = '<p class="text-danger">Error: Could not render post content.</p>';
     let headings: HeadingItem[] = [];
     let readTime = '1 min read';
     const storedRender = await blog.readRender(post.source, { timeoutMs: 3000 });

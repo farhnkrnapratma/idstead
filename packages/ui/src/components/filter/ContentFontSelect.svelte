@@ -82,8 +82,8 @@
             aria-expanded={isOpen}
             onclick={() => (isOpen = !isOpen)}
             class={cn(
-                'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent-text'
+                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                isOpen && 'border-accent text-fg-accent'
             )}>
             <CaseSensitive class="size-4" />
         </IconButton>
@@ -107,7 +107,7 @@
                 <div class="relative z-10 flex flex-col gap-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <p
-                            class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                            class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                             id="content-font-heading">
                             Reading Font
                         </p>
@@ -116,10 +116,10 @@
                             onclick={contentFontStore.reset}
                             aria-disabled={contentFontStore.locked}
                             class={cn(
-                                'text-2xs font-semibold text-text-muted underline-offset-2',
+                                'text-2xs font-semibold text-fg-muted underline-offset-2',
                                 contentFontStore.locked ?
                                     'cursor-not-allowed opacity-50'
-                                :   'cursor-pointer hover:text-accent-text hover:underline'
+                                :   'cursor-pointer hover:text-fg-accent hover:underline'
                             )}>
                             Reset to default
                         </button>
@@ -128,7 +128,7 @@
                     {#if contentFontStore.locked}
                         <p
                             id="content-font-locked"
-                            class="rounded-md border border-border-subtle bg-surface px-2.5 py-2 text-2xs text-text-muted">
+                            class="rounded-md border border-line-subtle bg-surface px-2.5 py-2 text-2xs text-fg-muted">
                             Locked while the dyslexic-friendly font is on.
                         </p>
                     {/if}
@@ -159,11 +159,11 @@
                                         'cursor-not-allowed opacity-50'
                                     :   'cursor-pointer',
                                     selected ?
-                                        'border-accent bg-accent/10 text-accent-text'
+                                        'border-accent bg-accent/10 text-fg-accent'
                                     :   cn(
-                                            'border-border-subtle bg-surface text-text-secondary',
+                                            'border-line-subtle bg-surface text-fg-secondary',
                                             !contentFontStore.locked
-                                                && 'hover:border-accent/50 hover:text-text-primary'
+                                                && 'hover:border-accent/50 hover:text-fg'
                                         )
                                 )}>
                                 <span
@@ -181,14 +181,14 @@
                                         class={cn(
                                             'absolute size-4 transition-all duration-200',
                                             selected ? 'scale-0 opacity-0' : (
-                                                'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                                                'scale-100 text-fg-muted opacity-100 group-hover:text-fg-secondary'
                                             )
                                         )} />
                                     <CircleDot
                                         class={cn(
                                             'absolute size-4 transition-all duration-200',
                                             selected ?
-                                                'scale-100 text-accent-text opacity-100'
+                                                'scale-100 text-fg-accent opacity-100'
                                             :   'scale-0 opacity-0'
                                         )} />
                                 </span>
@@ -197,10 +197,10 @@
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <p class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                        <p class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
                             Preview
                         </p>
-                        <div class="rounded-md border border-border-subtle bg-surface px-2.5 py-2">
+                        <div class="rounded-md border border-line-subtle bg-surface px-2.5 py-2">
                             <span
                                 class={cn(
                                     'text-xs wrap-break-word whitespace-normal',

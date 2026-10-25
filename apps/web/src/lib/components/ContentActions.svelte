@@ -161,11 +161,11 @@
 </script>
 
 {#snippet popoverMenu(close: () => void)}
-    <div class="flex max-h-[85vh] flex-row divide-x divide-border-subtle/60 overflow-y-auto">
+    <div class="flex max-h-[85vh] flex-row divide-x divide-line-subtle/60 overflow-y-auto">
         {#if showCopyUrl || pageId}
             <div class="flex flex-col pt-2">
                 <span
-                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                     >Copy</span>
                 {#if showCopyUrl}
                     <Button
@@ -176,14 +176,14 @@
                         size="2xs"
                         label={copiedUrl ? 'Copied!' : 'Post URL'}
                         truncateMiddle
-                        class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                        class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                         onclick={() => {
                             close();
                             handleCopyPageUrl();
                         }}>
                         {#snippet leading()}
                             {#if copiedUrl}
-                                <CopyCheck class="size-3.5 text-accent-text" />
+                                <CopyCheck class="size-3.5 text-fg-accent" />
                             {:else}
                                 <Link2 class="size-3.5" />
                             {/if}
@@ -199,14 +199,14 @@
                         size="2xs"
                         label={copiedId ? 'Copied!' : 'Post ID'}
                         truncateMiddle
-                        class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                        class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                         onclick={() => {
                             close();
                             handleCopyPageId();
                         }}>
                         {#snippet leading()}
                             {#if copiedId}
-                                <CopyCheck class="size-3.5 text-accent-text" />
+                                <CopyCheck class="size-3.5 text-fg-accent" />
                             {:else}
                                 <Hash class="size-3.5" />
                             {/if}
@@ -219,7 +219,7 @@
         <div class="flex flex-col sm:contents">
             <div class="flex flex-col pt-2">
                 <span
-                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                     >Text</span>
                 <Button
                     shortcutGroup="copy"
@@ -229,14 +229,14 @@
                     size="2xs"
                     label={copiedText ? 'Copied!' : 'Copy as TXT'}
                     truncateMiddle
-                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                     onclick={() => {
                         close();
                         handleCopyPlainText();
                     }}>
                     {#snippet leading()}
                         {#if copiedText}
-                            <CopyCheck class="size-3.5 text-accent-text" />
+                            <CopyCheck class="size-3.5 text-fg-accent" />
                         {:else}
                             <ScanText class="size-3.5" />
                         {/if}
@@ -252,7 +252,7 @@
                     data-sveltekit-reload
                     label="View as TXT"
                     truncateMiddle
-                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                     onclick={close}>
                     {#snippet leading()}
                         <TextAlignStart class="size-3.5" />
@@ -260,9 +260,9 @@
                 </Button>
             </div>
 
-            <div class="flex flex-col border-t border-border-subtle/60 pt-2 sm:border-t-0">
+            <div class="flex flex-col border-t border-line-subtle/60 pt-2 sm:border-t-0">
                 <span
-                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    class="px-3 pb-1 text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                     >Save</span>
                 <Button
                     shortcutGroup="save"
@@ -272,7 +272,7 @@
                     size="2xs"
                     label="Save as MD"
                     truncateMiddle
-                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                     onclick={() => {
                         close();
                         handleSaveMarkdown();
@@ -291,7 +291,7 @@
                     size="2xs"
                     label="Save as TXT"
                     truncateMiddle
-                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                    class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-fg-secondary!"
                     onclick={() => {
                         close();
                         handleSaveText();
@@ -312,7 +312,7 @@
             'flex shrink-0 flex-col gap-2.5 rounded-md glass-card p-3.5 text-left select-none sm:p-4',
             className
         )}>
-        <div class="text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
+        <div class="text-xs font-bold tracking-wider text-fg-secondary uppercase select-none">
             Actions
         </div>
 
@@ -323,15 +323,15 @@
                 shortcutLabel="Copy as MD"
                 type="secondary"
                 size="2xs"
-                class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
+                class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-fg-secondary!"
                 onclick={handleCopyMarkdown}
                 label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
                 truncateMiddle>
                 {#snippet leading()}
                     {#if copiedMarkdown}
-                        <CopyCheck class="size-3.5 text-accent-text" />
+                        <CopyCheck class="size-3.5 text-fg-accent" />
                     {:else}
-                        <Copy class="size-3.5 text-text-secondary" />
+                        <Copy class="size-3.5 text-fg-secondary" />
                     {/if}
                 {/snippet}
             </Button>
@@ -344,12 +344,12 @@
                 data-sveltekit-reload
                 type="secondary"
                 size="2xs"
-                class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
+                class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-fg-secondary!"
                 label="View as MD"
                 truncateMiddle>
                 {#snippet leading()}
                     <i
-                        class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-text-secondary [&::before]:align-[0] [&::before]:leading-none"
+                        class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-fg-secondary [&::before]:align-[0] [&::before]:leading-none"
                         aria-hidden="true"></i>
                 {/snippet}
             </Button>
@@ -362,17 +362,17 @@
                     label: 'All actions',
                     placement: 'trailing'
                 }}
-                class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-accent-text [&::-webkit-details-marker]:hidden">
+                class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-fg-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-fg-accent [&::-webkit-details-marker]:hidden">
                 <span>All actions</span>
                 <ChevronDown
-                    class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-accent-text" />
+                    class="size-3.5 text-fg-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-fg-accent" />
             </summary>
 
             <div class="flex flex-col gap-2.5 pt-1.5">
                 {#if showCopyUrl || pageId}
                     <div class="flex flex-col gap-1.5">
                         <span
-                            class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
+                            class="text-3xs font-semibold tracking-wider text-fg-muted uppercase select-none"
                             >Post</span>
                         <div
                             class="grid {showCopyUrl && pageId ? 'grid-cols-2' : (
@@ -385,15 +385,15 @@
                                     shortcutLabel="Copy URL"
                                     type="secondary"
                                     size="2xs"
-                                    class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                                    class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                                     onclick={handleCopyPageUrl}
                                     label={copiedUrl ? 'Copied!' : 'Copy URL'}
                                     truncateMiddle>
                                     {#snippet leading()}
                                         {#if copiedUrl}
-                                            <CopyCheck class="size-3.5 text-accent-text" />
+                                            <CopyCheck class="size-3.5 text-fg-accent" />
                                         {:else}
-                                            <Link2 class="size-3.5 text-text-secondary" />
+                                            <Link2 class="size-3.5 text-fg-secondary" />
                                         {/if}
                                     {/snippet}
                                 </Button>
@@ -406,15 +406,15 @@
                                     shortcutLabel="Copy PID"
                                     type="secondary"
                                     size="2xs"
-                                    class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                                    class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                                     onclick={handleCopyPageId}
                                     label={copiedId ? 'Copied!' : 'Copy PID'}
                                     truncateMiddle>
                                     {#snippet leading()}
                                         {#if copiedId}
-                                            <CopyCheck class="size-3.5 text-accent-text" />
+                                            <CopyCheck class="size-3.5 text-fg-accent" />
                                         {:else}
-                                            <Hash class="size-3.5 text-text-secondary" />
+                                            <Hash class="size-3.5 text-fg-secondary" />
                                         {/if}
                                     {/snippet}
                                 </Button>
@@ -425,7 +425,7 @@
 
                 <div class="flex flex-col gap-1.5">
                     <span
-                        class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
+                        class="text-3xs font-semibold tracking-wider text-fg-muted uppercase select-none"
                         >Text</span>
                     <div class="grid grid-cols-2 gap-1.5">
                         <Button
@@ -434,15 +434,15 @@
                             shortcutLabel="Copy as TXT"
                             type="secondary"
                             size="2xs"
-                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                             onclick={handleCopyPlainText}
                             label={copiedText ? 'Copied!' : 'Copy as TXT'}
                             truncateMiddle>
                             {#snippet leading()}
                                 {#if copiedText}
-                                    <CopyCheck class="size-3.5 text-accent-text" />
+                                    <CopyCheck class="size-3.5 text-fg-accent" />
                                 {:else}
-                                    <ScanText class="size-3.5 text-text-secondary" />
+                                    <ScanText class="size-3.5 text-fg-secondary" />
                                 {/if}
                             {/snippet}
                         </Button>
@@ -455,11 +455,11 @@
                             data-sveltekit-reload
                             type="secondary"
                             size="2xs"
-                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                             label="View as TXT"
                             truncateMiddle>
                             {#snippet leading()}
-                                <TextAlignStart class="size-3.5 text-text-secondary" />
+                                <TextAlignStart class="size-3.5 text-fg-secondary" />
                             {/snippet}
                         </Button>
                     </div>
@@ -467,7 +467,7 @@
 
                 <div class="flex flex-col gap-1.5">
                     <span
-                        class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
+                        class="text-3xs font-semibold tracking-wider text-fg-muted uppercase select-none"
                         >Save</span>
                     <div class="grid grid-cols-2 gap-1.5">
                         <Button
@@ -476,13 +476,13 @@
                             shortcutLabel="Save as MD"
                             type="secondary"
                             size="2xs"
-                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                             onclick={handleSaveMarkdown}
                             label="Save as MD"
                             truncateMiddle>
                             {#snippet leading()}
                                 <i
-                                    class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-text-secondary [&::before]:align-[0] [&::before]:leading-none"
+                                    class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-fg-secondary [&::before]:align-[0] [&::before]:leading-none"
                                     aria-hidden="true"></i>
                             {/snippet}
                         </Button>
@@ -492,12 +492,12 @@
                             shortcutLabel="Save as TXT"
                             type="secondary"
                             size="2xs"
-                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                            class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-fg-secondary!"
                             onclick={handleSaveText}
                             label="Save as TXT"
                             truncateMiddle>
                             {#snippet leading()}
-                                <FileText class="size-3.5 text-text-secondary" />
+                                <FileText class="size-3.5 text-fg-secondary" />
                             {/snippet}
                         </Button>
                     </div>
@@ -516,10 +516,10 @@
             onclick={handleCopyMarkdown}
             label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
             truncateMiddle
-            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent-text">
+            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-fg-secondary! hover:text-fg-accent">
             {#snippet leading()}
                 {#if copiedMarkdown}
-                    <CopyCheck class="size-3.5 shrink-0 text-accent-text" />
+                    <CopyCheck class="size-3.5 shrink-0 text-fg-accent" />
                 {:else}
                     <Copy class="size-3.5 shrink-0" />
                 {/if}
@@ -536,7 +536,7 @@
             data-sveltekit-reload
             label="View as MD"
             truncateMiddle
-            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent-text">
+            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-fg-secondary! hover:text-fg-accent">
             {#snippet leading()}
                 <i
                     class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
@@ -558,8 +558,8 @@
                     aria-expanded={isOpen}
                     aria-haspopup="dialog"
                     class={cn(
-                        'size-7 px-0 text-text-muted hover:text-accent-text',
-                        isOpen && 'border border-accent text-accent-text'
+                        'size-7 px-0 text-fg-muted hover:text-fg-accent',
+                        isOpen && 'border border-accent text-fg-accent'
                     )}>
                     <EllipsisVertical class="size-3.5" />
                 </Button>

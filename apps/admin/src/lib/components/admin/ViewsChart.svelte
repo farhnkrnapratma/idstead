@@ -92,7 +92,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-col gap-0.5">
             <h2 class="type-card-title">{title}</h2>
-            <p class="text-xs text-text-muted">
+            <p class="text-xs text-fg-muted">
                 {description}
             </p>
         </div>
@@ -178,7 +178,7 @@
                     <Axis
                         placement="left"
                         grid={{
-                            stroke: 'var(--color-border-subtle)',
+                            stroke: 'var(--color-line-subtle)',
                             dashArray: '3 3',
                             opacity: 0.4
                         }}
@@ -198,11 +198,11 @@
                             stroke="var(--color-accent)" />
                         <Highlight
                             points={{
-                                class: 'fill-surface-card stroke-2',
+                                class: 'fill-surface stroke-2',
                                 stroke: 'var(--color-accent)',
                                 r: 4
                             }}
-                            lines={{ class: 'stroke-border-subtle' }} />
+                            lines={{ class: 'stroke-line-subtle' }} />
                     {/if}
                 </Svg>
                 <Tooltip.Root variant="none">
@@ -213,9 +213,9 @@
                     })}
                         {#if data}
                             <div
-                                class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
-                                <div class="font-medium text-text-primary">{data.label}</div>
-                                <div class="font-mono font-semibold text-accent-text">
+                                class="rounded-md border border-line-subtle bg-surface px-2.5 py-1.5 text-xs shadow-md">
+                                <div class="font-medium text-fg">{data.label}</div>
+                                <div class="font-mono font-semibold text-fg-accent">
                                     {data.views}
                                     {title.toLowerCase()}
                                     {data.partial}

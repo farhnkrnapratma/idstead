@@ -121,14 +121,14 @@
                 'flex-row items-center gap-3 px-4 py-3 text-left'
             :   'min-h-40 flex-col items-center justify-center gap-2 p-6 text-center',
             isDragging ? 'border-accent! bg-accent-subtle/40!'
-            : !isDisabled ? 'hover:border-border-default hover:bg-surface-hover/60'
+            : !isDisabled ? 'hover:border-line hover:bg-surface-hover/60'
             : '',
             error ? 'border-danger! bg-danger-subtle/10!' : '',
             isDisabled ? 'cursor-not-allowed opacity-50' : ''
         )}>
         {#if isUploading}
             <svg
-                class={cn('animate-spin text-accent-text', compact ? 'size-5 shrink-0' : 'size-7')}
+                class={cn('animate-spin text-fg-accent', compact ? 'size-5 shrink-0' : 'size-7')}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -146,43 +146,42 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
             </svg>
-            <p class="animate-pulse text-xs font-semibold text-accent-text">
+            <p class="animate-pulse text-xs font-semibold text-fg-accent">
                 {uploadingLabel}
             </p>
         {:else if selectedFileName}
-            <FileCheckCorner
-                class={cn('text-accent-text', compact ? 'size-5 shrink-0' : 'size-8')} />
+            <FileCheckCorner class={cn('text-fg-accent', compact ? 'size-5 shrink-0' : 'size-8')} />
             <span class={cn('flex min-w-0 flex-col', compact ? 'gap-0.5' : 'items-center gap-2')}>
-                <span class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
+                <span class="max-w-full truncate font-mono text-sm font-semibold text-fg">
                     {selectedFileName}
                 </span>
                 {#if fileSize}
-                    <span class="font-mono text-xs text-text-muted">{fileSize}</span>
+                    <span class="font-mono text-xs text-fg-muted">{fileSize}</span>
                 {/if}
             </span>
         {:else if compact}
             <CloudUpload
-                class="size-5 shrink-0 text-text-secondary transition-colors group-hover:text-accent-text" />
+                class="size-5 shrink-0 text-fg-secondary transition-colors group-hover:text-fg-accent" />
             <span class="flex min-w-0 flex-col gap-0.5">
                 {#if actions}
                     {@render actions({ trigger: () => fileInputRef?.click() })}
                 {:else}
-                    <span class="text-sm font-medium text-text-primary">{label}</span>
+                    <span class="text-sm font-medium text-fg">{label}</span>
                 {/if}
                 {#if hint}
-                    <span class="text-xs text-text-muted">{hint}</span>
+                    <span class="text-xs text-fg-muted">{hint}</span>
                 {/if}
             </span>
         {:else}
             <CloudUpload
-                class="size-8 text-text-secondary transition-colors group-hover:text-accent-text" />
+                class="size-8 text-fg-secondary transition-colors group-hover:text-fg-accent" />
             {#if actions}
                 {@render actions({ trigger: () => fileInputRef?.click() })}
             {:else}
-                <span class="text-sm font-medium text-text-primary">{label}</span>
+                <span class="text-sm font-medium text-fg">{label}</span>
             {/if}
             {#if hint}
-                <span class="text-xs text-text-muted">{hint}</span>
+                <span class="text-xs text-fg-muted">{hint}</span>
             {/if}
         {/if}
     </div>

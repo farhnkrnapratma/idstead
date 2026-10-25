@@ -83,11 +83,11 @@
                     loading="eager"
                     variant="avatar"
                     rounded="rounded-full"
-                    class="size-24 shadow-md ring-4 ring-surface-card sm:size-28"
+                    class="size-24 shadow-md ring-4 ring-surface sm:size-28"
                     imgClass="object-top" />
             {:else}
                 <div
-                    class="flex size-24 items-center justify-center rounded-full bg-surface-subtle text-3xl font-bold text-accent-text shadow-md ring-4 ring-surface-card sm:size-28 sm:text-4xl"
+                    class="flex size-24 items-center justify-center rounded-full bg-surface-subtle text-3xl font-bold text-fg-accent shadow-md ring-4 ring-surface sm:size-28 sm:text-4xl"
                     aria-hidden="true">
                     {name.charAt(0)}
                 </div>
@@ -101,7 +101,7 @@
                         ariaLabel="Show QR code"
                         tooltipPlacement="top"
                         onclick={onShowQr}
-                        class="ring-4 ring-surface-card">
+                        class="ring-4 ring-surface">
                         <QrCode
                             class="size-4"
                             aria-hidden="true" />
@@ -119,11 +119,11 @@
         {/if}
 
         {#if headline}
-            <p class="mt-1 type-body text-text-secondary">{headline}</p>
+            <p class="mt-1 type-body text-fg-secondary">{headline}</p>
         {/if}
 
         {#if pronunciation || jobTitle || location}
-            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
+            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-muted">
                 {#if pronunciation}
                     <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                         <AudioLines
@@ -157,8 +157,8 @@
                 <span
                     class="mr-0.5 inline-flex h-8 items-center gap-2"
                     aria-hidden="true">
-                    <BadgeCheck class="size-4.5 fill-accent text-text-on-accent sm:size-5" />
-                    <span class="text-text-muted">—</span>
+                    <BadgeCheck class="size-4.5 fill-accent text-on-accent sm:size-5" />
+                    <span class="text-fg-muted">—</span>
                 </span>
                 {#each socials as item (item.url + item.platform)}
                     <IconButton
@@ -179,7 +179,7 @@
         {/if}
 
         {#if bio}
-            <p class="mt-4 type-body text-pretty text-text-secondary">{bio}</p>
+            <p class="mt-4 type-body text-pretty text-fg-secondary">{bio}</p>
         {/if}
 
         {#if actions}

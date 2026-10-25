@@ -23,7 +23,7 @@
     class={cn(
         'relative z-10 w-full',
         spacingStyles[spacing],
-        bordered ? 'border-t border-border-subtle' : '',
+        bordered ? 'border-t border-line-subtle' : '',
         className
     )}>
     {@render children?.()}

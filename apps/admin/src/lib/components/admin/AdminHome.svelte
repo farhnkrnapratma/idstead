@@ -296,7 +296,7 @@
             loadLists();
         }}>
         <h1 class="type-page-title">Overview</h1>
-        <p class="mt-1 type-body text-text-secondary">Your site activity at a glance.</p>
+        <p class="mt-1 type-body text-fg-secondary">Your site activity at a glance.</p>
     </div>
     {#if error}<ErrorState
             title="Unable to update overview"

@@ -82,7 +82,7 @@
 {#snippet row(label: string, badge: string)}
     <div
         class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-surface-hover">
-        <span class="min-w-0 text-xs wrap-break-word text-text-primary">{label}</span>
+        <span class="min-w-0 text-xs wrap-break-word text-fg">{label}</span>
         <ShortcutBadge
             combo={badge}
             leader />
@@ -101,8 +101,8 @@
         <div class="flex flex-col gap-0.5">
             <div
                 class="flex flex-col items-start justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-surface-hover sm:flex-row sm:items-center sm:gap-3">
-                <span class="min-w-0 text-xs text-text-primary">Toggle shortcut mode</span>
-                <span class="flex shrink-0 items-center gap-1.5 text-xs text-text-muted">
+                <span class="min-w-0 text-xs text-fg">Toggle shortcut mode</span>
+                <span class="flex shrink-0 items-center gap-1.5 text-xs text-fg-muted">
                     <ShortcutBadge combo={LEADER_COMBO} />
                     /
                     <ShortcutBadge combo={LEADER_FALLBACK_COMBO} />
@@ -111,7 +111,7 @@
             {@render row('Open this list', CATALOG_KEY)}
         </div>
 
-        <hr class="border-border-subtle" />
+        <hr class="border-line-subtle" />
 
         {#each sections as section (section.id)}
             <section aria-label={section.label}>

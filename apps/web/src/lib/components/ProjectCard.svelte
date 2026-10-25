@@ -69,7 +69,7 @@
                             {/if}
                             {#if isNew}
                                 <span
-                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
+                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-info-subtle text-fg-accent"
                                     title="New repository"
                                     role="img"
                                     aria-label="New repository">
@@ -84,43 +84,43 @@
             <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs">
                 {#if project.lang}
                     <span
-                        class="inline-flex items-center text-xs leading-none font-medium text-text-secondary select-none">
+                        class="inline-flex items-center text-xs leading-none font-medium text-fg-secondary select-none">
                         <Dot
                             strokeWidth={10}
-                            class="size-3.5 shrink-0"
-                            color={project.langColor ?? '#909692'} />
+                            class="size-3.5 shrink-0 {project.langColor ? '' : 'text-line-strong'}"
+                            color={project.langColor ?? 'currentColor'} />
                         <span class="leading-none">{project.lang}</span>
                     </span>
                 {/if}
                 <span
-                    class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary">
+                    class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-fg-secondary">
                     <Star
-                        class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
+                        class="size-3.5 shrink-0 text-fg-muted/70 transition-colors"
                         strokeWidth={1.75}
                         absoluteStrokeWidth={true} />
                     <span>{pluralize(project.stars, 'star')}</span>
                 </span>
                 <span
-                    class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                    class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-fg-secondary sm:inline-flex">
                     <GitFork
-                        class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
+                        class="size-3.5 shrink-0 text-fg-muted/70 transition-colors"
                         strokeWidth={1.75}
                         absoluteStrokeWidth={true} />
                     <span>{pluralize(project.forks, 'fork')}</span>
                 </span>
                 <span
-                    class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                    class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-fg-secondary sm:inline-flex">
                     <RotateCcwClock
-                        class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
+                        class="size-3.5 shrink-0 text-fg-muted/70 transition-colors"
                         strokeWidth={1.75}
                         absoluteStrokeWidth={true} />
                     <span>{pluralize(project.commits, 'commit')}</span>
                 </span>
                 {#if project.licenseName}
                     <span
-                        class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary">
+                        class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-fg-secondary">
                         <Scale
-                            class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
+                            class="size-3.5 shrink-0 text-fg-muted/70 transition-colors"
                             strokeWidth={1.75}
                             absoluteStrokeWidth={true} />
                         <span>{project.licenseName} License</span>
@@ -129,7 +129,7 @@
             </div>
 
             {#if project.desc}
-                <p class="type-body text-text-secondary">{project.desc}</p>
+                <p class="type-body text-fg-secondary">{project.desc}</p>
             {/if}
 
             {#if project.tags && project.tags.length > 0}
@@ -142,7 +142,7 @@
         </div>
 
         <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-            <hr class="border-border-subtle/25" />
+            <hr class="border-line-subtle/25" />
             <Button
                 href={project.url}
                 target="_blank"

@@ -19,11 +19,11 @@
         className
     )}>
     <div
-        class="mb-1 ml-1 flex items-center gap-2 border-b border-b-border-subtle/60 pb-1.5
-           text-xs font-semibold tracking-wider text-text-secondary sm:text-sm">
+        class="mb-1 ml-1 flex items-center gap-2 border-b border-b-line-subtle/60 pb-1.5
+           text-xs font-semibold tracking-wider text-fg-secondary sm:text-sm">
         {#if icon}
             <i
-                class="bi {icon} text-accent-text"
+                class="bi {icon} text-fg-accent"
                 aria-hidden="true"></i>
         {/if}
 

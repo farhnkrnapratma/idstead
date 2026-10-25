@@ -72,7 +72,7 @@
     function mutedColor(): string {
         if (typeof document === 'undefined') return '';
         return getComputedStyle(document.documentElement)
-            .getPropertyValue('--color-text-muted')
+            .getPropertyValue('--color-fg-muted')
             .trim();
     }
 
@@ -175,7 +175,7 @@
             <button
                 type="button"
                 aria-label={SCAN_HINT}
-                class="inline-flex size-7 shrink-0 cursor-help items-center justify-center rounded-sm text-text-muted transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
+                class="inline-flex size-7 shrink-0 cursor-help items-center justify-center rounded-sm text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring">
                 <Info
                     class="size-4"
                     aria-hidden="true" />
@@ -217,7 +217,7 @@
     {onClose}>
     <div class="flex flex-col items-center gap-4">
         <div
-            class="relative flex aspect-square w-full items-center justify-center rounded-md border border-border-subtle p-1">
+            class="relative flex aspect-square w-full items-center justify-center rounded-md border border-line-subtle p-1">
             {#await qrSvg}
                 {@render generating()}
             {:then qr}

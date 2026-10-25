@@ -96,15 +96,15 @@
     onClose={close}>
     {#if requiredKeyword}
         <div class="mt-4 flex flex-col gap-2 font-sans">
-            <p class="text-xs text-text-secondary">
+            <p class="text-xs text-fg-secondary">
                 Type in
                 <span
-                    class="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-transparent py-0.5 pr-1 pl-1.5 font-mono text-xs font-bold text-text-primary select-all">
+                    class="inline-flex items-center gap-1 rounded-md border border-line-subtle bg-transparent py-0.5 pr-1 pl-1.5 font-mono text-xs font-bold text-fg select-all">
                     <span>{requiredKeyword}</span>
                     <button
                         type="button"
                         onclick={copyToClipboard}
-                        class="touch-target relative inline-flex size-4 cursor-pointer items-center justify-center rounded text-text-muted transition-colors hover:text-accent-text"
+                        class="touch-target relative inline-flex size-4 cursor-pointer items-center justify-center rounded text-fg-muted transition-colors hover:text-fg-accent"
                         aria-label="Copy keyword"
                         title="Copy keyword">
                         {#if isCopied}
@@ -126,7 +126,7 @@
                 spellcheck={false}
                 disabled={isLoading}
                 placeholder={requiredKeyword}
-                class="w-full rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 py-2 text-xs text-text-primary shadow-2xs backdrop-blur-xs transition-colors outline-none placeholder:text-text-secondary/70 focus:border-accent focus:bg-surface-card focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90" />
+                class="w-full rounded-md border border-line-subtle/50 bg-surface/85 px-3 py-2 text-xs text-fg shadow-2xs backdrop-blur-xs transition-colors outline-none placeholder:text-fg-secondary/70 focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-line-subtle/30 disabled:bg-surface/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90" />
         </div>
     {/if}
 

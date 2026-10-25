@@ -116,8 +116,8 @@
     class="flex min-w-0 flex-col gap-3">
     <h3
         id="banner-image-title"
-        class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-        Banner image <span class="font-normal text-text-muted">(required)</span>
+        class="text-xxs font-bold tracking-widest text-fg-secondary uppercase">
+        Banner image <span class="font-normal text-fg-muted">(required)</span>
     </h3>
     <div
         class="@container min-w-0"
@@ -125,7 +125,7 @@
         <div class="grid min-w-0 grid-cols-1 gap-4 @2xl:grid-cols-[auto_1fr]">
             <div
                 data-banner-preview
-                class="relative aspect-2/1 w-full max-w-120 self-start overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] @2xl:w-80">
+                class="relative aspect-2/1 w-full max-w-120 self-start overflow-hidden rounded-md border border-line-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] @2xl:w-80">
                 <ImageWithSkeleton
                     src={preview || (loadedSource === savedUrl ? savedUrl : null)}
                     alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
@@ -153,7 +153,7 @@
             variant="error"
             message={loadError} />{/if}
     {#if preview}<p
-            class="text-xs text-text-muted"
+            class="text-xs text-fg-muted"
             aria-live="polite">
             Banner is ready. Save draft or Publish post to apply it.
         </p>{/if}

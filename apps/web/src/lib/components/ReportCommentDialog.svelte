@@ -140,10 +140,9 @@
                 void submitReport();
             }}>
             <div
-                class="rounded-md border border-border-subtle bg-surface-card/60 p-2.5 text-xs text-text-secondary">
-                <span class="font-semibold text-text-primary"
-                    >{comment.author_name || 'Author'}:</span>
-                <p class="mt-0.5 line-clamp-2 text-text-muted italic">
+                class="rounded-md border border-line-subtle bg-surface/60 p-2.5 text-xs text-fg-secondary">
+                <span class="font-semibold text-fg">{comment.author_name || 'Author'}:</span>
+                <p class="mt-0.5 line-clamp-2 text-fg-muted italic">
                     "{comment.content}"
                 </p>
             </div>
@@ -160,7 +159,7 @@
                                 'group relative flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-all select-none has-focus-visible:outline-2 has-focus-visible:outline-focus-ring',
                                 selectedReason === r.id ?
                                     'border-accent bg-accent/10'
-                                :   'border-border-subtle/70 bg-surface-card/60 hover:border-accent/40 hover:bg-surface-card'
+                                :   'border-line-subtle/70 bg-surface/60 hover:border-accent/40 hover:bg-surface'
                             )}>
                             <input
                                 type="radio"
@@ -182,10 +181,10 @@
                             </div>
                             <span class="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <span
-                                    class="text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="text-2xs font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     {r.label}
                                 </span>
-                                <span class="text-3xs leading-relaxed text-text-muted">
+                                <span class="text-3xs leading-relaxed text-fg-muted">
                                     {r.description}
                                 </span>
                             </span>
@@ -196,13 +195,13 @@
                                         'absolute size-3.5 transition-all duration-200',
                                         selectedReason === r.id ?
                                             'scale-0 opacity-0'
-                                        :   'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                                        :   'scale-100 text-fg-muted opacity-100 group-hover:text-fg-secondary'
                                     )} />
                                 <CircleDot
                                     class={cn(
                                         'absolute size-3.5 transition-all duration-200',
                                         selectedReason === r.id ?
-                                            'scale-100 text-accent-text opacity-100'
+                                            'scale-100 text-fg-accent opacity-100'
                                         :   'scale-0 opacity-0'
                                     )} />
                             </span>
