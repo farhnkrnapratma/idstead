@@ -10,7 +10,7 @@
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
     import {
-        ArrowDownUp,
+        ArrowUpDown,
         CornerDownLeft,
         SquareTerminal,
         FolderOpen,
@@ -1201,7 +1201,7 @@
     }
 </script>
 
-{#snippet iconKey(Icon: typeof ArrowDownUp)}
+{#snippet iconKey(Icon: typeof ArrowUpDown)}
     <span
         class={KEY_GROUP_CLASS}
         aria-hidden="true">
@@ -1700,7 +1700,7 @@
                 <div
                     class="flex shrink-0 items-center gap-2.5 text-2xs leading-none font-medium text-fg-muted">
                     <span class="flex items-center gap-1">
-                        {@render iconKey(ArrowDownUp)}
+                        {@render iconKey(ArrowUpDown)}
                         <span class="hidden sm:inline">navigate</span>
                     </span>
                     {#if categorizedResults.some(group => group.hasPrev || group.hasNext)}
@@ -1917,7 +1917,7 @@
             <div
                 class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle/60 px-3.5 py-2 text-2xs leading-none select-none sm:flex">
                 <span class="flex items-center gap-1">
-                    {@render iconKey(ArrowDownUp)}
+                    {@render iconKey(ArrowUpDown)}
                     <span class="text-fg-muted">navigate</span>
                 </span>
                 <span class="flex items-center gap-1">

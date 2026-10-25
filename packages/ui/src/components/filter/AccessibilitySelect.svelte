@@ -1,13 +1,22 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { buttonKey } from '../../shortcuts.ts';
     import { Info, PersonStanding, ToggleLeft, ToggleRight } from '@lucide/svelte';
     import { cn } from '../../utils/cn';
     import { popoverPosition } from '../../utils/popoverPosition';
     import Badge from '../Badge.svelte';
     import IconButton from '../IconButton.svelte';
-    import ShortcutBadge from '../ShortcutBadge.svelte';
     import Tooltip from '../Tooltip.svelte';
     import { a11yStore, A11Y_TOGGLES, type FontScale } from '../../stores/a11yStore.svelte';
+    import { shortcutStore } from '../../stores/shortcutStore.svelte';
+    import { shortcut } from '../../utils/shortcut.svelte';
+
+    const SHORTCUT_SCOPE = 'accessibility-menu';
+
+    const modalShortcutScope = () => {
+        untrack(() => shortcutStore.pushScope(SHORTCUT_SCOPE, true));
+        return () => untrack(() => shortcutStore.popScope(SHORTCUT_SCOPE));
+    };
 
     interface Props {
         class?: string;
@@ -49,7 +58,7 @@
             close();
             return;
         }
-        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
         const index = Number(event.key) - 1;
         if (Number.isInteger(index) && index >= 0 && index < A11Y_TOGGLES.length) {
             event.preventDefault();
@@ -119,6 +128,8 @@
             <div
                 role="dialog"
                 aria-labelledby="a11y-settings-heading"
+                data-shortcut-scope={SHORTCUT_SCOPE}
+                {@attach modalShortcutScope}
                 use:popoverPosition={{
                     placement: dropdownDirection === 'up' ? 'top-end' : 'bottom-end',
                     offset: 8,
@@ -196,15 +207,13 @@
                                     {#if fromDevice}
                                         <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
                                     {/if}
-                                    <ShortcutBadge
-                                        combo={String(index + 1)}
-                                        class="opacity-0 transition-opacity group-hover/item:opacity-100" />
                                 </span>
                                 <button
                                     type="button"
                                     role="switch"
                                     aria-checked={checked}
                                     aria-keyshortcuts={String(index + 1)}
+                                    use:shortcut={{ combo: String(index + 1), label: item.label }}
                                     aria-label="{item.label}: {item.description}{fromDevice ?
                                         ', turned on by your device settings'
                                     :   ''}"
