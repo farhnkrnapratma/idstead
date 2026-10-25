@@ -5,6 +5,7 @@
     import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
     import { enhanceHeadingAnchors } from '@mdrs/dom/headingAnchors.ts';
+    import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
 
     interface Props {
         html: string;
@@ -35,13 +36,15 @@
 
 <div
     {@attach enhance}
-    class="mdrs editor-preview editor-surface w-full p-6"
+    class="editor-preview editor-surface w-full p-6"
     style:min-height={minHeight || undefined}>
     {#if error}<FieldMessage
             variant="error"
             message={error} />{/if}
     {#if html}
-        {@html html}
+        <MdrsHtml
+            {html}
+            class="mdrs" />
     {:else}
         <p class="text-fg-muted italic">Nothing to preview yet…</p>
     {/if}

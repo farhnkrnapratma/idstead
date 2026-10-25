@@ -87,7 +87,7 @@
     }
 
     let articleEl = $state<HTMLElement | null>(null);
-    let articleBodyEl: HTMLDivElement | undefined = $state();
+    let articleBodyEl: HTMLElement | undefined = $state();
     let cancelHighlight: (() => void) | undefined;
 
     function scrollToTarget(targetId: string, smooth = true) {
@@ -183,7 +183,7 @@
         }
     }
 
-    const enhanceArticle: Attachment<HTMLDivElement> = container => {
+    const enhanceArticle: Attachment<HTMLElement> = container => {
         void html;
         const dark = isDark;
         tick().then(() => {
@@ -195,7 +195,7 @@
         });
     };
 
-    const syncCodeBlockPrefs: Attachment<HTMLDivElement> = () => {
+    const syncCodeBlockPrefs: Attachment<HTMLElement> = () => {
         void codeBlockPrefsStore.current;
         void readingModeStore.active;
         refreshCodeBlockPrefs();
@@ -316,7 +316,7 @@
             <MdrsHtml
                 {html}
                 class="mdrs mt-3 w-full"
-                {@attach elementRef<HTMLDivElement>(node => (articleBodyEl = node ?? undefined))}
+                {@attach elementRef<HTMLElement>(node => (articleBodyEl = node ?? undefined))}
                 {@attach enhanceArticle}
                 {@attach syncCodeBlockPrefs} />
 
