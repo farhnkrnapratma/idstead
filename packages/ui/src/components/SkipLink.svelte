@@ -24,6 +24,9 @@
         const target = document.getElementById(targetId);
         if (target) {
             target.tabIndex = -1;
+            target.addEventListener('blur', () => target.removeAttribute('tabindex'), {
+                once: true
+            });
             target.focus({ preventScroll: true });
         }
     }

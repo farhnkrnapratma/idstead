@@ -235,6 +235,10 @@ svg,
     @apply select-none;
 }
 
+main:focus {
+    @apply outline-none;
+}
+
 ::placeholder {
     @apply text-fg-muted! opacity-75!;
 }
@@ -254,7 +258,7 @@ summary:focus-visible,
     @apply rounded-md outline-2! outline-offset-2! outline-focus-ring!;
 }
 
-:root[data-focus-highlight='true']:not([data-admin-page='true']) :focus {
+:root[data-focus-highlight='true']:not([data-admin-page='true']) :focus:not(main) {
     @apply rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-highlight! outline-solid!;
     scroll-margin: 0.5rem;
 }

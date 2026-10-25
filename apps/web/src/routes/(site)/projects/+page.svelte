@@ -68,6 +68,11 @@
             list = list.filter(p => p.tags && p.tags.some(t => selectedTags.includes(t)));
         }
 
+        const selectedLanguages = projectFilterStore.filters['language'] || [];
+        if (selectedLanguages.length > 0) {
+            list = list.filter(p => p.lang && selectedLanguages.includes(p.lang));
+        }
+
         const sortField = projectFilterStore.sort.field;
         const sortDir = projectFilterStore.sort.direction === 'asc' ? 1 : -1;
 
@@ -78,6 +83,8 @@
 
             if (sortField === 'name') {
                 return a.name.localeCompare(b.name) * sortDir;
+            } else if (sortField === 'language') {
+                return (a.lang || '').localeCompare(b.lang || '') * sortDir;
             } else if (sortField === 'stars') {
                 return ((a.stars || 0) - (b.stars || 0)) * sortDir;
             } else if (sortField === 'license') {
@@ -196,6 +203,7 @@
                             <SortControl
                                 fields={[
                                     { value: 'name', label: 'Name' },
+                                    { value: 'language', label: 'Language' },
                                     { value: 'stars', label: 'Stars' },
                                     { value: 'license', label: 'License' }
                                 ]}
@@ -229,7 +237,12 @@
                                 {project}
                                 pinned={isRepoPinned(project, pinnedRepoNames)}
                                 isNew={isRepoNew(project)}
-                                tagItem={filterableTag} />
+                                tagItem={filterableTag}
+                                languageSelected={projectFilterStore.filters['language']?.includes(
+                                    project.lang ?? ''
+                                ) ?? false}
+                                onLanguageSelect={language =>
+                                    projectFilterStore.toggleMultiFilter('language', language)} />
                         {/each}
                     </div>
                     <div class="mt-6">
