@@ -1,9 +1,7 @@
 <script lang="ts">
     import SpotlightSearch from './SpotlightSearch.svelte';
     import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
-    import ContentFontSelect from '@idstead/ui/components/filter/ContentFontSelect.svelte';
     import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
-    import ReadingOptionsMenu from '@idstead/ui/components/filter/ReadingOptionsMenu.svelte';
     import IconButton from '@idstead/ui/components/IconButton.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
@@ -15,7 +13,6 @@
         ariaLabel: string;
         backHref: string;
         backLabel: string;
-        showFontSelect?: boolean;
         projects?: Project[];
         readingMode?: boolean;
         onToggleReadingMode?: () => void;
@@ -25,7 +22,6 @@
         ariaLabel,
         backHref,
         backLabel,
-        showFontSelect = false,
         projects = [],
         readingMode = false,
         onToggleReadingMode
@@ -68,19 +64,7 @@
         <ThemeSelect
             theme={themeStore.current}
             onThemeChange={themeStore.apply} />
-        {#if !readingMode && showFontSelect}
-            <div class="sm:hidden">
-                <ReadingOptionsMenu {showFontSelect} />
-            </div>
-            {#if showFontSelect}
-                <div class="hidden sm:inline-flex">
-                    <ContentFontSelect />
-                </div>
-            {/if}
-            <div class="hidden sm:inline-flex">
-                <AccessibilitySelect />
-            </div>
-        {:else if !readingMode}
+        {#if !readingMode}
             <AccessibilitySelect />
         {/if}
     </div>

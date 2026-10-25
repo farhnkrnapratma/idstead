@@ -5,7 +5,6 @@
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import { activateHeadingAnchor } from '@mdrs/dom/headingAnchors.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         title: string;
@@ -94,7 +93,7 @@
     </h1>
 
     {#if excerpt}
-        <p class={cn('font-content-' + contentFontStore.current, 'mt-2 text-base text-fg-muted')}>
+        <p class="mt-2 text-base text-fg-muted">
             {excerpt}
         </p>
     {/if}

@@ -178,8 +178,8 @@
 <PageMain variant="site">
     <LinkGridSection
         title="Contact"
-        subtitle="Reach out through any of the channels below."
         items={contactItems}
+        showEmpty={!data.canSendMessage}
         shortcutGroup="contact"
         emptyIcon={AtSign}
         emptyTitle="No contact channels yet"

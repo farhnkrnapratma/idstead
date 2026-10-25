@@ -37,10 +37,6 @@
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
     import {
-        contentFontStore,
-        type ContentFont
-    } from '@idstead/ui/stores/contentFontStore.svelte.ts';
-    import {
         searchHistoryStore,
         type SearchHistoryEntry
     } from '../stores/searchHistoryStore.svelte';
@@ -58,7 +54,7 @@
     import { createDefaultCommands } from './spotlight/defaultCommands';
     import { isHiddenCommand } from '#app/commandVisibility.ts';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
-    import { applyContentFont, createDynamicCommandItems } from './spotlight/dynamicCommands';
+    import { createDynamicCommandItems } from './spotlight/dynamicCommands';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
         matchFuzzy,
@@ -583,11 +579,6 @@
         '/theme': () => {
             const next = themeStore.cycle();
             toastStore.show(`Switched to ${next} theme`, 'success');
-        },
-        '/font': () => {
-            const order: ContentFont[] = ['sans', 'serif', 'mono'];
-            const next = order[(order.indexOf(contentFontStore.preference) + 1) % order.length];
-            applyContentFont(next, next);
         },
         '/code': () => {
             codeBlockPrefsStore.cycleColorScheme();

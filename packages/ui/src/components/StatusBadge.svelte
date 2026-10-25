@@ -60,8 +60,9 @@
         href={pageUrl}
         target="_blank"
         rel="noopener noreferrer"
+        title={statuses[status].label}
         class={cn(
-            'inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+            'inline-flex max-w-full items-center rounded-full border border-line-subtle bg-surface p-1.5 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:gap-1.5 sm:px-2.5 sm:py-1',
             className
         )}>
         <span
@@ -70,6 +71,6 @@
                 'size-2 shrink-0 rounded-full motion-safe:animate-pulse',
                 statuses[status].dot
             )}></span>
-        <span class="truncate">{statuses[status].label}</span>
+        <span class="sr-only sm:not-sr-only sm:truncate">{statuses[status].label}</span>
     </a>
 {/if}

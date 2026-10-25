@@ -57,7 +57,6 @@
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import { focusScope } from '@idstead/ui/utils/focusScope.ts';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import { decodeHtmlEntities } from '@mdrs/core';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
 
@@ -68,7 +67,6 @@
         authorName?: string;
         pageSize?: number;
         controls?: boolean;
-        useContentFont?: boolean;
         isAdmin?: boolean;
         statusBadge?: Snippet<[comment: T]>;
         actions?: Snippet<[comment: T]>;
@@ -85,7 +83,6 @@
         authorName = '',
         pageSize,
         controls = false,
-        useContentFont = false,
         isAdmin = false,
         statusBadge,
         actions,
@@ -395,14 +392,7 @@
                         </Dropdown>
                     {/if}
                 </div>
-                <div
-                    class={cn(
-                        'mt-0.5 type-body font-normal text-fg-secondary',
-                        useContentFont && `font-content-${contentFontStore.current}`,
-                        useContentFont
-                            && contentFontStore.current === 'mono'
-                            && 'text-[calc(0.78125rem*var(--type-scale)*var(--a11y-scale))]! sm:text-[calc(0.84375rem*var(--type-scale)*var(--a11y-scale))]!'
-                    )}>
+                <div class="mt-0.5 type-body font-normal text-fg-secondary">
                     {#if node.reply_to_author}
                         <span class="font-normal text-fg-accent select-none">
                             @{node.reply_to_author}

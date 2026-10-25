@@ -13,7 +13,6 @@ import {
     Rss,
     CodeXml,
     LogOut,
-    CaseSensitive,
     BookOpenText,
     Save,
     Printer,
@@ -162,14 +161,6 @@ const helpCommandCategories: HelpCategory[] = [
                 validArgs: ['dark', 'light', 'auto'],
                 actionQuery: '/theme ',
                 icon: SunMoon
-            },
-            {
-                command: '/font',
-                argHint: '[style]',
-                description: 'Change font style for article reading.',
-                validArgs: ['sans', 'serif', 'mono'],
-                actionQuery: '/font ',
-                icon: CaseSensitive
             },
             {
                 command: '/read',

@@ -4,7 +4,6 @@
     import { onDestroy } from 'svelte';
     import { Sparkles, List, ChevronsUpDown, ChevronsDownUp } from '@lucide/svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         mode?: 'all' | 'tldr-only' | 'summary-only';
@@ -118,8 +117,7 @@
                     <ChevronsDownUp class="hidden size-3.5 group-open:block" />
                 </span>
             </summary>
-            <div
-                class="mdrs-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-fg-secondary">
+            <div class="mdrs-details-body px-3.5 py-3 text-sm leading-relaxed text-fg-secondary">
                 <ul class="flex list-none flex-col gap-1 pl-0">
                     {#each tldr as point (point)}
                         <li class="flex items-start gap-1.5 leading-normal">
@@ -165,8 +163,7 @@
                     <ChevronsDownUp class="hidden size-3.5 group-open:block" />
                 </span>
             </summary>
-            <div
-                class="mdrs-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-fg-secondary">
+            <div class="mdrs-details-body px-3.5 py-3 text-sm leading-relaxed text-fg-secondary">
                 {#if loadingDots}
                     <div
                         class="flex items-center gap-1.5 py-1.5"
@@ -182,8 +179,7 @@
                         ></span>
                     </div>
                 {:else}
-                    <p
-                        class="font-content-{contentFontStore.current} text-sm leading-relaxed text-fg-secondary">
+                    <p class="text-sm leading-relaxed text-fg-secondary">
                         {displayedSummary}{#if typing}<span class="animate-pulse">▍</span>{/if}
                     </p>
                 {/if}

@@ -57,7 +57,6 @@ const commandSections: Record<string, ShortcutSection> = {
     '/top': 'navigation',
     '/bottom': 'navigation',
     '/theme': 'appearance',
-    '/font': 'appearance',
     '/a11y': 'appearance',
     '/read': 'blog',
     '/code': 'code',
@@ -101,15 +100,9 @@ export function actionSection(
         return 'forms';
     if (
         pathname.startsWith('/blog/')
-        && [
-            'readingOptions',
-            'moreActions',
-            'tldr',
-            'summary',
-            'helpfulYes',
-            'helpfulNo',
-            'shareFeedback'
-        ].some(id => normalizeKey(buttonKey(id)) === combo)
+        && ['moreActions', 'tldr', 'summary', 'helpfulYes', 'helpfulNo', 'shareFeedback'].some(
+            id => normalizeKey(buttonKey(id)) === combo
+        )
     )
         return 'blog';
     return 'page';

@@ -19,7 +19,6 @@ import {
     Rss,
     CodeXml,
     LogOut,
-    CaseSensitive,
     BookOpenText,
     Save,
     Printer,
@@ -171,16 +170,6 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             autocompleteQuery: '/theme ',
             icon: SunMoon,
             badge: 'Theme'
-        },
-        {
-            id: 'cmd-font',
-            category: 'actions',
-            title: '/font',
-            subtitle: 'Change font style for article reading.',
-            requiresArgs: true,
-            autocompleteQuery: '/font ',
-            icon: CaseSensitive,
-            badge: 'Appearance'
         },
         {
             id: 'cmd-code',

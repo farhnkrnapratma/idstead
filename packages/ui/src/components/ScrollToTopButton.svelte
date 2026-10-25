@@ -1,7 +1,6 @@
 <script lang="ts">
     import { buttonKey } from '../shortcuts.ts';
     import { fade } from 'svelte/transition';
-    import { page } from '$app/state';
     import { MoveUp } from '@lucide/svelte';
     import { scrollToTop } from '../utils/scroll.ts';
     import { scrollStore } from '../stores/scrollStore.svelte';
@@ -13,26 +12,20 @@
 
     interface Props {
         show?: boolean;
-        hasBottomNav?: boolean;
         class?: string;
         onClick?: () => void;
         progress?: number;
     }
 
-    let { show = true, hasBottomNav, class: className = '', onClick, progress }: Props = $props();
+    let { show = true, class: className = '', onClick, progress }: Props = $props();
 
-    const isMainPage = $derived(
-        hasBottomNav !== undefined ? hasBottomNav : page.url.pathname === '/'
-    );
     const currentProgress = $derived(progress !== undefined ? progress : scrollStore.progress);
 </script>
 
 {#if show}
     <div
         transition:fade={{ duration: 150 }}
-        class="fixed right-3 z-40 md:right-6 md:bottom-6 {isMainPage ?
-            'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]'
-        :   'bottom-[calc(0.75rem+env(safe-area-inset-bottom))]'} {className}">
+        class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 {className}">
         <Tooltip
             content="Scroll to top"
             placement="top"

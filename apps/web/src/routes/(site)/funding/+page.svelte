@@ -40,7 +40,6 @@
 <PageMain variant="site">
     <LinkGridSection
         title="Supporting & Funding"
-        subtitle="Ways to support my work."
         items={fundingPlatforms}
         shortcutGroup="funding"
         emptyIcon={HeartHandshake}

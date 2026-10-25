@@ -17,8 +17,8 @@ import type { ImagePackage } from '#lib/siteIdentity.ts';
 import { themeToken } from '@idstead/ui/themeColors.ts';
 
 const fontFamilies: Record<BannerFont, string> = {
-    sans: "'iA Writer Quattro', 'Noto Sans Variable', sans-serif",
-    mono: "'Lilex Variable', ui-monospace, monospace"
+    sans: "'iA Writer Quattro', 'Noto Sans Variable', ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, 'Inter', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif",
+    mono: "'Lilex Variable', ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Roboto Mono', 'DejaVu Sans Mono', 'Liberation Mono', Menlo, Monaco, Consolas, 'Source Code Pro', monospace"
 };
 
 function canvasFont(font: BannerFont, size: number, bold: boolean) {

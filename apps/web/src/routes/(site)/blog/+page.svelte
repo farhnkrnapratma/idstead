@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { onMount } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import { page } from '$app/state';
@@ -165,38 +166,41 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
+        class={cn(
+            'relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8',
+            posts.length === 0 && 'flex flex-1 flex-col justify-center'
+        )}>
         <PageContainer width="standard">
-            <div class="mb-6 flex items-end justify-between gap-4">
-                <div>
+            {#if posts.length === 0}
+                <EmptyState
+                    icon={Quote}
+                    title="No posts yet"
+                    description="Articles will appear here once published." />
+            {:else}
+                <div class="mb-6 flex items-end justify-between gap-4">
                     <h1 class="type-page-title">Blog</h1>
-                    <p class="mt-2 text-sm text-fg-secondary">
-                        Articles on the things I'm building, learning, and thinking about.
-                    </p>
+                    <Tooltip
+                        content="RSS Feed"
+                        placement="bottom"
+                        align="right">
+                        <Button
+                            type="ghost"
+                            size="md"
+                            href="/atom.xml"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Subscribe via Atom/RSS feed"
+                            keyboardShortcut={buttonKey('feed')}
+                            shortcutLabel="RSS feed"
+                            class="mb-0.5 shrink-0 border border-line-subtle bg-surface text-fg-muted hover:bg-surface-hover hover:text-brand-rss">
+                            {#snippet leading()}
+                                <Rss class="size-3.5 select-none" />
+                            {/snippet}
+                            <span class="hidden items-center sm:inline">Feed</span>
+                        </Button>
+                    </Tooltip>
                 </div>
-                <Tooltip
-                    content="RSS Feed"
-                    placement="bottom"
-                    align="right">
-                    <Button
-                        type="ghost"
-                        size="md"
-                        href="/atom.xml"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Subscribe via Atom/RSS feed"
-                        keyboardShortcut={buttonKey('feed')}
-                        shortcutLabel="RSS feed"
-                        class="mb-0.5 shrink-0 border border-line-subtle bg-surface text-fg-muted hover:bg-surface-hover hover:text-brand-rss">
-                        {#snippet leading()}
-                            <Rss class="size-3.5 select-none" />
-                        {/snippet}
-                        <span class="hidden items-center sm:inline">Feed</span>
-                    </Button>
-                </Tooltip>
-            </div>
 
-            {#if posts.length > 0}
                 <div class="mb-6">
                     <FilterToolbar title="Blog posts filter">
                         {#snippet searchSlot()}
@@ -253,35 +257,30 @@
                         {/snippet}
                     </FilterToolbar>
                 </div>
-            {/if}
 
-            {#if posts.length === 0}
-                <EmptyState
-                    icon={Quote}
-                    title="No posts yet"
-                    description="Articles will appear here once published." />
-            {:else if filteredPosts.length === 0}
-                <FilterEmptyState
-                    title="No articles match these filters"
-                    description="Try adjusting your tag filters or search keyword."
-                    onClearFilters={() => filters.clearAllFilters()} />
-            {:else}
-                <div
-                    use:staggerChildren
-                    class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
-                    {#each visiblePosts as post (post.id)}
-                        <BlogPostCard
-                            {post}
-                            headingTag="h2"
-                            tagItem={filterableTag} />
-                    {/each}
-                </div>
-                <div class="mt-6">
-                    <Pagination
-                        page={pageClamped}
-                        {totalPages}
-                        onPageChange={p => (pageSelection = { key: filterKey, page: p })} />
-                </div>
+                {#if filteredPosts.length === 0}
+                    <FilterEmptyState
+                        title="No articles match these filters"
+                        description="Try adjusting your tag filters or search keyword."
+                        onClearFilters={() => filters.clearAllFilters()} />
+                {:else}
+                    <div
+                        use:staggerChildren
+                        class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
+                        {#each visiblePosts as post (post.id)}
+                            <BlogPostCard
+                                {post}
+                                headingTag="h2"
+                                tagItem={filterableTag} />
+                        {/each}
+                    </div>
+                    <div class="mt-6">
+                        <Pagination
+                            page={pageClamped}
+                            {totalPages}
+                            onPageChange={p => (pageSelection = { key: filterKey, page: p })} />
+                    </div>
+                {/if}
             {/if}
         </PageContainer>
     </Section>

@@ -16,8 +16,6 @@ const fonts: CvFontBytes = {
     sans: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff'),
     sansBold: font('ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff'),
     sansItalic: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff'),
-    serif: font('ibm-plex-serif/files/ibm-plex-serif-latin-400-normal.woff'),
-    serifBold: font('ibm-plex-serif/files/ibm-plex-serif-latin-700-normal.woff'),
     mono: font('lilex/files/lilex-latin-400-normal.woff')
 };
 
@@ -78,7 +76,7 @@ describe('cv pdf', () => {
             )
             .join(' ');
         expect(baseFonts).toContain('iAWriterQuattro');
-        expect(baseFonts).toContain('IBMPlexSerif');
+        expect(baseFonts).not.toContain('IBMPlexSerif');
         expect(baseFonts).toContain('Lilex');
     });
 
