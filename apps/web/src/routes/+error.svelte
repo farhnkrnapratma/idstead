@@ -2,10 +2,6 @@
     import { page } from '$app/state';
     import { House, MessageSquareWarning } from '@lucide/svelte';
     import { Button, SkipLink, ErrorState } from '@idstead/ui';
-    import FooterLegalRow from '#app/layout/FooterLegalRow.svelte';
-
-    let pageAuthor = $derived((page?.data as any)?.author);
-    let name = $derived(pageAuthor?.name || '');
 
     let errorTitle = $derived.by(() => {
         switch (page.status) {
@@ -98,8 +94,4 @@
             {/snippet}
         </ErrorState>
     </main>
-
-    <footer class="py-6 text-center select-none">
-        <FooterLegalRow {name} />
-    </footer>
 </div>

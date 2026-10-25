@@ -28,6 +28,7 @@ export { default as RelativeTime } from './components/RelativeTime.svelte';
 export { default as ScrollToTopButton } from './components/ScrollToTopButton.svelte';
 export { default as SectionHeader } from './components/SectionHeader.svelte';
 export { default as ShinyText } from './components/ShinyText.svelte';
+export { default as TechText } from './components/TechText.svelte';
 export { default as ShortcutBadge } from './components/ShortcutBadge.svelte';
 export { default as ShortcutCatalogDialog } from './components/ShortcutCatalogDialog.svelte';
 export { default as ShortcutModeIndicator } from './components/ShortcutModeIndicator.svelte';

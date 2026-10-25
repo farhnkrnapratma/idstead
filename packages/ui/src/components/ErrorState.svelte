@@ -2,7 +2,7 @@
     import type { Snippet } from 'svelte';
     import { TriangleAlert, RotateCw } from '@lucide/svelte';
     import Button from './Button.svelte';
-    import ShinyText from './ShinyText.svelte';
+    import TechText from './TechText.svelte';
     import { cn } from '../utils/cn';
 
     interface Props {
@@ -34,12 +34,13 @@
         aria-live="assertive"
         class={cn('flex flex-col items-center justify-center text-center select-none', className)}>
         {#if code !== undefined}
-            <p class="font-mono text-5xl font-extrabold tracking-widest sm:text-7xl md:text-8xl">
-                <ShinyText
+            <div class="h-28 w-full max-w-md font-mono text-accent sm:h-36 md:h-44">
+                <TechText
                     text={String(code)}
-                    color="var(--color-accent)"
-                    speed={3} />
-            </p>
+                    label="Error {code}"
+                    fontWeight={800}
+                    letterSpacing={0.02} />
+            </div>
         {/if}
         <h1 class="mt-4 text-2xl font-semibold tracking-tight text-balance text-fg sm:text-4xl">
             {title}

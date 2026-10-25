@@ -151,7 +151,9 @@
     show={isPageWithFeedback && !readingModeStore.active}
     class={isArticleLikePage ? 'lg:hidden' : ''} />
 
-<ConsentBanner />
+{#if !page.error}
+    <ConsentBanner />
+{/if}
 <Toast />
 <ShortcutCatalogDialog hiddenCommands={hiddenLegalPaths()} />
 <ShortcutModeIndicator />
