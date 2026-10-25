@@ -8,6 +8,7 @@
     import { focusScope } from '@idstead/ui/utils/focusScope.ts';
     import { FieldValidation, requiredText } from '@idstead/domain/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
+    import type { Attachment } from 'svelte/attachments';
     import { fade } from 'svelte/transition';
     import { MessageCircle } from '@lucide/svelte';
     import type { PageProps } from './$types';
@@ -17,6 +18,9 @@
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
     import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
+    import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
+    import { elementRef } from '@idstead/ui/utils/elementRef.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
     import {
@@ -43,6 +47,7 @@
     } from '@idstead/ui';
     import { CommentThread, ArticleMeta } from '#lib/index.ts';
     import SiteNav from '#app/components/SiteNav.svelte';
+    import JsonLd from '#app/components/JsonLd.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import TableOfContents from '#app/components/TableOfContents.svelte';
@@ -58,7 +63,7 @@
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { formatReadTime } from '@idstead/domain';
-    import { goto } from '$app/navigation';
+    import { afterNavigate, goto } from '$app/navigation';
     import { page, navigating } from '$app/state';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
 
@@ -73,22 +78,16 @@
         toastStore.show(message);
     }
 
-    let currentPostId: string | null = null;
-    let addedComments = $state<BlogComment[]>([]);
-    $effect(() => {
-        const postId = data.post.id;
-        if (currentPostId !== postId) {
-            currentPostId = postId;
-            untrack(() => {
-                addedComments = [];
-                readingModeStore.disable();
-            });
-        }
-    });
+    let added = $state<{ postId: string; comments: BlogComment[] }>({ postId: '', comments: [] });
+    const addedComments = $derived(added.postId === post.id ? added.comments : []);
     const comments = $derived([...data.comments, ...addedComments]);
+
+    afterNavigate(({ from, to }) => {
+        if (from?.params?.slug !== to?.params?.slug) readingModeStore.disable();
+    });
     const relatedPosts = $derived(data.relatedPosts);
 
-    let isDark = $state(false);
+    const isDark = $derived(themeStore.isDark);
 
     const bannerPublicUrl = $derived(data.bannerPublicUrl || '');
     const bannerSocialUrl = $derived(
@@ -226,28 +225,23 @@
         scrollToTarget(targetId, true);
     }
 
-    $effect(() => {
+    const enhanceArticle: Attachment<HTMLDivElement> = container => {
         void html;
-        void isDark;
-
+        const dark = isDark;
         tick().then(() => {
-            const container = articleBodyEl;
-            if (container) {
-                const blocks = container.querySelectorAll('pre code');
-                blocks.forEach(block => {
-                    hljs.highlightElement(block as HTMLElement);
-                });
-                enhanceMarkdownContent({ container, isDark, onCodeCopy: triggerToast });
-                enhanceHeadingAnchors(container);
-            }
+            container.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightElement(block as HTMLElement);
+            });
+            enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
+            enhanceHeadingAnchors(container);
         });
-    });
+    };
 
-    $effect(() => {
+    const syncCodeBlockPrefs: Attachment<HTMLDivElement> = () => {
         void codeBlockPrefsStore.current;
         void readingModeStore.active;
         refreshCodeBlockPrefs();
-    });
+    };
 
     onDestroy(() => {
         readingModeStore.disable();
@@ -255,17 +249,6 @@
     });
 
     onMount(() => {
-        isDark = document.documentElement.classList.contains('dark');
-
-        const observer = new MutationObserver(() => {
-            isDark = document.documentElement.classList.contains('dark');
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
         (async () => {
             try {
                 const res = await fetch('/api/internal/blog/views', {
@@ -296,7 +279,6 @@
         window.addEventListener('popstate', handlePopState);
 
         return () => {
-            observer.disconnect();
             window.removeEventListener('popstate', handlePopState);
         };
     });
@@ -421,7 +403,7 @@
             }
 
             if (result.is_approved) {
-                addedComments = [...addedComments, result.comment];
+                added = { postId: post.id, comments: [...addedComments, result.comment] };
                 feedbackMessage = {
                     type: 'success',
                     text: parentId ? 'Your reply has been posted.' : 'Your comment has been posted.'
@@ -452,20 +434,15 @@
 
     let siteUrl = $derived((author?.siteUrl || page.url.origin).replace(/\/$/, ''));
 
-    let jsonLdScript = $derived(
-        '<script type="application/ld+json">'
-            + JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'BlogPosting',
-                headline: post.title,
-                description: post.excerpt || post.title,
-                url: siteUrl + '/blog/' + post.slug,
-                datePublished: post.created_at,
-                author: { '@type': 'Person', name: author?.name || '', url: siteUrl }
-            }).replace(/</g, '\\u003c')
-            + '</'
-            + 'script>'
-    );
+    const jsonLd = $derived({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt || post.title,
+        url: siteUrl + '/blog/' + post.slug,
+        datePublished: post.created_at,
+        author: { '@type': 'Person', name: author?.name || '', url: siteUrl }
+    });
 
     function handleCollaboratorsWindowPointerDown(event: PointerEvent) {
         if (
@@ -505,7 +482,6 @@
     <link
         rel="canonical"
         href={siteUrl + '/blog/' + post.slug} />
-    {@html jsonLdScript}
 
     <meta
         property="og:type"
@@ -563,6 +539,8 @@
     {/if}
 </svelte:head>
 
+<JsonLd data={jsonLd} />
+
 <SkipLink />
 
 {#if !readingModeStore.active}
@@ -592,7 +570,7 @@
         {/if}
 
         <article
-            bind:this={articleEl}
+            {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
             class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
             <ArticleHeader
@@ -705,7 +683,9 @@
                                 </span>
                                 <span>and</span>
                                 <div
-                                    bind:this={collaboratorsContainerRef}
+                                    {@attach elementRef<HTMLDivElement>(
+                                        node => (collaboratorsContainerRef = node ?? undefined)
+                                    )}
                                     class="relative inline-block">
                                     <button
                                         type="button"
@@ -807,11 +787,12 @@
                 </div>
             {/if}
 
-            <div
-                bind:this={articleBodyEl}
-                class="mdrs mt-3 w-full">
-                {@html html}
-            </div>
+            <MdrsHtml
+                {html}
+                class="mdrs mt-3 w-full"
+                {@attach elementRef<HTMLDivElement>(node => (articleBodyEl = node ?? undefined))}
+                {@attach enhanceArticle}
+                {@attach syncCodeBlockPrefs} />
 
             {#if !readingModeStore.active}
                 <HelpfulBlock
@@ -928,7 +909,9 @@
                                 </FormField>
 
                                 <div
-                                    bind:this={turnstileEl}
+                                    {@attach elementRef<HTMLDivElement>(
+                                        node => (turnstileEl = node)
+                                    )}
                                     class="turnstile-widget select-none"
                                     use:turnstileWidget={{
                                         sitekey: turnstileSiteKey,
@@ -1094,7 +1077,9 @@
                                         </FormField>
 
                                         <div
-                                            bind:this={turnstileEl}
+                                            {@attach elementRef<HTMLDivElement>(
+                                                node => (turnstileEl = node)
+                                            )}
                                             class="turnstile-widget select-none"
                                             use:turnstileWidget={{
                                                 sitekey: turnstileSiteKey,

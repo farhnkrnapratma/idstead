@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import { sanitizeHtml } from '../packages/mdrs/core/src/sanitize';
 import { renderMarkdown, renderMarkdownUnsafe } from '../packages/mdrs/core/src/markdown';
+import { injectHeadingIds, prefixHashLinks } from '../packages/mdrs/core/src/index';
 
 describe('sanitizeHtml: hostile input', () => {
     test.each([
@@ -157,5 +158,17 @@ describe('sanitizeHtml: engine output', () => {
         );
         expect(html).toContain('mdrs-details');
         expect(html).toContain('<kbd>Ctrl</kbd>');
+    });
+});
+
+describe('sanitizeHtml: page boundary', () => {
+    test('leaves the final article HTML untouched, heading ids and hash links included', async () => {
+        const markdown = readFileSync(
+            new URL('./fixtures/markdown-demo.md', import.meta.url),
+            'utf8'
+        );
+        const html = prefixHashLinks(injectHeadingIds(await renderMarkdown(markdown)));
+        expect(html).toContain(' id="');
+        expect(sanitizeHtml(html)).toBe(html);
     });
 });
