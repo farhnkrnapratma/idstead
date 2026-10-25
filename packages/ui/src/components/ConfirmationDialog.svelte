@@ -119,6 +119,7 @@
             <input
                 {@attach initializeConfirmation}
                 type="text"
+                name="confirmation-keyword"
                 bind:value={inputKeyword}
                 onkeydown={handleKeydown}
                 aria-label="Confirmation keyword"

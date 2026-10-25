@@ -148,6 +148,7 @@
         <input
             type="file"
             bind:this={imageFileInput}
+            name="image-upload"
             accept="image/png, image/webp, image/avif, image/jpeg, image/jpg"
             onchange={handleFileSelected}
             class="hidden"
@@ -162,6 +163,7 @@
         <input
             type="file"
             bind:this={videoFileInput}
+            name="video-upload"
             accept="video/webm,.webm"
             onchange={handleVideoFileSelected}
             class="hidden"

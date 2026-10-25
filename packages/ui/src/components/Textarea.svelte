@@ -36,6 +36,8 @@
     }: Props = $props();
 
     const formCtx = getContext<FormFieldContext>('formField');
+    const generatedId = $props.id();
+    const fieldId = $derived(id ?? formCtx?.id ?? generatedId);
     const resolvedVariant = $derived(variant ?? formCtx?.variant ?? 'standard');
     const resolvedLabel = $derived(label || formCtx?.label || '');
     const resolvedRequired = $derived(required ?? formCtx?.required ?? false);
@@ -51,7 +53,7 @@
 <div class={cn('relative w-full', wrapperClass)}>
     {#if useAutoResize}
         <textarea
-            {id}
+            id={fieldId}
             use:autoResize={value}
             bind:value
             {rows}
@@ -70,7 +72,7 @@
             {...restProps}></textarea>
     {:else}
         <textarea
-            {id}
+            id={fieldId}
             bind:value
             {rows}
             {disabled}
@@ -89,7 +91,7 @@
 
     {#if isFloating && resolvedLabel}
         <label
-            for={id}
+            for={fieldId}
             class={cn(
                 'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
                 'top-3 text-sm text-fg-secondary/70 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-fg-secondary/70',

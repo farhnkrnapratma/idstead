@@ -85,6 +85,7 @@
                 <input
                     bind:this={importInput}
                     type="file"
+                    name="markdown-import"
                     accept={importAccept}
                     class="hidden"
                     aria-label="Import a Markdown or MDRS file"

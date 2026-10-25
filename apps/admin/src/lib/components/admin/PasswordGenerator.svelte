@@ -190,6 +190,7 @@
                 <span>{randomOptions.length} characters</span>
                 <input
                     type="range"
+                    name="password-length"
                     min="15"
                     max="64"
                     step="1"
@@ -218,6 +219,7 @@
                 <span>{memorableOptions.words} words</span>
                 <input
                     type="range"
+                    name="word-count"
                     min="8"
                     max="10"
                     step="1"

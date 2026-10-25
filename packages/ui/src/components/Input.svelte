@@ -63,6 +63,8 @@
     };
 
     const formCtx = getContext<FormFieldContext>('formField');
+    const generatedId = $props.id();
+    const fieldId = $derived(id ?? formCtx?.id ?? generatedId);
     const resolvedVariant = $derived(variant ?? formCtx?.variant ?? 'standard');
     const resolvedLabel = $derived(label || formCtx?.label || '');
     const resolvedRequired = $derived(required ?? formCtx?.required ?? false);
@@ -111,7 +113,7 @@
     {/if}
 
     <input
-        {id}
+        id={fieldId}
         bind:value
         {disabled}
         placeholder={isFloating ? ' ' : placeholder}
@@ -142,7 +144,7 @@
 
     {#if isFloating && resolvedLabel}
         <label
-            for={id}
+            for={fieldId}
             class={cn(
                 'pointer-events-none absolute z-10 font-medium transition-all duration-200 select-none',
                 'top-1/2 -translate-y-1/2 text-sm text-fg-secondary/70 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-fg-secondary/70',
