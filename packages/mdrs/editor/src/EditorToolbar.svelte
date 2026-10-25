@@ -89,7 +89,7 @@
                 type="button"
                 onclick={item.action}
                 aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
                 <item.icon class="size-4" />
             </button>
         {/each}
@@ -108,7 +108,7 @@
                     aria-label="More headings (H4-H6)"
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
-                    class="touch-target relative flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                    class="touch-target relative flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-fg">
                     <Heading class="size-4" />
                     <ChevronDown
                         class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : (
@@ -119,7 +119,7 @@
         </Dropdown>
 
         <div
-            class="mx-1 h-4 w-px shrink-0 bg-border-subtle"
+            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
             aria-hidden="true">
         </div>
 
@@ -128,13 +128,13 @@
                 type="button"
                 onclick={item.action}
                 aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
                 <item.icon class="size-4" />
             </button>
         {/each}
 
         <div
-            class="mx-1 h-4 w-px shrink-0 bg-border-subtle"
+            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
             aria-hidden="true">
         </div>
 
@@ -142,7 +142,7 @@
             type="button"
             onclick={handleImageClick}
             aria-label="Insert image"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
             <ImageIcon class="size-4" />
         </button>
         <input
@@ -156,7 +156,7 @@
             type="button"
             onclick={handleVideoClick}
             aria-label="Insert video"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
             <Video class="size-4" />
         </button>
         <input
@@ -171,13 +171,13 @@
                 type="button"
                 onclick={item.action}
                 aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
                 <item.icon class="size-4" />
             </button>
         {/each}
 
         <div
-            class="mx-1 h-4 w-px shrink-0 bg-border-subtle"
+            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
             aria-hidden="true">
         </div>
 
@@ -185,12 +185,12 @@
             type="button"
             onclick={() => insert('```\n', '\n```')}
             aria-label="Code block"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
             <SquareCode class="size-4" />
         </button>
 
         <div
-            class="mx-1 h-4 w-px shrink-0 bg-border-subtle"
+            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
             aria-hidden="true">
         </div>
 
@@ -235,7 +235,7 @@
                     aria-label="More formatting options"
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
-                    class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                    class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
                     <Ellipsis class="size-4" />
                 </button>
             {/snippet}

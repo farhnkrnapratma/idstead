@@ -320,7 +320,7 @@
     class="flex min-w-0 flex-col gap-4">
     <div>
         <h1 class="type-page-title">Settings</h1>
-        <p class="mt-1 type-body text-text-secondary">
+        <p class="mt-1 type-body text-fg-secondary">
             Manage appearance, account security, and site data.
         </p>
     </div>
@@ -328,7 +328,7 @@
     <nav
         aria-label="Settings sections"
         data-sveltekit-preload-data="off"
-        class="flex flex-wrap gap-1 border-b border-border-subtle">
+        class="flex flex-wrap gap-1 border-b border-line-subtle">
         {#each tabs as tab (tab.id)}
             <a
                 href={`/?tab=account&settings=${tab.id}`}
@@ -336,8 +336,8 @@
                 class={[
                     'flex min-h-11 items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus-ring',
                     activeTab === tab.id ?
-                        'border-accent text-accent-text'
-                    :   'border-transparent text-text-secondary hover:text-text-primary'
+                        'border-accent text-fg-accent'
+                    :   'border-transparent text-fg-secondary hover:text-fg'
                 ]}
                 onclick={event => selectSection(event, tab.id)}>
                 <tab.icon class="size-4" />
@@ -355,7 +355,7 @@
     {:else if activeTab === 'security'}
         <Card
             variant="bordered"
-            class="border-border-subtle! bg-surface-card!">
+            class="border-line-subtle! bg-surface!">
             <FormSection
                 title="Password"
                 titleClass="type-card-title"
@@ -488,7 +488,7 @@
 
         <Card
             variant="bordered"
-            class="border-border-subtle! bg-surface-card!">
+            class="border-line-subtle! bg-surface!">
             <FormSection
                 title="Two-factor authentication"
                 titleClass="type-card-title"
@@ -496,17 +496,17 @@
                 bare>
                 {#if enrollment}
                     <div
-                        class="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-card p-4 sm:flex-row sm:items-start sm:gap-5">
+                        class="flex flex-col gap-3 rounded-md border border-line-subtle bg-surface p-4 sm:flex-row sm:items-start sm:gap-5">
                         <img
                             src={enrollment.qr}
                             alt="Authenticator QR code"
                             class="size-40 shrink-0 self-center rounded-md bg-white p-2 sm:self-start" />
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs text-text-secondary">
+                            <p class="text-xs text-fg-secondary">
                                 Scan this with your authenticator app, then enter the six-digit code
                                 it shows.
                             </p>
-                            <p class="mt-2 font-mono text-xs break-all text-text-muted select-all">
+                            <p class="mt-2 font-mono text-xs break-all text-fg-muted select-all">
                                 {enrollment.secret}
                             </p>
                             <form
@@ -543,9 +543,9 @@
                     <ul class="flex flex-col gap-2">
                         {#each totpFactors as factor (factor.id)}
                             <li
-                                class="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-card px-4 py-3">
+                                class="flex items-center justify-between gap-3 rounded-md border border-line-subtle bg-surface px-4 py-3">
                                 <span class="flex min-w-0 items-center gap-2">
-                                    <Smartphone class="size-4 shrink-0 text-text-muted" />
+                                    <Smartphone class="size-4 shrink-0 text-fg-muted" />
                                     <span class="min-w-0">
                                         <span class="block truncate text-sm font-bold"
                                             >{factor.friendly_name || 'Authenticator app'}</span>
@@ -587,7 +587,7 @@
 
         <Card
             variant="bordered"
-            class="border-border-subtle! bg-surface-card!">
+            class="border-line-subtle! bg-surface!">
             <FormSection
                 title="Passkeys"
                 titleClass="type-card-title"
@@ -599,9 +599,9 @@
                     <ul class="flex flex-col gap-2">
                         {#each passkeys as factor (factor.id)}
                             <li
-                                class="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-card px-4 py-3">
+                                class="flex items-center justify-between gap-3 rounded-md border border-line-subtle bg-surface px-4 py-3">
                                 <span class="flex min-w-0 items-center gap-2">
-                                    <KeyRound class="size-4 shrink-0 text-text-muted" />
+                                    <KeyRound class="size-4 shrink-0 text-fg-muted" />
                                     <span class="min-w-0">
                                         <span class="block truncate text-sm font-bold"
                                             >{factor.friendly_name || 'Passkey'}</span>
@@ -643,15 +643,15 @@
 
         <Card
             variant="bordered"
-            class="border-border-subtle! bg-surface-card!">
+            class="border-line-subtle! bg-surface!">
             <FormSection
                 title="Sessions"
                 titleClass="type-card-title"
                 description="Signing out everywhere revokes every other browser and device."
                 bare>
                 <div
-                    class="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span class="text-xs text-text-secondary">
+                    class="flex flex-col gap-3 rounded-md border border-line-subtle bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span class="text-xs text-fg-secondary">
                         {#if lastSignInAt}
                             This session signed in <ActivityTimestamp
                                 date={lastSignInAt}

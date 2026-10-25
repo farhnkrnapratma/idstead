@@ -66,12 +66,12 @@
     }
 </script>
 
-<div class="w-full overflow-hidden rounded-md glass-card border border-border-subtle shadow-sm">
+<div class="w-full overflow-hidden rounded-md glass-card border border-line-subtle shadow-sm">
     {#if header || title || meta}
         <div
             class={cn(
                 'flex min-h-10 flex-wrap items-center gap-1.5 px-4 py-1',
-                !toolbar && 'border-b border-border-subtle'
+                !toolbar && 'border-b border-line-subtle'
             )}>
             {#if title}
                 <h2 class="min-w-0 truncate type-card-title">
@@ -80,7 +80,7 @@
             {/if}
             {#if title && meta}
                 <span
-                    class="text-text-muted"
+                    class="text-fg-muted"
                     aria-hidden="true">·</span>
             {/if}
             {#if meta}{@render meta()}{/if}
@@ -94,7 +94,7 @@
         <div class="w-full overflow-x-auto">
             <table
                 class={cn(
-                    'w-full border-separate border-spacing-0 text-xs text-text-primary',
+                    'w-full border-separate border-spacing-0 text-xs text-fg',
                     fixed && 'table-fixed',
                     className
                 )}>
@@ -112,7 +112,7 @@
                             <th
                                 scope="col"
                                 class={cn(
-                                    'h-9 border-b border-border-subtle px-3 text-xs font-semibold tracking-wide text-text-primary first:pl-4 last:pr-4',
+                                    'h-9 border-b border-line-subtle px-3 text-xs font-semibold tracking-wide text-fg first:pl-4 last:pr-4',
                                     alignStyles[col.align || 'left'],
                                     col.class
                                 )}>
@@ -140,8 +140,8 @@
                             {#each columns as col (col.key)}
                                 <td
                                     class={cn(
-                                        'h-9 overflow-hidden px-3 py-0 font-normal text-ellipsis whitespace-nowrap text-text-secondary first:pl-4 last:pr-4',
-                                        i > 0 && 'border-t border-border-subtle',
+                                        'h-9 overflow-hidden px-3 py-0 font-normal text-ellipsis whitespace-nowrap text-fg-secondary first:pl-4 last:pr-4',
+                                        i > 0 && 'border-t border-line-subtle',
                                         alignStyles[col.align || 'left'],
                                         col.class
                                     )}>
@@ -157,7 +157,7 @@
     {/if}
     {#if footer}
         <div
-            class="flex min-h-10 flex-wrap items-center justify-end gap-2 border-t border-border-subtle px-4 py-1">
+            class="flex min-h-10 flex-wrap items-center justify-end gap-2 border-t border-line-subtle px-4 py-1">
             {@render footer()}
         </div>
     {/if}

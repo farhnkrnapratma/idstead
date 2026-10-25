@@ -295,7 +295,7 @@
             class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
             <ArticleHeader
                 {title}
-                titleClass="text-text-primary">
+                titleClass="text-fg">
                 {#snippet meta()}
                     <ArticleMeta
                         layout="single"

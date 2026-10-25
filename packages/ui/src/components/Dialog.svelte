@@ -180,7 +180,7 @@
                         scope: trapShortcuts ? shortcutScope : undefined
                     }}
                     class={cn(
-                        'absolute inline-flex aspect-square h-[1lh] cursor-pointer items-center justify-center rounded-md text-base leading-tight text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
+                        'absolute inline-flex aspect-square h-[1lh] cursor-pointer items-center justify-center rounded-md text-base leading-tight text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring',
                         compact ? 'top-5 right-3.5' : 'top-6 right-4'
                     )}>
                     <X class="size-4" />
@@ -191,7 +191,7 @@
                 <h2
                     id="dialog-title"
                     class={cn(
-                        'flex items-center gap-2 text-base leading-tight font-bold text-text-primary',
+                        'flex items-center gap-2 text-base leading-tight font-bold text-fg',
                         isDestructive ? 'text-danger' : ''
                     )}>
                     {#if isDestructive}
@@ -202,7 +202,7 @@
                 {#if description}
                     <p
                         id="dialog-desc"
-                        class="mt-1 text-xs leading-relaxed text-text-secondary">
+                        class="mt-1 text-xs leading-relaxed text-fg-secondary">
                         {description}
                     </p>
                 {/if}

@@ -11,7 +11,7 @@ The design system is the `@idstead/ui` package (`packages/ui/src`): `components/
 
 1. **Identify the changed files**: every `.svelte` file in the diff (`git diff --name-only develop...HEAD -- '*.svelte'`, or the files you were given). Then list `packages/ui/src/components/` and `packages/ui/src/layout/`, so you know the full inventory before calling anything reinvented.
 
-2. **Design tokens**: grep the changed files for raw hex colors, arbitrary pixel values (`[13px]`), or one-off font stacks. Compare against `packages/ui/src/styles/tokens.css`. Flag any value that duplicates a token instead of using its Tailwind class (`text-text-muted`, `bg-surface-card`, `border-border-subtle`, `max-w-2xs`, …). Widths from the `--container-*` scale follow the user's type scale, while raw rem values do not.
+2. **Design tokens**: grep the changed files for raw hex colors, arbitrary pixel values (`[13px]`), or one-off font stacks. Compare against `packages/ui/src/styles/tokens.css`. Flag any value that duplicates a token instead of using its Tailwind class (`text-fg-muted`, `bg-surface`, `border-line-subtle`, `max-w-2xs`, …). Widths from the `--container-*` scale follow the user's type scale, while raw rem values do not.
 
 3. **Reuse before reinvent**: before any new inline markup for a common pattern, check whether a primitive already covers it:
     - Empty, error and loading states → `EmptyState`, `ErrorState`, `LoadingState`, `SkeletonBlock` (not a hand-rolled "no results" div).

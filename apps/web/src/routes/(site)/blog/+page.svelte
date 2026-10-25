@@ -170,7 +170,7 @@
             <div class="mb-6 flex items-end justify-between gap-4">
                 <div>
                     <h1 class="type-page-title">Blog</h1>
-                    <p class="mt-2 text-sm text-text-secondary">
+                    <p class="mt-2 text-sm text-fg-secondary">
                         Articles on the things I'm building, learning, and thinking about.
                     </p>
                 </div>
@@ -187,7 +187,7 @@
                         aria-label="Subscribe via Atom/RSS feed"
                         keyboardShortcut={buttonKey('feed')}
                         shortcutLabel="RSS feed"
-                        class="mb-0.5 shrink-0 border border-border-subtle bg-surface-card text-text-muted hover:bg-surface-hover hover:text-brand-rss">
+                        class="mb-0.5 shrink-0 border border-line-subtle bg-surface text-fg-muted hover:bg-surface-hover hover:text-brand-rss">
                         {#snippet leading()}
                             <Rss class="size-3.5 select-none" />
                         {/snippet}

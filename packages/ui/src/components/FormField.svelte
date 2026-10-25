@@ -85,7 +85,7 @@
         <div class="flex items-center justify-between">
             <label
                 for={id}
-                class="text-xs font-bold text-text-secondary select-none">
+                class="text-xs font-bold text-fg-secondary select-none">
                 {label}
                 {#if required && !hideAsterisk}
                     <span
@@ -95,13 +95,13 @@
                 {/if}
             </label>
             {#if dynamicCounter}
-                <span class="font-mono text-2xs text-text-muted select-none">{dynamicCounter}</span>
+                <span class="font-mono text-2xs text-fg-muted select-none">{dynamicCounter}</span>
             {/if}
         </div>
     {/if}
 
     {#if description}
-        <p class="text-xs text-text-muted select-none">{description}</p>
+        <p class="text-xs text-fg-muted select-none">{description}</p>
     {/if}
 
     {@render children?.()}
@@ -118,18 +118,18 @@
                         <span class="min-w-0 flex-1 wrap-break-word">{error}</span>
                     </span>
                 {:else if valid}
-                    <span class="flex items-start gap-1.5 text-accent-text">
+                    <span class="flex items-start gap-1.5 text-fg-accent">
                         <CircleCheck class="mt-px size-3 shrink-0 self-start" />
                         <span class="min-w-0 flex-1">Looks good</span>
                     </span>
                 {:else if hintSnippet}
                     <span
                         id="{id}-hint"
-                        class="text-text-muted">{@render hintSnippet()}</span>
+                        class="text-fg-muted">{@render hintSnippet()}</span>
                 {:else if hint}
                     <span
                         id="{id}-hint"
-                        class="text-text-muted">{hint}</span>
+                        class="text-fg-muted">{hint}</span>
                 {/if}
             </div>
         </div>

@@ -20,15 +20,15 @@
 @custom-variant motion-safe (&:where([data-reduce-motion='false'], [data-reduce-motion='false'] *));
 
 @utility type-page-title {
-    @apply text-2xl leading-tight font-bold tracking-tight text-balance text-text-primary sm:text-3xl;
+    @apply text-2xl leading-tight font-bold tracking-tight text-balance text-fg sm:text-3xl;
 }
 
 @utility type-section-title {
-    @apply text-lg leading-snug font-bold tracking-tight text-text-primary sm:text-xl;
+    @apply text-lg leading-snug font-bold tracking-tight text-fg sm:text-xl;
 }
 
 @utility type-card-title {
-    @apply text-base leading-snug font-bold tracking-tight text-text-primary;
+    @apply text-base leading-snug font-bold tracking-tight text-fg;
 }
 
 @utility type-body {
@@ -40,19 +40,19 @@
 }
 
 @utility glass-card {
-    @apply border-0 bg-surface-card text-text-primary shadow-sm dark:border dark:border-white/5 dark:bg-surface-card/70 dark:backdrop-blur-md;
+    @apply border-0 bg-surface text-fg shadow-sm dark:border dark:border-fg/5 dark:bg-surface/70 dark:backdrop-blur-md;
 }
 
 @utility glass-overlay {
-    @apply border-0 bg-surface-card text-text-primary shadow-xl dark:border dark:border-white/8 dark:bg-surface-card/95 dark:backdrop-blur-md;
+    @apply border-0 bg-surface text-fg shadow-xl dark:border dark:border-fg/8 dark:bg-surface/95 dark:backdrop-blur-md;
 }
 
 @utility dashed-surface {
-    @apply rounded-md border border-dashed border-border-subtle bg-surface/30;
+    @apply rounded-md border border-dashed border-line-subtle bg-surface/30;
 }
 
 @utility popover-surface {
-    @apply rounded-md border border-border-subtle/50 bg-surface-card text-text-primary shadow-xl backdrop-blur-none!;
+    @apply rounded-md border border-line-subtle/50 bg-surface text-fg shadow-xl backdrop-blur-none!;
 }
 
 .hljs-addition {
@@ -64,7 +64,7 @@
 }
 
 @utility glass-button {
-    @apply border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-button-surface inset-shadow-button-surface backdrop-blur-md transition-all hover:border-accent hover:bg-surface-card dark:border-white/8 dark:bg-surface-card/60 dark:hover:bg-surface-card/85;
+    @apply border border-line-subtle/50 bg-surface/85 text-fg shadow-button-surface inset-shadow-button-surface backdrop-blur-md transition-all hover:border-accent hover:bg-surface dark:border-fg/8 dark:bg-surface/60 dark:hover:bg-surface/85;
 }
 
 @layer base {
@@ -245,7 +245,7 @@ svg,
 }
 
 ::placeholder {
-    @apply text-text-muted! opacity-75!;
+    @apply text-fg-muted! opacity-75!;
 }
 
 a:focus-visible,
@@ -264,7 +264,7 @@ summary:focus-visible,
 }
 
 :root[data-focus-highlight='true']:not([data-admin-page='true']) :focus {
-    @apply rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-a11y-focus! outline-solid!;
+    @apply rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-highlight! outline-solid!;
     scroll-margin: 0.5rem;
 }
 
@@ -289,7 +289,7 @@ textarea:focus-visible {
 input:not([type='range']):not(.search-input):focus,
 textarea:focus,
 select:focus {
-    @apply border-accent! ring-2! ring-[color-mix(in_srgb,var(--color-accent)_20%,transparent)]!;
+    @apply border-accent! ring-2! ring-accent/20!;
 }
 
 input.input-valid,
@@ -337,15 +337,15 @@ select {
         select,
         textarea:not(.editor-textarea),
         [class*='bg-surface/'],
-        [class*='bg-surface-card/'],
+        [class*='bg-surface/'],
         [class*='bg-surface-subtle/'],
-        [class*='bg-surface-elevated/']
+        [class*='bg-surface/']
     ) {
-    @apply border-border-subtle! bg-surface-card!;
+    @apply border-line-subtle! bg-surface!;
 }
 
 :root[data-solid-surfaces='true'] .glass-button {
-    @apply border-border-subtle! bg-surface-card!;
+    @apply border-line-subtle! bg-surface!;
 }
 
 :root[data-solid-surfaces='true'] .glass-button:hover {
@@ -357,8 +357,8 @@ select {
 }
 
 :root[data-high-contrast='true'] {
-    --color-text-secondary: var(--color-text-primary);
-    --color-text-muted: var(--color-text-secondary);
+    --color-fg-secondary: var(--color-fg);
+    --color-fg-muted: var(--color-fg-secondary);
 }
 
 :root[data-dyslexic-font='true'] {
@@ -492,11 +492,11 @@ select {
     }
 
     mark {
-        @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-accent-text;
+        @apply rounded-md bg-info-subtle px-1 py-0.5 font-normal text-fg-accent;
     }
 
     kbd {
-        @apply inline-block rounded bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.875em] leading-normal font-normal text-inherit;
+        @apply inline-block rounded bg-code-inline px-1.5 py-0.5 font-mono text-[0.875em] leading-normal font-normal text-inherit;
     }
 
     sub {

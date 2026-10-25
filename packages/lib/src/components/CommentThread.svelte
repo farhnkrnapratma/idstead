@@ -306,7 +306,7 @@
         class={cn(
             'comment-row-wrapper flex min-w-0 items-start gap-2.5 rounded-md transition-shadow sm:gap-3',
             focusCommentId === comment.id ?
-                'ring-2 ring-accent ring-offset-2 ring-offset-background'
+                'ring-2 ring-accent ring-offset-2 ring-offset-canvas'
             :   ''
         )}>
         <Avatar
@@ -315,15 +315,15 @@
 
         <div class="min-w-0 flex-1">
             <div
-                class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-left">
+                class="relative inline-block max-w-full rounded-md border border-line-subtle bg-surface px-2 py-1 text-left">
                 <div class="flex min-h-6.5 items-center justify-between gap-3">
                     <div class="flex min-w-0 items-center gap-1">
-                        <span class="truncate text-xs leading-none font-semibold text-text-primary">
+                        <span class="truncate text-xs leading-none font-semibold text-fg">
                             {author}
                         </span>
                         {#if isAuthorComment(comment)}
                             <span
-                                class="inline-flex shrink-0 items-center text-accent-text"
+                                class="inline-flex shrink-0 items-center text-fg-accent"
                                 title="Verified administrator"
                                 aria-label="Verified administrator">
                                 <BadgeCheck class="size-3" />
@@ -397,14 +397,14 @@
                 </div>
                 <div
                     class={cn(
-                        'mt-0.5 type-body font-normal text-text-secondary',
+                        'mt-0.5 type-body font-normal text-fg-secondary',
                         useContentFont && `font-content-${contentFontStore.current}`,
                         useContentFont
                             && contentFontStore.current === 'mono'
                             && 'text-[calc(0.78125rem*var(--type-scale)*var(--a11y-scale))]! sm:text-[calc(0.84375rem*var(--type-scale)*var(--a11y-scale))]!'
                     )}>
                     {#if node.reply_to_author}
-                        <span class="font-normal text-accent-text select-none">
+                        <span class="font-normal text-fg-accent select-none">
                             @{node.reply_to_author}
                         </span>
                     {/if}
@@ -413,7 +413,7 @@
             </div>
 
             <div
-                class="mt-1 ml-1 flex flex-wrap items-center gap-2.5 text-2xs text-text-muted select-none sm:ml-1.5 sm:gap-3">
+                class="mt-1 ml-1 flex flex-wrap items-center gap-2.5 text-2xs text-fg-muted select-none sm:ml-1.5 sm:gap-3">
                 {#if actions}
                     {@render actions(comment)}
                 {:else}
@@ -425,7 +425,7 @@
                     <button
                         type="button"
                         use:shortcut={{ combo: 'T', scope: commentScope, label: 'Toggle replies' }}
-                        class="relative inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent-text hover:underline focus-visible:text-accent-text focus-visible:underline"
+                        class="relative inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-fg-muted transition-colors hover:text-fg-accent hover:underline focus-visible:text-fg-accent focus-visible:underline"
                         aria-expanded={isExpanded}
                         aria-controls={replyContainerId}
                         onclick={() => toggleReplies(comment.id)}>
@@ -488,7 +488,7 @@
             {/snippet}
         </FilterToolbar>
         {#if commentTree.length === 0}
-            <p class="text-xs text-text-muted">No comments match your search or filter.</p>
+            <p class="text-xs text-fg-muted">No comments match your search or filter.</p>
         {/if}
     {/if}
     {#each visibleTree as rootNode (rootNode.comment.id)}

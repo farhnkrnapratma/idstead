@@ -160,7 +160,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="type-page-title">Activity Log</h1>
-            <p class="mt-1 type-body text-text-secondary">Admin activity from the last 30 days.</p>
+            <p class="mt-1 type-body text-fg-secondary">Admin activity from the last 30 days.</p>
         </div>
         {#if total > 0}
             <div class="flex shrink-0 flex-col gap-2 sm:items-end">
@@ -183,7 +183,7 @@
                     </Button>
                 </div>
                 {#if total > ACTIVITY_LOG_EXPORT_LIMIT && !loading && !error}
-                    <p class="max-w-sm text-xs text-text-muted sm:text-right">
+                    <p class="max-w-sm text-xs text-fg-muted sm:text-right">
                         Exports include the first 5,000 matching activities in the selected order.
                     </p>
                 {/if}

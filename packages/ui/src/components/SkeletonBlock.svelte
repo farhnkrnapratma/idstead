@@ -13,7 +13,7 @@
 <div
     aria-hidden="true"
     class={cn(
-        'animate-pulse rounded-md bg-black/6 opacity-100 select-none dark:bg-white/8',
+        'animate-pulse rounded-md bg-fg/6 opacity-100 select-none dark:bg-fg/8',
         height,
         width,
         className

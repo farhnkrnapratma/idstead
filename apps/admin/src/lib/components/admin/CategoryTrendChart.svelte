@@ -118,7 +118,7 @@
         <div class="flex flex-col gap-0.5">
             <h2 class="type-card-title">{title}</h2>
             {#if description}
-                <p class="text-xs text-text-muted">{description}</p>
+                <p class="text-xs text-fg-muted">{description}</p>
             {/if}
         </div>
         <div class="flex items-center gap-2">
@@ -218,7 +218,7 @@
                     <Axis
                         placement="left"
                         grid={{
-                            stroke: 'var(--color-border-subtle)',
+                            stroke: 'var(--color-line-subtle)',
                             dashArray: '3 3',
                             opacity: 0.4
                         }}
@@ -254,8 +254,8 @@
                     {#snippet children({ data: point })}
                         {#if point}
                             <div
-                                class="flex flex-col gap-1 rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
-                                <div class="font-medium text-text-primary">{point.label}</div>
+                                class="flex flex-col gap-1 rounded-md border border-line-subtle bg-surface px-2.5 py-1.5 text-xs shadow-md">
+                                <div class="font-medium text-fg">{point.label}</div>
                                 {#each series as s (s.key)}
                                     {@const value = Number(point[s.key] ?? 0)}
                                     {#if value > 0}
@@ -279,7 +279,7 @@
             role="group"
             aria-label="Legend">
             {#each series as s (s.key)}
-                <span class="flex items-center gap-1.5 text-xs text-text-secondary">
+                <span class="flex items-center gap-1.5 text-xs text-fg-secondary">
                     <span
                         class="size-2.5 shrink-0 rounded-full"
                         style:background={s.color}

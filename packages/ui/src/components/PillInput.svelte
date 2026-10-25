@@ -169,7 +169,7 @@
         inputElement?.focus();
     }}
     class={cn(
-        'relative flex min-h-12 w-full flex-wrap gap-2 rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface-card focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-white/10 dark:bg-surface-card/70 dark:focus-within:bg-surface-card/90',
+        'relative flex min-h-12 w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
         isFloating ? 'items-start pt-5! pb-1.5!' : 'items-center py-2',
         className
     )}>
@@ -180,8 +180,8 @@
                 'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
                 isFloatingActive ?
                     'top-1.5 text-2xs leading-none font-semibold '
-                        + (isFocused ? 'text-accent-text' : 'text-text-muted')
-                :   'top-3 text-sm text-text-secondary',
+                        + (isFocused ? 'text-fg-accent' : 'text-fg-muted')
+                :   'top-3 text-sm text-fg-secondary',
                 formCtx?.error ? 'text-danger!' : ''
             )}>
             {resolvedLabel}
@@ -194,7 +194,7 @@
     {/if}
     {#if isFloating && resolvedCounter && (hasValue || isFocused)}
         <span
-            class="pointer-events-none absolute top-1.5 right-3 z-10 font-mono text-2xs leading-none text-text-muted select-none">
+            class="pointer-events-none absolute top-1.5 right-3 z-10 font-mono text-2xs leading-none text-fg-muted select-none">
             {resolvedCounter}
         </span>
     {/if}
@@ -206,11 +206,11 @@
             ondragstart={e => handleDragStart(idx, e)}
             ondragover={e => e.preventDefault()}
             ondrop={e => handleDrop(idx, e)}
-            class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-accent-text transition-all hover:border-accent/50">
+            class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-fg-accent transition-all hover:border-accent/50">
             <span
                 data-pill-grip
                 aria-hidden="true"
-                class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-accent-text active:cursor-grabbing">
+                class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-fg-accent active:cursor-grabbing">
                 <GripVertical class="size-2.5" />
             </span>
             {#if editingIdx === idx}
@@ -221,7 +221,7 @@
                     bind:value={editingText}
                     maxlength={maxItemLength}
                     style="--sk-w: {Math.max(editingText.length, 3)}ch"
-                    class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-accent-text shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+                    class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-fg-accent shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
                     onkeydown={e => {
                         const target = e.currentTarget as HTMLInputElement;
                         if (e.key === ',') {
@@ -265,7 +265,7 @@
             <button
                 data-pill-remove
                 type="button"
-                class="relative inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent-text transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 after:rounded-full hover:bg-accent/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring pointer-coarse:after:size-9"
+                class="relative inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-fg-accent transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 after:rounded-full hover:bg-accent/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring pointer-coarse:after:size-9"
                 aria-label="Remove {item}"
                 onclick={() => removeValue(idx)}>
                 <X class="size-2.5" />
@@ -281,7 +281,7 @@
             bind:value={inputValue}
             maxlength={maxItemLength}
             onfocus={() => (isFocused = true)}
-            class="h-5 min-w-10 flex-1 shrink appearance-none border-none bg-transparent p-0 font-sans text-sm leading-5 text-text-primary shadow-none ring-0 ring-offset-0 outline-none placeholder:text-text-muted/60 focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+            class="h-5 min-w-10 flex-1 shrink appearance-none border-none bg-transparent p-0 font-sans text-sm leading-5 text-fg shadow-none ring-0 ring-offset-0 outline-none placeholder:text-fg-muted/60 focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
             placeholder={isFloating ? ''
             : value.length === 0 ? placeholderEmpty
             : placeholderFilled}

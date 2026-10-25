@@ -6,7 +6,7 @@
 </script>
 
 <div class="flex items-center gap-1.5 px-2 pb-1.5">
-    <h3 class="text-xxs font-bold tracking-wider text-text-muted">{label}</h3>
+    <h3 class="text-xxs font-bold tracking-wider text-fg-muted">{label}</h3>
     {#if context}
         <Tooltip
             content={context}
@@ -15,7 +15,7 @@
             <button
                 type="button"
                 aria-label={`${label}: ${context}`}
-                class="inline-flex size-5 shrink-0 cursor-help items-center justify-center rounded-sm text-text-muted transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
+                class="inline-flex size-5 shrink-0 cursor-help items-center justify-center rounded-sm text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring">
                 <Info
                     class="size-3.5"
                     aria-hidden="true" />

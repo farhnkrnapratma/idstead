@@ -22,11 +22,11 @@
 </script>
 
 <div class={cn('flex flex-col items-center justify-center p-8 text-center select-none', className)}>
-    <div class="mb-3 flex items-center justify-center text-text-muted">
+    <div class="mb-3 flex items-center justify-center text-fg-muted">
         <Icon class={cn('size-7', iconClass)} />
     </div>
     <h3 class="type-card-title">{title}</h3>
-    <p class="mt-1 max-w-xs type-body text-text-muted">{description}</p>
+    <p class="mt-1 max-w-xs type-body text-fg-muted">{description}</p>
 
     {#if actions}
         <div class="mt-4 flex items-center gap-2">

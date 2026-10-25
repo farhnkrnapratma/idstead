@@ -12,12 +12,12 @@
 </script>
 
 {#if showTerms || showPrivacy}
-    <p class="text-xs text-text-secondary">
+    <p class="text-xs text-fg-secondary">
         By {action}, you agree to our
         {#if showTerms}
             <a
                 href="/terms"
-                class="text-accent-text underline hover:text-accent-hover">Terms of Service</a>
+                class="text-fg-accent underline hover:text-accent-hover">Terms of Service</a>
         {/if}
         {#if showTerms && showPrivacy}
             and
@@ -25,7 +25,7 @@
         {#if showPrivacy}
             <a
                 href="/privacy"
-                class="text-accent-text underline hover:text-accent-hover">Privacy Policy</a>
+                class="text-fg-accent underline hover:text-accent-hover">Privacy Policy</a>
         {/if}.
     </p>
 {/if}

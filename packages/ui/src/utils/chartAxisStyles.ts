@@ -1,6 +1,6 @@
 export const ADMIN_CHART_AXIS_CLASSES = {
-    tickLabel: 'text-xxs fill-text-muted font-mono',
-    rule: 'stroke-border-subtle'
+    tickLabel: 'text-xxs fill-fg-muted font-mono',
+    rule: 'stroke-line-subtle'
 };
 
 export const ADMIN_CHART_PADDING = { top: 16, right: 48, bottom: 48, left: 64 };

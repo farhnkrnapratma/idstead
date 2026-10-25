@@ -62,7 +62,7 @@
                     {title}
                 </h3>
                 {#if currentVoted === null}
-                    <p class="font-sans text-xs text-text-secondary sm:text-sm">
+                    <p class="font-sans text-xs text-fg-secondary sm:text-sm">
                         {subtitle}
                     </p>
                 {/if}
@@ -70,7 +70,7 @@
 
             {#if currentVoted !== null}
                 <div
-                    class="flex items-center justify-center gap-2 text-sm font-semibold text-accent-text sm:justify-start">
+                    class="flex items-center justify-center gap-2 text-sm font-semibold text-fg-accent sm:justify-start">
                     <CircleCheck class="size-4 shrink-0" />
                     <span>Thanks for your feedback!</span>
                 </div>
@@ -79,7 +79,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-success-text/30 bg-success-text/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-success-text! hover:border-success-text/60 hover:bg-success-text/15! active:scale-95 disabled:cursor-wait!"
+                        class="h-auto! justify-start! border border-fg-success/30 bg-fg-success/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-success! hover:border-fg-success/60 hover:bg-fg-success/15! active:scale-95 disabled:cursor-wait!"
                         keyboardShortcut={buttonKey('helpfulYes')}
                         shortcutLabel="Helpful: yes"
                         disabled={!ready || pending}
@@ -94,7 +94,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-danger-text/30 bg-danger-text/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-danger-text! hover:border-danger-text/60 hover:bg-danger-text/15! active:scale-95 disabled:cursor-wait!"
+                        class="h-auto! justify-start! border border-fg-danger/30 bg-fg-danger/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-danger! hover:border-fg-danger/60 hover:bg-fg-danger/15! active:scale-95 disabled:cursor-wait!"
                         keyboardShortcut={buttonKey('helpfulNo')}
                         shortcutLabel="Helpful: no"
                         disabled={!ready || pending}
@@ -115,7 +115,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent-text! focus-visible:outline-none"
+                        class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-fg-accent! focus-visible:outline-none"
                         keyboardShortcut={buttonKey('shareFeedback')}
                         shortcutLabel="Share your feedback"
                         shortcutPlacement="after"
@@ -127,7 +127,7 @@
                 <Button
                     type="ghost"
                     size="sm"
-                    class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent-text! focus-visible:outline-none"
+                    class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-fg-accent! focus-visible:outline-none"
                     keyboardShortcut={buttonKey('share')}
                     shortcutLabel={shareLabel}
                     shortcutPlacement="after"
@@ -141,13 +141,13 @@
             class="relative hidden size-20 shrink-0 items-center justify-center sm:flex"
             aria-hidden="true">
             <div
-                class="absolute inset-0 rounded-full border border-dashed border-border-subtle/80 bg-surface-elevated/40">
+                class="absolute inset-0 rounded-full border border-dashed border-line-subtle/80 bg-surface/40">
             </div>
             <MessageSquareQuote
-                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent-text"
+                class="absolute top-4 left-4 size-9 fill-accent/15 text-fg-accent"
                 strokeWidth={1.5} />
             <AtSign
-                class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-green-3"
+                class="absolute right-3 bottom-3 size-8 rounded-full bg-surface p-1 text-success"
                 strokeWidth={1.75} />
         </div>
     </div>

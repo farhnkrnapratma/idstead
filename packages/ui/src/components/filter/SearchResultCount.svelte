@@ -20,16 +20,13 @@
 
 {#if !loading && total > 0}
     <div
-        class={cn(
-            'text-xs font-normal whitespace-nowrap text-text-secondary select-none',
-            className
-        )}
+        class={cn('text-xs font-normal whitespace-nowrap text-fg-secondary select-none', className)}
         aria-live="polite"
         aria-atomic="true">
         Showing
-        <span class="font-bold text-accent-text">{count}</span>
+        <span class="font-bold text-fg-accent">{count}</span>
         of
-        <span class="font-bold text-accent-text">{total}</span>
+        <span class="font-bold text-fg-accent">{total}</span>
         {itemLabel}
     </div>
 {/if}

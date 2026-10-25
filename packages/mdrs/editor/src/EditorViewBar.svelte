@@ -54,7 +54,7 @@
                 class="editor-tab touch-target relative inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
                     activeTab === 'editor'
                 ) ?
-                    'bg-accent-contrast-bg text-text-on-accent! shadow-xs'
+                    'bg-accent-strong text-on-accent! shadow-xs'
                 :   'editor-tab-inactive'}">
                 Edit
             </button>
@@ -66,7 +66,7 @@
                 class="editor-tab touch-target relative inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
                     activeTab === 'preview'
                 ) ?
-                    'bg-accent-contrast-bg text-text-on-accent! shadow-xs'
+                    'bg-accent-strong text-on-accent! shadow-xs'
                 :   'editor-tab-inactive'}">
                 Preview
             </button>
@@ -177,13 +177,13 @@
                         {/snippet}
                         <div class="flex max-w-[calc(100vw-1rem)] min-w-56 flex-col text-xs">
                             <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-text-muted">Indent mode</span>
+                                <span class="text-fg-muted">Indent mode</span>
                                 <IconButton
                                     ariaLabel="Indent mode: {preferences.indentMode === 'spaces' ?
                                         'Spaces'
                                     :   'Tabs'}"
                                     size="xs"
-                                    class="text-text-secondary hover:text-accent-text"
+                                    class="text-fg-secondary hover:text-fg-accent"
                                     onclick={() => preferences.toggleIndentMode()}>
                                     {#if preferences.indentMode === 'spaces'}
                                         <Space class="size-3.5" />
@@ -193,7 +193,7 @@
                                 </IconButton>
                             </div>
                             <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-text-muted">Indent size</span>
+                                <span class="text-fg-muted">Indent size</span>
                                 <div class="flex items-center gap-1">
                                     {#each INDENT_SIZES as size (size)}
                                         <button
@@ -201,10 +201,10 @@
                                             aria-pressed={preferences.indentSize === size}
                                             onclick={() => preferences.setIndentSize(size)}
                                             class={cn(
-                                                'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent-text',
+                                                'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-fg-accent',
                                                 preferences.indentSize === size ?
-                                                    'bg-accent/10 font-semibold text-accent-text'
-                                                :   'text-text-secondary'
+                                                    'bg-accent/10 font-semibold text-fg-accent'
+                                                :   'text-fg-secondary'
                                             )}>
                                             {size}
                                         </button>
@@ -212,13 +212,13 @@
                                 </div>
                             </div>
                             <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-text-muted">Line wrapping</span>
+                                <span class="text-fg-muted">Line wrapping</span>
                                 <IconButton
                                     ariaLabel="Line wrapping: {preferences.lineWrapMode === 'soft' ?
                                         'Wrap'
                                     :   'Nowrap'}"
                                     size="xs"
-                                    class="text-text-secondary hover:text-accent-text"
+                                    class="text-fg-secondary hover:text-fg-accent"
                                     onclick={() => preferences.toggleLineWrap()}>
                                     {#if preferences.lineWrapMode === 'soft'}
                                         <TextWrap class="size-3.5" />
@@ -228,13 +228,13 @@
                                 </IconButton>
                             </div>
                             <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-text-muted">Line numbers</span>
+                                <span class="text-fg-muted">Line numbers</span>
                                 <IconButton
                                     ariaLabel="Line numbers: {preferences.showLineNumbers ? 'on' : (
                                         'off'
                                     )}"
                                     size="xs"
-                                    class="text-text-secondary hover:text-accent-text"
+                                    class="text-fg-secondary hover:text-fg-accent"
                                     onclick={() => preferences.toggleLineNumbers()}>
                                     {#if preferences.showLineNumbers}
                                         <ListOrdered class="size-3.5" />

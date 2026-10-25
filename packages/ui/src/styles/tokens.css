@@ -1,35 +1,4 @@
 @theme {
-    --color-notification-unread: color-mix(
-        in srgb,
-        var(--color-accent) 6%,
-        var(--color-surface-card)
-    );
-    --color-notification-unread-hover: color-mix(
-        in srgb,
-        var(--color-accent) 12%,
-        var(--color-surface-card)
-    );
-    --color-calendar-0: color-mix(in srgb, var(--color-text-muted) 10%, var(--color-surface-card));
-    --color-calendar-1: color-mix(in srgb, var(--color-accent) 25%, var(--color-surface-card));
-    --color-calendar-2: color-mix(in srgb, var(--color-accent) 45%, var(--color-surface-card));
-    --color-calendar-3: color-mix(in srgb, var(--color-accent) 70%, var(--color-surface-card));
-    --color-calendar-4: var(--color-accent);
-    --color-activity-comment: #1d4ed8;
-    --color-activity-helpful: #047857;
-    --color-activity-unhelpful: #be123c;
-    --color-activity-report: #92400e;
-    --color-activity-message: #6d28d9;
-    --color-activity-feedback: #0e7490;
-    --color-report-spam: #b91c1c;
-    --color-report-harassment: #92400e;
-    --color-report-violence: #c2410c;
-    --color-report-sexual: #be185d;
-    --color-report-self-harm: #7e22ce;
-    --color-report-impersonation: #0f766e;
-    --color-report-privacy: #1d4ed8;
-    --color-report-misinformation: #0e7490;
-    --color-report-other: #475569;
-
     --font-sans: 'iA Writer Quattro', 'Noto Sans Variable', ui-sans-serif, system-ui, sans-serif;
     --font-serif:
         'IBM Plex Serif', 'Noto Serif Variable', Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -40,81 +9,104 @@
     --text-xxs: 0.6875rem;
     --text-code: 0.8rem;
 
-    --color-gh-green: #0fbf3e;
-    --color-gh-gray-2: #e4ebe6;
-    --color-gh-gray-5: #232925;
-    --color-gh-gray-6: #101411;
-    --color-gh-green-3: #5fed83;
-    --color-copilot-purple: #8534f3;
+    --color-canvas: var(--color-mist-100);
+    --color-surface: var(--color-white);
+    --color-surface-subtle: var(--color-mist-200);
+    --color-surface-muted: color-mix(in srgb, var(--color-fg) 5%, var(--color-surface));
+    --color-surface-hover: color-mix(in oklab, var(--color-mist-950) 4%, transparent);
+    --color-overlay: color-mix(in oklab, var(--color-mist-950) 55%, transparent);
 
-    --color-background: #f2f5f3;
-    --color-surface-base: #f2f5f3;
-    --color-surface: #ffffff;
-    --color-surface-card: #ffffff;
-    --color-surface-subtle: #e4ebe6;
-    --color-surface-elevated: #ffffff;
-    --color-button-tertiary: color-mix(
+    --color-fg: var(--color-mist-950);
+    --color-fg-secondary: var(--color-mist-800);
+    --color-fg-muted: var(--color-mist-600);
+    --color-fg-accent: var(--color-blue-700);
+    --color-fg-success: var(--color-emerald-700);
+    --color-fg-warning: var(--color-orange-700);
+    --color-fg-danger: var(--color-rose-700);
+    --color-on-accent: var(--color-white);
+    --color-on-accent-hover: var(--color-white);
+    --color-on-danger: var(--color-white);
+
+    --color-line-subtle: var(--color-mist-200);
+    --color-line: var(--color-mist-400);
+    --color-line-strong: var(--color-mist-500);
+
+    --color-accent: var(--color-blue-500);
+    --color-accent-hover: var(--color-blue-600);
+    --color-accent-active: var(--color-blue-700);
+    --color-accent-strong: var(--color-blue-700);
+    --color-accent-subtle: color-mix(in oklab, var(--color-blue-500) 8%, transparent);
+    --color-focus-ring: var(--color-blue-700);
+    --color-highlight: var(--color-amber-400);
+
+    --color-info: var(--color-blue-500);
+    --color-info-subtle: color-mix(in oklab, var(--color-blue-500) 8%, transparent);
+    --color-success: var(--color-green-500);
+    --color-success-subtle: color-mix(in oklab, var(--color-green-500) 8%, transparent);
+    --color-warning: var(--color-orange-400);
+    --color-warning-subtle: color-mix(in oklab, var(--color-orange-400) 8%, transparent);
+    --color-danger: var(--color-red-500);
+    --color-danger-subtle: color-mix(in oklab, var(--color-red-500) 8%, transparent);
+    --color-danger-strong: var(--color-red-700);
+    --color-danger-strong-hover: var(--color-red-800);
+    --color-discovery: var(--color-violet-600);
+    --color-discovery-subtle: color-mix(in oklab, var(--color-violet-600) 8%, transparent);
+
+    --color-shimmer: var(--color-mist-400);
+    --color-brand-rss: var(--color-orange-500);
+
+    --color-code-deletion: var(--color-red-700);
+    --color-code-addition: var(--color-emerald-700);
+    --color-code-thumb: color-mix(in oklab, var(--color-mist-800) 35%, transparent);
+    --color-code-thumb-hover: color-mix(in oklab, var(--color-mist-800) 55%, transparent);
+    --color-code-inline: color-mix(in oklab, var(--color-mist-950) 8%, transparent);
+
+    --color-notification-unread: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+    --color-notification-unread-hover: color-mix(
         in srgb,
-        var(--color-text-primary) 5%,
-        var(--color-surface-card)
+        var(--color-accent) 12%,
+        var(--color-surface)
     );
-    --color-surface-hover: rgba(16, 20, 17, 0.04);
-    --color-text-primary: #101411;
-    --color-text-secondary: #232925;
-    --color-text-muted: #626964;
-    --color-text-on-accent: #ffffff;
-    --color-text-on-accent-hover: #ffffff;
-    --color-border-subtle: #e4ebe6;
-    --color-border-default: #b6bfb8;
-    --color-border-strong: #909692;
-    --color-border-tree: var(--color-gh-gray-2);
-    --color-accent: #3094ff;
-    --color-accent-hover: #1a61fe;
-    --color-accent-active: #0527fc;
-    --color-accent-subtle: rgba(48, 148, 255, 0.08);
-    --color-accent-contrast-bg: #0065d1;
-    --color-accent-text: #0065d1;
-    --color-copilot: #8534f3;
-    --color-copilot-subtle: rgba(133, 52, 243, 0.08);
-    --color-security: #3094ff;
-    --color-security-subtle: rgba(48, 148, 255, 0.08);
-    --color-success: #0fbf3e;
-    --color-success-subtle: rgba(15, 191, 62, 0.08);
-    --color-success-strong: #0a241b;
-    --color-success-text: #007a55;
-    --color-warning: #f08a3a;
-    --color-warning-subtle: rgba(240, 138, 58, 0.08);
-    --color-warning-text: #a14d0b;
-    --color-danger: #fe4c25;
-    --color-danger-hover: #c53211;
-    --color-danger-subtle: rgba(254, 76, 37, 0.08);
-    --color-danger-text: #c70036;
-    --color-danger-contrast: #c53211;
-    --color-danger-contrast-hover: #a3290e;
-    --color-text-on-danger: #ffffff;
-    --color-warning-strong: #c53211;
-    --color-overlay: rgba(16, 20, 17, 0.55);
-    --color-focus-ring: #0065d1;
-    --color-a11y-focus: #ffbf00;
-    --color-shiny-text: #b5b5b5;
-    --color-brand-rss: #f26522;
-    --color-code-chrome: #f6f6f6;
-    --color-code-fg: #2f3337;
-    --color-code-deletion: #c02d2e;
-    --color-code-addition: #2f6f44;
-    --color-code-thumb: color-mix(in srgb, #2f3337 35%, transparent);
-    --color-code-thumb-hover: color-mix(in srgb, #2f3337 55%, transparent);
-    --color-code-inline-bg: rgba(16, 20, 17, 0.08);
-    --color-button-highlight: rgb(255 255 255 / 0.3);
-    --color-button-edge: rgb(0 0 0 / 0.18);
-    --color-button-contact: rgb(16 20 17 / 0.22);
-    --color-button-sheen: rgb(255 255 255 / 0.9);
-    --color-button-rim: rgb(16 20 17 / 0.06);
-    --color-button-pressed: rgb(0 0 0 / 0.22);
-    --color-accent-sheen: color-mix(in oklab, var(--color-accent-contrast-bg), white 14%);
-    --color-accent-hover-sheen: color-mix(in oklab, var(--color-accent-hover), white 14%);
-    --color-danger-sheen: color-mix(in oklab, var(--color-danger-contrast), white 14%);
-    --color-danger-hover-sheen: color-mix(in oklab, var(--color-danger-contrast-hover), white 14%);
+    --color-calendar-0: color-mix(in srgb, var(--color-fg-muted) 10%, var(--color-surface));
+    --color-calendar-1: color-mix(in srgb, var(--color-accent) 25%, var(--color-surface));
+    --color-calendar-2: color-mix(in srgb, var(--color-accent) 45%, var(--color-surface));
+    --color-calendar-3: color-mix(in srgb, var(--color-accent) 70%, var(--color-surface));
+    --color-calendar-4: var(--color-accent);
+
+    --color-activity-comment: var(--color-blue-700);
+    --color-activity-helpful: var(--color-emerald-700);
+    --color-activity-unhelpful: var(--color-rose-700);
+    --color-activity-report: var(--color-amber-800);
+    --color-activity-message: var(--color-violet-700);
+    --color-activity-feedback: var(--color-cyan-700);
+    --color-report-spam: var(--color-red-700);
+    --color-report-harassment: var(--color-amber-800);
+    --color-report-violence: var(--color-orange-700);
+    --color-report-sexual: var(--color-pink-700);
+    --color-report-self-harm: var(--color-purple-700);
+    --color-report-impersonation: var(--color-teal-700);
+    --color-report-privacy: var(--color-blue-700);
+    --color-report-misinformation: var(--color-cyan-700);
+    --color-report-other: var(--color-slate-600);
+
+    --color-button-highlight: color-mix(in oklab, var(--color-white) 30%, transparent);
+    --color-button-edge: color-mix(in oklab, var(--color-black) 18%, transparent);
+    --color-button-contact: color-mix(in oklab, var(--color-mist-950) 22%, transparent);
+    --color-button-sheen: color-mix(in oklab, var(--color-white) 90%, transparent);
+    --color-button-rim: color-mix(in oklab, var(--color-mist-950) 6%, transparent);
+    --color-button-pressed: color-mix(in oklab, var(--color-black) 22%, transparent);
+    --color-accent-sheen: color-mix(in oklab, var(--color-accent-strong), var(--color-white) 14%);
+    --color-accent-hover-sheen: color-mix(
+        in oklab,
+        var(--color-accent-hover),
+        var(--color-white) 14%
+    );
+    --color-danger-sheen: color-mix(in oklab, var(--color-danger-strong), var(--color-white) 14%);
+    --color-danger-hover-sheen: color-mix(
+        in oklab,
+        var(--color-danger-strong-hover),
+        var(--color-white) 14%
+    );
 
     --inset-shadow-button-fill:
         inset 0 1px 0 var(--color-button-highlight), inset 0 -2px 0 var(--color-button-edge);
@@ -125,107 +117,88 @@
         color-mix(in srgb, var(--color-button-contact) 45%, transparent);
     --shadow-button-accent:
         0 1px 2px var(--color-button-contact),
-        0 6px 18px -6px color-mix(in srgb, var(--color-accent-contrast-bg) 50%, transparent);
+        0 6px 18px -6px color-mix(in srgb, var(--color-accent-strong) 50%, transparent);
     --shadow-button-accent-hover:
         0 1px 2px var(--color-button-contact),
         0 8px 22px -6px color-mix(in srgb, var(--color-accent-hover) 60%, transparent);
     --shadow-button-danger:
         0 1px 2px var(--color-button-contact),
-        0 6px 18px -6px color-mix(in srgb, var(--color-danger-contrast) 50%, transparent);
+        0 6px 18px -6px color-mix(in srgb, var(--color-danger-strong) 50%, transparent);
     --shadow-button-danger-hover:
         0 1px 2px var(--color-button-contact),
-        0 8px 22px -6px color-mix(in srgb, var(--color-danger-contrast-hover) 60%, transparent);
+        0 8px 22px -6px color-mix(in srgb, var(--color-danger-strong-hover) 60%, transparent);
 }
 
 :root.dark {
-    --color-notification-unread: color-mix(
-        in srgb,
-        var(--color-accent) 10%,
-        var(--color-surface-card)
-    );
+    --color-canvas: var(--color-mist-950);
+    --color-surface: var(--color-mist-900);
+    --color-surface-subtle: var(--color-emerald-950);
+    --color-surface-muted: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface));
+    --color-surface-hover: color-mix(in oklab, var(--color-mist-100) 5%, transparent);
+    --color-overlay: color-mix(in oklab, var(--color-black) 85%, transparent);
+
+    --color-fg: var(--color-mist-100);
+    --color-fg-secondary: var(--color-mist-300);
+    --color-fg-muted: var(--color-mist-400);
+    --color-fg-accent: var(--color-blue-400);
+    --color-fg-success: var(--color-emerald-400);
+    --color-fg-warning: var(--color-orange-300);
+    --color-fg-danger: var(--color-rose-400);
+    --color-on-accent-hover: var(--color-mist-950);
+    --color-on-danger: var(--color-mist-950);
+
+    --color-line-subtle: color-mix(in oklab, var(--color-mist-200) 12%, transparent);
+    --color-line: color-mix(in oklab, var(--color-mist-400) 38%, transparent);
+    --color-line-strong: var(--color-mist-400);
+
+    --color-accent-hover: var(--color-cyan-200);
+    --color-accent-active: var(--color-blue-600);
+    --color-accent-subtle: color-mix(in oklab, var(--color-blue-500) 14%, transparent);
+    --color-focus-ring: var(--color-blue-400);
+
+    --color-info-subtle: color-mix(in oklab, var(--color-blue-500) 14%, transparent);
+    --color-success: var(--color-green-400);
+    --color-success-subtle: color-mix(in oklab, var(--color-green-400) 14%, transparent);
+    --color-warning-subtle: color-mix(in oklab, var(--color-orange-400) 14%, transparent);
+    --color-danger-subtle: color-mix(in oklab, var(--color-red-500) 14%, transparent);
+    --color-danger-strong: var(--color-red-500);
+    --color-danger-strong-hover: var(--color-red-300);
+    --color-discovery: var(--color-purple-400);
+    --color-discovery-subtle: color-mix(in oklab, var(--color-purple-400) 14%, transparent);
+
+    --color-code-deletion: var(--color-red-400);
+    --color-code-addition: var(--color-emerald-400);
+    --color-code-thumb: color-mix(in oklab, var(--color-white) 35%, transparent);
+    --color-code-thumb-hover: color-mix(in oklab, var(--color-white) 55%, transparent);
+    --color-code-inline: color-mix(in oklab, var(--color-mist-100) 12%, transparent);
+
+    --color-notification-unread: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
     --color-notification-unread-hover: color-mix(
         in srgb,
         var(--color-accent) 16%,
-        var(--color-surface-card)
+        var(--color-surface)
     );
-    --color-calendar-0: color-mix(in srgb, var(--color-text-muted) 10%, var(--color-surface-card));
-    --color-calendar-1: color-mix(in srgb, var(--color-accent) 25%, var(--color-surface-card));
-    --color-calendar-2: color-mix(in srgb, var(--color-accent) 45%, var(--color-surface-card));
-    --color-calendar-3: color-mix(in srgb, var(--color-accent) 70%, var(--color-surface-card));
-    --color-calendar-4: var(--color-accent);
-    --color-activity-comment: #60a5fa;
-    --color-activity-helpful: #34d399;
-    --color-activity-unhelpful: #fb7185;
-    --color-activity-report: #fbbf24;
-    --color-activity-message: #a78bfa;
-    --color-activity-feedback: #22d3ee;
-    --color-background: #050705;
-    --color-surface-base: #050705;
-    --color-surface: #101411;
-    --color-surface-card: #101411;
-    --color-surface-subtle: #0a241b;
-    --color-surface-elevated: #101411;
-    --color-button-tertiary: color-mix(
-        in srgb,
-        var(--color-text-primary) 8%,
-        var(--color-surface-card)
-    );
-    --color-surface-hover: rgba(242, 245, 243, 0.05);
-    --color-text-primary: #f2f5f3;
-    --color-text-secondary: #b6bfb8;
-    --color-text-muted: #909692;
-    --color-text-on-accent: #ffffff;
-    --color-text-on-accent-hover: #101411;
-    --color-border-subtle: rgba(228, 235, 230, 0.12);
-    --color-border-default: rgba(182, 191, 184, 0.38);
-    --color-border-strong: #b6bfb8;
-    --color-border-tree: var(--color-gh-gray-5);
-    --color-accent: #3094ff;
-    --color-accent-hover: #9eecff;
-    --color-accent-active: #1a61fe;
-    --color-accent-subtle: rgba(48, 148, 255, 0.14);
-    --color-accent-text: #3094ff;
-    --color-code-chrome: #1c1b1b;
-    --color-code-fg: #ffffff;
-    --color-code-deletion: #de7176;
-    --color-code-addition: #76c490;
-    --color-code-thumb: color-mix(in srgb, #ffffff 35%, transparent);
-    --color-code-thumb-hover: color-mix(in srgb, #ffffff 55%, transparent);
-    --color-code-inline-bg: rgba(242, 245, 243, 0.12);
-    --color-copilot: #b870ff;
-    --color-copilot-subtle: rgba(184, 112, 255, 0.14);
-    --color-security: #3094ff;
-    --color-security-subtle: rgba(48, 148, 255, 0.14);
-    --color-success: #5fed83;
-    --color-success-subtle: rgba(95, 237, 131, 0.14);
-    --color-success-strong: #8cf2a6;
-    --color-success-text: oklch(76.5% 0.177 163.223);
-    --color-warning: #f08a3a;
-    --color-warning-subtle: rgba(240, 138, 58, 0.14);
-    --color-warning-text: #f6a96b;
-    --color-danger: #fe4c25;
-    --color-danger-hover: #f4a876;
-    --color-danger-subtle: rgba(254, 76, 37, 0.14);
-    --color-danger-text: oklch(71.2% 0.194 13.428);
-    --color-danger-contrast: #fe4c25;
-    --color-danger-contrast-hover: #f4a876;
-    --color-text-on-danger: #101411;
-    --color-warning-strong: #f4a876;
-    --color-overlay: rgba(0, 0, 0, 0.85);
-    --color-focus-ring: #3094ff;
-    --color-report-spam: #f87171;
-    --color-report-harassment: #fbbf24;
-    --color-report-violence: #fb923c;
-    --color-report-sexual: #f472b6;
-    --color-report-self-harm: #c084fc;
-    --color-report-impersonation: #2dd4bf;
-    --color-report-privacy: #60a5fa;
-    --color-report-misinformation: #22d3ee;
-    --color-report-other: #94a3b8;
-    --color-button-highlight: rgb(255 255 255 / 0.2);
-    --color-button-edge: rgb(0 0 0 / 0.3);
-    --color-button-contact: rgb(0 0 0 / 0.6);
-    --color-button-sheen: rgb(255 255 255 / 0.06);
-    --color-button-rim: rgb(0 0 0 / 0.35);
-    --color-button-pressed: rgb(0 0 0 / 0.45);
+
+    --color-activity-comment: var(--color-blue-400);
+    --color-activity-helpful: var(--color-emerald-400);
+    --color-activity-unhelpful: var(--color-rose-400);
+    --color-activity-report: var(--color-amber-400);
+    --color-activity-message: var(--color-violet-400);
+    --color-activity-feedback: var(--color-cyan-400);
+    --color-report-spam: var(--color-red-400);
+    --color-report-harassment: var(--color-amber-400);
+    --color-report-violence: var(--color-orange-400);
+    --color-report-sexual: var(--color-pink-400);
+    --color-report-self-harm: var(--color-purple-400);
+    --color-report-impersonation: var(--color-teal-400);
+    --color-report-privacy: var(--color-blue-400);
+    --color-report-misinformation: var(--color-cyan-400);
+    --color-report-other: var(--color-slate-400);
+
+    --color-button-highlight: color-mix(in oklab, var(--color-white) 20%, transparent);
+    --color-button-edge: color-mix(in oklab, var(--color-black) 30%, transparent);
+    --color-button-contact: color-mix(in oklab, var(--color-black) 60%, transparent);
+    --color-button-sheen: color-mix(in oklab, var(--color-white) 6%, transparent);
+    --color-button-rim: color-mix(in oklab, var(--color-black) 35%, transparent);
+    --color-button-pressed: color-mix(in oklab, var(--color-black) 45%, transparent);
 }

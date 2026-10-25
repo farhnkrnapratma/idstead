@@ -162,8 +162,8 @@
             aria-expanded={isOpen}
             onclick={toggle}
             class={cn(
-                'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent-text'
+                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                isOpen && 'border-accent text-fg-accent'
             )}>
             <View class="size-4" />
         </IconButton>
@@ -185,13 +185,12 @@
                 aria-modal="true"
                 aria-label="Reading and display preferences"
                 class="fixed top-1/2 left-1/2 z-70 flex max-h-[calc(100dvh-3rem)] w-76 max-w-[calc(100vw-1.5rem)] -translate-x-1/2 -translate-y-1/2 [touch-action:pan-y] flex-col gap-3 overflow-y-auto overscroll-contain popover-surface p-3.5 shadow-2xl">
-                <div
-                    class="flex items-center justify-between border-b border-border-subtle/50 pb-2">
-                    <span class="text-xs font-bold text-text-primary">Reading & Display</span>
+                <div class="flex items-center justify-between border-b border-line-subtle/50 pb-2">
+                    <span class="text-xs font-bold text-fg">Reading & Display</span>
                     <button
                         type="button"
                         onclick={close}
-                        class="inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                        class="inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring"
                         aria-label="Close reading options">
                         <X class="size-3.5" />
                     </button>
@@ -201,7 +200,7 @@
                     <div
                         role="tablist"
                         aria-label="Reading options categories"
-                        class="grid grid-flow-col gap-1 rounded-md border border-border-subtle/40 bg-surface-hover/40 p-1 select-none">
+                        class="grid grid-flow-col gap-1 rounded-md border border-line-subtle/40 bg-surface-hover/40 p-1 select-none">
                         {#each availableTabs as tab (tab.id)}
                             {@const active = activeTab === tab.id}
                             <button
@@ -214,8 +213,8 @@
                                 class={cn(
                                     'flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
                                     active ?
-                                        'bg-surface-card font-semibold text-accent-text shadow-2xs'
-                                    :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                                        'bg-surface font-semibold text-fg-accent shadow-2xs'
+                                    :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
                                 )}>
                                 <tab.icon class="size-3.5 shrink-0" />
                                 <span>{tab.label}</span>
@@ -239,7 +238,7 @@
                             )}>
                             <div class="flex items-center justify-between gap-2">
                                 <span
-                                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                                    class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
                                     Font
                                 </span>
                                 <button
@@ -247,10 +246,10 @@
                                     onclick={contentFontStore.reset}
                                     aria-disabled={contentFontStore.locked}
                                     class={cn(
-                                        'text-2xs font-semibold text-text-muted underline-offset-2',
+                                        'text-2xs font-semibold text-fg-muted underline-offset-2',
                                         contentFontStore.locked ?
                                             'cursor-not-allowed opacity-50'
-                                        :   'cursor-pointer hover:text-accent-text hover:underline'
+                                        :   'cursor-pointer hover:text-fg-accent hover:underline'
                                     )}>
                                     Reset to default
                                 </button>
@@ -259,7 +258,7 @@
                             {#if contentFontStore.locked}
                                 <p
                                     id="reading-font-locked"
-                                    class="rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-2xs text-text-muted">
+                                    class="rounded-md border border-line-subtle bg-surface px-2.5 py-1.5 text-2xs text-fg-muted">
                                     Locked while the dyslexic-friendly font is on.
                                 </p>
                             {/if}
@@ -283,11 +282,11 @@
                                             contentFontStore.locked
                                                 && 'cursor-not-allowed opacity-50',
                                             selected ?
-                                                'border-accent bg-accent/10 text-accent-text'
+                                                'border-accent bg-accent/10 text-fg-accent'
                                             :   cn(
-                                                    'border-border-subtle bg-surface text-text-secondary',
+                                                    'border-line-subtle bg-surface text-fg-secondary',
                                                     !contentFontStore.locked
-                                                        && 'hover:border-accent/50 hover:text-text-primary'
+                                                        && 'hover:border-accent/50 hover:text-fg'
                                                 )
                                         )}>
                                         <span class={cn('font-medium', opt.fontClass)}>
@@ -299,14 +298,14 @@
                                                 class={cn(
                                                     'absolute size-3.5 transition-all duration-200',
                                                     selected ? 'scale-0 opacity-0' : (
-                                                        'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                                                        'scale-100 text-fg-muted opacity-100 group-hover:text-fg-secondary'
                                                     )
                                                 )} />
                                             <CircleDot
                                                 class={cn(
                                                     'absolute size-3.5 transition-all duration-200',
                                                     selected ?
-                                                        'scale-100 text-accent-text opacity-100'
+                                                        'scale-100 text-fg-accent opacity-100'
                                                     :   'scale-0 opacity-0'
                                                 )} />
                                         </span>
@@ -316,14 +315,14 @@
 
                             <div class="flex flex-col gap-1">
                                 <span
-                                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                                    class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
                                     Preview
                                 </span>
                                 <div
-                                    class="rounded-md border border-border-subtle bg-surface px-2.5 py-2">
+                                    class="rounded-md border border-line-subtle bg-surface px-2.5 py-2">
                                     <span
                                         class={cn(
-                                            'text-xs wrap-break-word whitespace-normal text-text-secondary',
+                                            'text-xs wrap-break-word whitespace-normal text-fg-secondary',
                                             previewFontClass
                                         )}>
                                         Everyone has the right to freedom of thought, conscience and
@@ -347,31 +346,31 @@
                         )}>
                         <div class="flex items-center justify-between gap-2">
                             <span
-                                class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                                class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
                                 Accessibility
                             </span>
                             <button
                                 type="button"
                                 onclick={a11yStore.reset}
-                                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent-text hover:underline">
+                                class="cursor-pointer text-2xs font-semibold text-fg-muted underline-offset-2 hover:text-fg-accent hover:underline">
                                 Reset to default
                             </button>
                         </div>
 
                         <div
-                            class="flex items-center justify-between rounded-md border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
-                            <span class="text-xs text-text-secondary">Text size</span>
+                            class="flex items-center justify-between rounded-md border border-line-subtle bg-surface-hover/50 px-2.5 py-1.5">
+                            <span class="text-xs text-fg-secondary">Text size</span>
                             <div class="flex items-center gap-2">
                                 <button
                                     type="button"
                                     onclick={decreaseFontScale}
                                     disabled={a11yStore.current.fontScale <= fontScales[0]}
-                                    class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                    class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface text-xs font-bold text-fg hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Decrease text size">
                                     -
                                 </button>
                                 <span
-                                    class="min-w-8 text-center font-mono text-xs font-medium text-text-primary">
+                                    class="min-w-8 text-center font-mono text-xs font-medium text-fg">
                                     {a11yStore.current.fontScale}%
                                 </span>
                                 <button
@@ -379,7 +378,7 @@
                                     onclick={increaseFontScale}
                                     disabled={a11yStore.current.fontScale
                                         >= fontScales[fontScales.length - 1]}
-                                    class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                                    class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface text-xs font-bold text-fg hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Increase text size">
                                     +
                                 </button>
@@ -393,7 +392,7 @@
                                 <div
                                     class="group/item flex items-center justify-between gap-2 py-0.5">
                                     <span
-                                        class="flex min-w-0 items-center gap-1.5 text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
+                                        class="flex min-w-0 items-center gap-1.5 text-xs font-normal text-fg-secondary transition-colors group-hover/item:text-fg">
                                         {item.label}
                                         {#if fromDevice}
                                             <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
@@ -412,14 +411,14 @@
                                             class={cn(
                                                 'absolute size-6.5 transition-[transform,opacity] duration-150',
                                                 checked ? 'scale-75 opacity-0' : (
-                                                    'scale-100 text-text-muted opacity-100 group-hover/item:text-text-secondary'
+                                                    'scale-100 text-fg-muted opacity-100 group-hover/item:text-fg-secondary'
                                                 )
                                             )} />
                                         <ToggleRight
                                             class={cn(
                                                 'absolute size-6.5 transition-[transform,opacity] duration-150',
                                                 checked ?
-                                                    'scale-100 text-accent-text opacity-100'
+                                                    'scale-100 text-fg-accent opacity-100'
                                                 :   'scale-75 opacity-0'
                                             )} />
                                     </button>

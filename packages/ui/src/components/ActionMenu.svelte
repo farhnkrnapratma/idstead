@@ -113,7 +113,7 @@
                 {#if 'divider' in item}
                     <div
                         role="separator"
-                        class="h-px shrink-0 bg-border-subtle">
+                        class="h-px shrink-0 bg-line-subtle">
                     </div>
                 {:else}
                     <button

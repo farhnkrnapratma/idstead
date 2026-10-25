@@ -57,8 +57,8 @@ For small changes, set the custom properties on `:root` or on one `.mdrs` contai
 
 | Property | Default | Used for |
 | --- | --- | --- |
-| `--mdrs-color-heading` | `--color-text-primary` | Headings |
-| `--mdrs-color-body` | `--color-text-secondary` | Body text |
+| `--mdrs-color-heading` | `--color-fg` | Headings |
+| `--mdrs-color-body` | `--color-fg-secondary` | Body text |
 | `--mdrs-color-link`, `--mdrs-color-link-hover` | `--color-accent`, `--color-accent-hover` | Links |
 | `--mdrs-step-badge-size`, `--mdrs-step-line-width` | `1.375rem`, `1px` | Step badges and the connecting line |
 

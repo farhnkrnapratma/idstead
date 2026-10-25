@@ -45,8 +45,8 @@
 
     const tone = $derived(
         active ?
-            'border-accent/30 bg-accent/25 text-accent-text'
-        :   'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent-text'
+            'border-accent/30 bg-accent/25 text-fg-accent'
+        :   'border-line-subtle/60 bg-surface text-fg-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-fg-accent'
     );
 </script>
 

@@ -22,10 +22,10 @@
 
     const variantStyles = {
         custom: 'border border-current/30 bg-current/10 text-(--badge-color)',
-        default: 'bg-border-subtle/50 text-text-secondary border border-border-subtle',
-        accent: 'bg-accent-subtle text-accent-text border border-accent/30 font-bold',
-        success: 'bg-success-subtle text-success-strong border border-success/30 font-bold',
-        warning: 'bg-warning-subtle text-warning-strong border border-warning/30 font-bold',
+        default: 'bg-line-subtle/50 text-fg-secondary border border-line-subtle',
+        accent: 'bg-accent-subtle text-fg-accent border border-accent/30 font-bold',
+        success: 'bg-success-subtle text-fg-success border border-success/30 font-bold',
+        warning: 'bg-warning-subtle text-fg-warning border border-warning/30 font-bold',
         danger: 'bg-danger-subtle text-danger border border-danger/30 font-bold'
     };
 

@@ -197,7 +197,7 @@
                     autocomplete="off">
                     <div class="mb-2 select-none">
                         <h2 class="type-card-title">Send a Message</h2>
-                        <p class="mt-0.5 type-body text-text-muted">
+                        <p class="mt-0.5 type-body text-fg-muted">
                             Feel free to drop me a line. I'll get back to you as soon as possible.
                         </p>
                     </div>

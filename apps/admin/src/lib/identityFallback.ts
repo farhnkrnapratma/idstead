@@ -109,12 +109,12 @@ export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElemen
     };
     const rows = bannerLayout(input, measure, Boolean(glyph));
     if (!rows.length) throw new Error('Add a site URL before generating the website banner.');
-    ctx.fillStyle = themeToken('--color-background');
+    ctx.fillStyle = themeToken('--color-canvas');
     ctx.fillRect(0, 0, SITE_BANNER_WIDTH, SITE_BANNER_HEIGHT);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
     for (const row of rows) {
-        ctx.fillStyle = themeToken(row.bold ? '--color-text-primary' : '--color-text-secondary');
+        ctx.fillStyle = themeToken(row.bold ? '--color-fg' : '--color-fg-secondary');
         for (const segment of row.segments) {
             if (segment.kind === 'text') {
                 ctx.font = canvasFont(row.font, row.size, row.bold);

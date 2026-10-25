@@ -24,7 +24,7 @@
         banner = '',
         bannerAlt,
         class: className = '',
-        titleClass = 'text-text-secondary',
+        titleClass = 'text-fg-secondary',
         titleViewTransitionName = '',
         meta
     }: Props = $props();
@@ -42,7 +42,7 @@
     });
 </script>
 
-<header class={cn('article-header border-b border-b-border-subtle pb-4', className)}>
+<header class={cn('article-header border-b border-b-line-subtle pb-4', className)}>
     {#if banner}<ImageWithSkeleton
             src={banner}
             sources={avifSources(banner)}
@@ -94,7 +94,7 @@
     </h1>
 
     {#if excerpt}
-        <p class={cn('font-content-' + contentFontStore.current, 'mt-2 text-base text-text-muted')}>
+        <p class={cn('font-content-' + contentFontStore.current, 'mt-2 text-base text-fg-muted')}>
             {excerpt}
         </p>
     {/if}

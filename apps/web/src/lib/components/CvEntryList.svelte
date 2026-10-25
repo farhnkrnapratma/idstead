@@ -27,7 +27,7 @@
         title={emptyTitle}
         description={emptyDescription} />
 {:else}
-    <div class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card text-left">
+    <div class="divide-y divide-line-subtle/40 overflow-hidden rounded-md glass-card text-left">
         {#if props.kind === 'experience'}
             {#each props.entries as exp (exp.company + exp.location + exp.startYear)}
                 <CvEntryCard

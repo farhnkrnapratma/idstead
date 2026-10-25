@@ -91,7 +91,7 @@
         className.includes('hidden') ? className : `inline-flex ${className}`
     )}>
     {#if label}
-        <span class="text-xs font-medium whitespace-nowrap text-text-secondary">
+        <span class="text-xs font-medium whitespace-nowrap text-fg-secondary">
             {label}
         </span>
     {/if}
@@ -107,7 +107,7 @@
         onclick={handleToggle}
         class={variant === 'ghost' ? 'hover:bg-surface-hover' : (
             cn(
-                'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent-text',
+                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-fg-accent',
                 size !== '2xs' && 'sm:size-9'
             )
         )}>

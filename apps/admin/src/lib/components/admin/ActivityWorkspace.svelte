@@ -566,7 +566,7 @@
             sync();
         }}>
         <h1 class="type-page-title">{title}</h1>
-        <p class="mt-1 type-body text-text-secondary">
+        <p class="mt-1 type-body text-fg-secondary">
             {area === 'reports' ? 'Review flagged comments and decide what to do.'
             : area === 'feedback' ? 'See how readers rate your articles and pages.'
             : 'Recent activity across your site.'}
@@ -625,7 +625,7 @@
                                     kind={event.kind}
                                     vote={event.meta?.vote} />
                                 {#if event.pinned_at}<Pin
-                                        class="size-3 shrink-0 text-text-muted"
+                                        class="size-3 shrink-0 text-fg-muted"
                                         aria-label="Pinned" />{/if}
                             </span>
                         {:else if key === 'page'}
@@ -745,11 +745,11 @@
                                 item={detail.data.savedNotification}
                                 detail />
                             <p
-                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
+                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-fg-secondary">
                                 {detail.data.savedNotification.meta?.comment}
                             </p>
                             <p
-                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
+                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-fg-secondary">
                                 {detail.data.savedNotification.meta?.details}
                             </p></Card>
                     {/if}
@@ -762,22 +762,22 @@
                                     class="size-6.5 sm:size-7" />
                                 <div class="min-w-0 flex-1">
                                     <div
-                                        class="inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-left">
+                                        class="inline-block max-w-full rounded-md border border-line-subtle bg-surface px-2 py-1 text-left">
                                         <div class="flex min-h-6.5 items-center">
                                             <span
-                                                class="truncate text-xs leading-none font-semibold text-text-primary"
+                                                class="truncate text-xs leading-none font-semibold text-fg"
                                                 >{commenter}</span>
                                         </div>
                                         <div
-                                            class="mt-0.5 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
+                                            class="mt-0.5 type-body wrap-break-word whitespace-pre-wrap text-fg-secondary">
                                             {detail.data.context.content}
                                         </div>
                                     </div>
                                     <div
-                                        class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                                        class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-fg-secondary">
                                         <span class="inline-flex items-center gap-1">
                                             <Flag
-                                                class="size-3 text-text-muted"
+                                                class="size-3 text-fg-muted"
                                                 aria-hidden="true" />{pluralize(
                                                 detail.data.context.total,
                                                 'report',
@@ -787,13 +787,13 @@
                                         {#if detail.data.context.commentedAt}
                                             <span class="inline-flex items-center gap-1"
                                                 ><Calendar
-                                                    class="size-3 text-text-muted"
+                                                    class="size-3 text-fg-muted"
                                                     aria-hidden="true" />
                                                 {date(detail.data.context.commentedAt)}</span>
                                         {/if}
                                         <span class="inline-flex items-center gap-1"
                                             ><Hash
-                                                class="size-3 text-text-muted"
+                                                class="size-3 text-fg-muted"
                                                 aria-hidden="true" />
                                             {detail.data.context.id}</span>
                                     </div>
@@ -824,7 +824,7 @@
                                 {detail.data.items[0]?.title
                                     ?? (detailTitle || 'Notification group')}
                             </h2>
-                            <p class="mt-2 type-body text-text-secondary">
+                            <p class="mt-2 type-body text-fg-secondary">
                                 {pluralize(
                                     detail.data.total ?? groupCount ?? 0,
                                     'event',
@@ -860,7 +860,7 @@
 </Section>
 
 {#snippet notificationActions()}
-    <span class="ml-auto text-xs leading-5 text-text-muted"
+    <span class="ml-auto text-xs leading-5 text-fg-muted"
         >{pluralize(inbox.unreadCount, 'unread notification', undefined, formatCount)}</span>
     <Button
         size="xs"
@@ -935,14 +935,14 @@
                                 withAuthor />
                             {#if event.meta?.comment || event.meta?.details}
                                 <details>
-                                    <summary class="cursor-pointer text-accent-text"
+                                    <summary class="cursor-pointer text-fg-accent"
                                         >View saved context</summary>
                                     {#if event.meta.comment}<span
                                             class="mt-1 block wrap-break-word whitespace-pre-wrap"
                                             >{event.meta.comment}</span
                                         >{/if}
                                     {#if event.meta.details}<span
-                                            class="mt-1 block wrap-break-word whitespace-pre-wrap text-text-muted"
+                                            class="mt-1 block wrap-break-word whitespace-pre-wrap text-fg-muted"
                                             >{event.meta.details}</span
                                         >{/if}
                                 </details>
@@ -1029,7 +1029,7 @@
                     {:else if key === 'details'}
                         <span
                             title={item.details || undefined}
-                            class={item.details ? undefined : 'text-text-muted italic'}
+                            class={item.details ? undefined : 'text-fg-muted italic'}
                             >{item.details || 'No additional details provided.'}</span>
                     {:else}
                         <span class="whitespace-nowrap">{date(item.latest)}</span>

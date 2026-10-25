@@ -15,7 +15,7 @@
         error: 'text-danger',
         success: 'text-success',
         warning: 'text-warning',
-        info: 'text-text-muted'
+        info: 'text-fg-muted'
     };
 </script>
 

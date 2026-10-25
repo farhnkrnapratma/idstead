@@ -27,8 +27,8 @@
     const variantStyles = {
         default: 'glass-card',
         glass: 'glass-card',
-        bordered: 'bg-transparent border border-border-subtle/50',
-        solid: 'border-0 dark:border dark:border-white/5 bg-surface-card text-text-primary shadow-sm'
+        bordered: 'bg-transparent border border-line-subtle/50',
+        solid: 'border-0 dark:border dark:border-fg/5 bg-surface text-fg shadow-sm'
     };
 
     const densityStyles = { padded: 'p-3.5 sm:p-6', compact: 'p-2.5 sm:p-4', none: 'p-0' };
@@ -53,7 +53,7 @@
         )}
         {...restProps}>
         {#if header}
-            <div class="mb-4 border-b border-border-subtle pb-3">
+            <div class="mb-4 border-b border-line-subtle pb-3">
                 {@render header()}
             </div>
         {/if}
@@ -61,7 +61,7 @@
         {@render children?.()}
 
         {#if footer}
-            <div class="mt-4 border-t border-border-subtle pt-3">
+            <div class="mt-4 border-t border-line-subtle pt-3">
                 {@render footer()}
             </div>
         {/if}
@@ -76,7 +76,7 @@
         )}
         {...restProps}>
         {#if header}
-            <div class="mb-4 border-b border-border-subtle pb-3">
+            <div class="mb-4 border-b border-line-subtle pb-3">
                 {@render header()}
             </div>
         {/if}
@@ -84,7 +84,7 @@
         {@render children?.()}
 
         {#if footer}
-            <div class="mt-4 border-t border-border-subtle pt-3">
+            <div class="mt-4 border-t border-line-subtle pt-3">
                 {@render footer()}
             </div>
         {/if}

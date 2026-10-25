@@ -16,7 +16,7 @@
     const author = $derived(activityAuthor(item));
     const textClass = $derived(
         cn(
-            'min-w-0 font-sans font-normal text-text-secondary',
+            'min-w-0 font-sans font-normal text-fg-secondary',
             withAuthor ? 'truncate' : 'wrap-break-word'
         )
     );
@@ -26,18 +26,18 @@
     <span
         title={metadata}
         class={textClass}>
-        {#if withAuthor}Reported a comment by {author} for&nbsp;{:else}<span class="text-text-muted"
+        {#if withAuthor}Reported a comment by {author} for&nbsp;{:else}<span class="text-fg-muted"
                 >Reason:&nbsp;</span
             >{/if}{reportReasonLabel(item.meta?.reason ?? 'other')}
     </span>
     {#if item.report_status === 'resolved'}<span
-            class="shrink-0 font-sans font-normal text-text-muted">Resolved</span
+            class="shrink-0 font-sans font-normal text-fg-muted">Resolved</span
         >{/if}
 {:else if item.kind === 'comment_new'}
     <span
         title={metadata}
         class={textClass}>
-        {#if withAuthor}{author} commented:&nbsp;{:else}<span class="text-text-muted"
+        {#if withAuthor}{author} commented:&nbsp;{:else}<span class="text-fg-muted"
                 >Comment:&nbsp;</span
             >{/if}“{item.meta?.comment ?? ''}”
     </span>

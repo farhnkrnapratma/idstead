@@ -54,7 +54,7 @@
                 <Tooltip.Root variant="none">
                     {#snippet children({ data })}
                         {#if data}<div
-                                class="rounded-md border border-border-subtle bg-surface-elevated px-3 py-2 text-xs shadow-md">
+                                class="rounded-md border border-line-subtle bg-surface px-3 py-2 text-xs shadow-md">
                                 {data.label}: {formatCount(data.value)} · {Math.round(
                                     (data.value / total) * 100
                                 )}%
@@ -64,8 +64,8 @@
             </Chart>
             <div
                 class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <strong class="text-2xl text-text-primary">{formatCount(total)}</strong>
-                <span class="text-xs text-text-muted">{unit}</span>
+                <strong class="text-2xl text-fg">{formatCount(total)}</strong>
+                <span class="text-xs text-fg-muted">{unit}</span>
             </div>
         </div>
         <ul class="flex flex-col gap-3 text-sm">
@@ -76,8 +76,7 @@
                         style:background={row.color}
                         aria-hidden="true"></span
                     ><span>{row.label}:</span><strong>{formatCount(row.value)}</strong><span
-                        class="text-text-secondary"
-                        >({Math.round((row.value / total) * 100)}%)</span>
+                        class="text-fg-secondary">({Math.round((row.value / total) * 100)}%)</span>
                 </li>
             {/each}
         </ul>

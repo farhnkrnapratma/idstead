@@ -30,24 +30,24 @@
     let isCopying = $state(false);
     const advancedOptionsId = $props.id();
     const dropdownFocus =
-        '[&>button[aria-expanded=true]]:border-border-default [&>button:focus-visible]:ring-text-muted';
+        '[&>button[aria-expanded=true]]:border-line [&>button:focus-visible]:ring-fg-muted';
     const sliderClass =
-        'h-5 w-full cursor-pointer appearance-none rounded-full border-0 bg-transparent focus-visible:outline-2 focus-visible:outline-text-muted [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:border-0 [&::-webkit-slider-runnable-track]:bg-(image:--slider-background) [&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-accent [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:border-0 [&::-moz-range-track]:bg-(image:--slider-background) [&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent';
+        'h-5 w-full cursor-pointer appearance-none rounded-full border-0 bg-transparent focus-visible:outline-2 focus-visible:outline-fg-muted [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:border-0 [&::-webkit-slider-runnable-track]:bg-(image:--slider-background) [&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-accent [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:border-0 [&::-moz-range-track]:bg-(image:--slider-background) [&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent';
     const sliderProgress = $derived(
         mode === 'random' ?
             ((randomOptions.length - 15) / 49) * 100
         :   ((memorableOptions.words - 8) / 2) * 100
     );
     const sliderBackground = $derived(
-        `linear-gradient(to right, var(--color-accent) ${sliderProgress}%, var(--color-border-default) ${sliderProgress}%)`
+        `linear-gradient(to right, var(--color-accent) ${sliderProgress}%, var(--color-line) ${sliderProgress}%)`
     );
     const previewParts = $derived(
         Array.from(preview.matchAll(/[a-zA-Z]+|\d+|[^a-zA-Z\d]+/g), match => ({
             key: `${generation}:${match.index}`,
             text: match[0],
             color:
-                /^\d/.test(match[0]) ? 'text-copilot'
-                : /^[a-zA-Z]/.test(match[0]) ? 'text-text-primary'
+                /^\d/.test(match[0]) ? 'text-discovery'
+                : /^[a-zA-Z]/.test(match[0]) ? 'text-fg'
                 : 'text-accent-hover'
         }))
     );
@@ -105,7 +105,7 @@
     {disabled}
     aria-haspopup="dialog"
     aria-expanded={isOpen}
-    class="focus-visible:outline-text-muted"
+    class="focus-visible:outline-fg-muted"
     onclick={open}>
     {#snippet leading()}<Sparkles class="size-3.5" />{/snippet}
     Generate password
@@ -115,7 +115,7 @@
     {isOpen}
     title="Generate password"
     size="sm"
-    class="[--color-focus-ring:var(--color-text-muted)]"
+    class="[--color-focus-ring:var(--color-fg-muted)]"
     compact
     scrollBody
     showCloseButton={false}
@@ -151,12 +151,12 @@
         </div>
     {/snippet}
     <div class="flex min-w-0 flex-col gap-4 p-1">
-        <div class="rounded-md border border-border-subtle bg-transparent p-4">
+        <div class="rounded-md border border-line-subtle bg-transparent p-4">
             {#if preview}
                 <p
                     data-sentry-mask
                     aria-label="Generated password"
-                    class="font-mono text-base break-all whitespace-pre-wrap text-text-primary select-text">
+                    class="font-mono text-base break-all whitespace-pre-wrap text-fg select-text">
                     {#each previewParts as part (part.key)}<span class={part.color}
                             >{part.text}</span
                         >{/each}
@@ -186,7 +186,7 @@
             }} />
 
         {#if mode === 'random'}
-            <label class="flex flex-col gap-2 text-xs text-text-secondary">
+            <label class="flex flex-col gap-2 text-xs text-fg-secondary">
                 <span>{randomOptions.length} characters</span>
                 <input
                     type="range"
@@ -214,7 +214,7 @@
                     }
                 } />
         {:else}
-            <label class="flex flex-col gap-2 text-xs text-text-secondary">
+            <label class="flex flex-col gap-2 text-xs text-fg-secondary">
                 <span>{memorableOptions.words} words</span>
                 <input
                     type="range"
@@ -298,7 +298,7 @@
             <Button
                 type="ghost"
                 size="2xs"
-                class="self-end hover:text-text-primary"
+                class="self-end hover:text-fg"
                 aria-expanded={advancedOpen}
                 aria-controls={advancedOptionsId}
                 onclick={() => (advancedOpen = !advancedOpen)}>

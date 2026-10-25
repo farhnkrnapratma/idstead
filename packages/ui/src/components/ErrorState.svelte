@@ -38,17 +38,15 @@
                 <ShinyText
                     text={String(code)}
                     color="var(--color-accent)"
-                    shineColor="#ffffff"
                     speed={3} />
             </p>
         {/if}
-        <h1
-            class="mt-4 text-2xl font-semibold tracking-tight text-balance text-text-primary sm:text-4xl">
+        <h1 class="mt-4 text-2xl font-semibold tracking-tight text-balance text-fg sm:text-4xl">
             {title}
         </h1>
         {#if description}
             <p
-                class="mt-6 text-lg font-medium text-pretty text-text-secondary sm:text-xl md:text-2xl">
+                class="mt-6 text-lg font-medium text-pretty text-fg-secondary sm:text-xl md:text-2xl">
                 {description}
             </p>
         {/if}
@@ -84,7 +82,7 @@
         </div>
         <h3 class="type-card-title">{title}</h3>
         {#if description}
-            <p class="mt-1 max-w-xs type-body text-text-secondary">{description}</p>
+            <p class="mt-1 max-w-xs type-body text-fg-secondary">{description}</p>
         {/if}
 
         {#if onRetry}

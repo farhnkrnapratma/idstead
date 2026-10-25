@@ -12,7 +12,7 @@
 
     const RING_LENGTH = 125.66;
     const toneStyles: Record<CountdownTone, { track: string; arc: string; text: string }> = {
-        normal: { track: 'stroke-accent-subtle', arc: 'stroke-accent', text: 'text-accent-text' },
+        normal: { track: 'stroke-accent-subtle', arc: 'stroke-accent', text: 'text-fg-accent' },
         warning: { track: 'stroke-warning-subtle', arc: 'stroke-warning', text: 'text-warning' },
         danger: { track: 'stroke-danger-subtle', arc: 'stroke-danger', text: 'text-danger' }
     };
@@ -78,8 +78,7 @@
     title="You're about to be signed out"
     description="You've been inactive for a while. Stay signed in to keep working."
     size="md">
-    <div
-        class="mt-4 flex items-center gap-4 rounded-md border border-border-subtle bg-surface-card p-4">
+    <div class="mt-4 flex items-center gap-4 rounded-md border border-line-subtle bg-surface p-4">
         <div class="relative flex size-14 shrink-0 items-center justify-center">
             <svg
                 class="size-14 -rotate-90"
@@ -109,14 +108,14 @@
                 >{remaining}</span>
         </div>
         <div class="min-w-0">
-            <p class="text-sm font-semibold text-text-primary">
+            <p class="text-sm font-semibold text-fg">
                 {#if remaining > 0}
                     Signing out in <span class="font-mono tabular-nums">{clock}</span>
                 {:else}
                     Signing out now…
                 {/if}
             </p>
-            <p class="mt-1 text-xs text-text-secondary">
+            <p class="mt-1 text-xs text-fg-secondary">
                 Staying signed in gives you {extendMinutes} more minutes before the next inactivity check.
             </p>
         </div>

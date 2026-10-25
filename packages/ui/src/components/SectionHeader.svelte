@@ -22,7 +22,7 @@
     <div>
         <h1 class="type-page-title">{title}</h1>
         {#if subtitle}
-            <p class="mt-2 max-w-xl text-sm text-text-secondary">{subtitle}</p>
+            <p class="mt-2 max-w-xl text-sm text-fg-secondary">{subtitle}</p>
         {/if}
     </div>
 

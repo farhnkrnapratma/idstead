@@ -80,28 +80,28 @@
 
 <div
     class={cn(
-        '@container relative overflow-hidden bg-surface-card select-none',
+        '@container relative overflow-hidden bg-surface select-none',
         rounded,
         aspectRatio,
         className
     )}>
     {#if isError || !src}
         <div
-            class="absolute inset-0 flex h-full w-full items-center justify-center bg-black/4 p-1 text-text-muted select-none dark:bg-white/5">
+            class="absolute inset-0 flex h-full w-full items-center justify-center bg-fg/4 p-1 text-fg-muted select-none dark:bg-fg/5">
             {#if isAvatar}
                 <UserIcon
-                    class="size-1/2 text-text-muted"
+                    class="size-1/2 text-fg-muted"
                     aria-hidden="true" />
             {:else}
                 <ImageIcon
-                    class="size-8 text-text-muted"
+                    class="size-8 text-fg-muted"
                     aria-hidden="true" />
             {/if}
         </div>
     {:else}
         {#if !isLoaded}
             <div
-                class="absolute inset-0 flex h-full w-full animate-pulse bg-black/6 dark:bg-white/8"
+                class="absolute inset-0 flex h-full w-full animate-pulse bg-fg/6 dark:bg-fg/8"
                 aria-hidden="true">
             </div>
         {/if}

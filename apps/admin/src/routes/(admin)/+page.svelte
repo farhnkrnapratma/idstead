@@ -3369,7 +3369,7 @@
 
 <div
     id="admin-mobile-header"
-    class="fixed top-0 z-40 flex h-12 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
+    class="fixed top-0 z-40 flex h-12 w-full items-center justify-between border-b border-line-subtle bg-surface px-4 md:hidden">
     <div class="flex items-center gap-2">
         <Button
             id="admin-sidebar-toggle"
@@ -3387,7 +3387,7 @@
                 <Menu class="size-4" />
             {/if}
         </Button>
-        <span class="truncate text-sm font-bold text-text-primary">{adminUserName || 'Admin'}</span>
+        <span class="truncate text-sm font-bold text-fg">{adminUserName || 'Admin'}</span>
     </div>
     <div class="flex items-center gap-1.5">
         <ThemeSelect
@@ -3404,7 +3404,7 @@
         aria-label="Admin sidebar"
         {@attach manageSidebar}
         style="--sidebar-width: {sidebarWidth}px"
-        class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-hidden border-r border-border-subtle bg-surface-card md:sticky md:top-0 md:h-dvh md:translate-x-0 {(
+        class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-hidden border-r border-line-subtle bg-surface md:sticky md:top-0 md:h-dvh md:translate-x-0 {(
             sidebarResizing
         ) ?
             'transition-none will-change-[width]'
@@ -3424,12 +3424,12 @@
             onkeydown={resizeSidebarFromKey}
             class="group absolute inset-y-0 right-0 z-10 hidden w-3 -translate-x-1/2 cursor-col-resize touch-none items-center justify-center focus-visible:outline-2 focus-visible:outline-focus-ring md:flex">
             <span
-                class="pointer-events-none flex h-10 w-3.5 items-center justify-center rounded-sm text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                class="pointer-events-none flex h-10 w-3.5 items-center justify-center rounded-sm text-fg-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                 <GripVertical class="size-3" />
             </span>
         </div>
         <div
-            class="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-card {(
+            class="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-subtle bg-surface {(
                 sidebarCollapsed
             ) ?
                 'px-3 md:justify-center md:px-0'
@@ -3465,10 +3465,10 @@
                             width="w-24"
                             class="mt-1" />
                     {:else}
-                        <span class="truncate text-xs leading-tight font-bold text-text-primary"
+                        <span class="truncate text-xs leading-tight font-bold text-fg"
                             >{adminUserName}</span>
                         <span
-                            class="truncate text-xxs leading-tight text-text-muted"
+                            class="truncate text-xxs leading-tight text-fg-muted"
                             title={adminUserEmail}>{adminUserEmail}</span>
                     {/if}
                 </span>
@@ -3485,7 +3485,7 @@
             {#each adminNavSections as section, sectionIndex (section.id)}
                 {#if section.title}
                     <div
-                        class="px-2 pt-1 pb-1 text-xxs font-bold whitespace-nowrap text-text-muted transition-opacity duration-150 ease-linear select-none starting:opacity-0 {(
+                        class="px-2 pt-1 pb-1 text-xxs font-bold whitespace-nowrap text-fg-muted transition-opacity duration-150 ease-linear select-none starting:opacity-0 {(
                             sectionIndex > 0
                         ) ?
                             'mt-1.5'
@@ -3496,7 +3496,7 @@
                 <div
                     class="flex shrink-0 flex-col gap-0.5 {sidebarCollapsed ? 'md:min-h-0 md:shrink'
                     :   ''} {sectionIndex > 0 && sidebarCollapsed ?
-                        'md:mt-1 md:border-t md:border-border-subtle md:pt-1'
+                        'md:mt-1 md:border-t md:border-line-subtle md:pt-1'
                     :   ''}">
                     {#each adminNavLinks.filter(l => l.section === section.id) as link (link.id)}
                         <Tooltip
@@ -3518,14 +3518,14 @@
                                 :   'gap-2 px-2 md:min-h-7 md:pointer-coarse:min-h-11'} {(
                                     activeAdminTab === link.id
                                 ) ?
-                                    'bg-accent-subtle font-bold text-accent-text shadow-2xs'
-                                :   'text-text-primary hover:bg-surface-hover hover:text-accent-text'}">
+                                    'bg-accent-subtle font-bold text-fg-accent shadow-2xs'
+                                :   'text-fg hover:bg-surface-hover hover:text-fg-accent'}">
                                 <link.icon
                                     class="size-3.5 max-h-full shrink-0 transition-colors {(
                                         activeAdminTab === link.id
                                     ) ?
-                                        'text-accent-text'
-                                    :   'text-text-muted group-hover:text-accent-text'}" />
+                                        'text-fg-accent'
+                                    :   'text-fg-muted group-hover:text-fg-accent'}" />
                                 <span
                                     class="truncate transition-opacity duration-150 ease-linear starting:opacity-0 {(
                                         sidebarCollapsed
@@ -3550,7 +3550,7 @@
             {/each}
         </nav>
 
-        <div class="shrink-0 border-t border-border-subtle bg-surface-card px-2 py-1.5">
+        <div class="shrink-0 border-t border-line-subtle bg-surface px-2 py-1.5">
             <div
                 class="flex items-center justify-between {sidebarCollapsed ? 'md:justify-center' : (
                     ''
@@ -3660,7 +3660,7 @@
                 <div class="mb-6 flex items-center justify-between gap-3">
                     <div>
                         <h1 class="type-page-title">Posts</h1>
-                        <p class="mt-1 type-body text-text-secondary">
+                        <p class="mt-1 type-body text-fg-secondary">
                             Write, edit, and moderate your blog posts.
                         </p>
                     </div>
@@ -3781,7 +3781,7 @@
                                     'rounded-b-none'
                                 :   ''}">
                                 <div
-                                    class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
+                                    class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-line-subtle">
                                     {#if post.banner_version && !failedBanners.has(post.id)}
                                         <ImageWithSkeleton
                                             src={bannerUrl(post, cdnBaseUrl())}
@@ -3802,7 +3802,7 @@
                                     <div class="flex flex-col gap-1">
                                         <div>
                                             <h3
-                                                class="type-card-title transition-colors hover:text-accent-text">
+                                                class="type-card-title transition-colors hover:text-fg-accent">
                                                 <a
                                                     href="{publicSiteUrl}/blog/{post.slug}"
                                                     target="_blank"
@@ -3814,7 +3814,7 @@
                                                     class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
                                                     {#if post.published}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-copilot-subtle text-copilot"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-discovery-subtle text-discovery"
                                                             title="Published"
                                                             aria-label="Published"
                                                             role="img">
@@ -3823,7 +3823,7 @@
                                                         </span>
                                                     {:else}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning-text"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-fg-warning"
                                                             title="Draft"
                                                             aria-label="Draft"
                                                             role="img">
@@ -3833,7 +3833,7 @@
                                                     {/if}
                                                     {#if post.pinned}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success-text"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-fg-success"
                                                             title="Pinned post"
                                                             aria-label="Pinned post"
                                                             role="img">
@@ -3842,7 +3842,7 @@
                                                     {/if}
                                                     {#if isPostNew(post)}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-info-subtle text-info"
                                                             title="New post"
                                                             aria-label="New post"
                                                             role="img">
@@ -3866,7 +3866,7 @@
                                             views={post.views_count} />
 
                                         {#if post.excerpt}
-                                            <p class="type-body text-text-secondary">
+                                            <p class="type-body text-fg-secondary">
                                                 {post.excerpt}
                                             </p>
                                         {/if}
@@ -3899,7 +3899,7 @@
                                     </div>
 
                                     <div
-                                        class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-border-subtle/40 pt-3 sm:gap-2">
+                                        class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-line-subtle/40 pt-3 sm:gap-2">
                                         <Button
                                             onclick={() => openPostEditor(post.id)}
                                             type="primary"
@@ -3994,7 +3994,7 @@
                                 {#if expandedPostIds.has(post.id)}
                                     <div
                                         id="comments-{post.id}"
-                                        class="rounded-b-md glass-card border-t border-border-subtle p-4 text-left">
+                                        class="rounded-b-md glass-card border-t border-line-subtle p-4 text-left">
                                         <div class="mb-3 flex items-center justify-between gap-2">
                                             <h4 class="type-card-title">
                                                 Comments ({postCommentCounts.get(post.id)
@@ -4044,7 +4044,7 @@
                                                             replyTo = comment;
                                                             commentContent = '';
                                                         }}
-                                                        class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text">
+                                                        class="cursor-pointer font-bold text-fg-muted transition-colors hover:text-fg-accent">
                                                         Reply
                                                     </button>
                                                     {#if comment.reports}
@@ -4052,7 +4052,7 @@
                                                             type="button"
                                                             onclick={() =>
                                                                 dismissCommentReports(comment.id)}
-                                                            class="cursor-pointer font-bold text-accent-text transition-colors hover:underline">
+                                                            class="cursor-pointer font-bold text-fg-accent transition-colors hover:underline">
                                                             Dismiss Reports
                                                         </button>
                                                     {/if}
@@ -4067,12 +4067,12 @@
                                                                 comment.id,
                                                                 comment.post_id
                                                             )}
-                                                        class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
+                                                        class="max-w-xl rounded-sm border border-line-subtle bg-surface p-3 shadow-2xs">
                                                         <div
                                                             class="mb-2 flex items-center justify-between gap-2">
-                                                            <p class="text-xs text-text-secondary">
+                                                            <p class="text-xs text-fg-secondary">
                                                                 Replying to <span
-                                                                    class="font-semibold text-accent-text"
+                                                                    class="font-semibold text-fg-accent"
                                                                     >{commentAuthorName(
                                                                         comment,
                                                                         authorState.name
@@ -4082,7 +4082,7 @@
                                                             <button
                                                                 type="button"
                                                                 onclick={() => (replyTo = null)}
-                                                                class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                                                                class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring"
                                                                 aria-label="Cancel reply">
                                                                 <X class="size-3.5" />
                                                             </button>
@@ -4115,7 +4115,7 @@
                                                         <div
                                                             class="mt-2 flex items-center justify-between gap-2">
                                                             <span
-                                                                class="text-xs text-text-muted tabular-nums">
+                                                                class="text-xs text-fg-muted tabular-nums">
                                                                 {1000 - commentContent.length} left
                                                             </span>
                                                             <div class="flex items-center gap-1.5">
@@ -4222,7 +4222,7 @@
                 {#snippet actions()}
                     <FormActions class="mt-0!">
                         {#if projectsIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -4325,7 +4325,7 @@
                     <section aria-labelledby="section-identity">
                         <h3
                             id="section-identity"
-                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                            class="mb-2.5 text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
                             Identity
                         </h3>
                         <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -4431,7 +4431,7 @@
                     <section aria-labelledby="section-contact">
                         <h3
                             id="section-contact"
-                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                            class="mb-2.5 text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
                             Contact
                         </h3>
                         <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -4482,7 +4482,7 @@
                     <section aria-labelledby="section-location">
                         <h3
                             id="section-location"
-                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                            class="mb-2.5 text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
                             Location
                         </h3>
                         <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
@@ -4554,7 +4554,7 @@
                     <section aria-labelledby="section-about">
                         <h3
                             id="section-about"
-                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                            class="mb-2.5 text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
                             About
                         </h3>
                         <div class="flex flex-col gap-3.5">
@@ -4587,7 +4587,7 @@
                 {#snippet actions()}
                     <FormActions>
                         {#if authorIsDirty}
-                            <p class="text-xs text-text-secondary select-none sm:mr-auto">
+                            <p class="text-xs text-fg-secondary select-none sm:mr-auto">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -4614,7 +4614,7 @@
         {:else if activeAdminTab === 'resume'}
             <div class="mb-6">
                 <h1 class="type-page-title">Resume</h1>
-                <p class="mt-1 type-body text-text-secondary">
+                <p class="mt-1 type-body text-fg-secondary">
                     Manage work experience, education, and the CV document.
                 </p>
             </div>
@@ -4634,7 +4634,7 @@
                         class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
                         <div class="min-w-0 flex-1 select-none">
                             <h2 class="type-section-title">Experiences</h2>
-                            <p class="mt-1 type-body text-text-secondary">
+                            <p class="mt-1 type-body text-fg-secondary">
                                 List your work history, most recent first. Fields are required
                                 unless marked optional.
                             </p>
@@ -4662,11 +4662,11 @@
                         {/if}
                         {#each cvState.experience as exp, idx (exp.id)}
                             <div
-                                class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
+                                class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
-                                    class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                    class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                     <span
-                                        class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                         >Experience Entry #{idx + 1}</span>
                                     <div class="flex items-center gap-1">
                                         <Button
@@ -4972,7 +4972,7 @@
                                 </FormField>
 
                                 <div
-                                    class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                     <Button
                                         htmlType="button"
                                         type="danger"
@@ -4994,7 +4994,7 @@
 
                     <FormActions>
                         {#if cvIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -5019,7 +5019,7 @@
                         class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
                         <div class="min-w-0 flex-1 select-none">
                             <h2 class="type-section-title">Education</h2>
-                            <p class="mt-1 type-body text-text-secondary">
+                            <p class="mt-1 type-body text-fg-secondary">
                                 List your degrees and certifications, most recent first. Fields are
                                 required unless marked optional.
                             </p>
@@ -5047,11 +5047,11 @@
                         {/if}
                         {#each cvState.education as edu, idx (edu.id)}
                             <div
-                                class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
+                                class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
-                                    class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                    class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                     <span
-                                        class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                         >Education Entry #{idx + 1}</span>
                                     <div class="flex items-center gap-1">
                                         <Button
@@ -5330,7 +5330,7 @@
                                 </FormField>
 
                                 <div
-                                    class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                     <Button
                                         htmlType="button"
                                         type="danger"
@@ -5352,7 +5352,7 @@
 
                     <FormActions>
                         {#if cvIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -5376,7 +5376,7 @@
             {#snippet bandLabel(id: string, text: string)}
                 <h3
                     {id}
-                    class="text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                    class="text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
                     {text}
                 </h3>
             {/snippet}
@@ -5387,7 +5387,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <h2 class="type-section-title">CV Document</h2>
-                        <p class="mt-1 type-body text-text-secondary">
+                        <p class="mt-1 type-body text-fg-secondary">
                             The PDF visitors download from your CV section and the public API.
                         </p>
                     </div>
@@ -5455,21 +5455,20 @@
                         {/snippet}
                     </EmptyState>
                 {:else}
-                    <div class="rounded-sm border border-border-subtle bg-surface-card">
+                    <div class="rounded-sm border border-line-subtle bg-surface">
                         <div
                             class="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
                             <div class="flex min-w-0 items-center gap-3.5">
                                 <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text">
+                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent">
                                     <FileUser class="size-5.5" />
                                 </div>
                                 <div class="min-w-0">
-                                    <p
-                                        class="font-mono text-sm font-semibold break-all text-text-primary">
+                                    <p class="font-mono text-sm font-semibold break-all text-fg">
                                         {cvDocState.filename}
                                     </p>
                                     <div
-                                        class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+                                        class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
                                         {#if cvVersion}
                                             <Badge size="sm">{cvVersion}</Badge>
                                         {/if}
@@ -5547,7 +5546,7 @@
 
                         <section
                             aria-labelledby="cv-checksums-heading"
-                            class="border-t border-border-subtle p-4">
+                            class="border-t border-line-subtle p-4">
                             {@render bandLabel('cv-checksums-heading', 'Checksums')}
                             {#if cvChecksumTabs.length}
                                 <CodeTabs
@@ -5555,7 +5554,7 @@
                                     tabs={cvChecksumTabs}
                                     ariaLabel="Checksums" />
                             {:else}
-                                <p class="mt-2 text-xs text-text-muted">
+                                <p class="mt-2 text-xs text-fg-muted">
                                     Checksums are recorded on the next build.
                                 </p>
                             {/if}
@@ -5563,10 +5562,10 @@
 
                         <section
                             aria-labelledby="cv-signature-heading"
-                            class="flex flex-col gap-3 border-t border-border-subtle p-4">
+                            class="flex flex-col gap-3 border-t border-line-subtle p-4">
                             {@render bandLabel('cv-signature-heading', 'GPG signature')}
                             {#if !openPgpKey}
-                                <p class="text-sm text-text-secondary">
+                                <p class="text-sm text-fg-secondary">
                                     Add your OpenPGP public key below first. Visitors use it to
                                     confirm that you signed this file.
                                 </p>
@@ -5574,19 +5573,19 @@
                                 <dl
                                     class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
                                     {#each openPgpKey.userIds as user, index (index)}
-                                        <dt class="text-text-muted">Signed by</dt>
-                                        <dd class="min-w-0 wrap-break-word text-text-primary">
+                                        <dt class="text-fg-muted">Signed by</dt>
+                                        <dd class="min-w-0 wrap-break-word text-fg">
                                             {formatUserId(user)}
                                         </dd>
                                     {/each}
-                                    <dt class="text-text-muted">Fingerprint</dt>
+                                    <dt class="text-fg-muted">Fingerprint</dt>
                                     <dd
-                                        class="min-w-0 font-mono text-xs leading-5 wrap-break-word text-text-primary tabular-nums">
+                                        class="min-w-0 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums">
                                         {formatFingerprint(openPgpKey.fingerprint)}
                                     </dd>
                                     {#if cvSignedAt}
-                                        <dt class="text-text-muted">Signed</dt>
-                                        <dd class="text-text-primary">{cvSignedAt}</dd>
+                                        <dt class="text-fg-muted">Signed</dt>
+                                        <dd class="text-fg">{cvSignedAt}</dd>
                                     {/if}
                                 </dl>
                                 <div class="flex flex-wrap items-center gap-2">
@@ -5626,7 +5625,7 @@
                                         variant="warning"
                                         message="The stored signature was made with a different key. Sign this PDF again with your active key." />
                                 {/if}
-                                <p class="text-sm text-text-secondary">
+                                <p class="text-sm text-fg-secondary">
                                     Sign this exact PDF on your machine in either format, then
                                     upload the file. Both formats are published.
                                 </p>
@@ -5665,7 +5664,7 @@
                             class="type-section-title">
                             OpenPGP key
                         </h2>
-                        <p class="mt-1 type-body text-text-secondary">
+                        <p class="mt-1 type-body text-fg-secondary">
                             The public key that signs your CV, published at /pgp.asc and through
                             WKD.
                         </p>
@@ -5700,16 +5699,16 @@
                         error={keyError}
                         onFileSelect={file => file && saveOpenPgpKey(file)} />
                 {:else}
-                    <div class="rounded-sm border border-border-subtle bg-surface-card">
+                    <div class="rounded-sm border border-line-subtle bg-surface">
                         <div class="flex min-w-0 items-start gap-3.5 p-4">
                             <div
-                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text">
+                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent">
                                 <KeyRound class="size-5.5" />
                             </div>
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start gap-1">
                                     <p
-                                        class="min-w-0 font-mono text-sm leading-6 font-semibold wrap-break-word text-text-primary tabular-nums">
+                                        class="min-w-0 font-mono text-sm leading-6 font-semibold wrap-break-word text-fg tabular-nums">
                                         {formatFingerprint(openPgpKey.fingerprint)}
                                     </p>
                                     <IconButton
@@ -5722,7 +5721,7 @@
                                     </IconButton>
                                 </div>
                                 <div
-                                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+                                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
                                     <span>{openPgpKey.algorithm}</span>
                                     {#if keyCreated}
                                         <span aria-hidden="true">·</span>
@@ -5745,14 +5744,14 @@
 
                         <section
                             aria-labelledby="openpgp-identity-heading"
-                            class="border-t border-border-subtle p-4">
+                            class="border-t border-line-subtle p-4">
                             {@render bandLabel('openpgp-identity-heading', 'Identity')}
-                            <ul class="mt-2 flex flex-col gap-1 text-sm text-text-primary">
+                            <ul class="mt-2 flex flex-col gap-1 text-sm text-fg">
                                 {#each openPgpKey.userIds as user, index (index)}
                                     <li class="wrap-break-word">{formatUserId(user)}</li>
                                 {/each}
                             </ul>
-                            <p class="mt-2 text-xs text-text-muted">
+                            <p class="mt-2 text-xs text-fg-muted">
                                 {#if keyWkdEmails.length}
                                     WKD lookup works for {keyWkdEmails.join(', ')}.
                                 {:else}
@@ -5764,10 +5763,10 @@
 
                         <section
                             aria-labelledby="openpgp-keyservers-heading"
-                            class="flex flex-col gap-3 border-t border-border-subtle p-4">
+                            class="flex flex-col gap-3 border-t border-line-subtle p-4">
                             <div>
                                 {@render bandLabel('openpgp-keyservers-heading', 'Keyservers')}
-                                <p class="mt-1 text-xs text-text-muted">
+                                <p class="mt-1 text-xs text-fg-muted">
                                     Listed as independent sources on your CV. Each one is checked
                                     for this exact key when you save.
                                 </p>
@@ -5809,7 +5808,7 @@
 
                         <section
                             aria-labelledby="openpgp-replace-heading"
-                            class="flex flex-col gap-2 border-t border-border-subtle p-4">
+                            class="flex flex-col gap-2 border-t border-line-subtle p-4">
                             {@render bandLabel('openpgp-replace-heading', 'Replace key')}
                             <FileUploadField
                                 id="openpgp-key-file"
@@ -5862,11 +5861,11 @@
                     {/if}
                     {#each skillsState as item, idx (item.id)}
                         <div
-                            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
+                            class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Category #{idx + 1}</span>
                                 <div class="flex items-center gap-1">
                                     <Button
@@ -5937,7 +5936,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -5960,7 +5959,7 @@
                 {#snippet actions()}
                     <FormActions>
                         {#if skillsIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -6016,11 +6015,11 @@
                     {/if}
                     {#each socialState as item, idx (item.id)}
                         <div
-                            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
+                            class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Social #{idx + 1}</span>
                                 <div class="flex items-center gap-1">
                                     <Button
@@ -6067,14 +6066,14 @@
                                         maxlength={100}>
                                         {#snippet leadingSlot()}
                                             <div
-                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
+                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-line-subtle bg-surface text-accent shadow-2xs">
                                                 <BrandIcon
                                                     icon={item.icon}
                                                     class="size-4 shrink-0 text-base leading-none {(
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted'}" />
+                                                    :   'text-fg-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -6143,7 +6142,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6166,7 +6165,7 @@
                 {#snippet actions()}
                     <FormActions>
                         {#if socialIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -6222,11 +6221,11 @@
                     {/if}
                     {#each sponsorshipState as item, idx (item.id)}
                         <div
-                            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
+                            class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Funding #{idx + 1}</span>
                                 <div class="flex items-center gap-1">
                                     <Button
@@ -6280,14 +6279,14 @@
                                         maxlength={100}>
                                         {#snippet leadingSlot()}
                                             <div
-                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
+                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-line-subtle bg-surface text-accent shadow-2xs">
                                                 <BrandIcon
                                                     icon={item.icon}
                                                     class="size-4 shrink-0 text-base leading-none {(
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted'}" />
+                                                    :   'text-fg-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -6384,7 +6383,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6407,7 +6406,7 @@
                 {#snippet actions()}
                     <FormActions>
                         {#if sponsorshipIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -6463,11 +6462,11 @@
                     {/if}
                     {#each contactState as item, idx (item.id)}
                         <div
-                            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
+                            class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Contact #{idx + 1}</span>
                                 <div class="flex items-center gap-1">
                                     <Button
@@ -6517,14 +6516,14 @@
                                         maxlength={100}>
                                         {#snippet leadingSlot()}
                                             <div
-                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
+                                                class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-line-subtle bg-surface text-accent shadow-2xs">
                                                 <BrandIcon
                                                     icon={item.icon}
                                                     class="size-4 shrink-0 text-base leading-none {(
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted'}" />
+                                                    :   'text-fg-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -6621,7 +6620,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6644,7 +6643,7 @@
                 {#snippet actions()}
                     <FormActions>
                         {#if contactIsDirty}
-                            <p class="text-xs text-text-secondary select-none">
+                            <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
                         {/if}
@@ -6908,7 +6907,7 @@
                 <AccountSettings>
                     <Card
                         variant="bordered"
-                        class="border-border-subtle! bg-surface-card!">
+                        class="border-line-subtle! bg-surface!">
                         <FormSection
                             title="Import profile"
                             titleClass="type-card-title"
@@ -6936,7 +6935,7 @@
                     </Card>
                     <Card
                         variant="bordered"
-                        class="border-border-subtle! bg-surface-card!">
+                        class="border-line-subtle! bg-surface!">
                         <FormSection
                             title="Export data"
                             titleClass="type-card-title"
@@ -6981,7 +6980,7 @@
                                     Delete all data
                                 </Button>
                                 {#if !hasExportedAllData}
-                                    <p class="mt-2 text-xs text-text-muted">
+                                    <p class="mt-2 text-xs text-fg-muted">
                                         Export your data first before deleting.
                                     </p>
                                 {/if}
@@ -7036,7 +7035,7 @@
     <div class="mt-3 flex flex-col gap-1.5 font-sans">
         <label
             for="delete-all-password"
-            class="text-xs font-semibold text-text-primary">Password</label>
+            class="text-xs font-semibold text-fg">Password</label>
         <Input
             id="delete-all-password"
             type="password"

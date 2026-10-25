@@ -44,6 +44,6 @@
     {#if html}
         {@html html}
     {:else}
-        <p class="text-text-muted italic">Nothing to preview yet…</p>
+        <p class="text-fg-muted italic">Nothing to preview yet…</p>
     {/if}
 </div>

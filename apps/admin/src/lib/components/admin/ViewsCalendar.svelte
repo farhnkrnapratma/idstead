@@ -71,14 +71,14 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-col gap-0.5">
             <h2 class="type-card-title">Article views</h2>
-            <p class="text-xs text-text-muted">
+            <p class="text-xs text-fg-muted">
                 Cumulative visits across all pages over the past year.
             </p>
         </div>
         <div class="flex items-center gap-3">
             {#if hasActivity}
                 <div
-                    class="flex items-center gap-1 text-xs text-text-muted"
+                    class="flex items-center gap-1 text-xs text-fg-muted"
                     role="img"
                     aria-label="Color intensity increases with daily views">
                     <span class="mr-1">Less</span>
@@ -124,13 +124,13 @@
                             {start}
                             {end}
                             tooltip
-                            monthLabel={{ fill: 'var(--color-text-muted)', fontSize: 12 }}>
+                            monthLabel={{ fill: 'var(--color-fg-muted)', fontSize: 12 }}>
                             {#snippet children({ cells, cellSize })}
                                 {#each dayLabels as label, i (label)}
                                     <text
                                         x={-20}
                                         y={i * cellSize[1] + cellSize[1] / 2}
-                                        fill="var(--color-text-muted)"
+                                        fill="var(--color-fg-muted)"
                                         font-size="12"
                                         text-anchor="end"
                                         dominant-baseline="middle">{label}</text>
@@ -154,9 +154,9 @@
                         {#snippet children({ data: day })}
                             {#if day?.views != null}
                                 <div
-                                    class="rounded-md border border-border-subtle bg-surface-elevated px-3 py-2 text-xs shadow-md">
-                                    <p class="text-text-secondary">{day.label}</p>
-                                    <p class="font-semibold text-accent-text">
+                                    class="rounded-md border border-line-subtle bg-surface px-3 py-2 text-xs shadow-md">
+                                    <p class="text-fg-secondary">{day.label}</p>
+                                    <p class="font-semibold text-fg-accent">
                                         {pluralize(day.views, 'view', undefined, formatCount)}
                                     </p>
                                 </div>

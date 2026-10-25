@@ -287,7 +287,7 @@
                     Feedback & Reports
                 </Badge>
                 <h1 class="type-page-title md:text-4xl">Your feedback matters</h1>
-                <p class="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary">
+                <p class="mt-4 max-w-2xl text-base leading-relaxed text-fg-secondary">
                     Your valuable feedback helps improve the quality of articles and ensures the
                     website's technical systems run reliably. Please let me know if you spot any
                     issues.
@@ -300,7 +300,7 @@
                 <div class="flex flex-col gap-3.5">
                     <div class="flex flex-col">
                         <h2 class="type-card-title">Feedback categories</h2>
-                        <p class="mt-0.5 text-xs text-text-muted">
+                        <p class="mt-0.5 text-xs text-fg-muted">
                             Click any category to quickly populate your message below.
                         </p>
                     </div>
@@ -310,17 +310,17 @@
                             type="button"
                             onclick={() => selectCategory('Writing error')}
                             use:shortcut={{ combo: '1', label: 'Writing errors' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Writing errors">
                             <div class="flex items-center gap-2">
                                 <PenLine
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Writing errors
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 Grammatical mistakes, typos, spelling, or poor phrasing.
                             </p>
                         </button>
@@ -329,17 +329,17 @@
                             type="button"
                             onclick={() => selectCategory('Technical inaccuracy')}
                             use:shortcut={{ combo: '2', label: 'Technical inaccuracies' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Technical inaccuracies">
                             <div class="flex items-center gap-2">
                                 <CodeXml
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Technical inaccuracies
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 Code snippets that don't compile, wrong command usages, or faulty
                                 explanation logic.
                             </p>
@@ -349,17 +349,17 @@
                             type="button"
                             onclick={() => selectCategory('Outdated information')}
                             use:shortcut={{ combo: '3', label: 'Outdated information' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Outdated information">
                             <div class="flex items-center gap-2">
                                 <ClockFading
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Outdated information
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 Deprecated package API calls, tools that are no longer active, or
                                 outdated tutorial steps.
                             </p>
@@ -369,17 +369,17 @@
                             type="button"
                             onclick={() => selectCategory('Broken link')}
                             use:shortcut={{ combo: '4', label: 'Broken links' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Broken links">
                             <div class="flex items-center gap-2">
                                 <Link2Off
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Broken links
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 404 links, invalid references, or missing static download files.
                             </p>
                         </button>
@@ -388,17 +388,17 @@
                             type="button"
                             onclick={() => selectCategory('Website issue')}
                             use:shortcut={{ combo: '5', label: 'Website issues' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Website issues">
                             <div class="flex items-center gap-2">
                                 <Bug
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Website issues
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 UI layout bugs, visual display mistakes, broken styling, or slow
                                 loading times.
                             </p>
@@ -408,17 +408,17 @@
                             type="button"
                             onclick={() => selectCategory('Other issue')}
                             use:shortcut={{ combo: '6', label: 'Other issues' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Other issues">
                             <div class="flex items-center gap-2">
                                 <CircleQuestionMark
-                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
                                     Other issues
                                 </span>
                             </div>
-                            <p class="type-body text-text-secondary">
+                            <p class="type-body text-fg-secondary">
                                 General inquiries, suggestions, content ideas, or feedback outside
                                 listed categories.
                             </p>
@@ -435,7 +435,7 @@
                     autocomplete="off">
                     <div class="mb-2 select-none">
                         <h2 class="type-card-title">Report an issue</h2>
-                        <p class="mt-0.5 text-xs text-text-muted">
+                        <p class="mt-0.5 text-xs text-fg-muted">
                             Complete the fields below to submit your feedback directly.
                         </p>
                     </div>

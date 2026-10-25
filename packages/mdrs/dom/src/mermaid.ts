@@ -1,3 +1,5 @@
+import { themeToken, type EffectiveTheme } from '@idstead/ui/themeColors.ts';
+
 let mermaidInstance: typeof import('mermaid').default | null = null;
 let themeObserverInitialized = false;
 
@@ -11,99 +13,59 @@ export async function getMermaid(isDark = true) {
         startOnLoad: false,
         securityLevel: 'strict',
         theme: 'base',
-        themeVariables:
-            isDark ?
-                {
-                    darkMode: true,
-                    background: 'transparent',
-                    mainBkg: '#182234',
-                    nodeBkg: '#182234',
-                    nodeBorder: '#334155',
-                    nodeTextColor: '#f1f5f9',
-                    titleColor: '#f1f5f9',
-                    edgeLabelBackground: '#0f172a',
-                    textColor: '#f1f5f9',
-                    lineColor: '#10b981',
-                    primaryColor: '#10b981',
-                    primaryTextColor: '#ffffff',
-                    primaryBorderColor: '#059669',
-                    secondaryColor: '#1e293b',
-                    secondaryTextColor: '#f1f5f9',
-                    secondaryBorderColor: '#334155',
-                    tertiaryColor: '#0f172a',
-                    tertiaryTextColor: '#f1f5f9',
-                    tertiaryBorderColor: '#1e293b',
-                    actorBkg: '#182234',
-                    actorBorder: '#334155',
-                    actorTextColor: '#f1f5f9',
-                    actorLineColor: '#64748b',
-                    signalColor: '#10b981',
-                    signalTextColor: '#f1f5f9',
-                    labelBoxBkgColor: '#182234',
-                    labelBoxBorderColor: '#334155',
-                    labelTextColor: '#f1f5f9',
-                    git0: '#10b981',
-                    git1: '#3b82f6',
-                    git2: '#f59e0b',
-                    git3: '#ec4899',
-                    gitBranchLabel0: '#ffffff',
-                    gitBranchLabel1: '#ffffff',
-                    gitBranchLabel2: '#ffffff',
-                    gitBranchLabel3: '#ffffff',
-                    gitInv0: '#10b981',
-                    gitInv1: '#3b82f6',
-                    gitInv2: '#f59e0b',
-                    gitInv3: '#ec4899',
-                    fontFamily:
-                        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-                }
-            :   {
-                    darkMode: false,
-                    background: 'transparent',
-                    mainBkg: '#f8fafc',
-                    nodeBkg: '#f8fafc',
-                    nodeBorder: '#cbd5e1',
-                    nodeTextColor: '#0f172a',
-                    titleColor: '#0f172a',
-                    edgeLabelBackground: '#ffffff',
-                    textColor: '#0f172a',
-                    lineColor: '#059669',
-                    primaryColor: '#059669',
-                    primaryTextColor: '#ffffff',
-                    primaryBorderColor: '#047857',
-                    secondaryColor: '#f1f5f9',
-                    secondaryTextColor: '#0f172a',
-                    secondaryBorderColor: '#cbd5e1',
-                    tertiaryColor: '#ffffff',
-                    tertiaryTextColor: '#0f172a',
-                    tertiaryBorderColor: '#e2e8f0',
-                    actorBkg: '#f8fafc',
-                    actorBorder: '#cbd5e1',
-                    actorTextColor: '#0f172a',
-                    actorLineColor: '#94a3b8',
-                    signalColor: '#059669',
-                    signalTextColor: '#0f172a',
-                    labelBoxBkgColor: '#ffffff',
-                    labelBoxBorderColor: '#cbd5e1',
-                    labelTextColor: '#0f172a',
-                    git0: '#059669',
-                    git1: '#2563eb',
-                    git2: '#d97706',
-                    git3: '#db2777',
-                    gitBranchLabel0: '#ffffff',
-                    gitBranchLabel1: '#ffffff',
-                    gitBranchLabel2: '#ffffff',
-                    gitBranchLabel3: '#ffffff',
-                    gitInv0: '#059669',
-                    gitInv1: '#2563eb',
-                    gitInv2: '#d97706',
-                    gitInv3: '#db2777',
-                    fontFamily:
-                        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-                }
+        themeVariables: mermaidTheme(isDark ? 'dark' : 'light')
     });
 
     return mermaidInstance;
+}
+
+function mermaidTheme(theme: EffectiveTheme) {
+    const color = (name: string) => themeToken(`--color-${name}`, theme);
+    const node = color('surface-subtle');
+    const border = color('line-strong');
+    const text = color('fg');
+    const accent = color('accent');
+    const label = color('on-accent');
+    const series = [accent, color('discovery'), color('warning'), color('danger')];
+    return {
+        darkMode: theme === 'dark',
+        background: 'transparent',
+        mainBkg: node,
+        nodeBkg: node,
+        nodeBorder: border,
+        nodeTextColor: text,
+        titleColor: text,
+        edgeLabelBackground: color('surface'),
+        textColor: text,
+        lineColor: accent,
+        primaryColor: accent,
+        primaryTextColor: label,
+        primaryBorderColor: color('accent-strong'),
+        secondaryColor: color('canvas'),
+        secondaryTextColor: text,
+        secondaryBorderColor: border,
+        tertiaryColor: color('surface'),
+        tertiaryTextColor: text,
+        tertiaryBorderColor: border,
+        actorBkg: node,
+        actorBorder: border,
+        actorTextColor: text,
+        actorLineColor: color('fg-muted'),
+        signalColor: accent,
+        signalTextColor: text,
+        labelBoxBkgColor: node,
+        labelBoxBorderColor: border,
+        labelTextColor: text,
+        ...Object.fromEntries(
+            series.flatMap((value, index) => [
+                [`git${index}`, value],
+                [`gitInv${index}`, value],
+                [`gitBranchLabel${index}`, label]
+            ])
+        ),
+        fontFamily:
+            'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    };
 }
 
 export function initMermaidThemeObserver() {

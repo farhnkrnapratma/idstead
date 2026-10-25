@@ -56,7 +56,7 @@
                         cy="18"
                         r={RING_RADIUS}
                         fill="none"
-                        stroke="var(--color-border-subtle)"
+                        stroke="var(--color-line-subtle)"
                         stroke-width="2" />
                     <circle
                         cx="18"

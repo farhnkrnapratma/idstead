@@ -120,14 +120,12 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-2.5">
                     <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/15 text-accent-text">
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/15 text-fg-accent">
                         <ShieldCheck class="size-4" />
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-text-primary">
-                            Cookie and privacy preferences
-                        </h3>
-                        <p class="text-xxs text-text-muted">
+                        <h3 class="text-sm font-bold text-fg">Cookie and privacy preferences</h3>
+                        <p class="text-xxs text-fg-muted">
                             We use cookies to analyze site traffic and enhance your experience.
                         </p>
                     </div>
@@ -142,12 +140,12 @@
                 </Button>
             </div>
 
-            <p class="text-xs leading-relaxed text-text-secondary">
+            <p class="text-xs leading-relaxed text-fg-secondary">
                 Choose which data processing signals you wish to allow. You can update your choice
                 at any time.{#if !isHiddenLegalPath('/privacy')}
                     See our <a
                         href="/privacy"
-                        class="font-semibold text-accent-text underline hover:text-accent-hover"
+                        class="font-semibold text-fg-accent underline hover:text-accent-hover"
                         >Privacy Policy</a> for full details.{/if}
             </p>
 
@@ -206,9 +204,9 @@
     onClose={() => consentStore.closeCustomizeModal()}>
     <div class="flex flex-col gap-4 py-1">
         <div
-            class="flex flex-col gap-2.5 rounded-md border border-border-subtle/70 bg-surface-card/50 p-3">
+            class="flex flex-col gap-2.5 rounded-md border border-line-subtle/70 bg-surface/50 p-3">
             <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-semibold text-text-secondary">Quick presets</span>
+                <span class="text-xs font-semibold text-fg-secondary">Quick presets</span>
                 <span
                     class="text-xs font-bold"
                     style="color: {presetColor}">
@@ -218,7 +216,7 @@
 
             <div class="relative flex h-5 w-full items-center">
                 <div
-                    class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-border-subtle">
+                    class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-line-subtle">
                 </div>
                 <div
                     class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-full"
@@ -237,7 +235,7 @@
                     class="preset-slider relative z-10 h-5 w-full cursor-pointer appearance-none bg-transparent outline-none focus:shadow-none focus:outline-none focus-visible:shadow-none focus-visible:outline-none" />
             </div>
 
-            <div class="flex items-center justify-between text-2xs font-medium text-text-secondary">
+            <div class="flex items-center justify-between text-2xs font-medium text-fg-secondary">
                 <span>Allow all</span>
                 <span>Analytics only</span>
                 <span>Deny all</span>
@@ -245,11 +243,11 @@
         </div>
 
         <div
-            class="divide-y divide-border-subtle/50 rounded-md border border-border-subtle/70 bg-surface-card/30">
+            class="divide-y divide-line-subtle/50 rounded-md border border-line-subtle/70 bg-surface/30">
             <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
                 <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <h4 class="text-xs font-bold text-text-primary">Behavioral analytics</h4>
-                    <p class="text-xs leading-snug text-text-secondary">
+                    <h4 class="text-xs font-bold text-fg">Behavioral analytics</h4>
+                    <p class="text-xs leading-snug text-fg-secondary">
                         Measures sessions, page views and interactions.
                     </p>
                 </div>
@@ -263,8 +261,8 @@
 
             <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
                 <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <h4 class="text-xs font-bold text-text-primary">Advertising storage</h4>
-                    <p class="text-xs leading-snug text-text-secondary">
+                    <h4 class="text-xs font-bold text-fg">Advertising storage</h4>
+                    <p class="text-xs leading-snug text-fg-secondary">
                         Stores advertising identifiers.
                     </p>
                 </div>
@@ -278,8 +276,8 @@
 
             <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
                 <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <h4 class="text-xs font-bold text-text-primary">Ad user data</h4>
-                    <p class="text-xs leading-snug text-text-secondary">
+                    <h4 class="text-xs font-bold text-fg">Ad user data</h4>
+                    <p class="text-xs leading-snug text-fg-secondary">
                         Shares advertising measurement data.
                     </p>
                 </div>
@@ -293,8 +291,8 @@
 
             <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
                 <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <h4 class="text-xs font-bold text-text-primary">Ad personalization</h4>
-                    <p class="text-xs leading-snug text-text-secondary">
+                    <h4 class="text-xs font-bold text-fg">Ad personalization</h4>
+                    <p class="text-xs leading-snug text-fg-secondary">
                         Personalized advertising preferences.
                     </p>
                 </div>
@@ -309,7 +307,7 @@
 
         <div
             class="flex flex-col items-start gap-2 px-1 pt-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-            <span class="text-xxs text-text-secondary">Need to clear stored choices?</span>
+            <span class="text-xxs text-fg-secondary">Need to clear stored choices?</span>
             <Button
                 type="secondary"
                 tone="critical"
@@ -353,6 +351,8 @@
 </Dialog>
 
 <style>
+    @reference "@idstead/ui/styles/global.css";
+
     .preset-slider::-moz-focus-outer {
         border: 0;
     }
@@ -366,9 +366,9 @@
         height: 1.1rem;
         margin-top: -0.375rem;
         border-radius: 9999px;
-        border: 2px solid var(--color-surface-elevated);
+        border: 2px solid var(--color-surface);
         background: var(--thumb-color);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 1px 3px --alpha(var(--color-black) / 30%);
         cursor: pointer;
     }
     .preset-slider::-moz-range-track {
@@ -378,10 +378,10 @@
     .preset-slider::-moz-range-thumb {
         width: 1.1rem;
         height: 1.1rem;
-        border: 2px solid var(--color-surface-elevated);
+        border: 2px solid var(--color-surface);
         border-radius: 9999px;
         background: var(--thumb-color);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 1px 3px --alpha(var(--color-black) / 30%);
         cursor: pointer;
     }
 </style>

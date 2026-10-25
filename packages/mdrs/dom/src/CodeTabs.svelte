@@ -144,7 +144,7 @@
                 onclick={copy}>
                 {#if copied}
                     <CopyCheck
-                        class="size-3 text-accent-text"
+                        class="size-3 text-fg-accent"
                         aria-hidden="true" />
                 {:else}
                     <Copy

@@ -62,12 +62,12 @@
     {onClose}>
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-1.5">
-            <span class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                 >Direct link</span>
             <div
-                class="flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base/80 p-1.5 pr-2 pl-3 shadow-2xs">
+                class="flex items-center gap-2 rounded-md border border-line-subtle bg-canvas/80 p-1.5 pr-2 pl-3 shadow-2xs">
                 <span
-                    class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all">
+                    class="min-w-0 flex-1 truncate font-mono text-xs text-fg-secondary select-all">
                     {effectiveUrl}
                 </span>
                 <IconButton
@@ -76,7 +76,7 @@
                     class="shrink-0"
                     onclick={copyUrl}>
                     {#if copied}
-                        <CopyCheck class="size-3.5 text-accent-text" />
+                        <CopyCheck class="size-3.5 text-fg-accent" />
                     {:else}
                         <Copy class="size-3.5" />
                     {/if}
@@ -85,7 +85,7 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <span class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                 >Share to platform</span>
             <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
                 <Button
@@ -193,11 +193,11 @@
         </div>
 
         {#if showQrOption && onOpenQr}
-            <div class="border-t border-border-subtle/60 pt-2">
+            <div class="border-t border-line-subtle/60 pt-2">
                 <Button
                     type="ghost"
                     size="sm"
-                    class="w-full justify-center text-text-secondary hover:text-text-primary"
+                    class="w-full justify-center text-fg-secondary hover:text-fg"
                     onclick={handleOpenQr}>
                     {#snippet leading()}
                         <QrCode class="size-3.5" />

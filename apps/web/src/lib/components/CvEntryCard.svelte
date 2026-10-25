@@ -38,26 +38,26 @@
             {role}
         </h3>
         <div
-            class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
+            class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-fg-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
             <Calendar
-                class="size-3 shrink-0 text-text-muted sm:size-3.5"
+                class="size-3 shrink-0 text-fg-muted sm:size-3.5"
                 strokeWidth={1.5} />
             <span class="leading-none">{period}</span>
         </div>
     </div>
     <div class="flex flex-col gap-1.5">
         <div
-            class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
+            class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-fg-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
             <BuildingComplex
-                class="size-3 shrink-0 text-text-muted sm:size-3.5"
+                class="size-3 shrink-0 text-fg-muted sm:size-3.5"
                 strokeWidth={1.5} />
             <span class="leading-none">{organization}</span>
         </div>
         {#if location}
             <div
-                class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
+                class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-fg-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
                 <MapPin
-                    class="size-3 shrink-0 text-text-muted sm:size-3.5"
+                    class="size-3 shrink-0 text-fg-muted sm:size-3.5"
                     strokeWidth={1.5} />
                 <span class="leading-none">{location}</span>
             </div>
@@ -65,13 +65,13 @@
     </div>
 
     {#if description}
-        <p class="mt-1 border-t border-t-border-subtle/60 pt-2 type-body text-text-secondary">
+        <p class="mt-1 border-t border-t-line-subtle/60 pt-2 type-body text-fg-secondary">
             {description}
         </p>
     {/if}
 
     {#if highlights.length > 0}
-        <ul class="mt-1.5 list-disc space-y-1 pl-4 text-xs text-text-secondary">
+        <ul class="mt-1.5 list-disc space-y-1 pl-4 text-xs text-fg-secondary">
             {#each highlights as item (item)}
                 <li>{item}</li>
             {/each}

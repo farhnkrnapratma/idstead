@@ -18,7 +18,7 @@ export const KEY_GROUP_CLASS =
 export const KEY_SEGMENT_CLASS =
     'inline-flex h-4.5 min-w-4.5 items-center justify-center border px-1 transition-colors not-first:-ml-px first:rounded-l-sm last:rounded-r-sm';
 
-const HINT_TONE = 'border-border-subtle/80 bg-surface-elevated text-text-primary';
+const HINT_TONE = 'border-line-subtle/80 bg-surface text-fg';
 
 const HINT_BASE = `pointer-events-none absolute z-10 rounded-sm shadow-xs ${KEY_GROUP_CLASS}`;
 

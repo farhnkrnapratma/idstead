@@ -605,7 +605,7 @@
                 banner={bannerPublicUrl}
                 bannerAlt={blogBannerAlt(post.title, post.excerpt)}
                 title={post.title}
-                titleClass="text-text-primary"
+                titleClass="text-fg"
                 titleViewTransitionName="post-title-{post.slug}">
                 {#snippet meta()}
                     <div class="relative flex items-center gap-2.5 select-none">
@@ -628,14 +628,14 @@
                         </div>
 
                         <div
-                            class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-text-secondary">
+                            class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-fg-secondary">
                             <span>Authored by</span>
                             {#if allAuthors.length === 1}
                                 <a
                                     href="https://github.com/{allAuthors[0]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
+                                    class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
                                     {allAuthors[0]}
                                 </a>
                             {:else if allAuthors.length === 2}
@@ -643,7 +643,7 @@
                                     href="https://github.com/{allAuthors[0]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
+                                    class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
                                     {allAuthors[0]}
                                 </a>
                                 <span>and</span>
@@ -651,7 +651,7 @@
                                     href="https://github.com/{allAuthors[1]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
+                                    class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
                                     {allAuthors[1]}
                                 </a>
                             {:else if allAuthors.length === 3}
@@ -660,7 +660,7 @@
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         >{allAuthors[0]}</a
                                     >,
                                 </span>
@@ -669,7 +669,7 @@
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         >{allAuthors[1]}</a
                                     >,
                                 </span>
@@ -678,7 +678,7 @@
                                     href="https://github.com/{allAuthors[2]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
+                                    class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
                                     {allAuthors[2]}
                                 </a>
                             {:else}
@@ -687,7 +687,7 @@
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         >{allAuthors[0]}</a
                                     >,
                                 </span>
@@ -696,7 +696,7 @@
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         >{allAuthors[1]}</a
                                     >,
                                 </span>
@@ -705,7 +705,7 @@
                                         href="https://github.com/{allAuthors[2]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         >{allAuthors[2]}</a
                                     >,
                                 </span>
@@ -717,7 +717,7 @@
                                         type="button"
                                         aria-expanded={isCollaboratorsPopoverOpen}
                                         aria-haspopup="dialog"
-                                        class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
+                                        class="cursor-pointer font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
                                         onclick={() => {
                                             isCollaboratorsPopoverOpen =
                                                 !isCollaboratorsPopoverOpen;
@@ -733,9 +733,9 @@
                                         <div
                                             role="dialog"
                                             aria-label="Other collaborators"
-                                            class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-md border border-border-subtle bg-surface-elevated p-1.5 shadow-lg sm:right-auto sm:left-0">
+                                            class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-md border border-line-subtle bg-surface p-1.5 shadow-lg sm:right-auto sm:left-0">
                                             <span
-                                                class="px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                                                class="px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-fg-muted uppercase">
                                                 {hiddenCollaborators.length > 1 ?
                                                     'Other collaborators'
                                                 :   'Other collaborator'}
@@ -747,13 +747,13 @@
                                                     rel="noopener noreferrer"
                                                     onclick={() =>
                                                         (isCollaboratorsPopoverOpen = false)}
-                                                    class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent-text">
+                                                    class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-fg-accent">
                                                     <Avatar
                                                         name={collab}
                                                         src={`https://github.com/${collab}.png?size=128`}
                                                         class="size-5" />
                                                     <span
-                                                        class="font-semibold text-text-primary hover:underline"
+                                                        class="font-semibold text-fg hover:underline"
                                                         >{collab}</span>
                                                 </a>
                                             {/each}
@@ -834,9 +834,9 @@
 
                 {#if relatedPosts.length > 0}
                     <section
-                        class="mt-6 border-t border-border-subtle pt-4 sm:mt-8 sm:pt-6"
+                        class="mt-6 border-t border-line-subtle pt-4 sm:mt-8 sm:pt-6"
                         aria-label="Related posts">
-                        <h3 class="mb-3 text-sm font-bold tracking-tight text-text-primary">
+                        <h3 class="mb-3 text-sm font-bold tracking-tight text-fg">
                             Continue reading
                         </h3>
                         <div class="relative z-0 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
@@ -853,7 +853,7 @@
                 {/if}
 
                 <section
-                    class="mt-8 border-t border-border-subtle pt-6 sm:mt-10 sm:pt-8"
+                    class="mt-8 border-t border-line-subtle pt-6 sm:mt-10 sm:pt-8"
                     aria-label="Comments">
                     <h2 class="mb-5 type-section-title sm:mb-6">
                         Comments ({comments.length})
@@ -868,7 +868,7 @@
 
                     {#if !replyTo}
                         <div
-                            class="mb-6 rounded-md border border-border-subtle bg-surface-card/75 p-3.5 text-left shadow-2xs sm:p-4">
+                            class="mb-6 rounded-md border border-line-subtle bg-surface/75 p-3.5 text-left shadow-2xs sm:p-4">
                             <form
                                 novalidate
                                 onsubmit={e => handleSubmit(e)}
@@ -1014,7 +1014,7 @@
                                         scope: `comment-${comment.id}`,
                                         label: 'Reply'
                                     }}
-                                    class="relative cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text focus-visible:outline-none">
+                                    class="relative cursor-pointer font-bold text-fg-muted transition-colors hover:text-fg-accent focus-visible:outline-none">
                                     Reply
                                 </button>
                             {/snippet}
@@ -1023,10 +1023,10 @@
                                 <form
                                     novalidate
                                     onsubmit={e => handleSubmit(e, comment.id)}
-                                    class="mb-3 rounded-md border border-border-subtle bg-surface-base/80 p-3.5 text-left shadow-2xs sm:p-4">
+                                    class="mb-3 rounded-md border border-line-subtle bg-canvas/80 p-3.5 text-left shadow-2xs sm:p-4">
                                     <div
-                                        class="mb-3 flex items-center justify-between gap-3 border-b border-border-subtle/50 pb-2.5">
-                                        <p class="text-xs font-semibold text-text-secondary">
+                                        class="mb-3 flex items-center justify-between gap-3 border-b border-line-subtle/50 pb-2.5">
+                                        <p class="text-xs font-semibold text-fg-secondary">
                                             Replying to {getCommentAuthor(comment)}
                                         </p>
                                         <Button

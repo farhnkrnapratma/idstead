@@ -16,11 +16,11 @@
 
 <div
     class={cn(
-        'flex min-w-0 items-center gap-1 rounded-sm border border-border-subtle bg-surface/50 py-1 pr-1 pl-3',
+        'flex min-w-0 items-center gap-1 rounded-sm border border-line-subtle bg-surface/50 py-1 pr-1 pl-3',
         className
     )}>
     <code
-        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 wrap-break-word text-text-primary tabular-nums"
+        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums"
         >{command}</code>
     <IconButton
         ariaLabel="Copy {label.toLowerCase()}"
