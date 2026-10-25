@@ -164,31 +164,31 @@ export const A11Y_TOGGLES: {
     {
         key: 'reduceMotion',
         label: 'Reduce motion',
-        description: 'Stop animations and background motion',
+        description: 'Stops animations, transitions and moving backgrounds.',
         toggle: a11yStore.toggleReduceMotion
     },
     {
         key: 'solidSurfaces',
         label: 'Solid surfaces',
-        description: 'Remove frosted-glass transparency',
+        description: 'Replaces see-through, blurred panels with solid backgrounds.',
         toggle: a11yStore.toggleSolidSurfaces
     },
     {
         key: 'highContrast',
         label: 'High contrast text',
-        description: 'Increase text contrast ratios',
+        description: 'Shows secondary and muted text in the main text color.',
         toggle: a11yStore.toggleHighContrast
     },
     {
         key: 'focusHighlight',
         label: 'Focus ring highlight',
-        description: 'High-visibility keyboard focus outline',
+        description: 'Draws a thick outline around the element the keyboard focuses.',
         toggle: a11yStore.toggleFocusHighlight
     },
     {
         key: 'dyslexicFont',
         label: 'Dyslexic-friendly font',
-        description: 'Switch the whole site to Lexend, except code',
+        description: 'Switches the site to Lexend, a font that is easier to read, except code.',
         toggle: a11yStore.toggleDyslexicFont
     }
 ];

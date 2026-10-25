@@ -7,6 +7,7 @@
     import LoadingState from '@idstead/ui/components/LoadingState.svelte';
     import Tooltip from '@idstead/ui/components/Tooltip.svelte';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import { themeToken } from '@idstead/ui/themeColors.ts';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
     import { copyText } from '@idstead/ui/utils/fileActions.ts';
     import { renderQrSvg } from '../qrSvg';
@@ -69,13 +70,6 @@
         });
     }
 
-    function mutedColor(): string {
-        if (typeof document === 'undefined') return '';
-        return getComputedStyle(document.documentElement)
-            .getPropertyValue('--color-fg-muted')
-            .trim();
-    }
-
     async function createQrSvgs(
         target: string,
         avatar: string,
@@ -93,12 +87,11 @@
         }
     }
 
+    const qrColor = $derived(themeToken('--color-fg-muted', themeStore.isDark ? 'dark' : 'light'));
+
     const qrSvg = $derived.by(() => {
         void attempt;
-        void themeStore.isDark;
-        return isOpen && targetUrl ?
-                createQrSvgs(targetUrl, resolvedAvatarUrl, mutedColor())
-            :   null;
+        return isOpen && targetUrl ? createQrSvgs(targetUrl, resolvedAvatarUrl, qrColor) : null;
     });
 
     function renderPng(svgString: string): Promise<Blob> {
@@ -213,7 +206,7 @@
 <Dialog
     bind:isOpen
     title="Scan QR code"
-    size="2xs"
+    size="xs"
     {onClose}>
     <div class="flex flex-col items-center gap-4">
         <div
