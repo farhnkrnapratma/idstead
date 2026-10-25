@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 import { publicRepositories } from '#lib/server/repositories.ts';
 import { serveIdentityAsset } from '#lib/server/profileAssets.ts';
 import { avatarFileFor, emailHashMatches, requestedAvatarSize } from '#lib/server/avatarLookup.ts';
+import { publishedEmail } from '#lib/server/publishedEmail.ts';
 
 const CORS = { 'Access-Control-Allow-Origin': '*' };
 
@@ -13,16 +14,24 @@ function notFound() {
 }
 
 export const GET: RequestHandler = async ({ request, params, url, platform }) => {
-    let profile: Awaited<ReturnType<ReturnType<typeof publicRepositories>['author']['profile']>>;
+    const { author } = publicRepositories();
+    let profile: Awaited<ReturnType<typeof author.profile>>;
+    let contact: Awaited<ReturnType<typeof author.contactLinks>>;
     try {
-        profile = await publicRepositories().author.profile({ includeEmail: true });
+        [profile, contact] = await Promise.all([
+            author.profile({ includeEmail: true }),
+            author.contactLinks()
+        ]);
     } catch {
         return new Response(null, {
             status: 503,
             headers: { ...CORS, 'Cache-Control': 'no-store' }
         });
     }
-    if (!profile?.avatarVersion || !emailHashMatches(params.hash, profile.email ?? ''))
+    if (
+        !profile?.avatarVersion
+        || !emailHashMatches(params.hash, publishedEmail(profile.email, contact))
+    )
         return notFound();
 
     const file = avatarFileFor(requestedAvatarSize(url.searchParams));

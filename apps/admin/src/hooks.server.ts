@@ -26,7 +26,7 @@ if (import.meta.hot) {
     import.meta.hot.data.sentryInitHandle = sentryInitHandle;
 }
 
-const PUBLIC_PATHS = new Set(['/login', '/robots.txt']);
+const PUBLIC_PATHS = new Set(['/login', '/robots.txt', '/oauth/authorize']);
 
 function isIdentityAsset(pathname: string) {
     return assetNames.includes(pathname.slice(1)) || pathname === '/hero.png';

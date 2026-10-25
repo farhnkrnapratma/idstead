@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/sveltekit';
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit/hooks';
 import { writeFreezeHandle } from '#lib/server/writeFreeze.ts';
+import { csrfHandle } from '#lib/server/csrf.ts';
 import * as publicEnv from '$app/env/public';
 import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
@@ -64,6 +65,7 @@ const PUBLIC_API_EXPOSED_HEADERS =
 export const handle: Handle = sequence(
     sentryInitHandle,
     Sentry.sentryHandle(),
+    csrfHandle,
     async ({ event, resolve }) => {
         const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
 

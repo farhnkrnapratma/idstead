@@ -3,7 +3,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { oidcAdmin } from '#lib/server/oidc/admin.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { oidcSigningKey } from '#lib/server/oidc/keys.ts';
+import { oidcEnabled } from '#lib/server/oidc/enabled.ts';
 import { oidcEndpoints } from '#lib/server/oidc/config.ts';
 import {
     generateClientId,
@@ -26,14 +26,11 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const auth = await oidcAdmin(request, url, platform);
     if (!auth.ok) return auth.response;
     try {
-        const [clients, key] = await Promise.all([
-            auth.service.oidcClients.list(),
-            oidcSigningKey(platform)
-        ]);
+        const clients = await auth.service.oidcClients.list();
         const { issuer } = oidcEndpoints(platform);
         return Response.json(
             {
-                enabled: Boolean(key),
+                enabled: oidcEnabled(platform),
                 issuer,
                 discoveryUrl: `${issuer}/.well-known/openid-configuration`,
                 clients

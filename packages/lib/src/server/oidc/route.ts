@@ -1,4 +1,5 @@
 import { checkRateLimit, clientIp } from '../rateLimit';
+import { writesFrozen } from '../writeFreeze';
 import { OAUTH_CORS_HEADERS, type OidcEndpointDeps } from './endpoints';
 import { oidcEndpointDeps } from './deps';
 
@@ -8,8 +9,24 @@ export function oauthPreflight() {
 
 export async function oauthRoute(
     event: { request: Request; platform: unknown; getClientAddress: () => string },
-    handler: (request: Request, deps: OidcEndpointDeps) => Promise<Response>
+    handler: (request: Request, deps: OidcEndpointDeps) => Promise<Response>,
+    options: { writes?: boolean } = {}
 ): Promise<Response> {
+    if (options.writes && writesFrozen(event.platform))
+        return Response.json(
+            {
+                error: 'temporarily_unavailable',
+                error_description: 'Sign-in is paused for maintenance. Try again in a few minutes.'
+            },
+            {
+                status: 503,
+                headers: {
+                    'Retry-After': '60',
+                    'Cache-Control': 'no-store',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            }
+        );
     const limit = await checkRateLimit(`oauth:${clientIp(event.request, event.getClientAddress)}`);
     if (limit.limited)
         return Response.json(

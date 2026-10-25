@@ -14,10 +14,12 @@ const SINGLE_PARAMS = [
     'nonce',
     'code_challenge',
     'code_challenge_method',
-    'prompt'
+    'prompt',
+    'max_age'
 ];
 
 const CODE_CHALLENGE = /^[A-Za-z0-9_-]{43}$/;
+const MAX_AGE = /^\d{1,9}$/;
 const PROMPTS = new Set(['none', 'login', 'consent', 'select_account']);
 
 export const SCOPE_DETAILS: Record<OidcScope, { label: string; claims: string[] }> = {
@@ -47,6 +49,7 @@ export interface AuthorizeRequest {
     nonce: string | null;
     codeChallenge: string;
     prompt: string[];
+    maxAge: number | null;
 }
 
 export type AuthorizeCheck =
@@ -120,9 +123,14 @@ export function checkAuthorizeRequest(
     if (prompt.includes('none') && prompt.length > 1)
         return fail('invalid_request', 'prompt=none cannot be combined with other values.');
 
+    const maxAgeParam = params.get('max_age');
+    if (maxAgeParam !== null && !MAX_AGE.test(maxAgeParam))
+        return fail('invalid_request', 'max_age must be a whole number of seconds.');
+    const maxAge = maxAgeParam === null ? null : Number(maxAgeParam);
+
     return {
         kind: 'ok',
-        request: { clientId, redirectUri, scopes, state, nonce, codeChallenge, prompt }
+        request: { clientId, redirectUri, scopes, state, nonce, codeChallenge, prompt, maxAge }
     };
 }
 
@@ -185,13 +193,14 @@ export interface ConsentScope {
 
 export type AuthorizationOutcome =
     | { kind: 'fatal'; message: string }
+    | { kind: 'login' }
     | { kind: 'redirect'; url: string; consented: { clientId: string; name: string } | null }
     | { kind: 'consent'; client: { name: string; host: string }; scopes: ConsentScope[] };
 
 export async function resolveAuthorization(
     stores: { clients: OidcClientStore; auth: OidcAuthStore },
     params: URLSearchParams,
-    options: { issuer: string; authTime: number; decision?: 'allow' | 'deny'; now?: number }
+    options: { issuer: string; authTime: number | null; decision?: 'allow' | 'deny'; now?: number }
 ): Promise<AuthorizationOutcome> {
     const clientId = params.get('client_id');
     const client = clientId ? await stores.clients.get(clientId) : null;
@@ -215,10 +224,16 @@ export async function resolveAuthorization(
         consented: null
     });
 
+    if (options.authTime === null)
+        return request.prompt.includes('none') ?
+                deny('login_required', 'The owner is not signed in.')
+            :   { kind: 'login' };
+    const authTime = options.authTime;
     if (options.decision === 'deny')
         return deny('access_denied', 'The owner declined the request.');
     const nowSeconds = Math.floor((options.now ?? Date.now()) / 1000);
-    if (request.prompt.includes('login') && nowSeconds - options.authTime > FRESH_LOGIN_SECONDS)
+    const maxAge = request.prompt.includes('login') ? FRESH_LOGIN_SECONDS : request.maxAge;
+    if (maxAge !== null && nowSeconds - authTime > maxAge)
         return deny('login_required', 'Sign out of the admin and sign in again, then retry.');
 
     const existing = await stores.auth.activeGrant(request.clientId);
@@ -239,7 +254,7 @@ export async function resolveAuthorization(
 
     const grant =
         covered && existing ? existing : await stores.auth.grant(request.clientId, request.scopes);
-    const code = await issueAuthorizationCode(stores.auth, request, grant.id, options.authTime);
+    const code = await issueAuthorizationCode(stores.auth, request, grant.id, authTime);
     return {
         kind: 'redirect',
         url: successRedirect(request, code, options.issuer),

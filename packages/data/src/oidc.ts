@@ -79,7 +79,10 @@ export interface OidcRefreshRecord {
 }
 
 export type OidcRefreshResult =
-    { status: 'rotated'; token: OidcRefreshRecord } | { status: 'reused' } | { status: 'invalid' };
+    | { status: 'rotated'; token: OidcRefreshRecord }
+    | { status: 'reused' }
+    | { status: 'invalid' }
+    | { status: 'invalid_scope' };
 
 export interface OidcAuthStore {
     subject(): Promise<string>;
@@ -93,8 +96,8 @@ export interface OidcAuthStore {
     rotateRefresh(
         tokenHash: string,
         clientId: string,
-        next: { tokenHash: string; expiresAt: string }
+        next: { tokenHash: string; scopes: string[] | null }
     ): Promise<OidcRefreshResult>;
-    revokeRefresh(tokenHash: string, clientId: string): Promise<boolean>;
+    revokeGrantByRefresh(tokenHash: string, clientId: string): Promise<boolean>;
     prune(): Promise<void>;
 }

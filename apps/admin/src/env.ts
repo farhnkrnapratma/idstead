@@ -14,7 +14,7 @@ export const variables = defineEnvVars({
     DATA_CACHE: { schema: optional },
     GITHUB_PAT: { schema: optional },
     IP_SALT: { schema: optional },
-    OIDC_SIGNING_KEY: { schema: optional },
+    OIDC_ENABLED: { schema: optional },
     RESEND_API_KEY: { schema: optional },
     SUBSCRIBER_FROM_EMAIL: { schema: optional },
     SUPABASE_SERVICE_ROLE_KEY: { schema: optional },

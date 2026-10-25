@@ -211,6 +211,14 @@ describe('token endpoint', () => {
         ).toBe(400);
         for (let i = 0; i < 3; i++) await attempt(basic('client-confidential-1', 'nope'));
         expect((await attempt(basic('client-confidential-1', SECRET))).status).toBe(429);
+        const elsewhere = await handleTokenRequest(
+            form(
+                { grant_type: 'refresh_token', refresh_token: 'x' },
+                basic('client-confidential-1', SECRET)
+            ),
+            { ...deps, ip: '198.51.100.7' }
+        );
+        expect((await elsewhere.json()).error).toBe('invalid_grant');
         const notForm = await handleTokenRequest(
             new Request(`${ISSUER}/oauth/token`, { method: 'POST', body: '{}' }),
             deps
@@ -243,6 +251,8 @@ describe('token endpoint', () => {
                 }),
                 deps
             );
+        const withoutOpenid = await refresh(first.refresh_token, { scope: 'profile' });
+        expect((await withoutOpenid.json()).error).toBe('invalid_scope');
         const narrowed = await refresh(first.refresh_token, { scope: 'openid profile' });
         expect(narrowed.status).toBe(200);
         const second = await narrowed.json();
@@ -286,6 +296,43 @@ describe('token endpoint', () => {
         );
         expect(revoked.status).toBe(200);
         expect((await (await refresh(third.refresh_token)).json()).error).toBe('invalid_grant');
+        const userinfo = (token: string) =>
+            handleUserinfo(
+                new Request(`${ISSUER}/oauth/userinfo`, {
+                    headers: { authorization: `Bearer ${token}` }
+                }),
+                deps
+            );
+        expect((await userinfo(third.access_token)).status).toBe(401);
+
+        const fourth = await (
+            await handleTokenRequest(
+                form({
+                    grant_type: 'authorization_code',
+                    code: await authorizeCode(deps, 'client-public-00001'),
+                    redirect_uri: REDIRECT,
+                    code_verifier: VERIFIER,
+                    client_id: 'client-public-00001'
+                }),
+                deps
+            )
+        ).json();
+        expect((await userinfo(fourth.access_token)).status).toBe(200);
+        const revokedAccess = await handleRevoke(
+            new Request(`${ISSUER}/oauth/revoke`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    token: fourth.access_token,
+                    token_type_hint: 'access_token',
+                    client_id: 'client-public-00001'
+                })
+            }),
+            deps
+        );
+        expect(revokedAccess.status).toBe(200);
+        expect((await userinfo(fourth.access_token)).status).toBe(401);
+        expect((await (await refresh(fourth.refresh_token)).json()).error).toBe('invalid_grant');
 
         const unsupported = await handleTokenRequest(
             form({ grant_type: 'password', client_id: 'client-public-00001' }),
