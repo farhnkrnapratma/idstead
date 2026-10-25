@@ -2,15 +2,18 @@
     import type { HTMLAttributes } from 'svelte/elements';
     import { sanitizeHtml } from '@mdrs/core';
 
-    interface Props extends HTMLAttributes<HTMLDivElement> {
+    interface Props extends HTMLAttributes<HTMLElement> {
         html: string;
+        as?: 'div' | 'span';
     }
 
-    let { html, ...rest }: Props = $props();
+    let { html, as = 'div', ...rest }: Props = $props();
 
     const safeHtml = $derived(sanitizeHtml(html));
 </script>
 
-<div {...rest}>
+<svelte:element
+    this={as}
+    {...rest}>
     {@html safeHtml}
-</div>
+</svelte:element>

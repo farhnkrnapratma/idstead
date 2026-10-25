@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { sanitizeHtml } from '@mdrs/core';
+    import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
+    import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import { onMount } from 'svelte';
     import {
         TableOfContents as TableOfContentsIcon,
@@ -205,26 +206,23 @@
 
         let result = text;
 
-        result = result.replace(
-            /`([^`]+)`/g,
-            '<code class="rounded bg-surface-hover/80 px-1 py-0.5 font-mono text-[0.85em] font-normal text-fg">$1</code>'
-        );
+        result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
         result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
         result = result.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-        return sanitizeHtml(result);
+        return result;
     }
 </script>
 
 {#snippet tocList()}
     <div
-        bind:this={scrollContainerEl}
+        {@attach elementRef<HTMLDivElement>(node => (scrollContainerEl = node))}
         class="relative -mx-2 min-h-0 flex-1 overflow-y-auto px-2 py-2">
         <ul
             id="toc-list"
-            bind:this={tocListEl}
+            {@attach elementRef<HTMLUListElement>(node => (tocListEl = node))}
             class="relative flex min-h-full flex-col pl-3"
             role="list">
             <div
@@ -273,9 +271,10 @@
                                 aria-hidden="true"></span>
                         {/if}
 
-                        <span class="min-w-0 grow">
-                            {@html formatHeadingText(heading.text)}
-                        </span>
+                        <MdrsHtml
+                            as="span"
+                            class="min-w-0 grow"
+                            html={formatHeadingText(heading.text)} />
                     </a>
                 </li>
             {/each}
