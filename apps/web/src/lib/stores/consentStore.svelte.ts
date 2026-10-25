@@ -1,5 +1,3 @@
-import { readStorage } from '@idstead/ui/utils/storageKeys.ts';
-
 export type ConsentStatus = 'granted' | 'denied';
 
 interface ConsentSignals {
@@ -37,7 +35,7 @@ function createConsentStore() {
         if (typeof window === 'undefined') return;
 
         try {
-            const stored = readStorage(STORAGE_KEY);
+            const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 signals.analytics_storage = consentStatus(parsed?.analytics_storage);

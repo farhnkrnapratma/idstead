@@ -4,11 +4,7 @@ import { readFileSync } from 'node:fs';
 const LEGACY_NAME = /fkp/i;
 const OWNER_HANDLE = /farhnkrnapratma/i;
 
-const MIGRATION_FILES = new Set([
-    'apps/web/src/app.html',
-    'packages/ui/src/utils/legacyStorageKeys.ts',
-    'tests/naming.test.ts'
-]);
+const MIGRATION_FILES = new Set(['apps/web/src/app.html', 'tests/naming.test.ts']);
 
 const INSTANCE_FILES = new Set([
     'CLAUDE.md',

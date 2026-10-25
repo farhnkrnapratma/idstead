@@ -4,23 +4,21 @@ The MDRS (Markdown Rich Syntax) engine. It turns MDRS source into sanitized HTML
 
 ```ts
 import { prepareMarkdownPage, renderMarkdown, validateDefineForSave } from '@mdrs/core';
-import { convertLegacyMarkdown } from '@mdrs/core/legacy';
 
 const html = await renderMarkdown(source);
 const { html: page, headings } = await prepareMarkdownPage(source, resolvers);
 const { ok, errors } = await validateDefineForSave(source, resolvers);
 ```
 
-`resolvers` (an `ApiRegistry`) supplies the live data behind `api.v1.author` and `api.v1.blog` in `:::define` blocks. Without it, `unavailableResolvers()` is used and those references render an error marker. The site builds its resolvers with `createMdrsResolvers(supabase)` from `packages/lib/src/mdrsResolvers.ts`.
+`resolvers` (an `ApiRegistry`) supplies the live data behind `api.v1.author` and `api.v1.blog` in `:::define` blocks. Without it, `unavailableResolvers()` is used and those references render an error marker. The site builds its resolvers with `mdrsResolvers(repositories)` (`packages/lib/src/server/mdrsData.ts`) on the server and `createMdrsResolvers(loaders)` (`packages/lib/src/mdrsResolvers.ts`) in the browser.
 
 ## Entry points
 
-Only these are public. Everything else under `src/` is internal and may change.
+Only this is public. Everything else under `src/` is internal and may change.
 
 | Entry | File | Contents |
 | --- | --- | --- |
 | `@mdrs/core` | `src/index.ts` | Rendering, headings, frontmatter, sanitizer, `:::define` validation and resolver building blocks, plain-text conversion |
-| `@mdrs/core/legacy` | `src/legacy.ts` | Conversion from the pre-MDRS syntax |
 
 ## Layout
 
