@@ -4,7 +4,7 @@
     import { fade } from 'svelte/transition';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
-    import TopNav from './TopNav.svelte';
+    import SiteNav from './SiteNav.svelte';
     import TableOfContents from './TableOfContents.svelte';
     import HelpfulBlock from '../article/HelpfulBlock.svelte';
     import ContentActions from './ContentActions.svelte';
@@ -258,12 +258,8 @@
 <SkipLink />
 
 {#if !readingModeStore.active}
-    <TopNav
-        ariaLabel="{title} navigation"
-        backHref="/"
-        backLabel="Home"
+    <SiteNav
         projects={pageProjects}
-        readingMode={readingModeStore.active}
         onToggleReadingMode={readingModeStore.toggle} />
 {/if}
 

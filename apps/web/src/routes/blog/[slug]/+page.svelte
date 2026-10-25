@@ -42,7 +42,7 @@
         ReadingModeExitButton
     } from '@idstead/ui';
     import { CommentThread, ArticleMeta } from '#lib/index.ts';
-    import TopNav from '#app/components/TopNav.svelte';
+    import SiteNav from '#app/components/SiteNav.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import TableOfContents from '#app/components/TableOfContents.svelte';
@@ -566,12 +566,8 @@
 <SkipLink />
 
 {#if !readingModeStore.active}
-    <TopNav
-        ariaLabel="Article navigation"
-        backHref="/blog"
-        backLabel="Blog"
+    <SiteNav
         projects={data.projects}
-        readingMode={readingModeStore.active}
         onToggleReadingMode={readingModeStore.toggle} />
 {/if}
 
