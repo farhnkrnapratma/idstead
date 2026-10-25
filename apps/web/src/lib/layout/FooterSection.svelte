@@ -72,6 +72,8 @@
     );
 
     const siteLinks = $derived(FOOTER_SITE_LINKS.filter(item => !isHiddenLegalPath(item.href)));
+
+    const headingId = $props.id();
 </script>
 
 <footer
@@ -86,9 +88,13 @@
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-10">
                 {#if resolvedNavItems.length > 0}
                     <nav
-                        aria-label="Footer navigation"
+                        aria-labelledby="{headingId}-navigation"
                         class="flex min-w-0 flex-col gap-2">
-                        <h4 class="text-xs font-semibold text-fg">Navigation</h4>
+                        <h2
+                            id="{headingId}-navigation"
+                            class="text-xs font-semibold text-fg">
+                            Navigation
+                        </h2>
                         <ul
                             class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
                             {#each resolvedNavItems as item (item.url)}
@@ -101,7 +107,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-none">
+                                            class="relative cursor-pointer rounded-xs text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
                                             {item.label}
                                         </button>
                                     {:else}
@@ -111,7 +117,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-none">
+                                            class="relative cursor-pointer rounded-xs text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
                                             {item.label}
                                         </a>
                                     {/if}
@@ -122,9 +128,13 @@
                 {/if}
 
                 <nav
-                    aria-label="Site links"
+                    aria-labelledby="{headingId}-site"
                     class="flex min-w-0 flex-col gap-2">
-                    <h4 class="text-xs font-semibold text-fg">Site</h4>
+                    <h2
+                        id="{headingId}-site"
+                        class="text-xs font-semibold text-fg">
+                        Site
+                    </h2>
                     <ul
                         class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
                         {#each siteLinks as item (item.label)}
@@ -204,7 +214,7 @@
         @apply font-sans text-xs leading-normal font-normal not-italic;
     }
 
-    h4 {
+    h2 {
         @apply text-xs font-semibold not-italic;
     }
 </style>
