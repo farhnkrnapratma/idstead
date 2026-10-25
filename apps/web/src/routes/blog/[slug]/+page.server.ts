@@ -34,7 +34,6 @@ export interface RelatedPost {
     excerpt: string | null;
     created_at: string | null;
     updated_at: string | null;
-    bannerPublicUrl: string | null;
     read_time: string;
     comment_count: number;
     views_count: number;
@@ -111,7 +110,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
                 excerpt: related.excerpt,
                 created_at: related.created_at,
                 updated_at: related.updated_at,
-                bannerPublicUrl: related.banner_url,
                 read_time: await postReadTime(blog, related),
                 comment_count: related.comment_count,
                 views_count: related.views_count,

@@ -194,15 +194,15 @@
                                     class={cn(
                                         'absolute size-3.5 transition-all duration-200',
                                         selectedReason === r.id ?
-                                            'scale-0 opacity-0'
-                                        :   'scale-100 text-fg-muted opacity-100 group-hover:text-fg-secondary'
+                                            'invisible scale-0'
+                                        :   'visible scale-100 text-fg-muted group-hover:text-fg-secondary'
                                     )} />
                                 <CircleDot
                                     class={cn(
                                         'absolute size-3.5 transition-all duration-200',
                                         selectedReason === r.id ?
-                                            'scale-100 text-fg-accent opacity-100'
-                                        :   'scale-0 opacity-0'
+                                            'visible scale-100 text-fg-accent'
+                                        :   'invisible scale-0'
                                     )} />
                             </span>
                         </label>

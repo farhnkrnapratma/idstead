@@ -81,7 +81,11 @@
                 return isRepoPinned(a, pinnedRepoNames) ? -1 : 1;
             }
 
-            if (sortField === 'name') {
+            if (sortField === 'date') {
+                const updatedA = a.pushedAt ? Date.parse(a.pushedAt) : 0;
+                const updatedB = b.pushedAt ? Date.parse(b.pushedAt) : 0;
+                return (updatedA - updatedB) * sortDir;
+            } else if (sortField === 'name') {
                 return a.name.localeCompare(b.name) * sortDir;
             } else if (sortField === 'language') {
                 return (a.lang || '').localeCompare(b.lang || '') * sortDir;
@@ -202,6 +206,7 @@
                         {#snippet sortSlot()}
                             <SortControl
                                 fields={[
+                                    { value: 'date', label: 'Updated' },
                                     { value: 'name', label: 'Name' },
                                     { value: 'language', label: 'Language' },
                                     { value: 'stars', label: 'Stars' },

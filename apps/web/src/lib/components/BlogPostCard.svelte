@@ -5,7 +5,6 @@
         slug: string;
         title: string;
         excerpt?: string | null;
-        bannerPublicUrl?: string | null;
         pinned?: boolean;
         created_at: string;
         updated_at?: string | null;
@@ -19,12 +18,10 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { navigating } from '$app/state';
-    import { Image as ImageIcon, LoaderCircle, Pin, Sparkles } from '@lucide/svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import { LoaderCircle, Pin, Sparkles } from '@lucide/svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
-    import { avifSources } from '#lib/blogBanner.ts';
     import { formatReadTime } from '@idstead/domain/formatters.ts';
     import { decodeHtmlEntities } from '@mdrs/core';
 
@@ -41,7 +38,6 @@
         tagItem?: Snippet<[string]>;
     } = $props();
 
-    let bannerFailed = $state(false);
     let showAllTags = $state(false);
 
     const postPath = $derived(`/blog/${post.slug}`);
@@ -63,26 +59,7 @@
         class="font-mono hover:bg-accent/15">{decodeHtmlEntities(tag)}</Tag>
 {/snippet}
 
-<div
-    class="relative flex h-full flex-col rounded-md glass-card border-0! text-left sm:grid sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] dark:border-0!">
-    <div
-        class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md sm:m-4 sm:mr-0 sm:w-auto sm:self-start sm:rounded-sm">
-        {#if post.bannerPublicUrl && !bannerFailed}
-            <ImageWithSkeleton
-                src={post.bannerPublicUrl}
-                sources={avifSources(post.bannerPublicUrl)}
-                alt=""
-                rounded=""
-                onerror={() => (bannerFailed = true)}
-                class="h-full w-full object-cover" />
-        {:else}
-            <div
-                class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                <ImageIcon class="size-8 text-fg-muted" />
-            </div>
-        {/if}
-    </div>
-
+<div class="relative flex h-full flex-col rounded-md glass-card border-0! text-left dark:border-0!">
     <div class="flex min-w-0 flex-1 flex-col gap-1.5 p-3 font-sans sm:gap-2 sm:p-4">
         <svelte:element
             this={headingTag}
@@ -131,8 +108,8 @@
             date={post.created_at}
             updatedAt={post.updated_at}
             readingTime={formatReadTime(post.read_time)}
-            commentsCount={post.comment_count}
-            views={post.views_count} />
+            commentsCount={post.comment_count || undefined}
+            views={post.views_count || undefined} />
 
         {#if post.excerpt}
             <p class="type-body text-fg-secondary">{post.excerpt}</p>

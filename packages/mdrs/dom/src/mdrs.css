@@ -215,7 +215,7 @@
     }
 
     .mdrs-heading a.mdrs-anchor {
-        @apply relative ml-[0.35rem]! inline-flex! cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-colors select-none;
+        @apply relative ml-[0.35rem]! inline-flex! scale-0 cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! transition-[color,scale] select-none;
     }
 
     .mdrs-heading a.mdrs-anchor svg {
@@ -225,14 +225,14 @@
     .mdrs-heading:hover a.mdrs-anchor,
     .mdrs-heading:focus-within a.mdrs-anchor,
     .mdrs-heading:target a.mdrs-anchor {
-        @apply opacity-100!;
+        @apply scale-100!;
     }
 
     .mdrs-heading a.mdrs-anchor:hover,
     .mdrs-heading a.mdrs-anchor:focus-visible,
     .mdrs-heading a.mdrs-anchor.mdrs-is-active,
     .mdrs-heading:target a.mdrs-anchor {
-        @apply text-fg-accent! opacity-100!;
+        @apply scale-100! text-fg-accent!;
     }
 
     .mdrs-heading a.mdrs-anchor::after {
@@ -1041,15 +1041,13 @@
 
     @keyframes mdrs-code-icon-out {
         to {
-            opacity: 0;
-            transform: scale(0.5) rotate(-90deg);
+            transform: scale(0) rotate(-90deg);
         }
     }
 
     @keyframes mdrs-code-icon-in {
         from {
-            opacity: 0;
-            transform: scale(0.5) rotate(90deg);
+            transform: scale(0) rotate(90deg);
         }
     }
 

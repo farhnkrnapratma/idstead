@@ -210,7 +210,7 @@
             <span
                 data-pill-grip
                 aria-hidden="true"
-                class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-fg-accent active:cursor-grabbing">
+                class="inline-flex shrink-0 cursor-grab items-center justify-center text-fg-muted transition-colors hover:text-fg-accent active:cursor-grabbing">
                 <GripVertical class="size-2.5" />
             </span>
             {#if editingIdx === idx}
