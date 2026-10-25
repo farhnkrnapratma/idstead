@@ -25,7 +25,7 @@ export const SHORTCUT_SECTIONS = [
         id: 'forms',
         label: 'Forms',
         context:
-            'Press Ctrl+Enter (Cmd+Enter on Mac) inside any form to send it; Enter adds a new line in message boxes. The shortcuts below work in the focused form on this page, such as a comment or feedback form.'
+            'Press ctrl+enter (cmd+enter on Mac) inside any form to send it; enter adds a new line in message boxes. The shortcuts below work in the focused form on this page, such as a comment or feedback form.'
     },
     {
         id: 'page',

@@ -1,4 +1,4 @@
-import { apiUrl } from '#lib/apiConfig.ts';
+import { API_VERSIONS, LATEST_API_VERSION, apiUrl, apiVersionUrl } from '#lib/apiConfig.ts';
 import { parseMailingCommand, type MailingAction } from '#lib/mailing.ts';
 import * as publicEnv from '$app/env/public';
 
@@ -70,6 +70,26 @@ export function createDynamicCommandItems(
                 });
             }
             return items;
+        }
+
+        if (root === '/api' || (root.length > 2 && '/api'.startsWith(root))) {
+            const version = q.split(/\s+/)[1] ?? '';
+            for (const candidate of API_VERSIONS) {
+                if (version ? !candidate.startsWith(version) : candidate === LATEST_API_VERSION)
+                    continue;
+                items.push({
+                    id: `dyn-api-${candidate}`,
+                    category: 'pages',
+                    title: `/api ${candidate}`,
+                    subtitle:
+                        candidate === LATEST_API_VERSION ?
+                            `Open the ${candidate} REST API documentation (latest).`
+                        :   `Open the ${candidate} REST API documentation.`,
+                    url: apiVersionUrl(candidate, publicEnv.PUBLIC_API_BASE_URL),
+                    icon: Braces,
+                    badge: 'API'
+                });
+            }
         }
 
         if (q.startsWith('/theme') || (root.length > 2 && '/theme'.startsWith(root))) {

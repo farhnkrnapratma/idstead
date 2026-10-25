@@ -1,10 +1,9 @@
 <script lang="ts">
     import {
-        KeyRound,
+        Keyboard,
         Command,
         Option,
         ChevronUp,
-        ArrowBigUp,
         CornerDownLeft,
         ArrowRightToLine,
         ArrowBigUpDash
@@ -27,7 +26,6 @@
         Command,
         Option,
         ChevronUp,
-        ArrowBigUp,
         CornerDownLeft,
         ArrowRightToLine,
         ArrowBigUpDash
@@ -57,7 +55,7 @@
         aria-hidden="true">
         {#if leader}
             <kbd class={cn(KEY_SEGMENT_CLASS, tone)}>
-                <KeyRound class="size-2.5" />
+                <Keyboard class="size-2.5" />
             </kbd>
         {/if}
         {#each labels as label, index (`${index}-${label.text}`)}

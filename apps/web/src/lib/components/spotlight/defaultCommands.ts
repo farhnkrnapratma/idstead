@@ -18,7 +18,7 @@ import {
     FileUser,
     Rss,
     CodeXml,
-    LogOut,
+    Power,
     BookOpenText,
     Save,
     Printer,
@@ -334,7 +334,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             id: 'cmd-api',
             category: 'pages',
             title: '/api',
-            subtitle: 'Open developer REST API documentation.',
+            subtitle: 'Open the latest REST API documentation.',
             url: apiUrl('', publicEnv.PUBLIC_API_BASE_URL),
             icon: Braces,
             badge: 'API'
@@ -383,7 +383,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
                     window.location.href = 'about:blank';
                 }
             },
-            icon: LogOut,
+            icon: Power,
             badge: 'System'
         },
         {
