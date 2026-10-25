@@ -6916,6 +6916,7 @@
                             <input
                                 bind:this={profileImportInput}
                                 type="file"
+                                name="profile-import"
                                 accept="application/json,.json"
                                 class="hidden"
                                 onchange={handleImportProfileFile} />

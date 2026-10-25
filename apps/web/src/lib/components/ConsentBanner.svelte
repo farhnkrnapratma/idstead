@@ -225,6 +225,8 @@
                 </div>
                 <input
                     type="range"
+                    id="consent-preset"
+                    name="consent-preset"
                     min="0"
                     max="2"
                     step="1"
