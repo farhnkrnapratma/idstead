@@ -24,5 +24,18 @@ export default defineConfig({
             tracing: { server: true }
         })
     ],
-    ssr: { noExternal: ['@lucide/svelte', '@mdrs/core', '@idstead/domain', '@idstead/data'] }
+    // Resolve one Svelte instance in dev SSR. Two copies of svelte/internal/server
+    // split the SSR context, so dev-only push_element reads a null context.
+    resolve: { dedupe: ['svelte'] },
+    ssr: {
+        noExternal: [
+            '@lucide/svelte',
+            '@mdrs/core',
+            '@mdrs/dom',
+            '@idstead/domain',
+            '@idstead/data',
+            '@idstead/lib',
+            '@idstead/ui'
+        ]
+    }
 });

@@ -25,7 +25,10 @@ export default defineConfig({
             tracing: { server: true }
         })
     ],
+    // Resolve one Svelte instance in dev SSR. Two copies of svelte/internal/server
+    // split the SSR context, so dev-only push_element reads a null context.
     resolve: {
+        dedupe: ['svelte'],
         alias: [
             {
                 find: /^openpgp$/,
@@ -35,5 +38,16 @@ export default defineConfig({
             }
         ]
     },
-    ssr: { noExternal: ['@lucide/svelte', '@mdrs/core', '@idstead/domain', '@idstead/data'] }
+    ssr: {
+        noExternal: [
+            '@lucide/svelte',
+            '@mdrs/core',
+            '@mdrs/dom',
+            '@mdrs/editor',
+            '@idstead/domain',
+            '@idstead/data',
+            '@idstead/lib',
+            '@idstead/ui'
+        ]
+    }
 });
