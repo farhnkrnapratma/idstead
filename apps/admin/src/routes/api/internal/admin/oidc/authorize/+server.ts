@@ -3,7 +3,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { oidcAdmin } from '#lib/server/oidc/admin.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { oidcSigningKey } from '#lib/server/oidc/keys.ts';
+import { oidcEnabled } from '#lib/server/oidc/enabled.ts';
 import { oidcEndpoints } from '#lib/server/oidc/config.ts';
 import { resolveAuthorization } from '#lib/server/oidc/authorize.ts';
 
@@ -19,7 +19,7 @@ export const POST: RequestHandler = async ({
     const auth = await oidcAdmin(request, url, platform);
     if (!auth.ok) return auth.response;
     const { service } = auth;
-    if (!(await oidcSigningKey(platform)))
+    if (!oidcEnabled(platform))
         return apiError(503, 'OIDC_UNAVAILABLE', 'Sign in with Idstead is not set up.');
 
     let body: { query?: unknown; decision?: unknown };

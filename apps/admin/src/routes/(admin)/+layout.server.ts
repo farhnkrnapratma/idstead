@@ -9,6 +9,9 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
         return { session: null };
     }
 
+    if (url.pathname === '/oauth/authorize')
+        return { session: session?.role === 'admin' && session.mfaSatisfied ? session : null };
+
     if (!session || !session.mfaSatisfied)
         redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
 

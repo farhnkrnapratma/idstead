@@ -370,6 +370,9 @@ export function createD1OidcAuthStore(db: D1Like, now: () => number = Date.now):
                     return { status: 'reused' };
                 }
                 if (String(row.expires_at) <= at) return { status: 'invalid' };
+                const granted = jsonStrings(row.scopes);
+                if (next.scopes?.some(scope => !granted.includes(scope)))
+                    return { status: 'invalid_scope' };
 
                 const { meta } = await db
                     .prepare(
@@ -393,7 +396,7 @@ export function createD1OidcAuthStore(db: D1Like, now: () => number = Date.now):
                             grantRowId,
                             row.scopes,
                             row.auth_time,
-                            next.expiresAt
+                            row.expires_at
                         ),
                     db
                         .prepare('UPDATE db_oidc_grants SET last_used_at = ?2 WHERE id = ?1')
@@ -404,7 +407,7 @@ export function createD1OidcAuthStore(db: D1Like, now: () => number = Date.now):
                     token: {
                         grantId: String(row.public_id),
                         clientId: String(row.client_id),
-                        scopes: jsonStrings(row.scopes),
+                        scopes: granted,
                         authTime: Number(row.auth_time)
                     }
                 };
@@ -413,17 +416,18 @@ export function createD1OidcAuthStore(db: D1Like, now: () => number = Date.now):
             }
         },
 
-        async revokeRefresh(tokenHash, clientId) {
+        async revokeGrantByRefresh(tokenHash, clientId) {
             try {
-                const { meta } = await db
+                const row = await db
                     .prepare(
-                        `UPDATE db_oidc_refresh_tokens SET revoked_at = ?3
-                         WHERE token_hash = ?1 AND revoked_at IS NULL
-                           AND grant_id IN (SELECT id FROM db_oidc_grants WHERE client_id = ?2)`
+                        `SELECT g.id FROM db_oidc_refresh_tokens t JOIN db_oidc_grants g ON g.id = t.grant_id
+                         WHERE t.token_hash = ?1 AND g.client_id = ?2 AND g.revoked_at IS NULL`
                     )
-                    .bind(tokenHash, clientId, iso(now()))
-                    .run();
-                return meta.changes > 0;
+                    .bind(tokenHash, clientId)
+                    .first<{ id: number }>();
+                if (!row) return false;
+                await revokeGrantById(row.id, iso(now()));
+                return true;
             } catch (error) {
                 throw new DataError('oidc.refresh.revoke', error);
             }

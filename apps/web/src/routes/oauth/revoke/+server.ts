@@ -4,4 +4,4 @@ import { oauthPreflight, oauthRoute } from '#lib/server/oidc/route.ts';
 
 export const OPTIONS: RequestHandler = () => oauthPreflight();
 
-export const POST: RequestHandler = event => oauthRoute(event, handleRevoke);
+export const POST: RequestHandler = event => oauthRoute(event, handleRevoke, { writes: true });

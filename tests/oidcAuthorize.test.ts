@@ -63,6 +63,8 @@ describe('authorize request checks', () => {
             [{ code_challenge: 'short' }, 'invalid_request'],
             [{ prompt: 'none consent' }, 'invalid_request'],
             [{ prompt: 'bogus' }, 'invalid_request'],
+            [{ max_age: '-1' }, 'invalid_request'],
+            [{ max_age: '1.5' }, 'invalid_request'],
             [{ request: 'eyJ' }, 'request_not_supported']
         ];
         for (const [overrides, error] of cases) {
@@ -82,7 +84,8 @@ describe('authorize request checks', () => {
                 state: 's-1',
                 nonce: 'n-1',
                 codeChallenge: CHALLENGE,
-                prompt: []
+                prompt: [],
+                maxAge: null
             }
         });
     });
@@ -182,6 +185,52 @@ describe('authorization decisions', () => {
         });
         expect(denied.kind === 'redirect' && new URL(denied.url).searchParams.get('error')).toBe(
             'access_denied'
+        );
+    });
+
+    test('answers prompt=none without a session and enforces max_age', async () => {
+        const { clients, auth } = stores();
+        await clients.create({ ...client, secretHash: null });
+        const signedOut = await resolveAuthorization(
+            { clients, auth },
+            params({ prompt: 'none' }),
+            { issuer: ISSUER, authTime: null }
+        );
+        expect(
+            signedOut.kind === 'redirect' && new URL(signedOut.url).searchParams.get('error')
+        ).toBe('login_required');
+        expect(
+            await resolveAuthorization({ clients, auth }, params(), {
+                issuer: ISSUER,
+                authTime: null
+            })
+        ).toEqual({ kind: 'login' });
+        expect(
+            (
+                await resolveAuthorization(
+                    { clients, auth },
+                    params({ client_id: 'unknown-app-00' }),
+                    { issuer: ISSUER, authTime: null }
+                )
+            ).kind
+        ).toBe('fatal');
+
+        await auth.grant(client.clientId, ['openid', 'profile']);
+        const stale = await resolveAuthorization({ clients, auth }, params({ max_age: '600' }), {
+            issuer: ISSUER,
+            authTime: 1_000_000 - 601,
+            now: 1_000_000 * 1000
+        });
+        expect(stale.kind === 'redirect' && new URL(stale.url).searchParams.get('error')).toBe(
+            'login_required'
+        );
+        const recent = await resolveAuthorization({ clients, auth }, params({ max_age: '600' }), {
+            issuer: ISSUER,
+            authTime: 1_000_000 - 60,
+            now: 1_000_000 * 1000
+        });
+        expect(recent.kind === 'redirect' && new URL(recent.url).searchParams.has('code')).toBe(
+            true
         );
     });
 });

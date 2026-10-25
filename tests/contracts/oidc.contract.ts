@@ -129,12 +129,12 @@ export function oidcContract(name: string, factory: OidcStoresFactory) {
             expect(
                 await auth.rotateRefresh(hash('1'), publicApp.clientId, {
                     tokenHash: hash('9'),
-                    expiresAt
+                    scopes: null
                 })
             ).toEqual({ status: 'invalid' });
             const rotated = await auth.rotateRefresh(hash('1'), confidential.clientId, {
                 tokenHash: hash('2'),
-                expiresAt
+                scopes: null
             });
             expect(rotated).toEqual({
                 status: 'rotated',
@@ -150,19 +150,54 @@ export function oidcContract(name: string, factory: OidcStoresFactory) {
             expect(
                 await auth.rotateRefresh(hash('1'), confidential.clientId, {
                     tokenHash: hash('3'),
-                    expiresAt
+                    scopes: null
                 })
             ).toEqual({ status: 'reused' });
             expect(await auth.activeGrant(confidential.clientId)).toBeNull();
             expect(
                 await auth.rotateRefresh(hash('2'), confidential.clientId, {
                     tokenHash: hash('4'),
-                    expiresAt
+                    scopes: null
                 })
             ).toEqual({ status: 'invalid' });
         });
 
-        test('revokes single refresh tokens, whole grants and everything of a deleted client', async () => {
+        test('checks a narrowed scope before rotating and keeps the first expiry', async () => {
+            const { clients, auth, clock } = factory();
+            await clients.create(confidential);
+            const grant = await auth.grant(confidential.clientId, ['openid', 'offline_access']);
+            await auth.issueRefresh({
+                tokenHash: hash('1'),
+                grantId: grant.id,
+                scopes: ['openid', 'offline_access'],
+                authTime: 1,
+                expiresAt: new Date(Date.now() + 10 * MINUTE).toISOString()
+            });
+            expect(
+                await auth.rotateRefresh(hash('1'), confidential.clientId, {
+                    tokenHash: hash('2'),
+                    scopes: ['openid', 'email']
+                })
+            ).toEqual({ status: 'invalid_scope' });
+            const rotated = await auth.rotateRefresh(hash('1'), confidential.clientId, {
+                tokenHash: hash('2'),
+                scopes: ['openid']
+            });
+            expect(rotated).toMatchObject({
+                status: 'rotated',
+                token: { scopes: ['openid', 'offline_access'] }
+            });
+            expect(await auth.activeGrant(confidential.clientId)).not.toBeNull();
+            clock.advance(11 * MINUTE);
+            expect(
+                await auth.rotateRefresh(hash('2'), confidential.clientId, {
+                    tokenHash: hash('3'),
+                    scopes: null
+                })
+            ).toEqual({ status: 'invalid' });
+        });
+
+        test('revokes the whole grant through a refresh token, and everything of a deleted client', async () => {
             const { clients, auth } = factory();
             await clients.create(confidential);
             const expiresAt = new Date(Date.now() + 24 * 60 * MINUTE).toISOString();
@@ -176,22 +211,21 @@ export function oidcContract(name: string, factory: OidcStoresFactory) {
             });
             await auth.issueRefresh(refresh('1'));
             await auth.issueRefresh(refresh('2'));
-            expect(await auth.revokeRefresh(hash('1'), 'someone-else-client')).toBe(false);
-            expect(await auth.revokeRefresh(hash('1'), confidential.clientId)).toBe(true);
-            expect(
-                await auth.rotateRefresh(hash('1'), confidential.clientId, {
-                    tokenHash: hash('3'),
-                    expiresAt
-                })
-            ).toEqual({ status: 'invalid' });
-            expect(await auth.revokeGrant(grant.id)).toBe(true);
-            expect(await auth.revokeGrant(grant.id)).toBe(false);
-            expect(
-                await auth.rotateRefresh(hash('2'), confidential.clientId, {
-                    tokenHash: hash('4'),
-                    expiresAt
-                })
-            ).toEqual({ status: 'invalid' });
+            expect(await auth.revokeGrantByRefresh(hash('1'), 'someone-else-client')).toBe(false);
+            expect(await auth.revokeGrantByRefresh(hash('1'), confidential.clientId)).toBe(true);
+            expect(await auth.activeGrant(confidential.clientId)).toBeNull();
+            for (const char of ['1', '2'])
+                expect(
+                    await auth.rotateRefresh(hash(char), confidential.clientId, {
+                        tokenHash: hash('3'),
+                        scopes: null
+                    })
+                ).toEqual({ status: 'invalid' });
+            expect(await auth.revokeGrantByRefresh(hash('2'), confidential.clientId)).toBe(false);
+
+            const second = await auth.grant(confidential.clientId, ['openid']);
+            expect(await auth.revokeGrant(second.id)).toBe(true);
+            expect(await auth.revokeGrant(second.id)).toBe(false);
 
             await auth.grant(confidential.clientId, ['openid']);
             expect(await clients.delete(confidential.clientId)).toBe(true);

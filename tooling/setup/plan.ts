@@ -71,6 +71,7 @@ export function setupVariables(env: Variables, config: InstanceConfig): Record<s
     };
     for (const [key, value] of Object.entries(env))
         if (/^[A-Z][A-Z0-9_]*$/.test(key) && value?.trim()) variables[key] = value.trim();
+    if (variables.OIDC_SIGNING_KEY && !variables.OIDC_ENABLED) variables.OIDC_ENABLED = '1';
     return variables;
 }
 

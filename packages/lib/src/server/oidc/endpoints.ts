@@ -136,7 +136,7 @@ async function authenticateClient(
     const secret = basic?.secret ?? form.get('client_secret');
     if (!clientId) return invalidClient(Boolean(basic));
 
-    const keys = [`oidc-client:${clientId}`, `oidc-ip:${deps.ip}`];
+    const keys = [`oidc-client:${clientId}:${deps.ip}`, `oidc-ip:${deps.ip}`];
     const wait = await deps.lockout.retryAfter(keys);
     if (wait > 0)
         return {
@@ -250,20 +250,20 @@ export async function handleTokenRequest(request: Request, deps: OidcEndpointDep
     if (grantType === 'refresh_token') {
         const presented = form.get('refresh_token');
         if (!presented) return oauthError(400, 'invalid_request', 'refresh_token is required.');
+        const requested = form.get('scope');
+        const narrowed = requested === null ? null : parseScopes(requested);
+        if (narrowed && !narrowed.includes('openid'))
+            return oauthError(400, 'invalid_scope', 'The scope must include openid.');
         const next = randomToken(32);
         const rotated = await deps.auth.rotateRefresh(await sha256Hex(presented), client.clientId, {
             tokenHash: await sha256Hex(next),
-            expiresAt: new Date(nowMs + REFRESH_TOKEN_TTL_MS).toISOString()
+            scopes: narrowed
         });
+        if (rotated.status === 'invalid_scope')
+            return oauthError(400, 'invalid_scope', 'The scope must be a subset of the grant.');
         if (rotated.status !== 'rotated')
             return oauthError(400, 'invalid_grant', 'The refresh token is invalid or was revoked.');
-        const requested = form.get('scope');
-        const scopes = requested === null ? rotated.token.scopes : parseScopes(requested);
-        if (
-            scopes.some(scope => !rotated.token.scopes.includes(scope))
-            || !scopes.includes('openid')
-        )
-            return oauthError(400, 'invalid_scope', 'The scope must be a subset of the grant.');
+        const scopes = narrowed ?? rotated.token.scopes;
         return tokenResponse(deps, {
             client,
             grantId: rotated.token.grantId,
@@ -308,8 +308,10 @@ export async function handleRevoke(request: Request, deps: OidcEndpointDeps) {
     if (!auth.ok) return auth.response;
     const token = form.get('token');
     if (!token) return oauthError(400, 'invalid_request', 'token is required.');
-    if (form.get('token_type_hint') !== 'access_token')
-        await deps.auth.revokeRefresh(await sha256Hex(token), auth.client.clientId);
+    const access = await verifyAccessToken(deps.key, token, deps.issuer);
+    if (access) {
+        if (access.clientId === auth.client.clientId) await deps.auth.revokeGrant(access.grantId);
+    } else await deps.auth.revokeGrantByRefresh(await sha256Hex(token), auth.client.clientId);
     return new Response(null, {
         status: 200,
         headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' }

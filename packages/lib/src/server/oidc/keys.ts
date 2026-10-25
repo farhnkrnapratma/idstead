@@ -14,7 +14,7 @@ let parsed: { raw: string; key: Promise<OidcSigningKey | null> } | undefined;
 function rawSigningKey(platform: unknown): string {
     const value =
         (platform as { env?: { OIDC_SIGNING_KEY?: string } } | undefined)?.env?.OIDC_SIGNING_KEY
-        ?? privateEnv.OIDC_SIGNING_KEY
+        ?? (privateEnv as Record<string, string | undefined>).OIDC_SIGNING_KEY
         ?? process.env.OIDC_SIGNING_KEY
         ?? '';
     return value.trim();

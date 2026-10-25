@@ -1,18 +1,17 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { dataStores } from '#lib/server/data.ts';
-import { oidcSigningKey } from '#lib/server/oidc/keys.ts';
+import { oidcEnabled } from '#lib/server/oidc/enabled.ts';
 import { oidcEndpoints } from '#lib/server/oidc/config.ts';
 import { resolveAuthorization } from '#lib/server/oidc/authorize.ts';
 
 export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }) => {
     setHeaders({ 'cache-control': 'no-store' });
     const session = await locals.getAdminSession();
-    if (!session || session.role !== 'admin' || !session.mfaSatisfied)
-        redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
+    const signedIn = session?.role === 'admin' && session.mfaSatisfied;
 
     const { service } = dataStores(platform);
-    if (!service || !(await oidcSigningKey(platform)))
+    if (!service || !oidcEnabled(platform))
         return {
             outcome: {
                 kind: 'fatal' as const,
@@ -20,13 +19,13 @@ export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }
             },
             query: ''
         };
+    let outcome: Awaited<ReturnType<typeof resolveAuthorization>>;
     try {
-        const outcome = await resolveAuthorization(
+        outcome = await resolveAuthorization(
             { clients: service.oidcClients, auth: service.oidcAuth },
             url.searchParams,
-            { issuer: oidcEndpoints(platform).issuer, authTime: session.authTime }
+            { issuer: oidcEndpoints(platform).issuer, authTime: signedIn ? session.authTime : null }
         );
-        return { outcome, query: url.search };
     } catch (error) {
         console.error('OIDC authorize failed:', error);
         return {
@@ -37,4 +36,8 @@ export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }
             query: ''
         };
     }
+    if (outcome.kind === 'login')
+        redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
+    if (outcome.kind === 'redirect' && !signedIn) redirect(303, outcome.url);
+    return { outcome, query: url.search };
 };

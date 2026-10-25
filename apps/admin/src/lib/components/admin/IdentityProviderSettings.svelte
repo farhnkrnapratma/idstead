@@ -229,8 +229,8 @@
         {#if !data.enabled}
             <StatusBanner
                 variant="warning"
-                title="Signing key missing"
-                message="Set the OIDC_SIGNING_KEY secret on the web Worker to turn sign-in on. Apps can be registered now and start working once the key is set." />
+                title="Sign-in is off"
+                message="Set the OIDC_SIGNING_KEY secret on the web Worker and OIDC_ENABLED=1 on the admin Worker to turn sign-in on. Apps can be registered now and start working once both are set." />
         {/if}
 
         <Card

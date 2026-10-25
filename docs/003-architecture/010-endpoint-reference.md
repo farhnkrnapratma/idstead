@@ -44,7 +44,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/atom.xml`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/llms.txt` | metadata |
 | `/pgp.asc` | the active OpenPGP public key, armored (404 when none is published) |
 | `/.well-known/openpgpkey/hu/[hash]`, `/.well-known/openpgpkey/policy` | Web Key Directory (WKD) lookup for the active key, and its empty policy file |
-| `/.well-known/webfinger` | WebFinger (RFC 7033) for `acct:<username or email local part>@<site host>` or the site URL: profile page, avatar and OpenID Connect issuer links, filtered by `rel`. CORS `*` |
+| `/.well-known/webfinger` | WebFinger (RFC 7033) for `acct:<username or published email local part>@<site host>` or the site URL: profile page, avatar and OpenID Connect issuer links, filtered by `rel`. CORS `*` |
 | `/.well-known/openid-configuration`, `/.well-known/jwks.json` | OpenID Connect discovery and the public signing key; 404 without `OIDC_SIGNING_KEY`. CORS `*` |
 | `/.well-known/openapi.{json,yaml}`, `/.well-known/llms.txt`, `/.well-known/api-catalog`, `/.well-known/ard.json`, `/.well-known/agent-skills/index.json`, `/.well-known/agent-skills/[name]/SKILL.md` | discovery ([docs/004-api/001-v1/006-discovery.md](../004-api/001-v1/006-discovery.md)) |
 
@@ -52,11 +52,11 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 
 | Route | Methods | Guard |
 | --- | --- | --- |
-| `/oauth/token` | POST (`OPTIONS`) | client auth (`client_secret_basic`, `client_secret_post`, or `none` with PKCE), lockout per client and IP, rate limit per IP. `authorization_code` with PKCE S256 and `refresh_token` with rotation; RFC 6749 error bodies |
+| `/oauth/token` | POST (`OPTIONS`) | client auth (`client_secret_basic`, `client_secret_post`, or `none` with PKCE), lockout per client and IP pair and per IP, rate limit per IP, 503 while `WRITES_FROZEN` is on. `authorization_code` with PKCE S256 and `refresh_token` with rotation; RFC 6749 error bodies |
 | `/oauth/userinfo` | GET, POST (`OPTIONS`) | Bearer `at+jwt` access token whose grant is still active |
-| `/oauth/revoke` | POST (`OPTIONS`) | client auth; revokes a refresh token (RFC 7009), answers 200 for unknown tokens |
+| `/oauth/revoke` | POST (`OPTIONS`) | client auth; a refresh or access token of that client revokes its grant (RFC 7009), unknown tokens answer 200 |
 
-All three answer 404 without `OIDC_SIGNING_KEY`. Logic: `packages/lib/src/server/oidc/endpoints.ts`.
+All three answer 404 without `OIDC_SIGNING_KEY` and are the only paths exempt from the cross-site form check (`csrfHandle`). Logic: `packages/lib/src/server/oidc/endpoints.ts`.
 
 ### `/api/ard/**`: public, CORS `*`
 

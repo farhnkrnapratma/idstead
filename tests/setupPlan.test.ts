@@ -80,6 +80,16 @@ describe('variables', () => {
         ).toMatchObject({ PUBLIC_SITE_URL: 'https://www.example.org' });
     });
 
+    test('turn the admin sign-in flag on when a signing key is set', () => {
+        expect(setupVariables({}, config)).not.toHaveProperty('OIDC_ENABLED');
+        expect(setupVariables({ OIDC_SIGNING_KEY: '{"kty":"EC"}' }, config)).toMatchObject({
+            OIDC_ENABLED: '1'
+        });
+        expect(
+            setupVariables({ OIDC_SIGNING_KEY: '{"kty":"EC"}', OIDC_ENABLED: '0' }, config)
+        ).toMatchObject({ OIDC_ENABLED: '0' });
+    });
+
     test('require the core keys and every key a wrangler worker declares', () => {
         expect(requiredVariables(workers)).toEqual(
             expect.arrayContaining(['PUBLIC_SUPABASE_URL', 'RESEND_API_KEY', 'TURNSTILE_SECRET'])

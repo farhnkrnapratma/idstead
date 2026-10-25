@@ -21,6 +21,7 @@ export default defineConfig({
             },
             adapter: adapter({ platformProxy: { persist: { path: LOCAL_STATE } } }),
             env: { dir: ENV_DIR },
+            csrf: { trustedOrigins: ['*'] },
             tracing: { server: true }
         })
     ],
