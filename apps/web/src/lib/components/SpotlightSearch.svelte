@@ -136,14 +136,14 @@
         {@render triggerButton()}
     {:else if variant === 'icon'}
         <Tooltip
-            content="Search (Ctrl+K or /)"
+            content="Search (ctrl+k or /)"
             placement="bottom"
             align="center">
             {@render triggerButton()}
         </Tooltip>
     {:else}
         <Tooltip
-            content="Search (Ctrl+K or /)"
+            content="Search (ctrl+k or /)"
             placement="bottom"
             align="center"
             class={variant === 'responsive' ? 'sm:hidden' : 'lg:hidden'}>

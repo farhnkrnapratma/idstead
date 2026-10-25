@@ -1,3 +1,4 @@
+import { API_VERSIONS } from '#lib/apiConfig.ts';
 import { SHORTCUT_SECTIONS, commandSection } from '@idstead/ui/shortcutCatalog.ts';
 import {
     Mail,
@@ -12,7 +13,7 @@ import {
     FileUser,
     Rss,
     CodeXml,
-    LogOut,
+    Power,
     BookOpenText,
     Save,
     Printer,
@@ -244,9 +245,9 @@ const helpCommandCategories: HelpCategory[] = [
             },
             {
                 command: '/api',
-                argHint: '',
-                description: 'Open developer REST API documentation.',
-                validArgs: [],
+                argHint: '[version]',
+                description: 'Open the REST API documentation, the latest version by default.',
+                validArgs: [...API_VERSIONS],
                 actionQuery: '/api',
                 icon: Braces
             },
@@ -345,7 +346,7 @@ const helpCommandCategories: HelpCategory[] = [
                 description: 'Close command palette or browser tab.',
                 validArgs: [],
                 actionQuery: '/exit',
-                icon: LogOut
+                icon: Power
             }
         ]
     }

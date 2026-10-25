@@ -257,13 +257,7 @@ export function shortcutKeyParts(spec: string, platform: Platform = 'other'): st
 }
 
 export type KeyIcon =
-    | 'Command'
-    | 'Option'
-    | 'ChevronUp'
-    | 'ArrowBigUp'
-    | 'CornerDownLeft'
-    | 'ArrowRightToLine'
-    | 'ArrowBigUpDash';
+    'Command' | 'Option' | 'ChevronUp' | 'CornerDownLeft' | 'ArrowRightToLine' | 'ArrowBigUpDash';
 
 export interface KeyLabel {
     text: string;
@@ -276,7 +270,7 @@ const MAC_KEYS: Record<string, KeyLabel> = {
     Meta: { text: '⌘', name: 'Command', icon: 'Command' },
     Ctrl: { text: '⌃', name: 'Control', icon: 'ChevronUp' },
     Alt: { text: '⌥', name: 'Option', icon: 'Option' },
-    Shift: { text: '⇧', name: 'Shift', icon: 'ArrowBigUp' },
+    Shift: { text: '⇧', name: 'Shift', icon: 'ChevronUp' },
     Enter: { text: '↩', name: 'Return', icon: 'CornerDownLeft' },
     Tab: { text: '⇥', name: 'Tab', icon: 'ArrowRightToLine' },
     CapsLock: { text: '⇪', name: 'Caps Lock', icon: 'ArrowBigUpDash' },
@@ -306,7 +300,8 @@ const META_BY_PLATFORM: Record<Platform, KeyLabel> = {
 export function keyLabel(token: string, platform: Platform = 'other'): KeyLabel {
     if (token === 'Meta') return META_BY_PLATFORM[platform];
     const table = platform === 'mac' ? MAC_KEYS : PC_KEYS;
-    return table[token] ?? { text: token, name: token };
+    const label = table[token] ?? { text: token, name: token };
+    return { ...label, text: label.text.toLowerCase() };
 }
 
 const PUNCTUATION_CODES: Record<string, string> = {

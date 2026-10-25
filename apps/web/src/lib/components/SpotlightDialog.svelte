@@ -26,9 +26,11 @@
     import { portal } from '@idstead/ui/utils/actions.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import ShortcutBadge from '@idstead/ui/components/ShortcutBadge.svelte';
+    import { KEY_GROUP_CLASS, KEY_SEGMENT_CLASS } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import CommandSectionHeading from '@idstead/ui/components/CommandSectionHeading.svelte';
     import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
-    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
+    import { CATALOG_KEY, COMMAND_SHORTCUTS, LEADER_COMBO } from '@idstead/ui/shortcuts.ts';
     import { lockScroll } from '@idstead/ui/utils/scroll.ts';
     import { visualViewport } from '@idstead/ui/utils/visualViewport.svelte.ts';
     import ShareDialog from './ShareDialog.svelte';
@@ -1199,6 +1201,16 @@
     }
 </script>
 
+{#snippet iconKey(Icon: typeof ArrowDownUp)}
+    <span
+        class={KEY_GROUP_CLASS}
+        aria-hidden="true">
+        <kbd class={cn(KEY_SEGMENT_CLASS, 'border-line-subtle/60 bg-surface text-fg-secondary')}>
+            <Icon class="size-2.5" />
+        </kbd>
+    </span>
+{/snippet}
+
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if isOpen}
@@ -1230,7 +1242,7 @@
             <div
                 class="flex items-center justify-between border-b border-line-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
                 <input
-                    bind:this={inputEl}
+                    {@attach elementRef<HTMLInputElement>(node => (inputEl = node))}
                     bind:value={rawQuery}
                     oninput={handleInput}
                     onkeydown={handleKeydown}
@@ -1309,7 +1321,7 @@
             </div>
 
             <div
-                bind:this={listEl}
+                {@attach elementRef<HTMLDivElement>(node => (listEl = node))}
                 class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 {#if filteredHistory.length > 0}
                     <div class={cn('px-2.5 pt-2.5', deduplicatedResults.length === 0 && 'pb-2.5')}>
@@ -1666,22 +1678,29 @@
 
             <div
                 class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
-                <div class="flex min-w-0 flex-1 items-center text-2xs font-medium text-fg-muted">
+                <div
+                    class="flex min-w-0 flex-1 items-center gap-3 text-2xs leading-none font-medium text-fg-muted">
+                    <span
+                        class="flex items-center"
+                        title="Shortcut mode">
+                        <span class="sr-only">Shortcut mode:</span>
+                        <ShortcutBadge
+                            combo={LEADER_COMBO}
+                            leader />
+                    </span>
                     {#if isLoading}
                         <span>Searching…</span>
-                    {:else}
-                        {@const totalCount = filteredHistory.length + deduplicatedResults.length}
-                        <span>{totalCount} result{totalCount === 1 ? '' : 's'}</span>
+                    {:else if rawQuery.trim()}
+                        <span>
+                            {deduplicatedResults.length}
+                            result{deduplicatedResults.length === 1 ? '' : 's'}
+                        </span>
                     {/if}
                 </div>
-                <div class="flex shrink-0 items-center gap-2.5 text-2xs font-medium text-fg-muted">
+                <div
+                    class="flex shrink-0 items-center gap-2.5 text-2xs leading-none font-medium text-fg-muted">
                     <span class="flex items-center gap-1">
-                        <kbd
-                            class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
-                            <ArrowDownUp
-                                class="size-9"
-                                strokeWidth={3} />
-                        </kbd>
+                        {@render iconKey(ArrowDownUp)}
                         <span class="hidden sm:inline">navigate</span>
                     </span>
                     {#if categorizedResults.some(group => group.hasPrev || group.hasNext)}
@@ -1692,19 +1711,11 @@
                         </span>
                     {/if}
                     <span class="flex items-center gap-1">
-                        <kbd
-                            class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
-                            <CornerDownLeft
-                                class="size-9"
-                                strokeWidth={3} />
-                        </kbd>
+                        {@render iconKey(CornerDownLeft)}
                         <span class="hidden sm:inline">execute</span>
                     </span>
                     <span class="flex items-center gap-1">
-                        <kbd
-                            class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-fg-muted dark:border-fg/8">
-                            esc
-                        </kbd>
+                        <ShortcutBadge combo="Esc" />
                         <span class="hidden sm:inline">close</span>
                     </span>
                 </div>
@@ -1729,7 +1740,7 @@
             }}></button>
 
         <div
-            bind:this={helpDialogEl}
+            {@attach elementRef<HTMLDivElement>(node => (helpDialogEl = node))}
             class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-fg/8"
             role="dialog"
             tabindex="-1"
@@ -1904,30 +1915,17 @@
             </div>
 
             <div
-                class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
+                class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle/60 px-3.5 py-2 text-2xs leading-none select-none sm:flex">
                 <span class="flex items-center gap-1">
-                    <kbd
-                        class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
-                        <ArrowDownUp
-                            class="size-9"
-                            strokeWidth={3} />
-                    </kbd>
+                    {@render iconKey(ArrowDownUp)}
                     <span class="text-fg-muted">navigate</span>
                 </span>
                 <span class="flex items-center gap-1">
-                    <kbd
-                        class="inline-flex size-5 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent text-fg-muted dark:border-fg/8">
-                        <CornerDownLeft
-                            class="size-9"
-                            strokeWidth={3} />
-                    </kbd>
+                    {@render iconKey(CornerDownLeft)}
                     <span class="text-fg-muted">execute</span>
                 </span>
                 <span class="flex items-center gap-1">
-                    <kbd
-                        class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-line-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-fg-muted dark:border-fg/8">
-                        esc
-                    </kbd>
+                    <ShortcutBadge combo="Esc" />
                     <span class="text-fg-muted">close</span>
                 </span>
             </div>
