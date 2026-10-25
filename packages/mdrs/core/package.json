@@ -5,8 +5,7 @@
     "license": "MIT",
     "type": "module",
     "exports": {
-        ".": "./src/index.ts",
-        "./legacy": "./src/legacy.ts"
+        ".": "./src/index.ts"
     },
     "sideEffects": false,
     "scripts": {
@@ -19,9 +18,5 @@
         "lucide-static": "^1.61.0",
         "marked": "^18.1.1",
         "marked-footnote": "^1.4.0"
-    },
-    "devDependencies": {
-        "@types/js-yaml": "^4.0.9",
-        "@types/katex": "^0.16.8"
     }
 }

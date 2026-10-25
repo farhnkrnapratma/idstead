@@ -49,7 +49,7 @@ Pages also call `hljs.highlightElement` on code blocks before enhancing them, an
 
 ## Public functions
 
-The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry points: `@mdrs/core` (`src/index.ts`) and `@mdrs/core/legacy`. Everything else in `packages/mdrs/core/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*`, `#lib` or Supabase.
+The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry point, `@mdrs/core` (`src/index.ts`). Everything else in `packages/mdrs/core/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*`, `#lib` or Supabase.
 
 | Function | Entry | Purpose |
 | --- | --- | --- |
@@ -63,10 +63,9 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation and the size limit |
 | `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@mdrs/core` | Building blocks for live-data resolvers |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
-| `convertLegacyMarkdown`, `convertLegacyMarkdownWithNotes` | `@mdrs/core/legacy` | Old syntax → MDRS, used by `scripts/migrate-markdown-syntax.ts` |
 | `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
 | `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
-| `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
+| `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
 | `enhanceHeadingAnchors(container)` | `packages/mdrs/dom/src/headingAnchors.ts` | ¶ anchor links |
@@ -102,8 +101,4 @@ Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/m
 | Conditional text nesting | 8 levels | Deeper `${…}` inside `[…].${…}` is left as written |
 | Frontmatter nesting | 16 levels | Deeper YAML is a parse error |
 
-## Migrating legacy syntax
-
-Before MDRS settled on `:::name key="value"`, posts used older forms: GitHub `> [!NOTE]` alerts (which now render directly as well), `:::callout{title="…"}` and `::tab{…}` braces, `::::` wide closers, raw `<details>` and `<video>` HTML, `\[ … \]`, `\( … \)` and single-`$` math, and `{1,3-5}` fence line markers. `scripts/migrate-markdown-syntax.ts` (built on `packages/mdrs/core/src/legacy.ts`) converts stored posts to the current syntax. It runs as a dry run by default; see [Scripts and tooling](../../005-development/003-scripts-and-tooling.md).
-
-Source: `packages/mdrs/core/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/core/src/frontmatter.ts`, `packages/mdrs/core/src/placeholders.ts`, `packages/mdrs/dom/src/enhance.ts`, `packages/mdrs/core/src/legacy.ts`.
+Source: `packages/mdrs/core/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/core/src/frontmatter.ts`, `packages/mdrs/core/src/placeholders.ts`, `packages/mdrs/dom/src/enhance.ts`.

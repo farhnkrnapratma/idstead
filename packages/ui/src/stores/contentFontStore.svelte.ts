@@ -1,6 +1,5 @@
 import { browser } from '$app/env';
 import { a11yStore } from './a11yStore.svelte';
-import { readStorage } from '../utils/storageKeys';
 
 export type ContentFont = 'sans' | 'serif' | 'mono';
 
@@ -12,7 +11,7 @@ function createContentFontStore() {
 
     if (browser) {
         try {
-            const stored = readStorage(STORAGE_KEY) as ContentFont | null;
+            const stored = localStorage.getItem(STORAGE_KEY) as ContentFont | null;
             if (stored && (stored === 'sans' || stored === 'serif' || stored === 'mono')) {
                 preference = stored;
             }
