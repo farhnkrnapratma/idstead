@@ -1,8 +1,12 @@
 <script lang="ts">
     import { createFeedbackClient } from '../feedbackClient.svelte.ts';
     import { tick, onMount, onDestroy } from 'svelte';
+    import type { Attachment } from 'svelte/attachments';
     import { fade } from 'svelte/transition';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
+    import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
+    import { elementRef } from '@idstead/ui/utils/elementRef.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
     import SiteNav from './SiteNav.svelte';
     import TableOfContents from './TableOfContents.svelte';
@@ -59,7 +63,7 @@
     let pageProjects = $derived((page?.data as any)?.projects ?? []);
 
     const feedback = createFeedbackClient(() => ({ type: 'legal', id: slug }));
-    let isDark = $state(false);
+    const isDark = $derived(themeStore.isDark);
 
     const estimatedMinutes = $derived(content ? countReadingMinutes(content) : 1);
     const readingTime = $derived(formatReadTime(estimatedMinutes));
@@ -179,28 +183,23 @@
         }
     }
 
-    $effect(() => {
+    const enhanceArticle: Attachment<HTMLDivElement> = container => {
         void html;
-        void isDark;
-
+        const dark = isDark;
         tick().then(() => {
-            const container = articleBodyEl;
-            if (container) {
-                const blocks = container.querySelectorAll('pre code');
-                blocks.forEach(block => {
-                    hljs.highlightElement(block as HTMLElement);
-                });
-                enhanceMarkdownContent({ container, isDark, onCodeCopy: triggerToast });
-                enhanceHeadingAnchors(container);
-            }
+            container.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightElement(block as HTMLElement);
+            });
+            enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
+            enhanceHeadingAnchors(container);
         });
-    });
+    };
 
-    $effect(() => {
+    const syncCodeBlockPrefs: Attachment<HTMLDivElement> = () => {
         void codeBlockPrefsStore.current;
         void readingModeStore.active;
         refreshCodeBlockPrefs();
-    });
+    };
 
     onDestroy(() => {
         readingModeStore.disable();
@@ -208,17 +207,6 @@
     });
 
     onMount(() => {
-        isDark = document.documentElement.classList.contains('dark');
-
-        const observer = new MutationObserver(() => {
-            isDark = document.documentElement.classList.contains('dark');
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
         if (typeof window !== 'undefined' && window.location.hash) {
             const hashId = window.location.hash.slice(1);
             tick().then(() => {
@@ -235,7 +223,6 @@
         window.addEventListener('popstate', handlePopState);
 
         return () => {
-            observer.disconnect();
             window.removeEventListener('popstate', handlePopState);
         };
     });
@@ -284,7 +271,7 @@
         {/if}
 
         <article
-            bind:this={articleEl}
+            {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
             class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
             <ArticleHeader
@@ -326,11 +313,12 @@
                 </div>
             {/if}
 
-            <div
-                bind:this={articleBodyEl}
-                class="mdrs mt-3 w-full">
-                {@html html}
-            </div>
+            <MdrsHtml
+                {html}
+                class="mdrs mt-3 w-full"
+                {@attach elementRef<HTMLDivElement>(node => (articleBodyEl = node ?? undefined))}
+                {@attach enhanceArticle}
+                {@attach syncCodeBlockPrefs} />
 
             {#if !readingModeStore.active}
                 <div class="mt-8">
