@@ -266,7 +266,7 @@
                 {:else}
                     <div
                         use:staggerChildren
-                        class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
+                        class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
                         {#each visiblePosts as post (post.id)}
                             <BlogPostCard
                                 {post}
