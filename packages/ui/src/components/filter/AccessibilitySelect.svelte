@@ -1,11 +1,12 @@
 <script lang="ts">
     import { buttonKey } from '../../shortcuts.ts';
-    import { PersonStanding, ToggleLeft, ToggleRight } from '@lucide/svelte';
+    import { Info, PersonStanding, ToggleLeft, ToggleRight } from '@lucide/svelte';
     import { cn } from '../../utils/cn';
     import { popoverPosition } from '../../utils/popoverPosition';
     import Badge from '../Badge.svelte';
     import IconButton from '../IconButton.svelte';
     import ShortcutBadge from '../ShortcutBadge.svelte';
+    import Tooltip from '../Tooltip.svelte';
     import { a11yStore, A11Y_TOGGLES, type FontScale } from '../../stores/a11yStore.svelte';
 
     interface Props {
@@ -57,6 +58,21 @@
     }
 </script>
 
+{#snippet infoTip(label: string, description: string)}
+    <Tooltip
+        content={description}
+        placement="top"
+        toggleOnClick
+        class="max-w-56 leading-relaxed whitespace-normal!">
+        <button
+            type="button"
+            aria-label="{label}: {description}"
+            class="inline-flex size-4 shrink-0 cursor-help items-center justify-center rounded-sm text-fg-muted opacity-0 transition-opacity group-hover/item:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus-ring pointer-coarse:opacity-100">
+            <Info class="size-3.5" />
+        </button>
+    </Tooltip>
+{/snippet}
+
 <svelte:window
     onpointerdown={handleWindowPointerDown}
     onkeydown={handleKeydown} />
@@ -68,7 +84,12 @@
         className.includes('hidden') ? className : `inline-flex ${className}`
     )}>
     <div
-        bind:this={containerRef}
+        {@attach node => {
+            containerRef = node;
+            return () => {
+                containerRef = undefined;
+            };
+        }}
         class="relative inline-block">
         <IconButton
             ariaLabel="Accessibility"
@@ -122,15 +143,21 @@
                     </div>
 
                     <p class="text-3xs text-fg-muted">
-                        Customize display preferences for improved accessibility. Settings marked
-                        Device are on because of your system settings; change them anytime.
+                        Adjust how this site looks and moves. Device marks a setting your system
+                        turned on.
                     </p>
 
                     <div
                         role="group"
                         aria-label="Text size"
-                        class="flex items-center justify-between rounded-md border border-line-subtle bg-surface-hover/50 px-2.5 py-1.5">
-                        <span class="text-xs text-fg-secondary">Text size</span>
+                        class="group/item flex items-center justify-between rounded-md border border-line-subtle bg-surface-hover/50 px-2.5 py-1.5">
+                        <span class="flex items-center gap-1.5 text-xs text-fg-secondary">
+                            Text size
+                            {@render infoTip(
+                                'Text size',
+                                'Scales all text on the site from 100% to 150%.'
+                            )}
+                        </span>
                         <div class="flex items-center gap-2">
                             <button
                                 type="button"
@@ -165,6 +192,7 @@
                                 <span
                                     class="flex min-w-0 items-center gap-1.5 truncate text-xs font-normal text-fg-secondary transition-colors group-hover/item:text-fg">
                                     {item.label}
+                                    {@render infoTip(item.label, item.description)}
                                     {#if fromDevice}
                                         <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
                                     {/if}

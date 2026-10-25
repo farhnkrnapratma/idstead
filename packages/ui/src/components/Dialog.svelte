@@ -12,7 +12,7 @@
         isOpen: boolean;
         title: string;
         description?: string;
-        size?: '2xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
+        size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
         role?: 'dialog' | 'alertdialog';
         compact?: boolean;
         scrollBody?: boolean;
@@ -63,6 +63,7 @@
 
     const sizeStyles = {
         '2xs': 'max-w-2xs',
+        xs: 'max-w-xs',
         sm: 'max-w-sm',
         md: 'max-w-md',
         lg: 'max-w-lg',
