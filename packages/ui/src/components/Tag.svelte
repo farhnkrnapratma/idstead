@@ -1,9 +1,10 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import type { HTMLButtonAttributes } from 'svelte/elements';
+    import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
     import { cn } from '../utils/cn';
 
     interface Props extends Omit<HTMLButtonAttributes, 'children' | 'class'> {
+        href?: HTMLAnchorAttributes['href'];
         variant?: 'neutral' | 'subtle' | 'accent' | 'accent-active' | 'tinted' | 'tinted-active';
         tint?: string;
         size?: 'sm' | 'md';
@@ -14,6 +15,7 @@
     let {
         variant = 'neutral',
         tint,
+        href,
         size = 'sm',
         children,
         class: className = '',
@@ -26,7 +28,7 @@
         neutral: 'text-fg-muted border border-fg-muted/20',
         subtle: 'bg-fg-muted/10 text-fg-muted',
         accent: 'bg-accent-subtle text-fg-accent border border-accent/20',
-        'accent-active': 'bg-accent text-on-accent border border-accent/20',
+        'accent-active': 'bg-accent-strong text-on-accent border border-accent-strong',
         tinted: 'border border-(--tag-tint)/35 bg-(--tag-tint)/10 text-[color-mix(in_oklab,var(--tag-tint)_50%,var(--color-fg))]',
         'tinted-active':
             'border border-(--tag-tint) bg-(--tag-tint)/25 text-[color-mix(in_oklab,var(--tag-tint)_50%,var(--color-fg))]'
@@ -39,18 +41,21 @@
 </script>
 
 <svelte:element
-    this={onclick ? 'button' : 'span'}
-    type={onclick ? 'button' : undefined}
+    this={href ? 'a'
+    : onclick ? 'button'
+    : 'span'}
+    {href}
+    type={!href && onclick ? 'button' : undefined}
     {onclick}
-    disabled={onclick ? disabled : undefined}
+    disabled={!href && onclick ? disabled : undefined}
     {...rest}
     style:--tag-tint={tint}
     class={cn(
         'inline-block max-w-full rounded-full whitespace-normal',
         variantStyles[variant],
         sizeStyles[size],
-        onclick
-            && 'cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
+        (href || onclick)
+            && 'touch-target relative cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
         className
     )}>
     {@render children?.()}

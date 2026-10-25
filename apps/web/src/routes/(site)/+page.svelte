@@ -163,10 +163,12 @@
     {/if}
 </svelte:head>
 
-{#snippet staticTag(tag: string)}
+{#snippet projectTag(tag: string)}
     <Tag
         variant="accent"
-        class="font-mono">{decodeHtmlEntities(tag)}</Tag>
+        href="/projects?tag={encodeURIComponent(tag)}"
+        aria-label="Show projects tagged {decodeHtmlEntities(tag)}"
+        class="font-mono hover:bg-accent/15">{decodeHtmlEntities(tag)}</Tag>
 {/snippet}
 
 <PageMain variant="site">
@@ -315,7 +317,10 @@
                                     {project}
                                     pinned={isRepoPinned(project, pinnedRepoNames)}
                                     isNew={isRepoNew(project)}
-                                    tagItem={staticTag} />
+                                    tagItem={projectTag}
+                                    languageHref={project.lang ?
+                                        `/projects?language=${encodeURIComponent(project.lang)}`
+                                    :   undefined} />
                             {/each}
                         </div>
                     {/if}

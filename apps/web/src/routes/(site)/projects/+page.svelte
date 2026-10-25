@@ -226,7 +226,7 @@
                 {#if filteredProjectList.length === 0}
                     <FilterEmptyState
                         title="No projects match these filters"
-                        description="Try adjusting your tech stack filters or search keyword."
+                        description="Try adjusting your topic filters or search keyword."
                         onClearFilters={() => projectFilterStore.clearAllFilters()} />
                 {:else}
                     <div
@@ -235,6 +235,7 @@
                         {#each paginatedProjectList as project (project.name)}
                             <ProjectCard
                                 {project}
+                                headingTag="h2"
                                 pinned={isRepoPinned(project, pinnedRepoNames)}
                                 isNew={isRepoNew(project)}
                                 tagItem={filterableTag}
