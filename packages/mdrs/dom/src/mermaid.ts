@@ -64,7 +64,7 @@ function mermaidTheme(theme: EffectiveTheme) {
             ])
         ),
         fontFamily:
-            'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+            '"iA Writer Quattro", "Noto Sans Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Inter", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif'
     };
 }
 

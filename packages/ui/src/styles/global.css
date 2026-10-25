@@ -2,15 +2,10 @@
 @import '@fontsource-variable/lexend';
 @import '@fontsource-variable/lilex';
 @import '@fontsource-variable/noto-sans';
-@import '@fontsource-variable/noto-serif';
 @import '@fontsource/ia-writer-quattro';
 @import '@fontsource/ia-writer-quattro/400-italic.css';
 @import '@fontsource/ia-writer-quattro/700.css';
 @import '@fontsource/ia-writer-quattro/700-italic.css';
-@import '@fontsource/ibm-plex-serif';
-@import '@fontsource/ibm-plex-serif/700.css';
-@import '@fontsource/ibm-plex-serif/400-italic.css';
-@import '@fontsource/ibm-plex-serif/700-italic.css';
 @import './tokens.css';
 @source '../';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -70,10 +65,6 @@
 @layer base {
     .font-sans {
         @apply font-sans;
-    }
-
-    .font-serif {
-        @apply font-serif;
     }
 
     code,
@@ -362,8 +353,9 @@ select {
 }
 
 :root[data-dyslexic-font='true'] {
-    --font-sans: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans:
+        'Lexend Variable', ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI',
+        Roboto, 'Inter', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
 }
 
 :root[data-dyslexic-font='true'] article,
@@ -437,60 +429,6 @@ select {
 }
 
 @layer base {
-    .font-content-sans,
-    .font-content-sans
-        *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.mdrs-code-line *):not(
-            .mdrs-code
-        ):not(.mdrs-code *):not(.mdrs-code-gutter):not(.mdrs-code-gutter *):not(
-            .mdrs-code-body
-        ):not(.mdrs-code-body *):not(.mdrs-snippets):not(.mdrs-snippets *):not(
-            .mdrs-code-header
-        ):not(.mdrs-code-header *):not(.mdrs-snippets-actions):not(.mdrs-snippets-actions *):not(
-            .mdrs-tab
-        ):not(.mdrs-mermaid *):not(.katex):not(.katex *):not(.mdrs-math--block):not(
-            .mdrs-math--block *
-        ) {
-        @apply font-sans!;
-    }
-
-    .font-content-serif,
-    .font-content-serif
-        *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.mdrs-code-line *):not(
-            .mdrs-code
-        ):not(.mdrs-code *):not(.mdrs-code-gutter):not(.mdrs-code-gutter *):not(
-            .mdrs-code-body
-        ):not(.mdrs-code-body *):not(.mdrs-snippets):not(.mdrs-snippets *):not(
-            .mdrs-code-header
-        ):not(.mdrs-code-header *):not(.mdrs-snippets-actions):not(.mdrs-snippets-actions *):not(
-            .mdrs-tab
-        ):not(.mdrs-mermaid *):not(.katex):not(.katex *):not(.mdrs-math--block):not(
-            .mdrs-math--block *
-        ) {
-        @apply font-serif!;
-    }
-
-    .font-content-mono,
-    .font-content-mono
-        *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.mdrs-code-line *):not(
-            .mdrs-code
-        ):not(.mdrs-code *):not(.mdrs-code-gutter):not(.mdrs-code-gutter *):not(
-            .mdrs-code-body
-        ):not(.mdrs-code-body *):not(.mdrs-snippets):not(.mdrs-snippets *):not(
-            .mdrs-code-header
-        ):not(.mdrs-code-header *):not(.mdrs-snippets-actions):not(.mdrs-snippets-actions *):not(
-            .mdrs-tab
-        ):not(.mdrs-mermaid *):not(.katex):not(.katex *):not(.mdrs-math--block):not(
-            .mdrs-math--block *
-        ) {
-        @apply font-mono!;
-    }
-
-    .font-content-mono.mdrs,
-    .font-content-mono .mdrs,
-    .mdrs.font-content-mono {
-        letter-spacing: -0.015em;
-    }
-
     mark {
         @apply rounded-md bg-info-subtle px-1 py-0.5 font-normal text-fg-accent;
     }

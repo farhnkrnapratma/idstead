@@ -20,8 +20,8 @@
 
     interface Props {
         title: string;
-        subtitle: string;
         items: GridItem[];
+        showEmpty?: boolean;
         emptyIcon?: Component<{ class?: string }>;
         emptyTitle?: string;
         emptyDescription?: string;
@@ -31,8 +31,8 @@
 
     let {
         title,
-        subtitle,
         items,
+        showEmpty = true,
         emptyIcon = Inbox,
         emptyTitle = 'Nothing here yet',
         emptyDescription = 'Check back soon.',
@@ -43,20 +43,22 @@
 
 <Section
     spacing="none"
-    class={cn('pt-6 pb-6 sm:pt-8 md:pb-8', className)}>
+    class={cn(
+        'pt-6 pb-6 sm:pt-8 md:pb-8',
+        items.length === 0 && showEmpty && 'flex flex-1 flex-col justify-center',
+        className
+    )}>
     <PageContainer width="standard">
-        <SectionHeader
-            {title}
-            {subtitle} />
-
-        {#if items.length === 0}
-            <div class="mt-6">
-                <EmptyState
-                    icon={emptyIcon}
-                    title={emptyTitle}
-                    description={emptyDescription} />
-            </div>
+        {#if items.length === 0 && showEmpty}
+            <EmptyState
+                icon={emptyIcon}
+                title={emptyTitle}
+                description={emptyDescription} />
         {:else}
+            <SectionHeader {title} />
+        {/if}
+
+        {#if items.length > 0}
             <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {#each items as item, idx (item.href || item.label || idx)}
                     <a

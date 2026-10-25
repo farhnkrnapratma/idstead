@@ -29,7 +29,6 @@
     import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
 
@@ -263,7 +262,6 @@
         ariaLabel="{title} navigation"
         backHref="/"
         backLabel="Home"
-        showFontSelect={true}
         projects={pageProjects}
         readingMode={readingModeStore.active}
         onToggleReadingMode={readingModeStore.toggle} />
@@ -334,7 +332,7 @@
 
             <div
                 bind:this={articleBodyEl}
-                class="mdrs font-content-{contentFontStore.current} mt-3 w-full">
+                class="mdrs mt-3 w-full">
                 {@html html}
             </div>
 
@@ -355,7 +353,6 @@
             {#if !readingModeStore.active}
                 <FooterSection
                     width="full"
-                    showFontSelect={true}
                     readingMode={readingModeStore.active}
                     onToggleReadingMode={readingModeStore.toggle}
                     class="mt-8 w-full pb-0 md:pb-0 lg:pb-20" />

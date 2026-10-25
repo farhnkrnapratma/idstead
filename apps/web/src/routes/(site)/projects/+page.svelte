@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { onMount } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import { FolderOpen } from '@lucide/svelte';
@@ -140,14 +141,21 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
+        class={cn(
+            'relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8',
+            projects.length === 0 && 'flex flex-1 flex-col justify-center'
+        )}>
         <PageContainer width="standard">
-            <SectionHeader
-                class="mb-6"
-                title="Projects"
-                subtitle="Open source work on GitHub." />
+            {#if projects.length === 0}
+                <EmptyState
+                    icon={FolderOpen}
+                    title="No projects yet"
+                    description="Projects will appear here." />
+            {:else}
+                <SectionHeader
+                    class="mb-6"
+                    title="Projects" />
 
-            {#if projects.length > 0}
                 <div class="mb-6">
                     <FilterToolbar title="Projects filter">
                         {#snippet searchSlot()}
@@ -206,36 +214,31 @@
                         {/snippet}
                     </FilterToolbar>
                 </div>
-            {/if}
 
-            {#if projects.length === 0}
-                <EmptyState
-                    icon={FolderOpen}
-                    title="No projects yet"
-                    description="Projects will appear here." />
-            {:else if filteredProjectList.length === 0}
-                <FilterEmptyState
-                    title="No projects match these filters"
-                    description="Try adjusting your tech stack filters or search keyword."
-                    onClearFilters={() => projectFilterStore.clearAllFilters()} />
-            {:else}
-                <div
-                    use:staggerChildren
-                    class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
-                    {#each paginatedProjectList as project (project.name)}
-                        <ProjectCard
-                            {project}
-                            pinned={isRepoPinned(project, pinnedRepoNames)}
-                            isNew={isRepoNew(project)}
-                            tagItem={filterableTag} />
-                    {/each}
-                </div>
-                <div class="mt-6">
-                    <Pagination
-                        page={projectPageClamped}
-                        totalPages={projectTotalPages}
-                        onPageChange={p => (pageSelection = { key: filterKey, page: p })} />
-                </div>
+                {#if filteredProjectList.length === 0}
+                    <FilterEmptyState
+                        title="No projects match these filters"
+                        description="Try adjusting your tech stack filters or search keyword."
+                        onClearFilters={() => projectFilterStore.clearAllFilters()} />
+                {:else}
+                    <div
+                        use:staggerChildren
+                        class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
+                        {#each paginatedProjectList as project (project.name)}
+                            <ProjectCard
+                                {project}
+                                pinned={isRepoPinned(project, pinnedRepoNames)}
+                                isNew={isRepoNew(project)}
+                                tagItem={filterableTag} />
+                        {/each}
+                    </div>
+                    <div class="mt-6">
+                        <Pagination
+                            page={projectPageClamped}
+                            totalPages={projectTotalPages}
+                            onPageChange={p => (pageSelection = { key: filterKey, page: p })} />
+                    </div>
+                {/if}
             {/if}
         </PageContainer>
     </Section>

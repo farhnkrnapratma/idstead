@@ -19,8 +19,6 @@ export interface CvFontBytes {
     sans: Uint8Array;
     sansBold: Uint8Array;
     sansItalic: Uint8Array;
-    serif: Uint8Array;
-    serifBold: Uint8Array;
     mono: Uint8Array;
 }
 
@@ -252,16 +250,15 @@ export async function generateCvPdfBuffer(
         const font = await pdfDoc.embedFont(bytes, { subset: true });
         return { font, chars: new Set(font.getCharacterSet()) };
     };
-    const [sans, sansBold, sansItalic, serifBold, mono] = await Promise.all([
+    const [sans, sansBold, sansItalic, mono] = await Promise.all([
         face(fonts.sans),
         face(fonts.sansBold),
         face(fonts.sansItalic),
-        face(fonts.serifBold),
         face(fonts.mono)
     ]);
     const avatar = await embedAvatar(pdfDoc, data.profile.avatarBytes);
 
-    const name = fit(serifBold, data.profile.name) || 'Curriculum Vitae';
+    const name = fit(sansBold, data.profile.name) || 'Curriculum Vitae';
     pdfDoc.setTitle(`${name} - Curriculum Vitae`);
     pdfDoc.setAuthor(name);
     pdfDoc.setSubject('Curriculum Vitae');
@@ -363,8 +360,8 @@ export async function generateCvPdfBuffer(
     const headerWidth = avatar ? CONTENT_WIDTH - AVATAR_SIZE - AVATAR_GAP : CONTENT_WIDTH;
     const headerTop = y;
 
-    for (const line of wrap(serifBold, name, 24, headerWidth)) {
-        put(serifBold, line, MARGIN_X, 24, INK);
+    for (const line of wrap(sansBold, name, 24, headerWidth)) {
+        put(sansBold, line, MARGIN_X, 24, INK);
         y -= 29;
     }
 

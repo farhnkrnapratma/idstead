@@ -4,7 +4,6 @@
     import { cn } from '@idstead/ui/utils/cn.ts';
     import SpotlightSearch from '../components/SpotlightSearch.svelte';
     import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
-    import ContentFontSelect from '@idstead/ui/components/filter/ContentFontSelect.svelte';
     import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
     import IconButton from '@idstead/ui/components/IconButton.svelte';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
@@ -29,7 +28,6 @@
         navItems?: NavItem[];
         socials?: SocialLink[];
         onNavClick?: (url: string) => void;
-        showFontSelect?: boolean;
         readingMode?: boolean;
         onToggleReadingMode?: () => void;
         width?: 'standard' | 'full' | 'reading';
@@ -49,7 +47,6 @@
         navItems = [],
         socials = [],
         onNavClick,
-        showFontSelect = false,
         readingMode = false,
         onToggleReadingMode,
         width = 'standard',
@@ -162,43 +159,39 @@
                 </div>
             {/if}
 
-            <div
-                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-line-subtle pt-4 sm:pt-5">
-                <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 select-none">
-                    <span class="text-xs font-medium text-fg-muted">{copyright}</span>
+            <div class="flex flex-col gap-3 border-t border-line-subtle pt-4 sm:gap-4 sm:pt-5">
+                <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
                     <StatusBadge
                         host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
                         code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
+                    <div class="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <SpotlightSearch variant="icon" />
+                        {#if onToggleReadingMode}
+                            <IconButton
+                                ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
+                                tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+                                keyboardShortcut={buttonKey('readingMode')}
+                                shortcutLabel="Reading mode"
+                                tooltipPlacement="top"
+                                tooltipAlign="right"
+                                size="sm"
+                                onclick={onToggleReadingMode}
+                                class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                                    readingMode
+                                ) ?
+                                    'border-accent text-fg-accent'
+                                :   ''}">
+                                <BookOpenText class="size-4" />
+                            </IconButton>
+                        {/if}
+                        <ThemeSelect
+                            theme={themeStore.current}
+                            onThemeChange={themeStore.apply}
+                            dropdownDirection="up" />
+                        <AccessibilitySelect dropdownDirection="up" />
+                    </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <SpotlightSearch variant="icon" />
-                    {#if onToggleReadingMode}
-                        <IconButton
-                            ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
-                            tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
-                            keyboardShortcut={buttonKey('readingMode')}
-                            shortcutLabel="Reading mode"
-                            tooltipPlacement="top"
-                            tooltipAlign="right"
-                            size="sm"
-                            onclick={onToggleReadingMode}
-                            class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
-                                readingMode
-                            ) ?
-                                'border-accent text-fg-accent'
-                            :   ''}">
-                            <BookOpenText class="size-4" />
-                        </IconButton>
-                    {/if}
-                    <ThemeSelect
-                        theme={themeStore.current}
-                        onThemeChange={themeStore.apply}
-                        dropdownDirection="up" />
-                    {#if showFontSelect}
-                        <ContentFontSelect dropdownDirection="up" />
-                    {/if}
-                    <AccessibilitySelect dropdownDirection="up" />
-                </div>
+                <span class="text-xs font-medium text-fg-muted select-none">{copyright}</span>
             </div>
         </div>
     </div>

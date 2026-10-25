@@ -1,8 +1,6 @@
 import sans from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff?inline';
 import sansBold from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff?inline';
 import sansItalic from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff?inline';
-import serif from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-400-normal.woff?inline';
-import serifBold from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-700-normal.woff?inline';
 import mono from '@fontsource/lilex/files/lilex-latin-400-normal.woff?inline';
 import type { CvFontBytes } from './pdfGenerator';
 
@@ -18,8 +16,6 @@ export function loadCvFonts(): CvFontBytes {
         sans: decode(sans),
         sansBold: decode(sansBold),
         sansItalic: decode(sansItalic),
-        serif: decode(serif),
-        serifBold: decode(serifBold),
         mono: decode(mono)
     };
     return cached;

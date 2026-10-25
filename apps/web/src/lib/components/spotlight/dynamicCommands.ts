@@ -6,7 +6,6 @@ import { page } from '$app/state';
 import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
 import { refreshCodeBlockPrefs, type CodeColorScheme } from '@mdrs/dom/codeBlocks.ts';
 import { a11yStore, type FontScale } from '@idstead/ui/stores/a11yStore.svelte.ts';
-import { contentFontStore, type ContentFont } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
 import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
 import {
@@ -22,7 +21,6 @@ import {
     FileUser,
     Rss,
     CodeXml,
-    CaseSensitive,
     Save,
     Braces,
     Quote,
@@ -36,15 +34,6 @@ import {
 import { tick } from 'svelte';
 import type { SpotlightItem } from './types';
 import type { SpotlightCommandContext } from './context';
-
-export function applyContentFont(font: ContentFont, label: string) {
-    if (contentFontStore.locked) {
-        toastStore.show('Reading font is locked while the dyslexic-friendly font is on', 'info');
-        return;
-    }
-    contentFontStore.setFont(font);
-    toastStore.show(`Content font set to ${label}`, 'success');
-}
 
 export function createDynamicCommandItems(
     ctx: SpotlightCommandContext
@@ -126,44 +115,6 @@ export function createDynamicCommandItems(
                     },
                     icon: SunMoon,
                     badge: 'Theme'
-                });
-            }
-        }
-
-        if (q.startsWith('/font') || (root.length > 2 && '/font'.startsWith(root))) {
-            const parts = q.split(/\s+/);
-            const arg = parts[1] || '';
-            if (!arg || arg === 'sans' || 'sans'.startsWith(arg)) {
-                items.push({
-                    id: 'dyn-font-sans',
-                    category: 'actions',
-                    title: '/font sans',
-                    subtitle: 'Use clean sans serif font.',
-                    action: () => applyContentFont('sans', 'Sans-serif'),
-                    icon: CaseSensitive,
-                    badge: 'Font'
-                });
-            }
-            if (!arg || arg === 'serif' || 'serif'.startsWith(arg)) {
-                items.push({
-                    id: 'dyn-font-serif',
-                    category: 'actions',
-                    title: '/font serif',
-                    subtitle: 'Use classic serif reading font.',
-                    action: () => applyContentFont('serif', 'Serif'),
-                    icon: CaseSensitive,
-                    badge: 'Font'
-                });
-            }
-            if (!arg || arg === 'mono' || 'mono'.startsWith(arg)) {
-                items.push({
-                    id: 'dyn-font-mono',
-                    category: 'actions',
-                    title: '/font mono',
-                    subtitle: 'Use modern monospace coding font.',
-                    action: () => applyContentFont('mono', 'Monospace'),
-                    icon: CaseSensitive,
-                    badge: 'Font'
                 });
             }
         }

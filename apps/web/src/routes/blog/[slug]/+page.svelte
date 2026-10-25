@@ -60,7 +60,6 @@
     import { formatReadTime } from '@idstead/domain';
     import { goto } from '$app/navigation';
     import { page, navigating } from '$app/state';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
 
     let { data }: PageProps = $props();
@@ -571,7 +570,6 @@
         ariaLabel="Article navigation"
         backHref="/blog"
         backLabel="Blog"
-        showFontSelect={true}
         projects={data.projects}
         readingMode={readingModeStore.active}
         onToggleReadingMode={readingModeStore.toggle} />
@@ -815,7 +813,7 @@
 
             <div
                 bind:this={articleBodyEl}
-                class="mdrs font-content-{contentFontStore.current} mt-3 w-full">
+                class="mdrs mt-3 w-full">
                 {@html html}
             </div>
 
@@ -992,7 +990,6 @@
                             {replyTo}
                             pageSize={COMMENTS_PAGE_SIZE}
                             controls
-                            useContentFont={true}
                             authorName={author?.name || ''}
                             onReport={comment => {
                                 reportingComment = comment;
@@ -1138,7 +1135,6 @@
                 {#if !readingModeStore.active}
                     <FooterSection
                         width="full"
-                        showFontSelect={true}
                         readingMode={readingModeStore.active}
                         onToggleReadingMode={readingModeStore.toggle}
                         class="mt-8 w-full pb-0 md:pb-0 lg:pb-20" />

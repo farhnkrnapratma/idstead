@@ -5,7 +5,6 @@
     import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
     import { enhanceHeadingAnchors } from '@mdrs/dom/headingAnchors.ts';
-    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         html: string;
@@ -36,7 +35,7 @@
 
 <div
     {@attach enhance}
-    class="mdrs editor-preview font-content-{contentFontStore.current} editor-surface w-full p-6"
+    class="mdrs editor-preview editor-surface w-full p-6"
     style:min-height={minHeight || undefined}>
     {#if error}<FieldMessage
             variant="error"
