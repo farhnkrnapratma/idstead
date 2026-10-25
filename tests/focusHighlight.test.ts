@@ -17,8 +17,9 @@ const tableOfContents = readFileSync(
 describe('A11y focus highlight', () => {
     test('uses the high-visibility outline for all focused public page elements', () => {
         expect(globalCss).toMatch(
-            /:root\[data-focus-highlight='true'\]:not\(\[data-admin-page='true'\]\)\s*:focus\s*\{/
+            /:root\[data-focus-highlight='true'\]:not\(\[data-admin-page='true'\]\)\s*:focus:not\(main\)\s*\{/
         );
+        expect(globalCss).toMatch(/main:focus\s*\{\s*@apply outline-none;/);
         expect(globalCss).toContain(
             'rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-highlight! outline-solid!'
         );

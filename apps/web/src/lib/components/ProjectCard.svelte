@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import {
-        Dot,
         FolderArchive,
         GitFork,
         Pin,
@@ -13,6 +12,7 @@
     } from '@lucide/svelte';
     import Button from '@idstead/ui/components/Button.svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import Tag from '@idstead/ui/components/Tag.svelte';
     import { pluralize } from '@idstead/domain/pluralize.ts';
     import type { Project } from '@idstead/domain/types.ts';
 
@@ -22,9 +22,21 @@
         pinned?: boolean;
         isNew?: boolean;
         tagItem: Snippet<[string]>;
+        languageSelected?: boolean;
+        onLanguageSelect?: (language: string) => void;
     }
 
-    let { project, headingTag = 'h3', pinned = false, isNew = false, tagItem }: Props = $props();
+    let {
+        project,
+        headingTag = 'h3',
+        pinned = false,
+        isNew = false,
+        tagItem,
+        languageSelected = false,
+        onLanguageSelect
+    }: Props = $props();
+
+    const language = $derived(project.lang ?? '');
 
     let bannerFailed = $state(false);
     const repoBannerUrl = $derived(
@@ -82,16 +94,6 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs">
-                {#if project.lang}
-                    <span
-                        class="inline-flex items-center text-xs leading-none font-medium text-fg-secondary select-none">
-                        <Dot
-                            strokeWidth={10}
-                            class="size-3.5 shrink-0 {project.langColor ? '' : 'text-line-strong'}"
-                            color={project.langColor ?? 'currentColor'} />
-                        <span class="leading-none">{project.lang}</span>
-                    </span>
-                {/if}
                 <span
                     class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-fg-secondary">
                     <Star
@@ -132,9 +134,26 @@
                 <p class="type-body text-fg-secondary">{project.desc}</p>
             {/if}
 
-            {#if project.tags && project.tags.length > 0}
+            {#if language || (project.tags && project.tags.length > 0)}
                 <div class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {#each project.tags as tag (tag)}
+                    {#if language}
+                        <Tag
+                            variant={languageSelected ? 'tinted-active' : 'tinted'}
+                            tint={project.langColor ?? 'var(--color-fg-muted)'}
+                            onclick={onLanguageSelect ?
+                                () => onLanguageSelect(language)
+                            :   undefined}
+                            aria-pressed={onLanguageSelect ? languageSelected : undefined}
+                            aria-label={onLanguageSelect ?
+                                `Filter by language: ${language}`
+                            :   undefined}
+                            class={onLanguageSelect && !languageSelected ?
+                                'font-mono hover:bg-(--tag-tint)/20'
+                            :   'font-mono'}>
+                            {language}
+                        </Tag>
+                    {/if}
+                    {#each project.tags ?? [] as tag (tag)}
                         {@render tagItem(tag)}
                     {/each}
                 </div>

@@ -4,7 +4,8 @@
     import { cn } from '../utils/cn';
 
     interface Props extends Omit<HTMLButtonAttributes, 'children' | 'class'> {
-        variant?: 'neutral' | 'subtle' | 'accent' | 'accent-active';
+        variant?: 'neutral' | 'subtle' | 'accent' | 'accent-active' | 'tinted' | 'tinted-active';
+        tint?: string;
         size?: 'sm' | 'md';
         children?: Snippet;
         class?: string;
@@ -12,6 +13,7 @@
 
     let {
         variant = 'neutral',
+        tint,
         size = 'sm',
         children,
         class: className = '',
@@ -24,7 +26,10 @@
         neutral: 'text-fg-muted border border-fg-muted/20',
         subtle: 'bg-fg-muted/10 text-fg-muted',
         accent: 'bg-accent-subtle text-fg-accent border border-accent/20',
-        'accent-active': 'bg-accent text-on-accent border border-accent/20'
+        'accent-active': 'bg-accent text-on-accent border border-accent/20',
+        tinted: 'border border-(--tag-tint)/35 bg-(--tag-tint)/10 text-[color-mix(in_oklab,var(--tag-tint)_50%,var(--color-fg))]',
+        'tinted-active':
+            'border border-(--tag-tint) bg-(--tag-tint)/25 text-[color-mix(in_oklab,var(--tag-tint)_50%,var(--color-fg))]'
     };
 
     const sizeStyles = {
@@ -39,6 +44,7 @@
     {onclick}
     disabled={onclick ? disabled : undefined}
     {...rest}
+    style:--tag-tint={tint}
     class={cn(
         'inline-block max-w-full rounded-full whitespace-normal',
         variantStyles[variant],
