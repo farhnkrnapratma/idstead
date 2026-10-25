@@ -9,3 +9,5 @@ docs/**/SHOWCASE.md
 templates/legal/*.md
 !templates/legal/README.md
 skills-lock.json
+.claude/skills/graphify/
+.claude/CLAUDE.md
