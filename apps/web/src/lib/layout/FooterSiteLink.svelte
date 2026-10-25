@@ -14,7 +14,7 @@
 
     const linkClass = $derived(
         cn(
-            'relative inline-flex shrink-0 cursor-pointer items-center text-left transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-none',
+            'relative inline-flex shrink-0 cursor-pointer items-center text-left transition-colors hover:text-fg-accent rounded-xs focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
             className
         )
     );
