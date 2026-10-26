@@ -1,6 +1,5 @@
-import UPNG from 'upng-js';
 import tracer from 'imagetracerjs';
-import { encodePng } from '#lib/png.ts';
+import { encodeIndexedPng, encodePng } from '#lib/png.ts';
 import { IMAGE_LIMIT, iconSizes, makeIco } from '#lib/siteIdentity.ts';
 
 self.onmessage = async (event: MessageEvent<{ bitmap: ImageBitmap; background: string }>) => {
@@ -36,12 +35,7 @@ self.onmessage = async (event: MessageEvent<{ bitmap: ImageBitmap; background: s
             const lossless = encodePng(pixels.data, size, size);
             if (lossless.byteLength <= IMAGE_LIMIT) return lossless;
             for (const colors of [256, 128, 64]) {
-                const encoded = UPNG.encode(
-                    [pixels.data.buffer as ArrayBuffer],
-                    size,
-                    size,
-                    colors
-                );
+                const encoded = encodeIndexedPng(pixels.data, size, size, colors);
                 if (encoded.byteLength <= IMAGE_LIMIT) return encoded;
             }
             throw new Error('The image could not be compressed below 500 KB.');
