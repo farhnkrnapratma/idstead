@@ -323,10 +323,6 @@
                     title="Feedback is not available yet"
                     description="This site cannot receive feedback until its owner adds a contact email." />
             {:else}
-                <div
-                    class="pointer-events-none absolute top-16.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
-                </div>
-
                 <div class="relative z-10 flex flex-col items-start text-left select-none">
                     <h1 class="type-page-title md:text-4xl">Your feedback matters</h1>
                     <p class="mt-4 max-w-2xl text-base leading-relaxed text-fg-secondary">
