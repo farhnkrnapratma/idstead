@@ -1,0 +1,12 @@
+---
+paths:
+    - apps/web/**
+---
+
+# Public site (`apps/web`)
+
+- Site pages live in the `(site)` route group, whose layout renders `SkipLink` and `SiteNav` (an in-flow tool bar in the content column above each page's first card, with Spotlight search on the left and theme and accessibility settings on the right; there are no section links or mobile tab bar, so pages are reached through each section's "see all" link, the footer or slash commands) once and preloads every section's code when the browser is idle: `/` (profile, two experience entries, one education entry, three posts and two projects, pinned ones first and then the newest posts and the most recently pushed projects, each linking to its full page), `/projects`, `/blog`, `/cv` (experience, education, skills, CV download), `/funding` and `/contact` (channels and the message form). `src/lib/siteSections.ts` maps sections to paths and route IDs; `app.html` sets `data-sveltekit-preload-data="hover"`, Spotlight preloads the data of its highlighted command, and page loads avoid `parent()` (the root layout already returns `projects` without excluded repos and `pinnedRepoNames`) so a navigation never re-runs the layout load; the homepage replaces a legacy `/#section` URL with its page, and `src/hooks.server.ts` 308-redirects `/home` to `/`. `/blog/[slug]` is a post.
+- Pages expose `.md`/`.txt` variants as routes (`/blog/{slug}.md`, `/privacy.txt`, …) via the `legal` and `textformat` matchers in `src/params.ts`.
+- `/.well-known/**` serves `openapi.json`/`openapi.yaml`, `llms.txt`, `agent-skills`, `api-catalog`, `ard.json`; the root serves `sitemap.xml`, `robots.txt`, `atom.xml`, `llms.txt`.
+- There is no `/admin` on this host and no session handling.
+- `src/hooks.server.ts` — `sequence()` of: Sentry, `www.` → apex redirect, identity assets and static reverse-proxy to `PUBLIC_CDN_BASE_URL`, the `/home` redirect, CORS preflight for `/api/*`, rate limiting for `/api/*`, the CSP header for HTML (from `server/csp.ts`, including the API origin in `connect-src`), the shared error envelope, ETags for `.well-known`, and `pageDataCache` (`server/pageDataCache.ts`), which keeps the `__data.json` of the six section pages in the edge cache for 60 s under a key that includes the app version and drops tracking parameters. Read it before changing cross-cutting behavior.
