@@ -145,6 +145,15 @@ export function blogRepositoryContract(name: string, factory: RepositoryFactory)
             expect(past).toEqual({ posts: [], total: 3 });
         });
 
+        test('lists pinned posts first when asked', async () => {
+            const { posts, total } = await blog.listPublishedWithStats({
+                limit: 2,
+                pinnedFirst: true
+            });
+            expect(posts.map(p => p.slug)).toEqual(['middle', 'newest']);
+            expect(total).toBe(3);
+        });
+
         test('searches titles and excerpts case-insensitively and literally', async () => {
             expect((await blog.listPublished({ search: 'SVELTE' })).posts.map(p => p.slug)).toEqual(
                 ['newest']

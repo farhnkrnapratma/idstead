@@ -21,6 +21,7 @@ export interface PostListOptions {
     limit?: number;
     offset?: number;
     search?: string;
+    pinnedFirst?: boolean;
 }
 
 export interface PostPage<T> {

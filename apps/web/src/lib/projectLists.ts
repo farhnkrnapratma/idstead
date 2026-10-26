@@ -11,13 +11,12 @@ export function isRepoNew(project: Project, now = Date.now()): boolean {
     return now - new Date(project.createdAt).getTime() < NEW_ITEM_WINDOW_MS;
 }
 
-export function recentlyPushed(
-    projects: Project[],
-    pinnedNames: string[],
-    count: number
-): Project[] {
+export function homeProjects(projects: Project[], pinnedNames: string[], count: number): Project[] {
     return projects
-        .filter(project => !isRepoPinned(project, pinnedNames))
-        .sort((a, b) => new Date(b.pushedAt || 0).getTime() - new Date(a.pushedAt || 0).getTime())
+        .toSorted(
+            (a, b) =>
+                Number(isRepoPinned(b, pinnedNames)) - Number(isRepoPinned(a, pinnedNames))
+                || new Date(b.pushedAt || 0).getTime() - new Date(a.pushedAt || 0).getTime()
+        )
         .slice(0, count);
 }

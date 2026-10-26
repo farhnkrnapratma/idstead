@@ -106,7 +106,10 @@ export function createD1BlogRepository(
     bucket: ContentBucket,
     options: D1RepositoryOptions = {}
 ): BlogRepository {
-    async function list(columns: string, { limit, offset = 0, search = '' }: PostListOptions) {
+    async function list(
+        columns: string,
+        { limit, offset = 0, search = '', pinnedFirst = false }: PostListOptions
+    ) {
         const term = search.trim();
         const where = `p.published = 1${term ? ` AND ${SEARCH}` : ''}`;
         const params = term ? [likePattern(term)] : [];
@@ -118,7 +121,7 @@ export function createD1BlogRepository(
             const [rows, count] = await db.batch([
                 db
                     .prepare(
-                        `SELECT ${columns} FROM db_posts p WHERE ${where} ORDER BY p.created_at DESC, p.public_id${window}`
+                        `SELECT ${columns} FROM db_posts p WHERE ${where} ORDER BY ${pinnedFirst ? 'p.pinned DESC, ' : ''}p.created_at DESC, p.public_id${window}`
                     )
                     .bind(...params),
                 db
