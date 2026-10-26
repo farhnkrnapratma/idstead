@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { readJson } from '#app/readJson.ts';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
@@ -1163,7 +1164,7 @@
             headers: { Authorization: `Bearer ${session.access_token}` },
             body: form
         });
-        return { response, result: await response.json() };
+        return { response, result: await readJson(response) };
     }
 
     function replacePreview(current: string, blob: Blob) {
@@ -3060,7 +3061,7 @@
                 body: JSON.stringify({ force: options.force === true })
             });
 
-            const res = await response.json();
+            const res = await readJson(response);
             if (!response.ok || !res.success) {
                 const errorMsg =
                     typeof res?.message === 'string' ? res.message

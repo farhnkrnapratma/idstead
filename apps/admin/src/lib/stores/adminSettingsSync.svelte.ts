@@ -1,3 +1,4 @@
+import { readJson } from '../readJson.ts';
 import { supabase } from '#lib/supabase.ts';
 import { parseAdminSettings } from '#lib/adminSettings.ts';
 import { adminDisplayStore } from './adminDisplayStore.svelte';
@@ -32,7 +33,7 @@ export function startAdminSettingsSync() {
         try {
             const res = await request();
             if (stopped || !res?.ok) return;
-            const settings = parseAdminSettings(await res.json());
+            const settings = parseAdminSettings(await readJson(res));
             const hasRemote = Boolean(settings.display || settings.chartRange);
             if (settings.display) adminDisplayStore.apply(settings.display);
             if (settings.chartRange) adminChartRangeStore.set(settings.chartRange);

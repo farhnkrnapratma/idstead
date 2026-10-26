@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { readJson } from '../../readJson.ts';
     import { FieldValidation, requiredText } from '@idstead/domain/fieldValidation.ts';
     import { mdrsContent } from '../../mdrsValidation.ts';
     import { renderMdrsPreview } from '../../mdrsPreview.ts';
@@ -230,7 +231,7 @@
                 headers: { Authorization: `Bearer ${accessToken}` },
                 body: form
             });
-            const result = await response.json();
+            const result = await readJson(response);
             if (!response.ok) throw new Error(result?.error?.message ?? 'Failed to upload image.');
             return result.url;
         } catch (err) {
@@ -265,7 +266,7 @@
                 headers: { Authorization: `Bearer ${accessToken}` },
                 body: form
             });
-            const result = await response.json();
+            const result = await readJson(response);
             if (!response.ok) throw new Error(result?.error?.message ?? 'Failed to upload video.');
             return result.url;
         } catch (err) {
@@ -434,7 +435,7 @@
                 },
                 body: JSON.stringify({ postId: editId, force: true })
             });
-            const result = await response.json();
+            const result = await readJson(response);
             if (!response.ok)
                 throw new Error(result?.error?.message ?? 'Subscribers could not be notified.');
             toastStore.success(
@@ -486,7 +487,7 @@
                             body: JSON.stringify({ markdown: markdownContent })
                         });
                         if (response.ok) {
-                            const generated = await response.json();
+                            const generated = await readJson(response);
                             aiSummary = generated.summary ?? null;
                             aiTldr = generated.tldr ?? null;
                         }

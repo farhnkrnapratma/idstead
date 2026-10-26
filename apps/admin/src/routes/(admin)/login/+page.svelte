@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { readJson } from '#app/readJson.ts';
     import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
     import { page } from '$app/state';
     import { clearLocalAdminSession, inspectAdminAuth } from '#lib/adminAuthState.ts';
@@ -217,7 +218,7 @@
                 body: JSON.stringify({ email: email.trim(), password: password, captchaToken })
             });
 
-            const result = await res.json();
+            const result = await readJson(res);
 
             if (!res.ok) {
                 throw new Error(result.error?.message || 'Invalid email or password.');

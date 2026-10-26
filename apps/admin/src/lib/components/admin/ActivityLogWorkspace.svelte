@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { readJson } from '../../readJson.ts';
     import { onMount } from 'svelte';
     import { Download, FileText, Search, Logs } from '@lucide/svelte';
     import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -81,7 +82,7 @@
                 cache: 'no-store',
                 signal: currentController.signal
             });
-            const body = await res.json();
+            const body = await readJson(res);
             if (currentRequest !== requestId) return;
             if (!res.ok)
                 throw new Error(

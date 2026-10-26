@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { readJson } from '../../readJson.ts';
     import { onMount, type Snippet } from 'svelte';
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '../../adminUrl.ts';
@@ -179,7 +180,7 @@
                 },
                 body: JSON.stringify({ password: newPassword, currentPassword })
             });
-            const result = await response.json();
+            const result = await readJson(response);
             if (!response.ok)
                 throw new Error(
                     result.error?.message || result.message || 'Password could not be updated.'
