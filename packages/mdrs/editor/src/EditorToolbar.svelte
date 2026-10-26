@@ -141,7 +141,6 @@
         <button
             type="button"
             onclick={handleImageClick}
-            title="Upload image"
             aria-label="Insert image"
             class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
             <ImageIcon class="size-4" />
@@ -157,7 +156,6 @@
         <button
             type="button"
             onclick={handleVideoClick}
-            title="Upload video"
             aria-label="Insert video"
             class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
             <Video class="size-4" />
