@@ -19,6 +19,7 @@
     import type { ImagePackage } from '#lib/siteIdentity.ts';
     import { processAvatar } from '#app/processAvatar.ts';
     import { processSiteBanner, type SiteBannerOutput } from '#app/processSiteBanner.ts';
+    import { listFieldError } from '#app/listFieldError.ts';
     import {
         avatarFingerprint,
         avatarPreview,
@@ -1666,6 +1667,7 @@
         };
         return configs[group];
     }
+    const OPTIONAL_LIST_FIELDS = new Set(['education:grade']);
     function listField(group: ListGroup, item: { id?: string }, field: string, label: string) {
         const id = item.id!;
         const key = `${group}:${id}:${field}`;
@@ -1677,16 +1679,13 @@
                 const entry = listConfig(group).baseline?.find(entry => entry.id === id);
                 return entry ? value(entry) : undefined;
             },
-            validate: value => {
-                const required = requiredText(label)(String(value));
-                if (required) return required;
-                if (
-                    ['url', 'href'].includes(field)
-                    && !/^(https?:\/\/|mailto:|tel:).+/i.test(String(value))
-                )
-                    return 'Must start with http://, https://, mailto:, or tel:';
-                return '';
-            },
+            validate: value =>
+                listFieldError(
+                    field,
+                    label,
+                    String(value),
+                    OPTIONAL_LIST_FIELDS.has(`${group}:${field}`)
+                ),
             report: result => {
                 const config = listConfig(group);
                 config.errors[id] ??= {};
