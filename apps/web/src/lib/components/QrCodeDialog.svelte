@@ -58,7 +58,6 @@
                     ctx.beginPath();
                     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
                     ctx.clip();
-                    ctx.filter = 'grayscale(1)';
                     ctx.drawImage(img, (size - width) / 2, 0, width, height);
                     resolve(canvas.toDataURL('image/png'));
                 } catch {
