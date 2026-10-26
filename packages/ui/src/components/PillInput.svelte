@@ -169,8 +169,8 @@
         inputElement?.focus();
     }}
     class={cn(
-        'relative flex min-h-12 w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
-        isFloating ? 'items-start pt-5! pb-1.5!' : 'items-center py-2',
+        'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
+        isFloating ? 'min-h-12 items-start pt-5! pb-1.5!' : 'min-h-9 items-center py-1.5',
         className
     )}>
     {#if isFloating && resolvedLabel}
@@ -206,7 +206,7 @@
             ondragstart={e => handleDragStart(idx, e)}
             ondragover={e => e.preventDefault()}
             ondrop={e => handleDrop(idx, e)}
-            class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-fg-accent transition-all hover:border-accent/50">
+            class="box-border inline-flex min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0 font-sans text-xs leading-none font-medium text-fg-accent transition-all hover:border-accent/50">
             <span
                 data-pill-grip
                 aria-hidden="true"
@@ -245,13 +245,13 @@
                         saveEdit(idx);
                         onblur?.();
                     }}
-                    use:focusOnMount />
+                    {@attach focusOnMount} />
             {:else}
                 <span
                     data-pill-text
                     role="button"
                     tabindex="0"
-                    class="inline-flex cursor-pointer items-center leading-tight wrap-break-word whitespace-normal hover:underline"
+                    class="inline-flex cursor-pointer items-center leading-none wrap-break-word whitespace-normal hover:underline"
                     onclick={() => startEdit(idx, item)}
                     onkeydown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
