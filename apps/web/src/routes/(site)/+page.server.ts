@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     ]);
 
     return {
-        posts: posts.filter(post => !post.pinned).slice(0, HOME_POST_COUNT),
+        posts: posts.slice(0, HOME_POST_COUNT),
         hasPublishedPosts: posts.length > 0,
         experience: cv.experience.slice(0, HOME_EXPERIENCE_COUNT),
         education: cv.education.slice(0, HOME_EDUCATION_COUNT),

@@ -425,7 +425,7 @@
     }
 
     .mdrs-footnotes {
-        @apply mt-10 border-t border-line-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-fg-secondary;
+        @apply mt-10 border-t border-line-subtle pt-4 text-base leading-relaxed text-fg-secondary;
     }
 
     .mdrs-footnotes ol {
