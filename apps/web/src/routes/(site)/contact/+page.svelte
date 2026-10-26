@@ -203,63 +203,65 @@
                         </p>
                     </div>
 
-                    <FormField
-                        id="form-name"
-                        label="Name"
-                        variant="floating"
-                        required
-                        hideAsterisk
-                        maxlength={50}
-                        currentLength={formName.length}
-                        error={formErrors.name}
-                        valid={formValid.name}>
-                        <Input
-                            type="text"
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <FormField
                             id="form-name"
-                            name="name"
-                            autocomplete="name"
+                            label="Name"
+                            variant="floating"
+                            required
+                            hideAsterisk
                             maxlength={50}
-                            bind:value={formName}
-                            error={!!formErrors.name}
-                            valid={formValid.name}
-                            oninput={() => {
-                                formErrors.name = '';
-                                formValid.name = false;
-                                queueMicrotask(() => validation.input('name'));
-                            }}
-                            onblur={() => {
-                                void validation.check('name');
-                            }} />
-                    </FormField>
+                            currentLength={formName.length}
+                            error={formErrors.name}
+                            valid={formValid.name}>
+                            <Input
+                                type="text"
+                                id="form-name"
+                                name="name"
+                                autocomplete="name"
+                                maxlength={50}
+                                bind:value={formName}
+                                error={!!formErrors.name}
+                                valid={formValid.name}
+                                oninput={() => {
+                                    formErrors.name = '';
+                                    formValid.name = false;
+                                    queueMicrotask(() => validation.input('name'));
+                                }}
+                                onblur={() => {
+                                    void validation.check('name');
+                                }} />
+                        </FormField>
 
-                    <FormField
-                        id="form-email"
-                        label="Email"
-                        variant="floating"
-                        required
-                        hideAsterisk
-                        maxlength={100}
-                        currentLength={formEmail.length}
-                        error={formErrors.email}
-                        valid={formValid.email}>
-                        <Input
-                            type="text"
+                        <FormField
                             id="form-email"
-                            name="email"
-                            autocomplete="email"
+                            label="Email"
+                            variant="floating"
+                            required
+                            hideAsterisk
                             maxlength={100}
-                            bind:value={formEmail}
-                            error={!!formErrors.email}
-                            valid={formValid.email}
-                            oninput={() => {
-                                formErrors.email = '';
-                                formValid.email = false;
-                                queueMicrotask(() => validation.input('email'));
-                            }}
-                            onblur={() => {
-                                void validation.check('email');
-                            }} />
-                    </FormField>
+                            currentLength={formEmail.length}
+                            error={formErrors.email}
+                            valid={formValid.email}>
+                            <Input
+                                type="text"
+                                id="form-email"
+                                name="email"
+                                autocomplete="email"
+                                maxlength={100}
+                                bind:value={formEmail}
+                                error={!!formErrors.email}
+                                valid={formValid.email}
+                                oninput={() => {
+                                    formErrors.email = '';
+                                    formValid.email = false;
+                                    queueMicrotask(() => validation.input('email'));
+                                }}
+                                onblur={() => {
+                                    void validation.check('email');
+                                }} />
+                        </FormField>
+                    </div>
 
                     <FormField
                         id="form-message"
