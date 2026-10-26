@@ -7,6 +7,7 @@ import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
+import { movePostBanner } from '#lib/server/blogPostAssets.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
@@ -61,6 +62,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (update.status === 'pin-limit')
         return apiError(422, 'BLOG_POST_PIN_LIMIT', 'Maximum of 3 pinned posts allowed.');
     const { post } = update;
+    if (flag === 'published' && post.published !== previous.published)
+        await movePostBanner({ platform, post, previous }).catch(error =>
+            console.error('Post banner move failed:', error)
+        );
     if (flag === 'published')
         await queuePostEffects(service.writers.newsletter, platform, {
             postId: post.id,
