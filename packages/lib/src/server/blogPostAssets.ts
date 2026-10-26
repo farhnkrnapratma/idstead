@@ -124,6 +124,23 @@ export async function relocateMarkdownAssets(options: {
     return markdown;
 }
 
+export async function movePostBanner(options: {
+    platform: App.Platform | undefined;
+    post: PostAssetOwner & { banner_version?: string | null };
+    previous: PostAssetOwner;
+}) {
+    const { platform, post, previous } = options;
+    const from = postAssetHome(previous);
+    const to = postAssetHome(post);
+    if (!post.banner_version || from === to) return;
+    for (const ext of ['webp', 'avif'] as const) {
+        const source = `${from}/banner.${ext}`;
+        if (!(await objectExists(platform, source))) continue;
+        await copyObject(platform, source, `${to}/banner.${ext}`);
+        await deleteKeys(platform, [source]);
+    }
+}
+
 export async function syncPostAssets(options: {
     platform: App.Platform | undefined;
     cdnBase: string;
@@ -149,9 +166,15 @@ export async function syncPostAssets(options: {
             if (await objectExists(platform, staged)) {
                 await copyObject(platform, staged, target);
                 await deleteKeys(platform, [staged]);
-            } else if (previousHome && previousHome !== home) {
-                const old = `${previousHome}banner.${ext}`;
-                if (await objectExists(platform, old)) await copyObject(platform, old, target);
+                continue;
+            }
+            for (const folder of new Set([previousHome, staging])) {
+                if (!folder || folder === home) continue;
+                const old = `${folder}banner.${ext}`;
+                if (!(await objectExists(platform, old))) continue;
+                if (folder === previousHome || !(await objectExists(platform, target)))
+                    await copyObject(platform, old, target);
+                break;
             }
         }
     }

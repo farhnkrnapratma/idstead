@@ -65,7 +65,10 @@
                     }
                 };
                 image.onerror = () => {
-                    loadError = 'Saved banner could not be loaded. Your local preview is retained.';
+                    loadError =
+                        preview ?
+                            'Saved banner could not be loaded. Your local preview is retained.'
+                        :   'Saved banner could not be loaded. Choose the image again.';
                     loadedSource = '';
                 };
                 image.src = source;
