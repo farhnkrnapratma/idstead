@@ -66,6 +66,7 @@
                 };
                 image.onerror = () => {
                     loadError = 'Saved banner could not be loaded. Your local preview is retained.';
+                    loadedSource = '';
                 };
                 image.src = source;
                 return () => {

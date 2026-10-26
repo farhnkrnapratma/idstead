@@ -804,6 +804,37 @@
         } catch {}
     }
 
+    async function handleLegalImport(file: File) {
+        if (!/\.(?:md|mdrs|markdown)$/i.test(file.name)) {
+            toastStore.error('Choose a .md or .mdrs file.');
+            return;
+        }
+        if (file.size > 1024 * 1024) {
+            toastStore.error('File is too large (max 1 MB).');
+            return;
+        }
+        try {
+            const content = await file.text();
+            const slug = activeAdminTab as 'privacy' | 'security' | 'terms';
+            if (slug && legalPagesData[slug]) {
+                legalPagesData[slug].content = content;
+                legalValidation.input(slug);
+                toastStore.success(`Imported ${file.name}`);
+            }
+        } catch (err) {
+            toastStore.error('Could not read file.');
+        }
+    }
+
+    async function handleLegalImageUpload(_file: File): Promise<string | null> {
+        toastStore.info('Note: Images for legal pages should be added via markdown syntax.');
+        return null;
+    }
+
+    async function handleLegalVideoUpload(_file: File): Promise<string | null> {
+        toastStore.info('Note: Videos for legal pages should be added via markdown syntax.');
+        return null;
+    }
     async function handleSaveLegalPage(
         targetSlug?: 'privacy' | 'security' | 'terms',
         e?: SubmitEvent
@@ -6738,6 +6769,9 @@
                         minHeight="500px"
                         stickyTopClass="top-12 md:top-0" />
                 {/await}
+                onImport={handleLegalImport}
+                onImageUpload={handleLegalImageUpload}
+                onVideoUpload={handleLegalVideoUpload}
             </FormSection>
         {:else if activeAdminTab === 'security'}
             <FormSection
@@ -6813,6 +6847,9 @@
                         placeholder="Write your Security Policy content in markdown..."
                         minHeight="500px"
                         stickyTopClass="top-12 md:top-0" />
+                    onImport={handleLegalImport}
+                    onImageUpload={handleLegalImageUpload}
+                    onVideoUpload={handleLegalVideoUpload}
                 {/await}
             </FormSection>
         {:else if activeAdminTab === 'terms'}
@@ -6888,6 +6925,9 @@
                         placeholder="Write your Terms of Service content in markdown..."
                         minHeight="500px"
                         stickyTopClass="top-12 md:top-0" />
+                    onImport={handleLegalImport}
+                    onImageUpload={handleLegalImageUpload}
+                    onVideoUpload={handleLegalVideoUpload}
                 {/await}
             </FormSection>
         {:else if activeAdminTab === 'apps'}
