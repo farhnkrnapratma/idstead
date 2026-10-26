@@ -804,37 +804,41 @@
         } catch {}
     }
 
+    type LegalSlug = 'privacy' | 'security' | 'terms';
+    let pendingLegalImport = $state<{ slug: LegalSlug; content: string } | null>(null);
+
     async function handleLegalImport(file: File) {
+        const slug = activeAdminTab as LegalSlug;
+        if (!legalPagesData[slug]) return;
         if (!/\.(?:md|mdrs|markdown)$/i.test(file.name)) {
             toastStore.error('Choose a .md or .mdrs file.');
             return;
         }
         if (file.size > 1024 * 1024) {
-            toastStore.error('File is too large (max 1 MB).');
+            toastStore.error('That file is too large to import.');
             return;
         }
+        let content: string;
         try {
-            const content = await file.text();
-            const slug = activeAdminTab as 'privacy' | 'security' | 'terms';
-            if (slug && legalPagesData[slug]) {
-                legalPagesData[slug].content = content;
-                legalValidation.input(slug);
-                toastStore.success(`Imported ${file.name}`);
-            }
-        } catch (err) {
-            toastStore.error('Could not read file.');
+            content = await file.text();
+        } catch {
+            toastStore.error('The file could not be read.');
+            return;
         }
+        if (legalPagesData[slug].content.trim()) {
+            pendingLegalImport = { slug, content };
+            return;
+        }
+        applyLegalImport({ slug, content });
     }
 
-    async function handleLegalImageUpload(_file: File): Promise<string | null> {
-        toastStore.info('Note: Images for legal pages should be added via markdown syntax.');
-        return null;
+    function applyLegalImport(imported: { slug: LegalSlug; content: string }) {
+        pendingLegalImport = null;
+        legalPagesData[imported.slug].content = imported.content;
+        legalValidation.input(imported.slug);
+        toastStore.success('File imported.');
     }
 
-    async function handleLegalVideoUpload(_file: File): Promise<string | null> {
-        toastStore.info('Note: Videos for legal pages should be added via markdown syntax.');
-        return null;
-    }
     async function handleSaveLegalPage(
         targetSlug?: 'privacy' | 'security' | 'terms',
         e?: SubmitEvent
@@ -6767,11 +6771,9 @@
                         autosaveKey="autosave_legal_privacy"
                         placeholder="Write your Privacy Policy content in markdown..."
                         minHeight="500px"
-                        stickyTopClass="top-12 md:top-0" />
+                        stickyTopClass="top-12 md:top-0"
+                        onImport={handleLegalImport} />
                 {/await}
-                onImport={handleLegalImport}
-                onImageUpload={handleLegalImageUpload}
-                onVideoUpload={handleLegalVideoUpload}
             </FormSection>
         {:else if activeAdminTab === 'security'}
             <FormSection
@@ -6846,10 +6848,8 @@
                         autosaveKey="autosave_legal_security"
                         placeholder="Write your Security Policy content in markdown..."
                         minHeight="500px"
-                        stickyTopClass="top-12 md:top-0" />
-                    onImport={handleLegalImport}
-                    onImageUpload={handleLegalImageUpload}
-                    onVideoUpload={handleLegalVideoUpload}
+                        stickyTopClass="top-12 md:top-0"
+                        onImport={handleLegalImport} />
                 {/await}
             </FormSection>
         {:else if activeAdminTab === 'terms'}
@@ -6924,10 +6924,8 @@
                         autosaveKey="autosave_legal_terms"
                         placeholder="Write your Terms of Service content in markdown..."
                         minHeight="500px"
-                        stickyTopClass="top-12 md:top-0" />
-                    onImport={handleLegalImport}
-                    onImageUpload={handleLegalImageUpload}
-                    onVideoUpload={handleLegalVideoUpload}
+                        stickyTopClass="top-12 md:top-0"
+                        onImport={handleLegalImport} />
                 {/await}
             </FormSection>
         {:else if activeAdminTab === 'apps'}
@@ -7033,6 +7031,16 @@
         {/if}
     </main>
 </div>
+
+<ConfirmationDialog
+    isOpen={pendingLegalImport !== null}
+    title="Replace the current content?"
+    message="Importing replaces everything in this editor with the file."
+    confirmLabel="Import file"
+    cancelLabel="Keep editing"
+    isDestructive
+    onConfirm={() => pendingLegalImport && applyLegalImport(pendingLegalImport)}
+    onCancel={() => (pendingLegalImport = null)} />
 
 <ConfirmationDialog
     bind:isOpen={showLogoutDialog}
