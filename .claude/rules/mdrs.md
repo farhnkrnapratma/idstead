@@ -1,0 +1,14 @@
+---
+paths:
+    - packages/mdrs/**
+    - docs/008-mdrs/**
+    - packages/lib/src/server/mdrsData.ts
+    - packages/lib/src/mdrsResolvers.ts
+    - packages/lib/src/mdrsOptions.ts
+    - tests/mdrs*.test.ts
+    - tests/sanitizeHtml.test.ts
+---
+
+# Markdown engine (MDRS)
+
+The workspace package `@mdrs/core` (`packages/mdrs/core`) renders posts and legal pages; import it only as `@mdrs/core` (its `exports`), never its `src/` files (tests excepted). It is standalone: no Svelte, SvelteKit, `@idstead/*`, `#lib` or Supabase imports (ESLint enforces this). Live data (`api.v1.*` in `:::define`) comes from resolvers passed to `renderMarkdown`/`prepareMarkdownPage`; server code builds the site's with `mdrsResolvers(repositories)` (`packages/lib/src/server/mdrsData.ts`, from any `author` and `blog` repositories), and the admin editor preview, which renders in the browser, uses the browser-safe `createMdrsResolvers(loaders)` (`packages/lib/src/mdrsResolvers.ts`) with loaders that call the admin-only `POST /api/internal/admin/mdrs-data`. The browser side of MDRS is `@mdrs/dom` (`packages/mdrs/dom`): `enhance.ts` (`enhanceMarkdownContent`), `codeBlocks.ts`, `tabs.ts`, `charts.ts` with `MarkdownChart.svelte`, `mermaid.ts`, `headingAnchors.ts`, `CodeTabs.svelte`, the code block preferences store and `mdrs.css`, which `packages/lib/src/global.css` imports. It may depend on `@idstead/ui`, `@idstead/domain` and `@mdrs/core` only. The language is MDRS (Markdown Rich Syntax), fully documented in [docs/008-mdrs/](../../docs/008-mdrs/README.md); update those pages, including `003-reference/001-compatibility.md`, whenever engine behaviour changes. Links whose origin is in the `internalOrigins` render option (`siteRenderOptions(siteUrl)` in `packages/lib/src/mdrsOptions.ts` passes the site and its `www.` host; web pages use the request origin) render without the external-link icon. `renderMarkdown` always ends with `sanitizeHtml` (`packages/mdrs/core/src/sanitize.ts`, an allowlist that also covers the engine's own markup), so any new tag or attribute the engine emits must be added to that allowlist, and every class, ID and `data-` attribute it emits must use the `mdrs` namespace (`mdrs-*`, `data-mdrs-*`) with its default styling in `packages/mdrs/dom/src/mdrs.css`, never Tailwind utilities in the markup; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. `tests/mdrsDocsSnapshot.test.ts` snapshots the HTML of every documented example, so any output change shows up as a snapshot diff to review. Saved posts store their rendered HTML (`{operationId}.render.json` next to the markdown, built by `packages/lib/src/server/postRender.ts`, located by `postRenderPath` from `@idstead/data`), so an intended output change also needs a bump of `RENDER_VERSION` in `packages/mdrs/core/src/version.ts`; `tests/mdrsRenderVersion.test.ts` fails until you do.
