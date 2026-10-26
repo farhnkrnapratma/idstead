@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
+    import type { Attachment } from 'svelte/attachments';
     import type { HTMLImgAttributes } from 'svelte/elements';
     import type { ImageSource } from '../types';
     import { Image as ImageIcon, User as UserIcon } from '@lucide/svelte';
@@ -36,34 +38,20 @@
         onerror
     }: Props = $props();
 
-    let isLoaded = $state(false);
-    let isError = $state(false);
-    let imgElement = $state<HTMLImageElement | null>(null);
+    let loadedSrc = $state<string | null>(null);
+    let failedSrc = $state<string | null>(null);
     let sourcesFailed = $state(false);
 
+    const isError = $derived(!src || failedSrc === src);
+    const isLoaded = $derived(!!src && (loadedSrc === src || failedSrc === src));
     const useSources = $derived(Boolean(sources?.length) && !sourcesFailed);
 
     let isAvatar = $derived(
         variant === 'avatar' || Boolean(rounded && rounded.includes('rounded-full'))
     );
 
-    $effect(() => {
-        if (!src) {
-            isLoaded = false;
-            isError = true;
-            return;
-        }
-
-        isError = false;
-
-        if (imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
-            isLoaded = true;
-            onload?.();
-        }
-    });
-
     function handleLoad() {
-        isLoaded = true;
+        loadedSrc = src ?? null;
         onload?.();
     }
 
@@ -72,10 +60,15 @@
             sourcesFailed = true;
             return;
         }
-        isError = true;
-        isLoaded = true;
+        failedSrc = src ?? null;
         onerror?.();
     }
+
+    const loadedBeforeHydration: Attachment<HTMLImageElement> = image => {
+        untrack(() => {
+            if (image.complete && image.naturalWidth > 0 && loadedSrc !== src) handleLoad();
+        });
+    };
 </script>
 
 <div
@@ -113,7 +106,7 @@
                         type={source.type} />
                 {/each}
                 <img
-                    bind:this={imgElement}
+                    {@attach loadedBeforeHydration}
                     src={src || ''}
                     {alt}
                     {loading}
@@ -125,7 +118,7 @@
             </picture>
         {:else}
             <img
-                bind:this={imgElement}
+                {@attach loadedBeforeHydration}
                 src={src || ''}
                 {alt}
                 {loading}
