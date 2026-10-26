@@ -28,12 +28,39 @@ import {
     injectHeadingIds,
     prefixHashLinks
 } from './render/headings';
-import { extractIgnoreRenderBlocks } from './render/ignoreRender';
+import { extractIgnoreRenderBlocks, protectIgnoreRenderBlocks } from './render/ignoreRender';
 import { type MathSource, extractMath, renderMathSources } from './render/math';
 import { parseWithOptions, type RenderOptions } from './render/parser';
 import { parseSteps } from './render/steps';
 
 export type { RenderOptions };
+
+export async function resolveDefines(
+    markdown: string,
+    resolvers: ApiRegistry = unavailableResolvers()
+): Promise<string> {
+    const source = stripPlaceholderChars(markdown);
+    const { body } = extractFrontmatter(source);
+    const frontmatter = source.slice(0, source.length - body.length);
+    const { raw: defineRaw, body: withDefineGap } = extractDefineBlock(body);
+    if (defineRaw === null) return source;
+    const bodyAfterDefine = withDefineGap.replace(/^(?:[ \t]*\r?\n)+/, '');
+    if (!hasDefineEntries(defineRaw)) return frontmatter + bodyAfterDefine;
+    const { scope } = await evaluateDefineBlock(defineRaw, resolvers);
+    const ignoreRenderBlocks = new Map<string, string>();
+    const interpolationPlaceholders = new Map<string, string>();
+    const withTokensProtected = protectInterpolationTokens(
+        protectIgnoreRenderBlocks(bodyAfterDefine, ignoreRenderBlocks),
+        interpolationPlaceholders
+    );
+    const { output } = await resolveProtectedInterpolationTokens(
+        withTokensProtected,
+        interpolationPlaceholders,
+        scope,
+        resolvers
+    );
+    return frontmatter + restoreAllPlaceholders(output, ignoreRenderBlocks);
+}
 
 export async function renderMarkdownUnsafe(
     markdown: string,

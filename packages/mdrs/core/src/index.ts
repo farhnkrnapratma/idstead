@@ -2,6 +2,7 @@ export {
     renderMarkdown,
     renderMarkdownUnsafe,
     prepareMarkdownPage,
+    resolveDefines,
     type RenderOptions
 } from './markdown';
 export {

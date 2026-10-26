@@ -18,3 +18,17 @@ export function extractIgnoreRenderBlocks(markdown: string, store: Map<string, s
         }
     );
 }
+
+export function protectIgnoreRenderBlocks(markdown: string, store: Map<string, string>): string {
+    return replaceLineBlocks(
+        markdown,
+        line => line.match(IGNORE_RENDER_OPEN_RE),
+        line => line.match(COLON_CLOSE_RE)?.[1] ?? null,
+        match => match[1],
+        (_match, _content, block) => {
+            const key = placeholderKey('IGNORE_RENDER', store.size);
+            store.set(key, block);
+            return key;
+        }
+    );
+}

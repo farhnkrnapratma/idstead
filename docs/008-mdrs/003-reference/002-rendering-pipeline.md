@@ -62,6 +62,7 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `sanitizeHtml(html)`, `sanitizeUrl(href)` | `@mdrs/core` | The allowlist sanitizer and URL check |
 | `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation and the size limit |
 | `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@mdrs/core` | Building blocks for live-data resolvers |
+| `resolveDefines(markdown, resolvers?)` | `@mdrs/core` | Markdown source with the `:::define` block removed and its variables filled in; code, escaped variables and `:::ignore-render` stay literal |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
 | `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
 | `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
@@ -82,7 +83,8 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 | Admin editor preview (`packages/mdrs/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with resolvers that fetch live data from `/api/internal/admin/mdrs-data`) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
 | Admin post save (validation) | `validateDefineForSave` |
-| `.md` and `.txt` variants, `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |
+| `.md` and `.txt` variants of posts and legal pages | `resolveDefines`, then the source as is or `markdownToPlainText` for text output |
+| `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |
 
 ## Render version
 
