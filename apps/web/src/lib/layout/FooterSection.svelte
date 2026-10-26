@@ -78,14 +78,13 @@
 
 <footer
     class={cn(
-        'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 font-sans text-xs text-fg-muted',
-        width === 'standard' ? 'pb-8' : 'pb-0',
+        'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 pb-[calc(3.5rem+env(safe-area-inset-bottom))] font-sans text-xs text-fg-muted md:pb-17',
         widthStyles[width],
         className
     )}>
     <div class="rounded-md glass-card p-3.5 sm:p-6">
         <div class="flex flex-col gap-5 sm:gap-6">
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-10">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-10">
                 {#if resolvedNavItems.length > 0}
                     <nav
                         aria-labelledby="{headingId}-navigation"
@@ -96,7 +95,7 @@
                             Navigation
                         </h2>
                         <ul
-                            class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
+                            class="flex flex-col gap-2 text-xs font-normal text-fg-secondary sm:grid sm:auto-cols-fr sm:grid-flow-col sm:grid-rows-3 sm:gap-x-4 sm:gap-y-2">
                             {#each resolvedNavItems as item (item.url)}
                                 <li class="text-xs">
                                     {#if onNavClick}
