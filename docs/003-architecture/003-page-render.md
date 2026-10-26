@@ -27,7 +27,7 @@ sequenceDiagram
             W->>DB: loadPublishedPosts(limit 10)
         end
         Note over W,DB: fetchActiveCvDocument is read-only. If hash is missing it reads file_url + .sha256<br/>for display. The hash is written only at CV upload
-        W-->>W: 2 experience, 1 education, 3 newest unpinned posts,<br/>layout projects minus excluded repos (page shows the 2 most recently pushed unpinned)
+        W-->>W: 2 experience, 1 education, 3 posts with pinned ones first,<br/>layout projects minus excluded repos (page shows 2: pinned first, then the most recently pushed)
     else GET /projects
         W-->>W: no page load: the layout's projects and pinnedRepoNames
     else GET /cv

@@ -25,7 +25,7 @@
     import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
     import CvEntryList from '#app/components/CvEntryList.svelte';
     import ProjectCard from '#app/components/ProjectCard.svelte';
-    import { isRepoNew, isRepoPinned, recentlyPushed } from '#app/projectLists.ts';
+    import { homeProjects, isRepoNew, isRepoPinned } from '#app/projectLists.ts';
     import { legacySectionPath } from '#app/siteSections.ts';
 
     let { data } = $props();
@@ -57,7 +57,7 @@
     const pinnedRepoNames = $derived(
         (data.pinnedRepoNames || []).map((n: string) => n.toLowerCase())
     );
-    const recentProjects = $derived(recentlyPushed(projects, pinnedRepoNames, HOME_PROJECT_COUNT));
+    const shownProjects = $derived(homeProjects(projects, pinnedRepoNames, HOME_PROJECT_COUNT));
     const hasCvEntries = $derived(data.experience.length > 0 || data.education.length > 0);
     const siteHost = $derived(page.url.host);
     const showSubscribe = $derived(
@@ -305,14 +305,14 @@
 
                 <div>
                     <h2 class="mb-3 type-section-title sm:mb-4">Recent Projects</h2>
-                    {#if recentProjects.length === 0}
+                    {#if shownProjects.length === 0}
                         <EmptyState
                             icon={FolderOpen}
                             title="No projects yet"
                             description="Check back soon for featured repositories." />
                     {:else}
                         <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
-                            {#each recentProjects as project (project.name)}
+                            {#each shownProjects as project (project.name)}
                                 <ProjectCard
                                     {project}
                                     pinned={isRepoPinned(project, pinnedRepoNames)}

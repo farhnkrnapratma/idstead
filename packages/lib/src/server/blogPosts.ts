@@ -1,4 +1,4 @@
-import type { BlogRepository, PublishedPost } from '@idstead/data';
+import type { BlogRepository, PostListOptions, PublishedPost } from '@idstead/data';
 import { publicPostFields, type PublicPostFields } from '@idstead/domain/blog.ts';
 import { formatReadTime } from '@idstead/domain/formatters.ts';
 import { estimateReadTime } from '@idstead/domain/readTime.ts';
@@ -25,11 +25,11 @@ export async function postReadTime(
 
 export async function loadPublishedPosts(
     fetchFn: typeof fetch,
-    { limit }: { limit?: number } = {}
+    options: Pick<PostListOptions, 'limit' | 'pinnedFirst'> = {}
 ): Promise<BlogPost[]> {
     const { blog } = publicRepositories(fetchFn);
     try {
-        const { posts } = await blog.listPublishedWithStats({ limit });
+        const { posts } = await blog.listPublishedWithStats(options);
         return await Promise.all(
             posts.map(async post => {
                 const fields = publicPostFields(post);
