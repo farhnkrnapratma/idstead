@@ -16,6 +16,7 @@ export function createToken(): string {
 }
 
 import { hashIp, sha256Hex as hashToken } from '@idstead/domain/hash.ts';
+import { formatMailDate } from '@idstead/domain/formatters.ts';
 
 export { hashIp, hashToken };
 
@@ -228,29 +229,75 @@ export function loginAlertEmail(
     };
 }
 
+export type ContactKind = 'message' | 'feedback';
+
+export interface ContactMessage {
+    kind: ContactKind;
+    name: string;
+    email: string;
+    message: string;
+    pageUrl?: string;
+    sentAt: Date;
+    timeZone: string;
+    location?: string | null;
+    client?: string | null;
+    site: string;
+    reference: string;
+}
+
+const CONTACT_TYPES: Record<ContactKind, string> = {
+    message: 'Contact message',
+    feedback: 'Feedback report'
+};
+
+const MAIL_FONT = "ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace";
+
+function singleLine(value: string): string {
+    return value.replace(/[\s\p{Cc}]+/gu, ' ').trim();
+}
+
+function pagePath(pageUrl: string): string {
+    try {
+        return new URL(pageUrl).pathname;
+    } catch {
+        return pageUrl;
+    }
+}
+
 export function contactMessageEmail(
-    subject: string,
-    details: { name: string; email: string; message: string; pageUrl?: string }
+    details: ContactMessage
 ): Pick<OutgoingEmail, 'subject' | 'html' | 'text' | 'replyTo'> {
-    const rows = [
-        ['Name', details.name],
-        ['Email', details.email],
-        ...(details.pageUrl ? [['Page', details.pageUrl]] : [])
-    ];
+    const name = singleLine(details.name);
+    const subject = (
+        details.kind === 'feedback' && details.pageUrl ?
+            `[Feedback] Report on ${singleLine(pagePath(details.pageUrl))} from ${name}`
+        :   `[Contact] Message from ${name}`).slice(0, 200);
+    const headers = [
+        ['From', `${name} <${details.email}>`],
+        ['Date', formatMailDate(details.sentAt, details.timeZone)],
+        ['Time zone', details.timeZone],
+        ['Location', details.location ? `${details.location} (approximate, from IP address)` : ''],
+        ['Client', details.client ?? ''],
+        ['Type', CONTACT_TYPES[details.kind]],
+        ['Site', details.site],
+        ['Page', details.pageUrl ?? ''],
+        ['Reference', details.reference]
+    ].filter(([, value]) => value);
+    const signature = `Reply to this email to answer ${name} directly.`;
     return {
         subject,
         replyTo: details.email,
-        html: shell(
-            `<h1 style="margin:0 0 12px;font-size:20px">${escapeHtml(subject)}</h1>
-<table style="width:100%;border-collapse:collapse;font-size:13px;margin:0 0 20px">${rows
-                .map(
-                    ([label, value]) =>
-                        `<tr><td style="padding:6px 0;color:#6b736d;width:30%">${escapeHtml(label)}</td><td style="padding:6px 0;color:#101411">${escapeHtml(value)}</td></tr>`
-                )
-                .join('')}</table>
-<p style="margin:0;font-size:15px;line-height:1.6;color:#101411;white-space:pre-wrap">${escapeHtml(details.message)}</p>`,
-            'Reply to this email to answer the sender directly.'
-        ),
-        text: `${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}\n\n${details.message}`
+        html: `<!doctype html><html><body style="margin:0;padding:24px;background:#ffffff;color:#1f2328;font-family:${MAIL_FONT};font-size:13px;line-height:1.6">
+<table role="presentation" style="border-collapse:collapse;margin:0 0 16px">${headers
+            .map(
+                ([label, value]) =>
+                    `<tr><td style="padding:0 16px 0 0;color:#6b736d;white-space:nowrap;vertical-align:top">${escapeHtml(label)}:</td><td style="padding:0;word-break:break-word">${escapeHtml(value)}</td></tr>`
+            )
+            .join('')}</table>
+<hr style="border:0;border-top:1px solid #d0d7de;margin:0 0 16px">
+<div style="white-space:pre-wrap;word-break:break-word">${escapeHtml(details.message)}</div>
+<p style="margin:24px 0 0;color:#6b736d;white-space:pre-wrap">-- \n${escapeHtml(signature)}</p>
+</body></html>`,
+        text: `${headers.map(([label, value]) => `${`${label}:`.padEnd(12)}${value}`).join('\n')}\n\n${details.message}\n\n-- \n${signature}`
     };
 }
