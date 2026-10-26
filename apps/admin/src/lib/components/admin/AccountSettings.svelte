@@ -2,6 +2,7 @@
     import { onMount, type Snippet } from 'svelte';
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '../../adminUrl.ts';
+    import { passkeyErrorMessage } from '../../passkeyError.ts';
     import {
         Database,
         Eye,
@@ -257,7 +258,7 @@
             await refresh();
             toastStore.success('Passkey added.');
         } catch (error) {
-            toastStore.error(message(error, 'Passkey could not be added.'));
+            toastStore.error(passkeyErrorMessage(error, 'Passkey could not be added.'));
         } finally {
             passkeyBusy = false;
         }

@@ -9,6 +9,7 @@
     import { getSafeRedirectUrl } from '@idstead/domain';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import { passkeyErrorMessage } from '#app/passkeyError.ts';
     import {
         turnstileWidget,
         executeTurnstile,
@@ -182,9 +183,7 @@
             await supabase.auth.signOut({ scope: 'others' }).catch(() => undefined);
             await continueAfterSignIn();
         } catch (err) {
-            const text = err instanceof Error ? err.message : '';
-            if (!/cancel|abort|NotAllowed/i.test(text))
-                toastStore.error(text || 'Passkey sign-in failed.');
+            toastStore.error(passkeyErrorMessage(err, 'Passkey sign-in failed.'));
         } finally {
             passkeyBusy = false;
             resetTurnstile(turnstileEl);
