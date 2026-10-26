@@ -339,7 +339,7 @@
                     width="full"
                     readingMode={readingModeStore.active}
                     onToggleReadingMode={readingModeStore.toggle}
-                    class="mt-8 w-full pb-0 md:pb-0 lg:pb-20" />
+                    class="mt-8 w-full lg:pb-20" />
             {/if}
         </article>
 
