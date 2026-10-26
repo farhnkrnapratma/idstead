@@ -76,7 +76,7 @@
             {#if onImport}
                 <IconButton
                     ariaLabel="Import a Markdown or MDRS file"
-                    tooltip="Import .md or .mdrs file"
+                    tooltip="Import Markdown file"
                     size="sm"
                     class="editor-control-button"
                     onclick={() => importInput?.click()}>
