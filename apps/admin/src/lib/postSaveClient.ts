@@ -1,3 +1,4 @@
+import { readJson } from './readJson.ts';
 type SavedPost = {
     id: string;
     post_revision: number;
@@ -36,7 +37,7 @@ export async function submitPost(form: FormData, token: string): Promise<SaveRes
             body: form,
             signal: AbortSignal.timeout(120_000)
         });
-        const result = await response.json();
+        const result = await readJson(response);
         if (response.ok && result.success && result.post) return result;
         if ([400, 401, 403, 409, 422].includes(response.status))
             throw new PostSaveError(
@@ -51,7 +52,7 @@ export async function submitPost(form: FormData, token: string): Promise<SaveRes
         signal: AbortSignal.timeout(15_000)
     });
     if (status.ok) {
-        const result = await status.json();
+        const result = await readJson(status);
         if (result.state === 'committed' && result.post) return { ...result, cleanupPending: true };
         if (result.state === 'rejected')
             throw new PostSaveError(
