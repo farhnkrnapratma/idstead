@@ -8,8 +8,11 @@ import {
     contactMessageEmail,
     resendApiKey,
     sendEmail,
-    senderAddress
+    senderAddress,
+    type ContactKind
 } from '#lib/server/subscribers.ts';
+import { isValidTimeZone } from '@idstead/domain/formatters.ts';
+import { describeUserAgent } from '@idstead/domain/userAgent.ts';
 
 const MAX_NAME = 120;
 const MAX_EMAIL = 254;
@@ -18,12 +21,27 @@ const MAX_MESSAGE = 5000;
 
 const EMAIL_RE = /^[^\s@,;<>"'()]+@[^\s@,;<>"'()]+\.[^\s@,;<>"'()]+$/;
 
-type ContactKind = 'message' | 'feedback';
+type RequestGeo = { city?: unknown; country?: unknown; timezone?: unknown };
 
-const SUBJECTS: Record<ContactKind, string> = {
-    message: 'New message from portfolio website!',
-    feedback: 'New feedback report from website!'
-};
+function senderTimeZone(claimed: unknown, geo: RequestGeo | undefined): string {
+    if (typeof claimed === 'string' && isValidTimeZone(claimed)) return claimed;
+    if (typeof geo?.timezone === 'string' && isValidTimeZone(geo.timezone)) return geo.timezone;
+    return 'UTC';
+}
+
+function senderLocation(geo: RequestGeo | undefined): string | null {
+    const city = typeof geo?.city === 'string' ? geo.city.trim().slice(0, 100) : '';
+    const code = typeof geo?.country === 'string' ? geo.country.trim().toUpperCase() : '';
+    let country = '';
+    if (/^[A-Z]{2}$/.test(code)) {
+        try {
+            country = new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code;
+        } catch {
+            country = code;
+        }
+    }
+    return [city, country].filter(Boolean).join(', ') || null;
+}
 
 const NOTIFICATION_KINDS: Record<ContactKind, AdminNotificationKind> = {
     message: 'contact_message',
@@ -123,9 +141,22 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
+    const geo = (request as Request & { cf?: RequestGeo }).cf;
     const delivered = await sendEmail(apiKey, from, {
         to: contactEmail,
-        ...contactMessageEmail(SUBJECTS[kind], { name, email, message, pageUrl })
+        ...contactMessageEmail({
+            kind,
+            name,
+            email,
+            message,
+            pageUrl: kind === 'feedback' ? pageUrl : undefined,
+            sentAt: new Date(),
+            timeZone: senderTimeZone(body?.timeZone, geo),
+            location: senderLocation(geo),
+            client: describeUserAgent(request.headers.get('user-agent')?.slice(0, 500)),
+            site: url.origin,
+            reference: crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+        })
     });
     if (!delivered) {
         return apiError(502, 'CONTACT_DELIVERY_FAILED', 'The message could not be delivered.');

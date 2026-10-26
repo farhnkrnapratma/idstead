@@ -122,3 +122,34 @@ export function formatAbsoluteDate(
         ...(includeYear || !isCurrentYear ? { year: 'numeric' } : {})
     });
 }
+
+export function isValidTimeZone(zone: string): boolean {
+    if (!zone || zone.length > 64 || !/^[A-Za-z0-9_+\-/]+$/.test(zone)) return false;
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: zone });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export function formatMailDate(date: Date, timeZone: string): string {
+    const parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', {
+            timeZone,
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hourCycle: 'h23',
+            timeZoneName: 'longOffset'
+        })
+            .formatToParts(date)
+            .map(part => [part.type, part.value])
+    );
+    const offset = parts.timeZoneName === 'GMT' ? 'GMT+0000' : parts.timeZoneName.replace(':', '');
+    return `${parts.weekday} ${parts.month} ${parts.day}, ${parts.year} ${parts.hour}:${parts.minute}:${parts.second} ${offset}`;
+}

@@ -209,6 +209,7 @@
                     email: formEmail.trim(),
                     url: formUrl.trim(),
                     message: formMessage.trim(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     turnstileToken
                 })
             });

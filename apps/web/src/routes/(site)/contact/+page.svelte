@@ -126,6 +126,7 @@
                     name: formName.trim(),
                     email: formEmail.trim(),
                     message: formMessage.trim(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     turnstileToken
                 })
             });
