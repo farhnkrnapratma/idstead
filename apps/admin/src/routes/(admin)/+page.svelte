@@ -163,7 +163,9 @@
         PillInput,
         splitEscapedCommas,
         FileUploadField,
-        IconButton
+        IconButton,
+        sortMenuGroups,
+        type FilterMenuGroup
     } from '@idstead/ui';
     import { BrandIcon, CommentThread } from '#lib/index.ts';
     import CodeTabs from '@mdrs/dom/CodeTabs.svelte';
@@ -1892,6 +1894,50 @@
         }
         return Array.from(set).sort();
     });
+
+    const POST_STATUS_OPTIONS = [
+        { value: 'all', label: 'All' },
+        { value: 'published', label: 'Published' },
+        { value: 'draft', label: 'Draft' }
+    ];
+    const POST_SORT_FIELDS = [
+        { value: 'date', label: 'Date' },
+        { value: 'title', label: 'Title' },
+        { value: 'status', label: 'Status' },
+        { value: 'views', label: 'Views' },
+        { value: 'comments', label: 'Comments' }
+    ];
+    const togglePostSortDirection = () =>
+        filterStore.setSort(
+            filterStore.sort.field,
+            filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
+        );
+    const postMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Status',
+            mode: 'single',
+            options: POST_STATUS_OPTIONS,
+            selected: [statusFilter],
+            defaultValue: 'all',
+            onSelect: value => filterStore.setSingleFilter('status', value)
+        },
+        {
+            label: 'Tag',
+            mode: 'multi',
+            options: allPostTags.map(t => ({ value: t, label: t })),
+            selected: filterStore.filters['tag'] || [],
+            onSelect: value => filterStore.toggleMultiFilter('tag', value),
+            searchable: true,
+            searchPlaceholder: 'Search tags...'
+        },
+        ...sortMenuGroups({
+            fields: POST_SORT_FIELDS,
+            field: filterStore.sort.field,
+            direction: filterStore.sort.direction,
+            onFieldChange: field => filterStore.setSort(field, filterStore.sort.direction),
+            onDirectionToggle: togglePostSortDirection
+        })
+    ]);
 
     const postCommentCounts = new SvelteMap<string, number>();
 
@@ -3706,6 +3752,8 @@
                 {#if posts.length > 0}
                     <FilterToolbar
                         title="Posts filter"
+                        mobileGroups={postMenuGroups}
+                        onClearFilters={filterStore.clearAllFilters}
                         class="mb-6">
                         {#snippet searchSlot()}
                             <Input
@@ -3728,11 +3776,7 @@
                                 <Dropdown
                                     label="Status"
                                     value={statusFilter}
-                                    options={[
-                                        { value: 'all', label: 'All' },
-                                        { value: 'published', label: 'Published' },
-                                        { value: 'draft', label: 'Draft' }
-                                    ]}
+                                    options={POST_STATUS_OPTIONS}
                                     onChange={val => filterStore.setSingleFilter('status', val)} />
                                 {#if allPostTags.length > 0}
                                     <Dropdown
@@ -3750,20 +3794,10 @@
                             <SortControl
                                 currentField={filterStore.sort.field}
                                 currentDirection={filterStore.sort.direction}
-                                fields={[
-                                    { value: 'date', label: 'Date' },
-                                    { value: 'title', label: 'Title' },
-                                    { value: 'status', label: 'Status' },
-                                    { value: 'views', label: 'Views' },
-                                    { value: 'comments', label: 'Comments' }
-                                ]}
+                                fields={POST_SORT_FIELDS}
                                 onFieldChange={val =>
                                     filterStore.setSort(val, filterStore.sort.direction)}
-                                onDirectionToggle={() =>
-                                    filterStore.setSort(
-                                        filterStore.sort.field,
-                                        filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
-                                    )} />
+                                onDirectionToggle={togglePostSortDirection} />
                         {/snippet}
                     </FilterToolbar>
 

@@ -23,6 +23,10 @@
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import FilterToolbar from '@idstead/ui/components/filter/FilterToolbar.svelte';
     import SortControl from '@idstead/ui/components/filter/SortControl.svelte';
+    import {
+        sortMenuGroups,
+        type FilterMenuGroup
+    } from '@idstead/ui/components/filter/filterMenu.ts';
     import SearchResultCount from '@idstead/ui/components/filter/SearchResultCount.svelte';
     import LoadingState from '@idstead/ui/components/LoadingState.svelte';
     import ErrorState from '@idstead/ui/components/ErrorState.svelte';
@@ -153,6 +157,43 @@
             clearTimeout(debounce);
         };
     });
+
+    function setCategory(value: string) {
+        category = value;
+        filter();
+    }
+
+    function setSortField(value: string) {
+        const selected = activityLogSortFields.find(field => field.value === value);
+        if (!selected) return;
+        sort = selected.value;
+        direction = sort === 'created_at' ? 'desc' : 'asc';
+        filter();
+    }
+
+    function toggleDirection() {
+        direction = direction === 'desc' ? 'asc' : 'desc';
+        filter();
+    }
+
+    const categoryOptions = $derived([{ value: '', label: 'All' }, ...activityCategories]);
+    const menuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Category',
+            mode: 'single',
+            options: categoryOptions,
+            selected: [category],
+            defaultValue: '',
+            onSelect: setCategory
+        },
+        ...sortMenuGroups({
+            fields: [...activityLogSortFields],
+            field: sort,
+            direction,
+            onFieldChange: setSortField,
+            onDirectionToggle: toggleDirection
+        })
+    ]);
 </script>
 
 <Section
@@ -217,7 +258,8 @@
             {#if showDataControls}
                 <FilterToolbar
                     embedded
-                    title="Activity filters">
+                    title="Activity filters"
+                    mobileGroups={menuGroups}>
                     {#snippet searchSlot()}
                         <Input
                             type="search"
@@ -231,30 +273,16 @@
                         <Dropdown
                             label="Category"
                             value={category}
-                            options={[{ value: '', label: 'All' }, ...activityCategories]}
-                            onChange={value => {
-                                category = value;
-                                filter();
-                            }} />
+                            options={categoryOptions}
+                            onChange={setCategory} />
                     {/snippet}
                     {#snippet sortSlot()}
                         <SortControl
                             fields={[...activityLogSortFields]}
                             currentField={sort}
                             currentDirection={direction}
-                            onFieldChange={value => {
-                                const selected = activityLogSortFields.find(
-                                    field => field.value === value
-                                );
-                                if (!selected) return;
-                                sort = selected.value;
-                                direction = sort === 'created_at' ? 'desc' : 'asc';
-                                filter();
-                            }}
-                            onDirectionToggle={() => {
-                                direction = direction === 'desc' ? 'asc' : 'desc';
-                                filter();
-                            }} />
+                            onFieldChange={setSortField}
+                            onDirectionToggle={toggleDirection} />
                     {/snippet}
                 </FilterToolbar>
             {/if}

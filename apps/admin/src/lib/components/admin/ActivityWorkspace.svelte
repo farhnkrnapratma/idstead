@@ -58,6 +58,10 @@
     import FilterToolbar from '@idstead/ui/components/filter/FilterToolbar.svelte';
     import SortControl from '@idstead/ui/components/filter/SortControl.svelte';
     import SearchResultCount from '@idstead/ui/components/filter/SearchResultCount.svelte';
+    import {
+        sortMenuGroups,
+        type FilterMenuGroup
+    } from '@idstead/ui/components/filter/filterMenu.ts';
     import DataTable, { type DataTableColumn } from '@idstead/ui/components/DataTable.svelte';
     import ActionMenu from '@idstead/ui/components/ActionMenu.svelte';
     import Badge from '@idstead/ui/components/Badge.svelte';
@@ -121,6 +125,122 @@
                 { value: 'total', label: 'Response count' },
                 { value: 'helpful', label: 'Helpful percentage' }
             ])
+    ]);
+    const REPORT_CATEGORY_OPTIONS = [
+        { value: '', label: 'All' },
+        ...REPORT_REASONS.map(r => ({ value: r.id, label: r.label }))
+    ];
+    const FEEDBACK_PAGE_OPTIONS = [
+        { value: 'all', label: 'All' },
+        { value: 'article', label: 'Articles' },
+        { value: 'legal', label: 'Legal pages' }
+    ];
+    const READ_STATUS_OPTIONS = [
+        { value: 'all', label: 'All' },
+        { value: 'unread', label: 'Unread' },
+        { value: 'read', label: 'Read' }
+    ];
+    const RESPONSE_OPTIONS = [
+        { value: 'all', label: 'All' },
+        { value: 'yes', label: 'Helpful' },
+        { value: 'no', label: 'Unhelpful' }
+    ];
+    const REPORT_DETAIL_SORT_FIELDS = [
+        { value: 'date', label: 'Date' },
+        { value: 'reason', label: 'Reason' },
+        { value: 'details', label: 'Details' }
+    ];
+    const RESPONSE_SORT_FIELDS = [
+        { value: 'date', label: 'Date' },
+        { value: 'response', label: 'Response' }
+    ];
+    const listSortDirection = $derived(params.get('direction') === 'asc' ? 'asc' : 'desc');
+    const detailSortDirection = $derived(params.get('detailDirection') === 'asc' ? 'asc' : 'desc');
+    const listMenuGroups = $derived<FilterMenuGroup[]>([
+        ...(area === 'reports' ?
+            [
+                {
+                    label: 'Category',
+                    mode: 'single' as const,
+                    options: REPORT_CATEGORY_OPTIONS,
+                    selected: [params.get('reason') ?? ''],
+                    defaultValue: '',
+                    onSelect: (reason: string) => filter({ reason })
+                }
+            ]
+        : area === 'feedback' ?
+            [
+                {
+                    label: 'Page',
+                    mode: 'single' as const,
+                    options: FEEDBACK_PAGE_OPTIONS,
+                    selected: [params.get('type') ?? 'all'],
+                    defaultValue: 'all',
+                    onSelect: (type: string) => filter({ type })
+                }
+            ]
+        :   [
+                {
+                    label: 'Category',
+                    mode: 'single' as const,
+                    options: notificationTypes,
+                    selected: [params.get('type') ?? 'all'],
+                    defaultValue: 'all',
+                    onSelect: (type: string) => filter({ type })
+                },
+                {
+                    label: 'Status',
+                    mode: 'single' as const,
+                    options: READ_STATUS_OPTIONS,
+                    selected: [params.get('read') ?? 'all'],
+                    defaultValue: 'all',
+                    onSelect: (read: string) => filter({ read })
+                }
+            ]),
+        ...sortMenuGroups({
+            fields: sortFields,
+            field: params.get('sort') ?? 'date',
+            direction: listSortDirection,
+            onFieldChange: sort => filter({ sort }),
+            onDirectionToggle: () =>
+                filter({ direction: listSortDirection === 'asc' ? 'desc' : 'asc' })
+        })
+    ]);
+    const toggleDetailDirection = () =>
+        updateDetail({ detailDirection: detailSortDirection === 'asc' ? 'desc' : 'asc' });
+    const reportMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Category',
+            mode: 'single',
+            options: REPORT_CATEGORY_OPTIONS,
+            selected: [params.get('detailReason') ?? ''],
+            defaultValue: '',
+            onSelect: detailReason => updateDetail({ detailReason })
+        },
+        ...sortMenuGroups({
+            fields: REPORT_DETAIL_SORT_FIELDS,
+            field: params.get('detailSort') ?? 'date',
+            direction: detailSortDirection,
+            onFieldChange: detailSort => updateDetail({ detailSort }),
+            onDirectionToggle: toggleDetailDirection
+        })
+    ]);
+    const responseMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Response',
+            mode: 'single',
+            options: RESPONSE_OPTIONS,
+            selected: [params.get('vote') ?? 'all'],
+            defaultValue: 'all',
+            onSelect: vote => updateDetail({ vote })
+        },
+        ...sortMenuGroups({
+            fields: RESPONSE_SORT_FIELDS,
+            field: params.get('detailSort') ?? 'date',
+            direction: detailSortDirection,
+            onFieldChange: detailSort => updateDetail({ detailSort }),
+            onDirectionToggle: toggleDetailDirection
+        })
     ]);
     const readCount = $derived(Math.max(0, inbox.total - inbox.unreadCount));
     function navigate(values: Record<string, string | null>, replace = false) {
@@ -1043,7 +1163,8 @@
 {#snippet listToolbar()}
     <FilterToolbar
         embedded
-        title={`${title} filters`}>
+        title={`${title} filters`}
+        mobileGroups={listMenuGroups}>
         {#snippet searchSlot()}
             <Input
                 type="search"
@@ -1063,20 +1184,13 @@
                 <Dropdown
                     label="Category"
                     value={params.get('reason') ?? ''}
-                    options={[
-                        { value: '', label: 'All' },
-                        ...REPORT_REASONS.map(r => ({ value: r.id, label: r.label }))
-                    ]}
+                    options={REPORT_CATEGORY_OPTIONS}
                     onChange={reason => filter({ reason })} />
             {:else if area === 'feedback'}
                 <Dropdown
                     label="Page"
                     value={params.get('type') ?? 'all'}
-                    options={[
-                        { value: 'all', label: 'All' },
-                        { value: 'article', label: 'Articles' },
-                        { value: 'legal', label: 'Legal pages' }
-                    ]}
+                    options={FEEDBACK_PAGE_OPTIONS}
                     onChange={type => filter({ type })} />
             {:else}
                 <Dropdown
@@ -1087,11 +1201,7 @@
                 <Dropdown
                     label="Status"
                     value={params.get('read') ?? 'all'}
-                    options={[
-                        { value: 'all', label: 'All' },
-                        { value: 'unread', label: 'Unread' },
-                        { value: 'read', label: 'Read' }
-                    ]}
+                    options={READ_STATUS_OPTIONS}
                     onChange={read => filter({ read })} />
             {/if}
         {/snippet}
@@ -1100,10 +1210,10 @@
                 labelPrefix="Sort by"
                 fields={sortFields}
                 currentField={params.get('sort') ?? 'date'}
-                currentDirection={params.get('direction') === 'asc' ? 'asc' : 'desc'}
+                currentDirection={listSortDirection}
                 onFieldChange={sort => filter({ sort })}
                 onDirectionToggle={() =>
-                    filter({ direction: params.get('direction') === 'asc' ? 'desc' : 'asc' })} />
+                    filter({ direction: listSortDirection === 'asc' ? 'desc' : 'asc' })} />
         {/snippet}
     </FilterToolbar>
 {/snippet}
@@ -1121,7 +1231,8 @@
 {#snippet reportsToolbar()}
     <FilterToolbar
         embedded
-        title="Report details filters">
+        title="Report details filters"
+        mobileGroups={reportMenuGroups}>
         {#snippet searchSlot()}
             <Input
                 type="search"
@@ -1142,27 +1253,17 @@
             <Dropdown
                 label="Category"
                 value={params.get('detailReason') ?? ''}
-                options={[
-                    { value: '', label: 'All' },
-                    ...REPORT_REASONS.map(r => ({ value: r.id, label: r.label }))
-                ]}
+                options={REPORT_CATEGORY_OPTIONS}
                 onChange={detailReason => updateDetail({ detailReason })} />
         {/snippet}
 
         {#snippet sortSlot()}
             <SortControl
-                fields={[
-                    { value: 'date', label: 'Date' },
-                    { value: 'reason', label: 'Reason' },
-                    { value: 'details', label: 'Details' }
-                ]}
+                fields={REPORT_DETAIL_SORT_FIELDS}
                 currentField={params.get('detailSort') ?? 'date'}
                 onFieldChange={detailSort => updateDetail({ detailSort })}
-                currentDirection={params.get('detailDirection') === 'asc' ? 'asc' : 'desc'}
-                onDirectionToggle={() =>
-                    updateDetail({
-                        detailDirection: params.get('detailDirection') === 'asc' ? 'desc' : 'asc'
-                    })} />
+                currentDirection={detailSortDirection}
+                onDirectionToggle={toggleDetailDirection} />
         {/snippet}
     </FilterToolbar>
 {/snippet}
@@ -1178,32 +1279,23 @@
 {#snippet feedbackToolbar()}
     <FilterToolbar
         embedded
-        title="Response filter">
+        title="Response filter"
+        mobileGroups={responseMenuGroups}>
         {#snippet filterControlsSlot()}
             <Dropdown
                 label="Response"
                 value={params.get('vote') ?? 'all'}
-                options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'yes', label: 'Helpful' },
-                    { value: 'no', label: 'Unhelpful' }
-                ]}
+                options={RESPONSE_OPTIONS}
                 onChange={vote => updateDetail({ vote })} />
         {/snippet}
 
         {#snippet sortSlot()}
             <SortControl
-                fields={[
-                    { value: 'date', label: 'Date' },
-                    { value: 'response', label: 'Response' }
-                ]}
+                fields={RESPONSE_SORT_FIELDS}
                 currentField={params.get('detailSort') ?? 'date'}
                 onFieldChange={detailSort => updateDetail({ detailSort })}
-                currentDirection={params.get('detailDirection') === 'asc' ? 'asc' : 'desc'}
-                onDirectionToggle={() =>
-                    updateDetail({
-                        detailDirection: params.get('detailDirection') === 'asc' ? 'desc' : 'asc'
-                    })} />
+                currentDirection={detailSortDirection}
+                onDirectionToggle={toggleDetailDirection} />
         {/snippet}
     </FilterToolbar>
 {/snippet}

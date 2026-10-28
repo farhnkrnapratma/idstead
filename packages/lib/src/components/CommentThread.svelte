@@ -40,6 +40,10 @@
     import FilterToolbar from '@idstead/ui/components/filter/FilterToolbar.svelte';
     import SortControl from '@idstead/ui/components/filter/SortControl.svelte';
     import SearchResultCount from '@idstead/ui/components/filter/SearchResultCount.svelte';
+    import {
+        sortMenuGroups,
+        type FilterMenuGroup
+    } from '@idstead/ui/components/filter/filterMenu.ts';
     import type { Snippet } from 'svelte';
     import { SvelteMap, SvelteSet } from 'svelte/reactivity';
     import {
@@ -187,6 +191,24 @@
         { value: 'replies', label: 'Replies' },
         { value: 'author', label: 'Name' }
     ];
+    const commentMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Show',
+            mode: 'single',
+            options: filterOptions,
+            selected: [filter],
+            defaultValue: 'all',
+            onSelect: value => updateControls({ filter: value as CommentFilter })
+        },
+        ...sortMenuGroups({
+            fields: sortFields,
+            field: sortField,
+            direction,
+            onFieldChange: value => updateControls({ sort: value as CommentSort }),
+            onDirectionToggle: () =>
+                updateControls({ direction: direction === 'asc' ? 'desc' : 'asc' })
+        })
+    ]);
     const fullTree = $derived(buildCommentTree(comments));
     const commentTree = $derived(
         controls ?
@@ -444,7 +466,10 @@
     {#if controls && comments.length > 0}
         <FilterToolbar
             title="Comment filters"
-            controlSize="sm">
+            controlSize="sm"
+            mobileGroups={commentMenuGroups}
+            onClearFilters={() =>
+                updateControls({ query: '', filter: 'all', sort: 'date', direction: 'asc' })}>
             {#snippet searchSlot()}
                 <Input
                     type="search"

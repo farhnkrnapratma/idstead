@@ -47,10 +47,12 @@ export { default as AccessibilitySelect } from './components/filter/Accessibilit
 export { default as FilterChip } from './components/filter/FilterChip.svelte';
 export { default as FilterChipGroup } from './components/filter/FilterChipGroup.svelte';
 export { default as FilterEmptyState } from './components/filter/FilterEmptyState.svelte';
+export { default as FilterMenu } from './components/filter/FilterMenu.svelte';
 export { default as FilterToolbar } from './components/filter/FilterToolbar.svelte';
 export { default as SearchResultCount } from './components/filter/SearchResultCount.svelte';
 export { default as SortControl } from './components/filter/SortControl.svelte';
 export { default as ThemeSelect } from './components/filter/ThemeSelect.svelte';
+export * from './components/filter/filterMenu';
 export * from './components/filter/filterToolbarContext';
 export * from './deviceClass';
 export { default as FormSection } from './layout/FormSection.svelte';
