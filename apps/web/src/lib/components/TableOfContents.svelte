@@ -9,6 +9,7 @@
         ChevronsDownUp
     } from '@lucide/svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
+    import { proportionalScrollTop } from './tocScroll.ts';
 
     interface HeadingItem {
         id: string;
@@ -44,6 +45,7 @@
     const minLevel = $derived(headings.length > 0 ? Math.min(...headings.map(h => h.level)) : 2);
 
     let isPinnedByClick = false;
+    let isTocDrivenByUser = false;
     let unpinTimeout: ReturnType<typeof setTimeout> | undefined;
 
     function unpinAfterSettle() {
@@ -91,7 +93,7 @@
             indicatorHeight = height;
             isIndicatorVisible = true;
 
-            if (scrollContainerEl && !isPinnedByClick) {
+            if (scrollContainerEl && !isPinnedByClick && !isTocDrivenByUser) {
                 const cTop = scrollContainerEl.scrollTop;
                 const cHeight = scrollContainerEl.clientHeight;
 
@@ -186,6 +188,24 @@
 
         scrollContainerEl?.addEventListener('wheel', forwardWheelToArticle, { passive: false });
 
+        const startTocDrag = () => {
+            isTocDrivenByUser = true;
+        };
+        const endTocDrag = () => {
+            isTocDrivenByUser = false;
+        };
+        const followTocWithArticle = () => {
+            if (!isTocDrivenByUser || !scrollContainerEl || !scrollLinkedEl) return;
+            scrollLinkedEl.scrollTop = proportionalScrollTop(scrollContainerEl, scrollLinkedEl);
+        };
+
+        scrollContainerEl?.addEventListener('pointerdown', startTocDrag);
+        scrollContainerEl?.addEventListener('touchstart', startTocDrag, { passive: true });
+        scrollContainerEl?.addEventListener('scroll', followTocWithArticle, { passive: true });
+        window.addEventListener('pointerup', endTocDrag);
+        window.addEventListener('pointercancel', endTocDrag);
+        window.addEventListener('touchend', endTocDrag);
+
         updateScrollspyPosition();
 
         return () => {
@@ -194,6 +214,12 @@
             document.removeEventListener('scroll', handleScroll, { capture: true });
 
             scrollContainerEl?.removeEventListener('wheel', forwardWheelToArticle);
+            scrollContainerEl?.removeEventListener('pointerdown', startTocDrag);
+            scrollContainerEl?.removeEventListener('touchstart', startTocDrag);
+            scrollContainerEl?.removeEventListener('scroll', followTocWithArticle);
+            window.removeEventListener('pointerup', endTocDrag);
+            window.removeEventListener('pointercancel', endTocDrag);
+            window.removeEventListener('touchend', endTocDrag);
 
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
