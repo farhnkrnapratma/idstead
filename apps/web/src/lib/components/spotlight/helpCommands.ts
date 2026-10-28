@@ -30,6 +30,7 @@ import {
     Quote,
     MessageSquareWarning,
     ScrollText,
+    BotMessageSquare,
     ShieldUser,
     Lock,
     AtSign,
@@ -60,6 +61,7 @@ const helpCommandCategories: HelpCategory[] = [
                     'terms',
                     'privacy',
                     'security',
+                    'ai-disclosure',
                     'feedback',
                     'feed',
                     'api',
@@ -298,6 +300,14 @@ const helpCommandCategories: HelpCategory[] = [
                 validArgs: [],
                 actionQuery: '/terms',
                 icon: ScrollText
+            },
+            {
+                command: '/ai-disclosure',
+                argHint: '',
+                description: 'Read how this site uses AI.',
+                validArgs: [],
+                actionQuery: '/ai-disclosure',
+                icon: BotMessageSquare
             },
             {
                 command: '/mailing',

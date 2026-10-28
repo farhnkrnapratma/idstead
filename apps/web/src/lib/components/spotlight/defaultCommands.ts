@@ -35,6 +35,7 @@ import {
     Quote,
     MessageSquareWarning,
     ScrollText,
+    BotMessageSquare,
     ShieldUser,
     Lock,
     AtSign,
@@ -128,6 +129,15 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             url: '/security',
             icon: Lock,
             badge: 'Security'
+        },
+        {
+            id: 'cmd-ai-disclosure',
+            category: 'pages',
+            title: '/ai-disclosure',
+            subtitle: 'Read how this site uses AI.',
+            url: '/ai-disclosure',
+            icon: BotMessageSquare,
+            badge: 'Legal'
         },
         {
             id: 'cmd-feedback',

@@ -30,7 +30,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 
 ### Pages
 
-`/`, `/projects`, `/blog`, `/blog/[slug]`, `/cv`, `/funding`, `/contact`, `/feedback`, `/privacy`, `/terms`, `/security`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `GET /unsubscribe?token=` only stores the token in a short-lived httpOnly cookie and shows a confirm button; the page's default form action (`POST /unsubscribe`) unsubscribes. `/privacy`, `/terms` and `/security` answer 404 while their `db_legals` row is missing or empty, and the root layout returns the published ones as `legalPages`, so the footer, consent notices, Spotlight, keyboard shortcuts and the sitemap leave the others out. `/home` redirects 308 to `/`; the homepage replaces a legacy `/#section` URL with the matching page.
+`/`, `/projects`, `/blog`, `/blog/[slug]`, `/cv`, `/funding`, `/contact`, `/feedback`, `/privacy`, `/terms`, `/security`, `/ai-disclosure`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `GET /unsubscribe?token=` only stores the token in a short-lived httpOnly cookie and shows a confirm button; the page's default form action (`POST /unsubscribe`) unsubscribes. The legal pages answer 404 while their `db_legals` row is missing or empty, and the root layout returns the published ones as `legalPages`, so the footer, consent notices, Spotlight, keyboard shortcuts and the sitemap leave the others out. `/home` redirects 308 to `/`; the homepage replaces a legacy `/#section` URL with the matching page.
 
 ### Files and feeds (GET)
 

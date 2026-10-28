@@ -1,8 +1,9 @@
+import type { LegalSlug } from '@idstead/domain/legal.ts';
 import type { PublishedPost } from './blog';
 
 export type FeedbackVote = 'yes' | 'no';
 
-export type LegalPageId = 'privacy' | 'security' | 'terms';
+export type LegalPageId = LegalSlug;
 
 export type FeedbackTarget =
     { type: 'article'; post: PublishedPost } | { type: 'legal'; page: LegalPageId };

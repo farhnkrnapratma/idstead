@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { resolveInstanceConfig } from '../packages/domain/src/instance.ts';
+import { existsSync } from 'node:fs';
+import { LEGAL_SLUGS as SITE_LEGAL_SLUGS } from '../packages/domain/src/legal.ts';
 import {
+    LEGAL_SLUGS,
     SetupAnswersError,
     instanceSource,
     legalTemplate,
@@ -126,6 +129,14 @@ describe('content helpers', () => {
             title: 'Terms',
             content: 'No heading'
         });
+    });
+
+    test('seeds every legal page the site serves from a template', () => {
+        expect([...LEGAL_SLUGS].sort()).toEqual([...SITE_LEGAL_SLUGS].sort());
+        for (const slug of LEGAL_SLUGS)
+            expect(existsSync(new URL(`../templates/legal/${slug}.md`, import.meta.url))).toBe(
+                true
+            );
     });
 
     test('temporaryPassword meets the admin password policy', () => {

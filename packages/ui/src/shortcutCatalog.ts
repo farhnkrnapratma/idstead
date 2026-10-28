@@ -67,6 +67,7 @@ const commandSections: Record<string, ShortcutSection> = {
     '/print': 'sharing',
     '/privacy': 'resources',
     '/terms': 'resources',
+    '/ai-disclosure': 'resources',
     '/security': 'resources',
     '/cookies': 'resources',
     '/rss': 'resources',

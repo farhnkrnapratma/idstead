@@ -1,3 +1,4 @@
+import { isLegalSlug } from '@idstead/domain/legal.ts';
 import { API_VERSIONS, LATEST_API_VERSION, apiUrl, apiVersionUrl } from '#lib/apiConfig.ts';
 import { parseMailingCommand, type MailingAction } from '#lib/mailing.ts';
 import * as publicEnv from '$app/env/public';
@@ -26,6 +27,7 @@ import {
     Quote,
     MessageSquareWarning,
     ScrollText,
+    BotMessageSquare,
     ShieldUser,
     Lock,
     AtSign,
@@ -359,6 +361,14 @@ export function createDynamicCommandItems(
                     badge: 'Security'
                 },
                 {
+                    name: 'ai-disclosure',
+                    title: '/goto ai-disclosure',
+                    subtitle: 'Read how this site uses AI.',
+                    url: '/ai-disclosure',
+                    icon: BotMessageSquare,
+                    badge: 'Legal'
+                },
+                {
                     name: 'feedback',
                     title: '/goto feedback',
                     subtitle: 'Send feedback and report issues.',
@@ -404,7 +414,7 @@ export function createDynamicCommandItems(
             const arg = parts[1] || '';
             const pathname = page?.url?.pathname || '';
             const isBlogPage = pathname.startsWith('/blog/') && pathname.length > 6;
-            const isLegalPage = ['/terms', '/privacy', '/security'].includes(pathname);
+            const isLegalPage = isLegalSlug(pathname.slice(1));
             const currentSlug =
                 isBlogPage ?
                     pathname.replace('/blog/', '').split('/')[0]
