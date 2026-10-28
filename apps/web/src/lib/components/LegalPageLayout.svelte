@@ -10,7 +10,7 @@
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
     import TableOfContents from './TableOfContents.svelte';
     import HelpfulBlock from '../article/HelpfulBlock.svelte';
-    import ContentActions from './ContentActions.svelte';
+    import PageActions from './PageActions.svelte';
     import FooterSection from '../layout/FooterSection.svelte';
     import FeedbackButton from './FeedbackButton.svelte';
     import { Toast, PageMain, ScrollToTopButton, ReadingModeExitButton } from '@idstead/ui';
@@ -238,41 +238,25 @@
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
-        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[25%_50%_25%] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
-        {#if !readingModeStore.active}
-            <aside
-                transition:fade={{ duration: 150 }}
-                class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
-                aria-label="Table of contents">
-                <TableOfContents
-                    title="In this article"
-                    {headings}
-                    scrollLinkedEl={articleEl}
-                    class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
-            </aside>
-        {/if}
-
+        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
-            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
+            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0">
             <ArticleHeader
                 {title}
                 titleClass="text-fg">
                 {#snippet meta()}
-                    <ArticleMeta
-                        layout="single"
-                        {date}
-                        {updatedAt}
-                        {readingTime}
-                        class="mt-2.5 w-full" />
+                    <div class="mt-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                        <ArticleMeta
+                            layout="single"
+                            {date}
+                            {updatedAt}
+                            {readingTime}
+                            class="min-w-0" />
 
-                    {#if !readingModeStore.active}
-                        <div
-                            transition:fade={{ duration: 150 }}
-                            class="w-full lg:hidden">
-                            <ContentActions
-                                class="mt-3 w-full"
+                        {#if !readingModeStore.active}
+                            <PageActions
                                 {slug}
                                 {title}
                                 markdownContent={content}
@@ -280,8 +264,8 @@
                                 viewMarkdownUrl="/{slug}.md"
                                 viewTextUrl="/{slug}.txt"
                                 pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
-                        </div>
-                    {/if}
+                        {/if}
+                    </div>
                 {/snippet}
             </ArticleHeader>
 
@@ -303,7 +287,7 @@
                 {@attach syncCodeBlockPrefs} />
 
             {#if !readingModeStore.active}
-                <div class="mt-8">
+                <div class="mt-8 lg:hidden">
                     <HelpfulBlock
                         title="Help improve this page"
                         subtitle="Was this page helpful to you?"
@@ -328,18 +312,22 @@
         {#if !readingModeStore.active}
             <aside
                 transition:fade={{ duration: 150 }}
-                class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
-                aria-label="Article actions">
-                <ContentActions
+                class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:py-8 lg:pr-6 lg:pl-2"
+                aria-label="Table of contents and feedback">
+                <TableOfContents
+                    title="In this article"
+                    {headings}
+                    scrollLinkedEl={articleEl}
+                    class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+                <HelpfulBlock
                     variant="sidebar"
-                    class="w-full shrink-0"
-                    {slug}
-                    {title}
-                    markdownContent={content}
-                    showCopyUrl={false}
-                    viewMarkdownUrl="/{slug}.md"
-                    viewTextUrl="/{slug}.txt"
-                    pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
+                    shareLabel="Share this page"
+                    class="mt-6 shrink-0 border-t border-line-subtle pt-6"
+                    voted={feedback.voted}
+                    pending={feedback.pending}
+                    error={feedback.error}
+                    onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
+                    onFeedbackClick={() => goto('/feedback')} />
             </aside>
         {/if}
     </div>
@@ -347,13 +335,13 @@
 
 <FeedbackButton
     show={!readingModeStore.active}
-    class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+(2.5vw-0.75rem)/2)] lg:z-40 lg:block lg:-translate-x-1/2" />
+    class="hidden lg:fixed lg:bottom-6 lg:left-6 lg:z-40 lg:block" />
 
 <ScrollToTopButton
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
     progress={articleScrollProgress}
-    class="hidden lg:fixed lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:bottom-6 lg:z-40 lg:block lg:translate-x-1/2" />
+    class="hidden lg:fixed lg:right-[calc(18rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />
 

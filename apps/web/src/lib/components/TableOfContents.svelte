@@ -10,6 +10,7 @@
     } from '@lucide/svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { proportionalScrollTop } from './tocScroll.ts';
+    import { tocRail, type RailItem } from './tocRail.ts';
 
     interface HeadingItem {
         id: string;
@@ -36,13 +37,32 @@
     }: Props = $props();
 
     let activeHeadingId = $state('');
-    let indicatorTop = $state(0);
-    let indicatorHeight = $state(0);
-    let isIndicatorVisible = $state(false);
     let tocListEl = $state<HTMLUListElement | null>(null);
     let scrollContainerEl = $state<HTMLDivElement | null>(null);
+    let railItems = $state<RailItem[]>([]);
 
     const minLevel = $derived(headings.length > 0 ? Math.min(...headings.map(h => h.level)) : 2);
+    const depths = $derived(headings.map(h => Math.max(0, h.level - minLevel)));
+    const rail = $derived(tocRail(railItems));
+    const activeIndex = $derived(headings.findIndex(h => h.id === activeHeadingId));
+    const activeSegment = $derived(activeIndex >= 0 ? rail.segments[activeIndex] : undefined);
+
+    function measureRail(list: HTMLUListElement) {
+        const levels = depths;
+        const measure = () => {
+            railItems = [...list.querySelectorAll<HTMLElement>('a[data-toc-link]')].map(
+                (link, index) => ({
+                    top: link.offsetTop,
+                    height: link.offsetHeight,
+                    depth: levels[index] ?? 0
+                })
+            );
+        };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(list);
+        return () => observer.disconnect();
+    }
 
     let isPinnedByClick = false;
     let isTocDrivenByUser = false;
@@ -71,10 +91,10 @@
 
         void goto(`#${id}`, { shallow: true });
         activeHeadingId = id;
-        updateIndicatorPos(id, undefined, undefined, true);
+        revealActiveLink(id, undefined, undefined, true);
     }
 
-    function updateIndicatorPos(
+    function revealActiveLink(
         id: string,
         forcedTop?: number,
         forcedHeight?: number,
@@ -88,10 +108,6 @@
             const top = forcedTop !== undefined ? forcedTop : activeEl.offsetTop;
 
             const height = forcedHeight !== undefined ? forcedHeight : activeEl.offsetHeight;
-
-            indicatorTop = top;
-            indicatorHeight = height;
-            isIndicatorVisible = true;
 
             if (scrollContainerEl && !isPinnedByClick && !isTocDrivenByUser) {
                 const cTop = scrollContainerEl.scrollTop;
@@ -152,7 +168,6 @@
 
             if (currentIndex === -1) {
                 activeHeadingId = '';
-                isIndicatorVisible = false;
                 return;
             }
 
@@ -163,7 +178,7 @@
 
             activeHeadingId = hCurrent.id;
 
-            updateIndicatorPos(hCurrent.id, lCurrent.top, lCurrent.height);
+            revealActiveLink(hCurrent.id, lCurrent.top, lCurrent.height);
         };
 
         const handleScroll = () => {
@@ -249,57 +264,64 @@
         <ul
             id="toc-list"
             {@attach elementRef<HTMLUListElement>(node => (tocListEl = node))}
-            class="relative flex min-h-full flex-col pl-3"
+            {@attach measureRail}
+            class="relative m-0 flex list-none flex-col p-0"
             role="list">
-            <div
-                class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-0 border-l border-line-subtle transition-none"
-                aria-hidden="true">
-            </div>
-
-            {#if isIndicatorVisible}
-                <div
-                    class="pointer-events-none absolute top-(--indicator-top) left-0 z-20 h-(--indicator-height) w-0 border-l border-accent transition-none"
-                    style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
-                    aria-hidden="true">
-                </div>
-            {/if}
+            <svg
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 size-full overflow-visible"
+                fill="none">
+                <path
+                    d={rail.d}
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    class={cn(
+                        'stroke-fg-accent transition-[stroke-dasharray,stroke-dashoffset,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-opacity',
+                        activeSegment ? 'opacity-100' : 'opacity-0'
+                    )}
+                    style:stroke-dasharray={activeSegment ?
+                        `${activeSegment.length} ${rail.total}`
+                    :   undefined}
+                    style:stroke-dashoffset={activeSegment ? -activeSegment.start : undefined} />
+            </svg>
 
             {#each headings as heading, index (heading.id + '-' + index)}
                 {@const isActive = activeHeadingId === heading.id}
-                {@const depth = Math.max(0, heading.level - minLevel)}
-                {@const isSub = depth > 0}
-                {@const branchWidth = isSub ? 16 + (depth - 1) * 12 : 0}
+                {@const depth = depths[index] ?? 0}
+                {@const previousDepth = index > 0 ? (depths[index - 1] ?? 0) : depth}
 
-                <li class="text-xs">
+                <li>
+                    {#if depth !== previousDepth}
+                        <svg
+                            aria-hidden="true"
+                            class="block h-2 text-line-subtle"
+                            style:margin-left="calc({Math.min(depth, previousDepth)}rem - 0.0625rem)"
+                            style:width="{Math.abs(depth - previousDepth)}rem"
+                            viewBox="0 0 1 1"
+                            preserveAspectRatio="none"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            overflow="visible">
+                            <path
+                                d={depth > previousDepth ?
+                                    'M 0 0 C 0 0.5, 1 0.5, 1 1'
+                                :   'M 1 0 C 1 0.5, 0 0.5, 0 1'}
+                                vector-effect="non-scaling-stroke" />
+                        </svg>
+                    {/if}
                     <a
                         href="#{heading.id}"
+                        data-toc-link
                         onclick={e => {
                             e.preventDefault();
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
-                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-fg-accent {(
-                            isSub
-                        ) ?
-                            'font-normal'
-                        :   'font-medium'} {isActive ? 'bg-accent/10 text-fg-accent'
-                        : isSub ? 'text-fg-secondary hover:bg-surface-hover/30'
-                        : 'text-fg hover:bg-surface-hover/30'}"
-                        style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
-                        {#if isSub}
-                            <span
-                                class="pointer-events-none absolute top-1/2 left-0 h-0 border-t transition-none select-none {(
-                                    isActive
-                                ) ?
-                                    'border-accent'
-                                :   'border-line-subtle'}"
-                                style:width="{branchWidth}px"
-                                aria-hidden="true"></span>
-                        {/if}
-
+                        class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-line-strong hover:text-fg aria-[current=true]:text-fg"
+                        style:margin-left="calc({depth}rem - 0.125rem)">
                         <MdrsHtml
                             as="span"
-                            class="min-w-0 grow"
                             html={formatHeadingText(heading.text)} />
                     </a>
                 </li>
@@ -344,8 +366,8 @@
     {:else}
         <nav
             aria-label="Table of contents"
-            class={cn('flex flex-col rounded-md glass-card p-4 select-none', className)}>
-            <div class="mb-2 shrink-0 text-sm font-normal text-fg select-none">
+            class={cn('flex flex-col select-none', className)}>
+            <div class="mb-2 shrink-0 text-sm font-semibold text-fg select-none">
                 {title}
             </div>
 

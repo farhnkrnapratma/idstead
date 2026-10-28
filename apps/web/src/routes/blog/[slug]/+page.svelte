@@ -49,7 +49,7 @@
     import { postCard, postCardMeta } from '#app/contentCards.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import TableOfContents from '#app/components/TableOfContents.svelte';
-    import ContentActions from '#app/components/ContentActions.svelte';
+    import PageActions from '#app/components/PageActions.svelte';
     import ReportCommentDialog from '#app/components/ReportCommentDialog.svelte';
     import ArticleHeader from '#app/article/ArticleHeader.svelte';
     import ShareDialog from '#app/components/ShareDialog.svelte';
@@ -544,24 +544,11 @@
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
-        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[25%_50%_25%] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
-        {#if !readingModeStore.active}
-            <aside
-                transition:fade={{ duration: 150 }}
-                class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
-                aria-label="Table of contents">
-                <TableOfContents
-                    title="In this article"
-                    {headings}
-                    scrollLinkedEl={articleEl}
-                    class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
-            </aside>
-        {/if}
-
+        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
-            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
+            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0">
             <ArticleHeader
                 title={post.title}
                 titleClass="text-fg"
@@ -725,29 +712,26 @@
                         </div>
                     </div>
 
-                    <ArticleMeta
-                        loading={isNavigatingToBlogPost}
-                        layout="single"
-                        date={post.created_at}
-                        updatedAt={post.updated_at}
-                        readingTime={formatReadTime(post.read_time)}
-                        commentsCount={comments.length}
-                        views={viewCount !== null ? viewCount : undefined}
-                        class="mt-3 w-full" />
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                        <ArticleMeta
+                            loading={isNavigatingToBlogPost}
+                            layout="single"
+                            date={post.created_at}
+                            updatedAt={post.updated_at}
+                            readingTime={formatReadTime(post.read_time)}
+                            commentsCount={comments.length}
+                            views={viewCount !== null ? viewCount : undefined}
+                            class="min-w-0" />
 
-                    {#if !readingModeStore.active}
-                        <div
-                            transition:fade={{ duration: 150 }}
-                            class="w-full lg:hidden">
-                            <ContentActions
-                                class="mt-3 w-full"
+                        {#if !readingModeStore.active}
+                            <PageActions
                                 slug={post.slug}
                                 pageId={post.id}
                                 title={post.title}
                                 viewMarkdownUrl="/blog/{post.slug}.md"
                                 viewTextUrl="/blog/{post.slug}.txt" />
-                        </div>
-                    {/if}
+                        {/if}
+                    </div>
                 {/snippet}
             </ArticleHeader>
 
@@ -772,7 +756,7 @@
 
             {#if !readingModeStore.active}
                 <HelpfulBlock
-                    class="mt-6 sm:mt-8"
+                    class="mt-6 sm:mt-8 lg:hidden"
                     voted={feedback.voted}
                     pending={feedback.pending}
                     error={feedback.error}
@@ -1113,16 +1097,21 @@
         {#if !readingModeStore.active}
             <aside
                 transition:fade={{ duration: 150 }}
-                class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
-                aria-label="Article actions and insights">
-                <ContentActions
+                class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:py-8 lg:pr-6 lg:pl-2"
+                aria-label="Table of contents and feedback">
+                <TableOfContents
+                    title="In this article"
+                    {headings}
+                    scrollLinkedEl={articleEl}
+                    class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+                <HelpfulBlock
                     variant="sidebar"
-                    class="w-full shrink-0"
-                    slug={post.slug}
-                    pageId={post.id}
-                    title={post.title}
-                    viewMarkdownUrl="/blog/{post.slug}.md"
-                    viewTextUrl="/blog/{post.slug}.txt" />
+                    class="mt-6 shrink-0 border-t border-line-subtle pt-6"
+                    voted={feedback.voted}
+                    pending={feedback.pending}
+                    error={feedback.error}
+                    onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
+                    onFeedbackClick={() => (showNoFeedbackDialog = true)} />
             </aside>
         {/if}
     </div>
@@ -1130,13 +1119,13 @@
 
 <FeedbackButton
     show={!readingModeStore.active}
-    class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+(2.5vw-0.75rem)/2)] lg:z-40 lg:block lg:-translate-x-1/2" />
+    class="hidden lg:fixed lg:bottom-6 lg:left-6 lg:z-40 lg:block" />
 
 <ScrollToTopButton
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
     progress={articleScrollProgress}
-    class="hidden lg:fixed lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:bottom-6 lg:z-40 lg:block lg:translate-x-1/2" />
+    class="hidden lg:fixed lg:right-[calc(18rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />
 
