@@ -3,7 +3,7 @@ import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { supabase as publicSupabase } from '#lib/supabase.ts';
-import { logActivity, type ActivityCategory } from '#lib/server/activityLog.ts';
+import { clientAddress, logActivity, type ActivityCategory } from '#lib/server/activityLog.ts';
 import {
     generateCvPdfBuffer,
     type AuthorCvData,
@@ -84,15 +84,6 @@ function fail(message: string, status = 500) {
     return apiError(status, 'CV_REQUEST_FAILED', message);
 }
 
-function safeClientAddress(getClientAddress?: () => string): string | null {
-    if (!getClientAddress) return null;
-    try {
-        return getClientAddress();
-    } catch {
-        return null;
-    }
-}
-
 async function resolveActor(
     req: Request,
     db: ReturnType<typeof getAdminDb>
@@ -103,27 +94,42 @@ async function resolveActor(
     return data.user?.email ?? data.user?.id ?? null;
 }
 
-async function logCvActivity(
+export async function logAdminActivity(
     req: Request,
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
+    entry: {
+        action: string;
+        category: ActivityCategory;
+        entityId?: string | null;
+        summary: string;
+    },
+    getClientAddress?: () => string
+) {
+    await logActivity(
+        {
+            actor: await resolveActor(req, getAdminDb(platform)),
+            ...entry,
+            ip: clientAddress(getClientAddress),
+            ipSalt: ipSalt(platform),
+            userAgent: req.headers.get('user-agent') ?? undefined
+        },
+        dataStores(platform).service?.activityLog
+    );
+}
+
+function logCvActivity(
+    req: Request,
+    platform: unknown,
     action: string,
     entityId: string,
     summary: string,
     getClientAddress?: () => string
 ) {
-    await logActivity(
-        {
-            actor: await resolveActor(req, db),
-            action,
-            category: 'cv' as ActivityCategory,
-            entityId,
-            summary,
-            ip: safeClientAddress(getClientAddress),
-            ipSalt: ipSalt(platform),
-            userAgent: req.headers.get('user-agent') ?? undefined
-        },
-        dataStores(platform).service?.activityLog
+    return logAdminActivity(
+        req,
+        platform,
+        { action, category: 'cv', entityId, summary },
+        getClientAddress
     );
 }
 
@@ -324,7 +330,7 @@ export async function processCvGenerate(
         if (authError) return authError;
 
         const stores = cvStores(platform);
-        const { db, documents } = stores;
+        const { documents } = stores;
 
         let force = false;
         try {
@@ -491,7 +497,6 @@ export async function processCvGenerate(
         await logCvActivity(
             req,
             platform,
-            db,
             'cv.upload',
             filename,
             `Generated CV document v${versionLabel} (${reasons.join(', ')}).`,
@@ -534,7 +539,7 @@ export async function processCvDelete(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
 
-        const { db, documents } = cvStores(platform);
+        const { documents } = cvStores(platform);
         let targetFilename: string | null = null;
         try {
             const body = await req.json();
@@ -564,7 +569,6 @@ export async function processCvDelete(
         await logCvActivity(
             req,
             platform,
-            db,
             'cv.delete',
             filename,
             'Deleted CV document.',
@@ -593,7 +597,7 @@ export async function processCvSignature(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
         const stores = cvStores(platform);
-        const { db, documents, keys } = stores;
+        const { documents, keys } = stores;
         const doc = await documents.active();
         if (!doc) return apiError(404, 'CV_NOT_FOUND', 'No active CV document.');
 
@@ -608,7 +612,6 @@ export async function processCvSignature(
             await logCvActivity(
                 req,
                 platform,
-                db,
                 'cv.signature_delete',
                 doc.filename,
                 'Removed the CV signature.',
@@ -650,7 +653,6 @@ export async function processCvSignature(
         await logCvActivity(
             req,
             platform,
-            db,
             'cv.signature_upload',
             doc.filename,
             `Uploaded a verified CV signature from ${activeKey.fingerprint}.`,
@@ -701,7 +703,7 @@ export async function processOpenPgpKey(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
         const stores = cvStores(platform);
-        const { db, documents, keys } = stores;
+        const { documents, keys } = stores;
         const existing = await keys.active();
         const doc = await documents.active();
 
@@ -723,7 +725,6 @@ export async function processOpenPgpKey(
             await logCvActivity(
                 req,
                 platform,
-                db,
                 'cv.openpgp_key_delete',
                 existing?.fingerprint ?? 'openpgp-key',
                 'Removed the OpenPGP public key.',
@@ -795,7 +796,6 @@ export async function processOpenPgpKey(
         await logCvActivity(
             req,
             platform,
-            db,
             'cv.openpgp_key',
             parsed.fingerprint,
             existing?.fingerprint === parsed.fingerprint ?

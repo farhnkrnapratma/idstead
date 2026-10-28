@@ -2,6 +2,8 @@ import { dataStores } from './data';
 import { getSupabaseAdminClient } from './supabaseAdmin';
 import { apiError } from './apiError';
 import { blogAdmin } from './blogPostAuth';
+import { clientAddress, logActivity } from './activityLog';
+import { ipSalt } from './ipSalt';
 import { ActivityInputError, activityJson, activityUuid } from './activityInput';
 import { REPORT_REASON_IDS } from '#lib/reportReasons.ts';
 import { ADMIN_WORKSPACE_PAGE_SIZE } from '#lib/adminWorkspace.ts';
@@ -142,11 +144,13 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
 export async function adminWorkspace({
     request,
     url,
-    platform
+    platform,
+    getClientAddress
 }: {
     request: Request;
     url: URL;
     platform: unknown;
+    getClientAddress?: () => string;
 }) {
     const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
@@ -168,7 +172,21 @@ export async function adminWorkspace({
         if (request.method === 'POST') {
             const body = await activityJson(request);
             if (body.action === 'delete_comment') {
-                const result = await store.deleteComment(activityUuid(body.id));
+                const commentId = activityUuid(body.id);
+                const result = await store.deleteComment(commentId);
+                await logActivity(
+                    {
+                        actor: auth.actor,
+                        action: 'blog.comment_delete',
+                        category: 'blog',
+                        entityId: commentId,
+                        summary: 'Deleted a comment.',
+                        ip: clientAddress(getClientAddress),
+                        ipSalt: ipSalt(platform),
+                        userAgent: request.headers.get('user-agent')
+                    },
+                    service.activityLog
+                );
                 return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
             }
 

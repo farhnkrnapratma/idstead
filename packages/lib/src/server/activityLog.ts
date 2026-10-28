@@ -15,6 +15,15 @@ export interface LogActivityInput {
     userAgent?: string | null;
 }
 
+export function clientAddress(getClientAddress?: () => string): string | null {
+    if (!getClientAddress) return null;
+    try {
+        return getClientAddress() || null;
+    } catch {
+        return null;
+    }
+}
+
 export async function logActivity(
     input: LogActivityInput,
     log: ActivityLog | null | undefined

@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { logAdminActivity, requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -8,7 +8,7 @@ import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const POST: RequestHandler = async ({ request, url, platform }) => {
+export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
         return apiError(
             403,
@@ -85,5 +85,16 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'parentId must be a comment on the same post.'
         );
 
+    await logAdminActivity(
+        request,
+        platform,
+        {
+            action: 'blog.comment_reply',
+            category: 'blog',
+            entityId: parentId,
+            summary: 'Replied to a comment.'
+        },
+        getClientAddress
+    );
     return Response.json({ comment: result.comment }, { status: 201 });
 };

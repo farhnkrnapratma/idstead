@@ -4,10 +4,12 @@ import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
+import { clientAddress, logActivity } from '#lib/server/activityLog.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const POST: RequestHandler = async ({ request, url, platform }) => {
+export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
     if (!db || !service)
@@ -58,6 +60,19 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'Publish the post before notifying subscribers.'
         );
 
+    await logActivity(
+        {
+            actor: auth.actor,
+            action: 'blog.notify',
+            category: 'blog',
+            entityId: postId,
+            summary: `Sent a post to ${result.sent} ${result.sent === 1 ? 'subscriber' : 'subscribers'}.`,
+            ip: clientAddress(getClientAddress),
+            ipSalt: ipSalt(platform),
+            userAgent: request.headers.get('user-agent')
+        },
+        service.activityLog
+    );
     return Response.json(
         { sent: result.sent, reason: result.reason ?? null },
         { headers: { 'Cache-Control': 'no-store' } }

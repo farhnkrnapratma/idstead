@@ -40,6 +40,8 @@ R2 is bound as `ASSET_BUCKET` (the `assetBucket` from `idstead.jsonc`) on web, a
 
 The [setup script](../001-getting-started/001-setup-script.md) creates the bucket and queues, the admin account and the Worker secrets, and lists the dashboard steps it cannot do under [After setup](../001-getting-started/README.md#after-setup).
 
+Keep the zone's **Remove visitor IP headers** Managed Transform (Rules > Settings) turned off. It strips `CF-Connecting-IP` before requests reach the Workers, and `getClientAddress()` reads that header. Without it, the activity log records no IPs, page feedback is rejected, and every visitor shares one rate limit, login lockout and view-count identity.
+
 ## Database migrations
 
 - Files live in `packages/data/d1/migrations/`. Apply them with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web` (its `wrangler.jsonc` names the migrations directory); the setup script does this for a new instance.

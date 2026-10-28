@@ -14,23 +14,15 @@ import {
     sendEmail,
     senderAddress
 } from '#lib/server/subscribers.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
+import { clientAddress, logActivity } from '#lib/server/activityLog.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
-function getClientIp(getClientAddress: () => string) {
-    try {
-        return getClientAddress() || '127.0.0.1';
-    } catch {
-        return '127.0.0.1';
-    }
-}
-
 async function sendLoginAlert(
     to: string,
     request: Request,
-    clientIp: string,
+    clientIp: string | null,
     platform: unknown,
     url: URL,
     mfaRequired: boolean
@@ -49,7 +41,7 @@ async function sendLoginAlert(
         ...loginAlertEmail(profile?.name?.trim() || url.hostname, {
             when: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
             userAgent: (request.headers.get('user-agent') ?? '').slice(0, 200),
-            ipHash: salt ? (await hashIp(clientIp, salt)).slice(0, 16) : 'unavailable',
+            ipHash: salt && clientIp ? (await hashIp(clientIp, salt)).slice(0, 16) : 'unavailable',
             mfa: mfaRequired
         })
     });
@@ -66,13 +58,14 @@ export const POST: RequestHandler = async ({
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     }
 
-    const clientIp = getClientIp(getClientAddress);
+    const clientIp = clientAddress(getClientAddress);
+    const lockoutIp = clientIp ?? '127.0.0.1';
     const salt = ipSalt(platform);
     const service = dataStores(platform).service;
     const lockoutStore = service?.lockout ?? null;
     const userAgent = request.headers.get('user-agent') ?? undefined;
 
-    const lockout = await checkLoginLockout(lockoutStore, salt, `ip:${clientIp}`);
+    const lockout = await checkLoginLockout(lockoutStore, salt, `ip:${lockoutIp}`);
     if (!lockout.allowed) {
         await logActivity(
             {
@@ -113,7 +106,7 @@ export const POST: RequestHandler = async ({
         );
     }
 
-    const emailKey = `email-ip:${email.toLowerCase()}|${clientIp}`;
+    const emailKey = `email-ip:${email.toLowerCase()}|${lockoutIp}`;
     const emailLockout = await checkLoginLockout(lockoutStore, salt, emailKey);
     if (!emailLockout.allowed)
         return apiError(
@@ -124,7 +117,7 @@ export const POST: RequestHandler = async ({
         );
 
     const rejectTurnstile = async () => {
-        await recordFailedLogin(lockoutStore, salt, `ip:${clientIp}`);
+        await recordFailedLogin(lockoutStore, salt, `ip:${lockoutIp}`);
         await logActivity(
             {
                 actor: email,
@@ -152,7 +145,7 @@ export const POST: RequestHandler = async ({
     if (error || !data.session) {
         if (error && error.code !== 'invalid_credentials')
             console.error('Admin login rejected by Supabase:', error.code, error.message);
-        await recordFailedLogin(lockoutStore, salt, `ip:${clientIp}`, emailKey);
+        await recordFailedLogin(lockoutStore, salt, `ip:${lockoutIp}`, emailKey);
         await logActivity(
             {
                 actor: email,
@@ -168,7 +161,7 @@ export const POST: RequestHandler = async ({
         return apiError(401, 'ADMIN_LOGIN_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
 
-    await clearLoginAttempts(lockoutStore, salt, `ip:${clientIp}`, emailKey);
+    await clearLoginAttempts(lockoutStore, salt, `ip:${lockoutIp}`, emailKey);
     await logActivity(
         {
             actor: data.user?.email ?? email,
