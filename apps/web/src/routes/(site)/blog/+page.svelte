@@ -5,7 +5,9 @@
     import { page } from '$app/state';
     import { Rss, Quote } from '@lucide/svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
-    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import ContentCard from '#app/components/ContentCard.svelte';
+    import ArticleMeta from '#lib/article/ArticleMeta.svelte';
+    import { postCard, postCardMeta } from '#app/contentCards.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import {
         Button,
@@ -294,10 +296,14 @@
                         use:staggerChildren
                         class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
                         {#each visiblePosts as post (post.id)}
-                            <BlogPostCard
-                                {post}
+                            <ContentCard
+                                {...postCard(post, { banner: true })}
                                 headingTag="h2"
-                                tagItem={filterableTag} />
+                                tagItem={filterableTag}>
+                                {#snippet meta()}
+                                    <ArticleMeta {...postCardMeta(post)} />
+                                {/snippet}
+                            </ContentCard>
                         {/each}
                     </div>
                     <div class="mt-6">
