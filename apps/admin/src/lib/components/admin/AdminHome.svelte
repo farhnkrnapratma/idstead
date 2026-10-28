@@ -2,7 +2,7 @@
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
-    import * as publicEnv from '$app/env/public';
+    import { publicHref, publicSiteUrl } from '#app/publicSite.ts';
     import { analyticsPeriod, browserTimeZone, zonedMidnight } from '../../adminAnalytics.ts';
     import {
         Eye,
@@ -43,17 +43,7 @@
     import ViewsChart from './ViewsChart.svelte';
     import type { ViewsRange } from '#lib/components/admin/viewsRange.ts';
 
-    const publicSiteUrl = $derived(
-        (
-            (page.data as { author?: { siteUrl?: string } })?.author?.siteUrl
-            || publicEnv.PUBLIC_SITE_URL
-            || ''
-        ).replace(/\/$/, '')
-    );
-
-    function publicHref(href: string) {
-        return href.startsWith('/') ? `${publicSiteUrl}${href}` : href;
-    }
+    const siteUrl = $derived(publicSiteUrl(page.data));
     let {
         onNavigate,
         onPublished
@@ -360,7 +350,7 @@
                         <Button
                             type="ghost"
                             size="xs"
-                            href={publicHref(String(row.href))}
+                            href={publicHref(siteUrl, String(row.href))}
                             target="_blank"
                             rel="noopener noreferrer">
                             View {String(row.href).startsWith('/blog/') ? 'article' : 'page'}

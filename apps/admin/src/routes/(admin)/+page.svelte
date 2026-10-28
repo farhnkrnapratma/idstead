@@ -32,6 +32,7 @@
     import { avatarSeed, type BannerInput } from '#app/identityFallbackLayout.ts';
     import * as publicEnv from '$app/env/public';
     import { page } from '$app/state';
+    import { publicSiteUrl as siteUrlFor } from '#app/publicSite.ts';
     import { refreshAll } from '$app/navigation';
     import { supabase } from '#lib/supabase.ts';
     import {
@@ -193,13 +194,7 @@
     } from '@idstead/domain/openpgpKey.ts';
 
     const hasSavedProfile = $derived(Boolean((page.data as { author?: unknown })?.author));
-    const publicSiteUrl = $derived(
-        (
-            (page.data as { author?: { siteUrl?: string } })?.author?.siteUrl
-            || publicEnv.PUBLIC_SITE_URL
-            || ''
-        ).replace(/\/$/, '')
-    );
+    const publicSiteUrl = $derived(siteUrlFor(page.data));
 
     interface AdminPost {
         id: string;
