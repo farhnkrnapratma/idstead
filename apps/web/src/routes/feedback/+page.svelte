@@ -22,12 +22,10 @@
         Input,
         Textarea,
         Button,
-        SkipLink,
         PageMain,
         PageContainer,
         toastStore
     } from '@idstead/ui';
-    import SiteNav from '#app/components/SiteNav.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import { EmptyState, Section } from '@idstead/ui';
@@ -39,7 +37,6 @@
     } from '#lib/utils/turnstile.ts';
 
     let pageAuthor = $derived((page?.data as any)?.author);
-    let pageProjects = $derived((page?.data as any)?.projects ?? []);
     let authorName = $derived(pageAuthor?.name || '');
     let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
     let siteUrl = $derived(((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, ''));
@@ -302,10 +299,6 @@
         name="twitter:image"
         content={ogImage} />
 </svelte:head>
-
-<SkipLink />
-
-<SiteNav projects={pageProjects} />
 
 <PageMain variant="site">
     <Section

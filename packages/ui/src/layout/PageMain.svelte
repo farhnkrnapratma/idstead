@@ -15,9 +15,9 @@
         reading ?
             'min-h-screen pt-4 sm:pt-6'
         :   cn(
-                'min-h-[calc(100vh-4.25rem)] sm:min-h-[calc(100vh-5.25rem)]',
+                'min-h-[calc(100vh-3.5rem)]',
                 variant === 'article'
-                    && 'overscroll-none lg:h-[calc(100dvh-5.25rem)] lg:min-h-0 lg:overflow-clip'
+                    && 'overscroll-none lg:h-[calc(100dvh-3.5rem)] lg:min-h-0 lg:overflow-clip'
             )
     );
 </script>

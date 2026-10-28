@@ -21,6 +21,7 @@ export { default as IconButton } from './components/IconButton.svelte';
 export { default as ImageWithSkeleton } from './components/ImageWithSkeleton.svelte';
 export { default as Input } from './components/Input.svelte';
 export { default as LoadingState } from './components/LoadingState.svelte';
+export { default as NavMenu } from './components/NavMenu.svelte';
 export { default as Pagination } from './components/Pagination.svelte';
 export { default as PillInput } from './components/PillInput.svelte';
 export { default as ReadingModeExitButton } from './components/ReadingModeExitButton.svelte';

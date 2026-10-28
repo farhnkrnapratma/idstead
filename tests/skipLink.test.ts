@@ -37,26 +37,23 @@ describe('Skip link', () => {
         );
     });
 
-    test('the (site) layout renders the only skip link for its pages', () => {
-        const layout = read(join(root, 'apps/web/src/routes/(site)/+layout.svelte'));
+    test('the root web layout renders the only skip link for every web page', () => {
+        const layout = read(join(root, 'apps/web/src/routes/+layout.svelte'));
         expect((layout.match(/<SkipLink\b/g) ?? []).length).toBe(1);
-        for (const path of svelteFiles('apps/web/src/routes/(site)').filter(path =>
-            path.endsWith('+page.svelte')
-        ))
-            expect({
-                path: relative(root, path),
-                skipLink: read(path).includes('<SkipLink')
-            }).toEqual({ path: relative(root, path), skipLink: false });
-    });
-
-    test('every page with a main target renders exactly one skip link', () => {
         const pages = [
             ...svelteFiles('apps/web/src/routes'),
-            ...svelteFiles('apps/admin/src/routes'),
             join(root, 'apps/web/src/lib/components/LegalPageLayout.svelte')
-        ].filter(path => /\+(page|error)\.svelte$|LegalPageLayout\.svelte$/.test(path));
+        ].filter(path => !path.endsWith('routes/+layout.svelte'));
+        for (const path of pages)
+            expect({ path: relative(root, path), count: skipLinksIn(path) }).toEqual({
+                path: relative(root, path),
+                count: 0
+            });
+    });
 
-        const counts = pages
+    test('every admin page with a main target renders exactly one skip link', () => {
+        const counts = svelteFiles('apps/admin/src/routes')
+            .filter(path => /\+(page|error)\.svelte$/.test(path))
             .filter(path => read(path).includes('id="main"'))
             .map(path => [relative(root, path), skipLinksIn(path)] as const)
             .filter(([path]) => !redirectOnlyPages.includes(path));

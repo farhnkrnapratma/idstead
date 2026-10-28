@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { buttonKey, sectionCommandKey } from '@idstead/ui/shortcuts.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import SpotlightSearch from '../components/SpotlightSearch.svelte';
@@ -10,7 +10,7 @@
     import { type SocialLink } from '#lib/author.ts';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
     import FooterSiteLink from './FooterSiteLink.svelte';
-    import { FOOTER_SITE_LINKS } from './footerLinks';
+    import { COOKIES_ACTION, OTHER_GROUPS, PAGE_LINKS } from '../siteNavigation';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import StatusBadge from '@idstead/ui/components/StatusBadge.svelte';
     import * as publicEnv from '$app/env/public';
@@ -19,34 +19,16 @@
 
     import { page } from '$app/state';
 
-    interface NavItem {
-        label: string;
-        url: string;
-    }
-
     interface Props {
-        navItems?: NavItem[];
         socials?: SocialLink[];
-        onNavClick?: (url: string) => void;
         readingMode?: boolean;
         onToggleReadingMode?: () => void;
         width?: 'standard' | 'full' | 'reading';
         class?: string;
     }
 
-    const defaultNavItems: NavItem[] = [
-        { label: 'Home', url: '/' },
-        { label: 'Projects', url: '/projects' },
-        { label: 'Blog', url: '/blog' },
-        { label: 'CV', url: '/cv' },
-        { label: 'Funding', url: '/funding' },
-        { label: 'Contact', url: '/contact' }
-    ];
-
     let {
-        navItems = [],
         socials = [],
-        onNavClick,
         readingMode = false,
         onToggleReadingMode,
         width = 'standard',
@@ -63,15 +45,22 @@
 
     let copyright = $derived(copyrightLine(pageAuthor?.name, new Date().getFullYear()));
 
-    let resolvedNavItems = $derived(navItems.length > 0 ? navItems : defaultNavItems);
-
     let resolvedSocials = $derived(
         Array.isArray(socials) && socials.length > 0 ? socials
         : pageAuthor?.socialLinks && pageAuthor.socialLinks.length > 0 ? pageAuthor.socialLinks
         : []
     );
 
-    const siteLinks = $derived(FOOTER_SITE_LINKS.filter(item => !isHiddenLegalPath(item.href)));
+    const footerGroups = $derived([
+        { label: 'Pages', items: PAGE_LINKS },
+        ...OTHER_GROUPS.map(group => ({
+            label: group.label,
+            items: [
+                ...group.items.filter(item => !isHiddenLegalPath(item.href)),
+                ...(group.label === 'Legal' ? [COOKIES_ACTION] : [])
+            ]
+        }))
+    ]);
 
     const headingId = $props.id();
 </script>
@@ -84,67 +73,27 @@
     )}>
     <div class="rounded-md glass-card p-3.5 sm:p-6">
         <div class="flex flex-col gap-5 sm:gap-6">
-            <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-10">
-                {#if resolvedNavItems.length > 0}
+            <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 sm:gap-6">
+                {#each footerGroups as group, index (group.label)}
                     <nav
-                        aria-labelledby="{headingId}-navigation"
+                        aria-labelledby="{headingId}-{index}"
                         class="flex min-w-0 flex-col gap-2">
                         <h2
-                            id="{headingId}-navigation"
+                            id="{headingId}-{index}"
                             class="text-xs font-semibold text-fg">
-                            Navigation
+                            {group.label}
                         </h2>
-                        <ul
-                            class="flex flex-col gap-2 text-xs font-normal text-fg-secondary sm:grid sm:auto-cols-fr sm:grid-flow-col sm:grid-rows-3 sm:gap-x-4 sm:gap-y-2">
-                            {#each resolvedNavItems as item (item.url)}
+                        <ul class="flex flex-col gap-2 text-xs font-normal text-fg-secondary">
+                            {#each group.items as item (item.label)}
                                 <li class="text-xs">
-                                    {#if onNavClick}
-                                        <button
-                                            type="button"
-                                            onclick={() => onNavClick(item.url)}
-                                            use:shortcut={{
-                                                combo: sectionCommandKey(item.url),
-                                                label: item.label
-                                            }}
-                                            class="relative cursor-pointer rounded-xs text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-                                            {item.label}
-                                        </button>
-                                    {:else}
-                                        <a
-                                            href={item.url}
-                                            use:shortcut={{
-                                                combo: sectionCommandKey(item.url),
-                                                label: item.label
-                                            }}
-                                            class="relative cursor-pointer rounded-xs text-left text-xs font-normal text-fg-secondary transition-colors hover:text-fg-accent focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-                                            {item.label}
-                                        </a>
-                                    {/if}
+                                    <FooterSiteLink
+                                        {item}
+                                        class="text-xs font-normal text-fg-secondary" />
                                 </li>
                             {/each}
                         </ul>
                     </nav>
-                {/if}
-
-                <nav
-                    aria-labelledby="{headingId}-site"
-                    class="flex min-w-0 flex-col gap-2">
-                    <h2
-                        id="{headingId}-site"
-                        class="text-xs font-semibold text-fg">
-                        Site
-                    </h2>
-                    <ul
-                        class="flex flex-col gap-2 text-xs font-normal text-fg-secondary sm:grid sm:auto-cols-fr sm:grid-flow-col sm:grid-rows-3 sm:gap-x-4 sm:gap-y-2">
-                        {#each siteLinks as item (item.label)}
-                            <li class="text-xs">
-                                <FooterSiteLink
-                                    {item}
-                                    class="text-xs font-normal text-fg-secondary" />
-                            </li>
-                        {/each}
-                    </ul>
-                </nav>
+                {/each}
             </div>
 
             {#if resolvedSocials.length > 0}

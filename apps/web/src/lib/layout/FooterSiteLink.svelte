@@ -1,12 +1,11 @@
 <script lang="ts">
     import { cn } from '@idstead/ui/utils/cn.ts';
-    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { consentStore } from '../stores/consentStore.svelte';
-    import type { FooterSiteLinkItem } from './footerLinks';
+    import type { SiteNavAction, SiteNavLink } from '../siteNavigation';
 
     interface Props {
-        item: FooterSiteLinkItem;
+        item: SiteNavLink | SiteNavAction;
         class?: string;
     }
 
@@ -20,18 +19,18 @@
     );
 </script>
 
-{#if item.action === 'cookies'}
+{#if 'action' in item}
     <button
         type="button"
         onclick={() => consentStore.openCustomizeModal()}
-        use:shortcut={{ combo: buttonKey(item.shortcut), label: item.label }}
+        use:shortcut={{ combo: item.combo, label: item.label }}
         class={linkClass}>
         {item.label}
     </button>
 {:else}
     <a
         href={item.href}
-        use:shortcut={{ combo: buttonKey(item.shortcut), label: item.label }}
+        use:shortcut={{ combo: item.combo, label: item.label }}
         class={linkClass}>
         {item.label}
     </a>
