@@ -135,7 +135,7 @@
                         Site
                     </h2>
                     <ul
-                        class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-fg-secondary">
+                        class="flex flex-col gap-2 text-xs font-normal text-fg-secondary sm:grid sm:auto-cols-fr sm:grid-flow-col sm:grid-rows-3 sm:gap-x-4 sm:gap-y-2">
                         {#each siteLinks as item (item.label)}
                             <li class="text-xs">
                                 <FooterSiteLink
