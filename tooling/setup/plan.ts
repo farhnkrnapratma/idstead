@@ -5,7 +5,7 @@ export type App = (typeof APPS)[number];
 export type Variables = Record<string, string | undefined>;
 export type WorkerKeys = Record<App, { keys: string[]; required: string[] }>;
 
-export const LEGAL_SLUGS = ['privacy', 'terms', 'security'] as const;
+export const LEGAL_SLUGS = ['privacy', 'terms', 'security', 'ai-disclosure'] as const;
 
 export const CORE_VARIABLES = [
     'PUBLIC_SUPABASE_URL',

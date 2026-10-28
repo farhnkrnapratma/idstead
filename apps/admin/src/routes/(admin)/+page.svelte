@@ -58,6 +58,7 @@
         Lock,
         ShieldUser,
         ScrollText,
+        Bot,
         Image as ImageIcon,
         Trash,
         ArrowUp,
@@ -128,6 +129,7 @@
     const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
     const loadMarkdownEditor = () => import('@mdrs/editor');
     import { formatBadgeCount } from '@idstead/domain/formatters.ts';
+    import { LEGAL_SLUGS, isLegalSlug, type LegalSlug } from '@idstead/domain/legal.ts';
     import {
         Button,
         Badge,
@@ -398,6 +400,7 @@
         'privacy',
         'security',
         'terms',
+        'ai-disclosure',
         'account'
     ] as const;
 
@@ -595,7 +598,7 @@
         navigateAdmin(url);
         void tick().then(() => document.getElementById('main')?.focus({ preventScroll: true }));
         void ensureTabData(id);
-        if (id === 'privacy' || id === 'security' || id === 'terms') {
+        if (isLegalSlug(id)) {
             checkLegalDrafts();
         }
     }
@@ -693,23 +696,20 @@
     let legalPagesData = $state<Record<string, { title: string; content: string }>>({
         privacy: { title: 'Privacy Policy', content: '' },
         security: { title: 'Security Policy', content: '' },
-        terms: { title: 'Terms of Service', content: '' }
+        terms: { title: 'Terms of Service', content: '' },
+        'ai-disclosure': { title: 'AI Disclosure', content: '' }
     });
-    let initialLegalPagesContent = $state<Record<string, string>>({
-        privacy: '',
-        security: '',
-        terms: ''
-    });
-    let legalDrafts = $state<Record<string, { content: string; timestamp?: number } | null>>({
-        privacy: null,
-        security: null,
-        terms: null
-    });
+    let initialLegalPagesContent = $state<Record<string, string>>(
+        Object.fromEntries(LEGAL_SLUGS.map(slug => [slug, '']))
+    );
+    let legalDrafts = $state<Record<string, { content: string; timestamp?: number } | null>>(
+        Object.fromEntries(LEGAL_SLUGS.map(slug => [slug, null]))
+    );
     let isSavingLegal = $state(false);
     let legalSaveError = $state('');
     let legalFieldErrors = $state<Record<string, string>>({});
     const legalValidation = new FieldValidation();
-    for (const slug of ['privacy', 'security', 'terms'])
+    for (const slug of LEGAL_SLUGS)
         legalValidation.register(slug, {
             value: () => legalPagesData[slug].content,
             baseline: () => initialLegalPagesContent[slug],
@@ -721,16 +721,14 @@
     onDestroy(() => legalValidation.destroy());
 
     const isLegalDirty = $derived.by(() => {
-        const slugs = ['privacy', 'security', 'terms'] as const;
-        return slugs.some(
+        return LEGAL_SLUGS.some(
             slug => (legalPagesData[slug]?.content || '') !== (initialLegalPagesContent[slug] || '')
         );
     });
 
     function checkLegalDrafts() {
         if (typeof window === 'undefined') return;
-        const slugs = ['privacy', 'security', 'terms'] as const;
-        for (const slug of slugs) {
+        for (const slug of LEGAL_SLUGS) {
             const key = `autosave_legal_${slug}`;
             const raw = localStorage.getItem(key);
             if (raw) {
@@ -761,7 +759,7 @@
         }
     }
 
-    function restoreLegalDraft(slug: 'privacy' | 'security' | 'terms') {
+    function restoreLegalDraft(slug: LegalSlug) {
         const draft = legalDrafts[slug];
         if (draft && legalPagesData[slug]) {
             legalPagesData[slug].content = draft.content;
@@ -770,7 +768,7 @@
         }
     }
 
-    function discardLegalDraft(slug: 'privacy' | 'security' | 'terms') {
+    function discardLegalDraft(slug: LegalSlug) {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(`autosave_legal_${slug}`);
         }
@@ -799,7 +797,6 @@
         } catch {}
     }
 
-    type LegalSlug = 'privacy' | 'security' | 'terms';
     let pendingLegalImport = $state<{ slug: LegalSlug; content: string } | null>(null);
 
     async function handleLegalImport(file: File) {
@@ -834,13 +831,10 @@
         toastStore.success('File imported.');
     }
 
-    async function handleSaveLegalPage(
-        targetSlug?: 'privacy' | 'security' | 'terms',
-        e?: SubmitEvent
-    ) {
+    async function handleSaveLegalPage(targetSlug?: LegalSlug, e?: SubmitEvent) {
         if (e) e.preventDefault();
         if (isSavingLegal) return;
-        const slugToSave = targetSlug || (activeAdminTab as 'privacy' | 'security' | 'terms');
+        const slugToSave = targetSlug || (activeAdminTab as LegalSlug);
         if (!slugToSave || !legalPagesData[slugToSave]) return;
         if (!(await legalValidation.submit([slugToSave], !initialLegalPagesContent[slugToSave])))
             return;
@@ -2321,7 +2315,7 @@
         if (['home', 'reports', 'feedback', 'notifications', 'logs'].includes(tab)) return;
         const group =
             tab === 'posts' ? 'posts'
-            : ['privacy', 'security', 'terms'].includes(tab) ? 'legal'
+            : isLegalSlug(tab) ? 'legal'
             : 'supplementary';
         if (
             (group === 'posts' && postsLoaded)
@@ -3379,7 +3373,8 @@
         { id: 'apps', label: 'Connected apps', icon: AppWindow, section: 'profile' },
         { id: 'privacy', label: 'Privacy Policy', icon: ShieldUser, section: 'legal' },
         { id: 'security', label: 'Security Policy', icon: Lock, section: 'legal' },
-        { id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal' }
+        { id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal' },
+        { id: 'ai-disclosure', label: 'AI Disclosure', icon: Bot, section: 'legal' }
     ];
 </script>
 
@@ -3640,8 +3635,7 @@
             if (typeof scroll === 'number') queueMicrotask(() => element.scrollTo({ top: scroll }));
         }}
         class="flex-1 p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
-            ['privacy', 'security', 'terms'].includes(activeAdminTab)
-            || (activeAdminTab === 'posts' && !!editPostParam)
+            isLegalSlug(activeAdminTab) || (activeAdminTab === 'posts' && !!editPostParam)
         ) ?
             'pt-0! pb-0!'
         :   ''}">
@@ -6918,6 +6912,83 @@
                         }}
                         autosaveKey="autosave_legal_terms"
                         placeholder="Write your Terms of Service content in markdown..."
+                        minHeight="500px"
+                        stickyTopClass="top-12 md:top-0"
+                        onImport={handleLegalImport} />
+                {/await}
+            </FormSection>
+        {:else if activeAdminTab === 'ai-disclosure'}
+            <FormSection
+                title="AI Disclosure"
+                titleTag="h1"
+                titleClass="type-page-title"
+                description="Edit and publish how your website uses AI."
+                onsubmit={e => handleSaveLegalPage('ai-disclosure', e)}
+                class="py-4 sm:py-6"
+                bare>
+                {#snippet headerActions()}
+                    <Button
+                        htmlType="submit"
+                        type="primary"
+                        size="md"
+                        responsiveIconOnly
+                        aria-label="Save AI Disclosure"
+                        title="Save AI Disclosure"
+                        isLoading={isSavingLegal}
+                        disabled={isSavingLegal}>
+                        {#snippet leading()}
+                            <Save class="size-3.5" />
+                        {/snippet}
+                        Save AI Disclosure
+                    </Button>
+                {/snippet}
+                {#if legalDrafts['ai-disclosure']}
+                    <StatusBanner
+                        variant="warning"
+                        class="mb-4">
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <span
+                                >Autosaved local draft found (different from saved database
+                                version).</span>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <Button
+                                    type="secondary"
+                                    size="sm"
+                                    onclick={() => restoreLegalDraft('ai-disclosure')}>
+                                    Restore draft
+                                </Button>
+                                <Button
+                                    type="ghost"
+                                    size="sm"
+                                    onclick={() => discardLegalDraft('ai-disclosure')}>
+                                    Discard
+                                </Button>
+                            </div>
+                        </div>
+                    </StatusBanner>
+                {/if}
+                {#if legalFieldErrors['ai-disclosure']}<FieldMessage
+                        message={legalFieldErrors['ai-disclosure']} />{/if}
+                {#await loadMarkdownEditor()}
+                    <LoadingState
+                        variant="spinner"
+                        label="Loading editor..." />
+                {:then { MarkdownEditor }}
+                    <MarkdownEditor
+                        render={renderMdrsPreview}
+                        bind:value={
+                            () => legalPagesData['ai-disclosure'].content,
+                            value => {
+                                legalPagesData['ai-disclosure'].content = value;
+                                legalValidation.input('ai-disclosure');
+                            }
+                        }
+                        onblur={() => {
+                            void legalValidation.check('ai-disclosure');
+                        }}
+                        autosaveKey="autosave_legal_ai-disclosure"
+                        placeholder="Write your AI Disclosure content in markdown..."
                         minHeight="500px"
                         stickyTopClass="top-12 md:top-0"
                         onImport={handleLegalImport} />

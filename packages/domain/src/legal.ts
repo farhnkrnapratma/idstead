@@ -1,4 +1,4 @@
-export const LEGAL_SLUGS = ['privacy', 'security', 'terms'] as const;
+export const LEGAL_SLUGS = ['privacy', 'security', 'terms', 'ai-disclosure'] as const;
 
 export type LegalSlug = (typeof LEGAL_SLUGS)[number];
 

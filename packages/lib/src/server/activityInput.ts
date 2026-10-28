@@ -1,3 +1,5 @@
+import { isLegalSlug } from '@idstead/domain/legal.ts';
+
 export class ActivityInputError extends Error {
     public status: number;
 
@@ -48,7 +50,6 @@ export function activityUuid(value: unknown): string {
 }
 export function activityTarget(type: unknown, id: unknown) {
     if (type === 'article') return { type, id: activityUuid(id) } as const;
-    if (type === 'legal' && typeof id === 'string' && ['privacy', 'security', 'terms'].includes(id))
-        return { type, id } as const;
+    if (type === 'legal' && typeof id === 'string' && isLegalSlug(id)) return { type, id } as const;
     throw new ActivityInputError('A valid public page is required.');
 }

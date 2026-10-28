@@ -12,6 +12,7 @@
     import { Toast, ScrollToTopButton } from '@idstead/ui';
     import ShortcutCatalogDialog from '@idstead/ui/components/ShortcutCatalogDialog.svelte';
     import { hiddenLegalPaths } from '#app/legalVisibility.ts';
+    import { isLegalSlug } from '@idstead/domain/legal.ts';
     import ShortcutModeIndicator from '@idstead/ui/components/ShortcutModeIndicator.svelte';
     import { platformStore } from '@idstead/ui/stores/platformStore.svelte.ts';
 
@@ -34,9 +35,7 @@
     );
 
     const isBlogPost = $derived(page.route.id === '/blog/[slug]');
-    const isLegalPage = $derived(
-        page.route.id === '/terms' || page.route.id === '/privacy' || page.route.id === '/security'
-    );
+    const isLegalPage = $derived(isLegalSlug(page.route.id?.slice(1) ?? ''));
     const isArticleLikePage = $derived(isBlogPost || isLegalPage);
     const isPageWithFeedback = $derived(!page.error && page.url.pathname !== '/feedback');
 

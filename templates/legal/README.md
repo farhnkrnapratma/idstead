@@ -1,6 +1,6 @@
 # Legal page templates
 
-Starter texts for the three legal pages every site serves: `/privacy`, `/terms` and `/security`. A site reads these pages from the database (`db_legals`), not from these files; `bun run setup` adds them when a page is missing; otherwise copy a template into the admin portal's legal page editor and adapt it before publishing.
+Starter texts for the legal pages every site serves: `/privacy`, `/terms`, `/security` and `/ai-disclosure`. A site reads these pages from the database (`db_legals`), not from these files; `bun run setup` adds them when a page is missing; otherwise copy a template into the admin portal's legal page editor and adapt it before publishing.
 
 The first `# ` heading of a template is the page title: the setup script stores it as the title and removes it from the content, because the site shows the title above the page. Each template opens with an MDRS `:::define` block that fills in the owner's name, site URL, email and location from the author profile, so those details stay in one place. The rest of the text still describes one particular setup, and you must review all of it:
 

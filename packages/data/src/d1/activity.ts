@@ -1,3 +1,4 @@
+import { isLegalSlug } from '@idstead/domain/legal.ts';
 import type {
     ActivityEntry,
     ActivityLog,
@@ -17,7 +18,6 @@ import { flag, type D1Like, type D1Row } from './client';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IP_HASH = /^[a-f0-9]{64}$/;
-const LEGAL_PAGES = ['privacy', 'security', 'terms'];
 const LOG_SORTS = ['created_at', 'category', 'action', 'actor', 'summary', 'ip'];
 const LOG_CATEGORIES = ['profile', 'cv', 'skills', 'links', 'blog', 'auth', 'security'];
 
@@ -75,11 +75,11 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
                             .first<{ id: string; title: string }>()
                     :   await db
                             .prepare(
-                                `SELECT NULL AS id, title FROM db_legals WHERE slug = ?1 AND slug IN ('privacy', 'security', 'terms') AND length(trim(content)) > 0`
+                                `SELECT NULL AS id, title FROM db_legals WHERE slug = ?1 AND length(trim(content)) > 0`
                             )
                             .bind(targetId)
                             .first<{ id: null; title: string }>();
-                if (!page || (target.type === 'legal' && !LEGAL_PAGES.includes(targetId)))
+                if (!page || (target.type === 'legal' && !isLegalSlug(targetId)))
                     return { status: 'target-not-found' };
                 const eventId = crypto.randomUUID();
                 const now = new Date().toISOString();

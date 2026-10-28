@@ -8,7 +8,7 @@
 
 ## What you get
 
-- **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/cv`, `/funding` and `/contact`, and privacy, terms and security pages.
+- **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/cv`, `/funding` and `/contact`, and privacy, terms, security and AI disclosure pages.
 - **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
 - **Machine-readable twins**: every post and legal page also exists as `.md` and `.txt`, next to an Atom feed, a sitemap, `llms.txt` and `.well-known` discovery documents.
 - **A public read-only REST API** (`/v1`) for posts, comments, the author profile, CV and search, with an OpenAPI description.

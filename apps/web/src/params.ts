@@ -1,7 +1,7 @@
 import { defineParams } from '@sveltejs/kit/params';
+import { isLegalSlug } from '@idstead/domain/legal.ts';
 
 export const params = defineParams({
-    legal: (param: string) =>
-        param === 'privacy' || param === 'terms' || param === 'security' ? param : undefined,
+    legal: (param: string) => (isLegalSlug(param) ? param : undefined),
     textformat: (param: string) => (param === 'md' || param === 'txt' ? param : undefined)
 });
