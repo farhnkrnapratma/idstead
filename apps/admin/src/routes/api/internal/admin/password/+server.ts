@@ -7,7 +7,8 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { passwordPolicyError } from '@idstead/domain/passwordPolicy.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
+import { clientAddress, logActivity } from '#lib/server/activityLog.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 import {
     checkLoginLockout,
     recordFailedLogin,
@@ -15,7 +16,7 @@ import {
 } from '#lib/server/loginRateLimit.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
-export const POST: RequestHandler = async ({ request, url, platform, fetch }) => {
+export const POST: RequestHandler = async ({ request, url, platform, fetch, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
     if (!db || !service)
@@ -110,7 +111,10 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
                 actor: auth.actor,
                 action: 'auth.password_update',
                 category: 'auth',
-                summary: 'Admin changed their password.'
+                summary: 'Admin changed their password.',
+                ip: clientAddress(getClientAddress),
+                ipSalt: ipSalt(platform),
+                userAgent: request.headers.get('user-agent')
             },
             service.activityLog
         );

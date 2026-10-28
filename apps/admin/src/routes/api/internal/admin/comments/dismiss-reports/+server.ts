@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { logAdminActivity, requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -7,7 +7,7 @@ import { apiError } from '#lib/server/apiError.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const POST: RequestHandler = async ({ request, url, platform }) => {
+export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
         return apiError(
             403,
@@ -47,5 +47,16 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(500, 'DISMISS_REPORTS_FAILED', 'Could not dismiss reports.');
     }
 
+    await logAdminActivity(
+        request,
+        platform,
+        {
+            action: 'blog.reports_dismiss',
+            category: 'blog',
+            entityId: commentId,
+            summary: 'Dismissed the reports on a comment.'
+        },
+        getClientAddress
+    );
     return Response.json({ success: true });
 };
