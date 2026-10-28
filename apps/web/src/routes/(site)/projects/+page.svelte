@@ -18,7 +18,9 @@
         SectionHeader,
         SortControl,
         createFilterSortStore,
-        staggerChildren
+        sortMenuGroups,
+        staggerChildren,
+        type FilterMenuGroup
     } from '@idstead/ui';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
@@ -40,6 +42,14 @@
         defaultSortDir: 'desc'
     });
 
+    const PROJECT_SORT_FIELDS = [
+        { value: 'date', label: 'Updated' },
+        { value: 'name', label: 'Name' },
+        { value: 'language', label: 'Language' },
+        { value: 'stars', label: 'Stars' },
+        { value: 'license', label: 'License' }
+    ];
+
     const allProjectTags = $derived.by(() => {
         const set = new SvelteSet<string>();
         for (const p of projects) {
@@ -49,6 +59,25 @@
         }
         return Array.from(set);
     });
+
+    const projectMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Topics',
+            mode: 'multi',
+            options: allProjectTags.map(t => ({ value: t, label: t })),
+            selected: projectFilterStore.filters['tag'] || [],
+            onSelect: value => projectFilterStore.toggleMultiFilter('tag', value),
+            searchable: true,
+            searchPlaceholder: 'Search topics...'
+        },
+        ...sortMenuGroups({
+            fields: PROJECT_SORT_FIELDS,
+            field: projectFilterStore.sort.field,
+            direction: projectFilterStore.sort.direction,
+            onFieldChange: field => projectFilterStore.setSort(field),
+            onDirectionToggle: () => projectFilterStore.toggleSortDirection()
+        })
+    ]);
 
     const filteredProjectList = $derived.by(() => {
         let list = projects;
@@ -168,7 +197,10 @@
                     title="Projects" />
 
                 <div class="mb-6">
-                    <FilterToolbar title="Projects filter">
+                    <FilterToolbar
+                        title="Projects filter"
+                        mobileGroups={projectMenuGroups}
+                        onClearFilters={() => projectFilterStore.clearAllFilters()}>
                         {#snippet searchSlot()}
                             <Input
                                 type="search"
@@ -205,13 +237,7 @@
 
                         {#snippet sortSlot()}
                             <SortControl
-                                fields={[
-                                    { value: 'date', label: 'Updated' },
-                                    { value: 'name', label: 'Name' },
-                                    { value: 'language', label: 'Language' },
-                                    { value: 'stars', label: 'Stars' },
-                                    { value: 'license', label: 'License' }
-                                ]}
+                                fields={PROJECT_SORT_FIELDS}
                                 currentField={projectFilterStore.sort.field}
                                 currentDirection={projectFilterStore.sort.direction}
                                 onFieldChange={field => projectFilterStore.setSort(field)}

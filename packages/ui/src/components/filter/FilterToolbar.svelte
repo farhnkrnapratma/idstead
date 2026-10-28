@@ -1,6 +1,8 @@
 <script lang="ts">
     import { setContext, type Snippet } from 'svelte';
     import { cn } from '../../utils/cn';
+    import FilterMenu from './FilterMenu.svelte';
+    import type { FilterMenuGroup } from './filterMenu';
     import {
         FILTER_TOOLBAR_CONTROL_SIZE,
         type FilterToolbarControlSize
@@ -15,6 +17,8 @@
         sortSlot?: Snippet;
         chipsSlot?: Snippet;
         countSlot?: Snippet;
+        mobileGroups?: FilterMenuGroup[];
+        onClearFilters?: () => void;
         class?: string;
     }
 
@@ -27,6 +31,8 @@
         sortSlot,
         chipsSlot,
         countSlot,
+        mobileGroups,
+        onClearFilters,
         class: className = ''
     }: Props = $props();
 
@@ -49,12 +55,26 @@
         className
     )}>
     <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center">
-        {#if searchSlot}
-            <div class="min-w-0 flex-1 sm:min-w-20 sm:flex-[1_0_5rem]">
-                {@render searchSlot()}
+        {#if searchSlot || mobileGroups}
+            <div class="flex min-w-0 items-center gap-2 sm:contents">
+                {#if searchSlot}
+                    <div class="min-w-0 flex-1 sm:min-w-20 sm:flex-[1_0_5rem]">
+                        {@render searchSlot()}
+                    </div>
+                {/if}
+                {#if mobileGroups}
+                    <FilterMenu
+                        groups={mobileGroups}
+                        onClear={onClearFilters}
+                        class="ml-auto sm:hidden" />
+                {/if}
             </div>
         {/if}
-        <div class="flex min-w-0 items-center justify-between gap-2 overflow-x-auto sm:contents">
+        <div
+            class={cn(
+                'min-w-0 items-center justify-between gap-2 overflow-x-auto sm:contents',
+                mobileGroups ? 'hidden' : 'flex'
+            )}>
             {#if filterControlsSlot}
                 <div
                     class={cn(
@@ -77,6 +97,8 @@
     {/if}
 
     {#if chipsSlot}
-        {@render chipsSlot()}
+        <div class={mobileGroups ? 'hidden sm:contents' : 'contents'}>
+            {@render chipsSlot()}
+        </div>
     {/if}
 </div>

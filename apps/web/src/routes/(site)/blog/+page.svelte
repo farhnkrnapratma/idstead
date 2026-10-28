@@ -22,7 +22,9 @@
         SortControl,
         Tooltip,
         createFilterSortStore,
-        staggerChildren
+        sortMenuGroups,
+        staggerChildren,
+        type FilterMenuGroup
     } from '@idstead/ui';
     import { Section } from '@idstead/ui';
     import { decodeHtmlEntities } from '@mdrs/core';
@@ -48,11 +50,38 @@
 
     const filters = createFilterSortStore({ defaultSortField: 'date', defaultSortDir: 'desc' });
 
+    const POST_SORT_FIELDS = [
+        { value: 'date', label: 'Date' },
+        { value: 'views', label: 'Views' },
+        { value: 'comments', label: 'Comments' },
+        { value: 'readingTime', label: 'Reading time' },
+        { value: 'title', label: 'Title' }
+    ];
+
     const allTags = $derived.by(() => {
         const set = new SvelteSet<string>();
         for (const post of posts) post.tags?.forEach(tag => set.add(decodeHtmlEntities(tag)));
         return Array.from(set);
     });
+
+    const postMenuGroups = $derived<FilterMenuGroup[]>([
+        {
+            label: 'Tags',
+            mode: 'multi',
+            options: allTags.map(t => ({ value: t, label: t })),
+            selected: filters.filters['tag'] || [],
+            onSelect: value => filters.toggleMultiFilter('tag', value),
+            searchable: true,
+            searchPlaceholder: 'Search tags...'
+        },
+        ...sortMenuGroups({
+            fields: POST_SORT_FIELDS,
+            field: filters.sort.field,
+            direction: filters.sort.direction,
+            onFieldChange: field => filters.setSort(field),
+            onDirectionToggle: () => filters.toggleSortDirection()
+        })
+    ]);
 
     const filteredPosts = $derived.by(() => {
         const query = filters.search.trim().toLowerCase();
@@ -202,7 +231,10 @@
                 </div>
 
                 <div class="mb-6">
-                    <FilterToolbar title="Blog posts filter">
+                    <FilterToolbar
+                        title="Blog posts filter"
+                        mobileGroups={postMenuGroups}
+                        onClearFilters={() => filters.clearAllFilters()}>
                         {#snippet searchSlot()}
                             <Input
                                 type="search"
@@ -236,13 +268,7 @@
 
                         {#snippet sortSlot()}
                             <SortControl
-                                fields={[
-                                    { value: 'date', label: 'Date' },
-                                    { value: 'views', label: 'Views' },
-                                    { value: 'comments', label: 'Comments' },
-                                    { value: 'readingTime', label: 'Reading time' },
-                                    { value: 'title', label: 'Title' }
-                                ]}
+                                fields={POST_SORT_FIELDS}
                                 currentField={filters.sort.field}
                                 currentDirection={filters.sort.direction}
                                 onFieldChange={field => filters.setSort(field)}
