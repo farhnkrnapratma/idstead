@@ -8,8 +8,6 @@ export interface PublicPostFields {
     excerpt: string | null;
     tags: string[];
     collaborators: string[];
-    summary: string | null;
-    tldr: string[];
 }
 
 export interface PostStats {
@@ -54,8 +52,6 @@ export function publicPostFields(post: PublicPostFields): PublicPostFields {
         updated_at: post.updated_at,
         excerpt: post.excerpt,
         tags: post.tags,
-        collaborators: post.collaborators,
-        summary: post.summary,
-        tldr: post.tldr
+        collaborators: post.collaborators
     };
 }

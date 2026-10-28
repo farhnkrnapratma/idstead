@@ -43,10 +43,10 @@ I list ${api.v1.author.socials.length} social profiles.
 
 | Path | Contains |
 | --- | --- |
-| `api.v1.blog` | The 20 most recent published posts, newest first. Each has `id` (the public 64-hex ID), `title`, `slug`, `excerpt`, `summary`, `tldr`, `collaborators`, `created_at`, `updated_at` |
+| `api.v1.blog` | The 20 most recent published posts, newest first. Each has `id` (the public 64-hex ID), `title`, `slug`, `excerpt`, `collaborators`, `created_at`, `updated_at` |
 | `api.v1.blog.length` | How many of those posts there are (at most 20) |
 | `api.v1.blog[0].title` | A field of one post |
-| `api.v1.blog["my-post-slug"]` | One published post by slug: `id` (the public ID), `title`, `slug`, `pinned`, `created_at`, `updated_at`, `excerpt`, `tags`, `collaborators`, `summary`, `tldr` and `content` |
+| `api.v1.blog["my-post-slug"]` | One published post by slug: `id` (the public ID), `title`, `slug`, `pinned`, `created_at`, `updated_at`, `excerpt`, `tags`, `collaborators` and `content` |
 
 ```mdrs
 :::define

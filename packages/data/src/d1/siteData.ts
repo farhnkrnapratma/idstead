@@ -50,7 +50,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 rows(
                     'posts',
                     `SELECT p.id, p.slug, p.title, p.excerpt, p.published, p.pinned, p.storage_path, p.read_time, p.tags, p.collaborators,
-                             p.summary, p.tldr, coalesce(s.helpful_yes, 0) AS helpful_yes, coalesce(s.helpful_no, 0) AS helpful_no,
+                             coalesce(s.helpful_yes, 0) AS helpful_yes, coalesce(s.helpful_no, 0) AS helpful_no,
                              coalesce(s.view_count, 0) AS view_count, p.created_at, p.updated_at
                          FROM db_posts p LEFT JOIN db_post_stats s ON s.post_id = p.id ORDER BY p.created_at`,
                     row => ({
@@ -59,8 +59,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                         pinned: flag(row.pinned),
                         tags: row.tags === null ? null : jsonStrings(row.tags),
                         collaborators:
-                            row.collaborators === null ? null : jsonStrings(row.collaborators),
-                        tldr: row.tldr === null ? null : jsonStrings(row.tldr)
+                            row.collaborators === null ? null : jsonStrings(row.collaborators)
                     })
                 ),
                 rows(

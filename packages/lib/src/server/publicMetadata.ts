@@ -43,7 +43,6 @@ export async function readPublishedPosts() {
         slug: string;
         title: string;
         excerpt: string | null;
-        summary: string | null;
         created_at: string;
         updated_at: string | null;
     }[] = [];
@@ -55,7 +54,6 @@ export async function readPublishedPosts() {
                     slug: post.slug,
                     title: post.title,
                     excerpt: post.excerpt,
-                    summary: post.summary,
                     created_at: post.created_at,
                     updated_at: post.updated_at,
                     id: post.id

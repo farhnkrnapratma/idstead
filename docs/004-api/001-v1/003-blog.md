@@ -10,8 +10,6 @@ Handlers: `getBlog`, `getBlogContent`, `getBlogComments`, `getBlogViews` in `pac
 | `slug` | string | URL slug; the post page is `https://example.com/blog/{slug}` |
 | `title` | string |  |
 | `excerpt` | string \| null | written by hand |
-| `summary` | string \| null | generated when the post is saved |
-| `tldr` | string[] | generated, may be empty |
 | `tags` | string[] |  |
 | `collaborators` | string[] |  |
 | `created_at` | string (ISO 8601) |  |
@@ -40,8 +38,6 @@ Posts are ordered newest first (`created_at` desc, then `public_id`).
             "slug": "…",
             "title": "…",
             "excerpt": "…",
-            "summary": null,
-            "tldr": [],
             "tags": [],
             "collaborators": [],
             "created_at": "…",

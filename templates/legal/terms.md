@@ -85,7 +85,7 @@ If you wish to request removal of a comment on grounds of privacy, copyright, or
 
 ## 8. Automatically Generated and Machine-Translated Content
 
-Parts of the Service produce or transform Content automatically. Translated Content requested through the `lang` query parameter is machine-generated and is flagged as such in API responses and accompanied by a disclaimer. Certain editorial drafts and document summaries are likewise produced with automated assistance.
+Parts of the Service produce or transform Content automatically. Translated Content requested through the `lang` query parameter is machine-generated and is flagged as such in API responses and accompanied by a disclaimer.
 
 Automatically generated and machine-translated Content is provided for convenience only. It may contain errors, omissions, or mistranslations, and it does not carry the same assurance of accuracy as the original text. Where a translation and the original conflict, the original prevails.
 

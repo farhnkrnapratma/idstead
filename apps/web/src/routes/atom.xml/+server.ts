@@ -43,7 +43,7 @@ ${posts
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug) + '.md')}" rel="alternate" type="text/markdown"/>
 <id>tag:${xml(host)},2026:post:${xml(post.id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
-<summary type="text">${xml(post.excerpt || post.summary || '')}</summary></entry>`
+<summary type="text">${xml(post.excerpt || '')}</summary></entry>`
     )
     .join('\n')}
 </feed>`;

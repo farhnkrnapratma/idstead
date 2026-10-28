@@ -16,8 +16,6 @@ export interface PublicPostMeta {
     slug: string;
     title: string;
     excerpt: string | null;
-    summary: string | null;
-    tldr: string[];
     tags: string[];
     collaborators: string[];
     created_at: string;
@@ -30,8 +28,6 @@ export function publicPostMeta(post: PublishedPost): PublicPostMeta {
         slug: post.slug,
         title: post.title,
         excerpt: post.excerpt,
-        summary: post.summary,
-        tldr: post.tldr,
         tags: post.tags,
         collaborators: post.collaborators,
         created_at: post.created_at,
@@ -127,8 +123,6 @@ function metaMarkdown(meta: PublicPostMeta & Partial<PostStats>) {
     if (meta.tags.length) lines.push(`- **Tags**: ${meta.tags.join(', ')}`);
     lines.push(`- **Content**: \`${contentPath(meta.id)}\``);
     if (meta.excerpt) lines.push('', `> ${meta.excerpt}`);
-    if (meta.summary) lines.push('', meta.summary);
-    if (meta.tldr.length) lines.push('', '**TL;DR**', ...meta.tldr.map(point => `- ${point}`));
     return lines.join('\n') + '\n';
 }
 
@@ -144,8 +138,6 @@ function metaText(meta: PublicPostMeta & PostStats) {
         `Content: ${contentPath(meta.id)}`
     ];
     if (meta.excerpt) lines.push('', meta.excerpt);
-    if (meta.summary) lines.push('', meta.summary);
-    if (meta.tldr.length) lines.push('', 'TL;DR:', ...meta.tldr.map(point => `- ${point}`));
     return lines.join('\n') + '\n';
 }
 

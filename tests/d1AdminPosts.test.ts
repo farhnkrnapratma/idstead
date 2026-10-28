@@ -132,10 +132,7 @@ describe('D1 post operations', () => {
         expect(await s.operations.commit(uuid(101), ACTOR)).toMatchObject({ state: 'committed' });
         const updated = await save(
             s,
-            request(2, {
-                revision: 1,
-                post: { ...request(2).post, title: 'Hello again', summary: 'S' }
-            })
+            request(2, { revision: 1, post: { ...request(2).post, title: 'Hello again' } })
         );
         expect(updated).toMatchObject({ state: 'committed', result: { post_revision: 2 } });
         expect(s.sqlite.query('select storage_path from db_post_storage_cleanup').all()).toEqual([

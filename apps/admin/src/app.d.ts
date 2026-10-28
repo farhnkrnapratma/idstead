@@ -20,7 +20,7 @@ declare global {
             >;
         }
         interface Platform {
-            env: { AI?: unknown; API_RATE_LIMITER?: RateLimit; [key: string]: unknown };
+            env: { API_RATE_LIMITER?: RateLimit; [key: string]: unknown };
         }
     }
 }

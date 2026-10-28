@@ -5,6 +5,7 @@ import postgresColumns from './fixtures/postgresColumns.json';
 
 const MIGRATIONS = new URL('../packages/data/d1/migrations/', import.meta.url);
 const MOVED_TO_POST_STATS = ['view_count', 'helpful_yes', 'helpful_no'];
+const DROPPED_FROM_POSTS = ['summary', 'tldr'];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -58,13 +59,17 @@ function post(db: Database, id: string, values: Row = {}) {
 }
 
 describe('D1 schema', () => {
-    test('keeps every Postgres column, with the post counters moved to db_post_stats', () => {
+    test('keeps every Postgres column, with the post counters moved to db_post_stats and the AI summaries dropped', () => {
         const db = migratedDb();
         for (const [table, expected] of Object.entries(postgresColumns)) {
             const actual = columns(db, table);
             const wanted =
                 table === 'db_posts' ?
-                    expected.filter(name => !MOVED_TO_POST_STATS.includes(name))
+                    expected.filter(
+                        name =>
+                            !MOVED_TO_POST_STATS.includes(name)
+                            && !DROPPED_FROM_POSTS.includes(name)
+                    )
                 :   expected;
             expect({ table, missing: wanted.filter(name => !actual.includes(name)) }).toEqual({
                 table,
@@ -97,7 +102,7 @@ describe('D1 schema', () => {
         ).toThrow();
         expect(() => post(db, 'd', { tags: JSON.stringify(['x'.repeat(31)]) })).toThrow('Tags');
         expect(() => post(db, 'e', { published: 1, excerpt: '  ' })).toThrow('Excerpt');
-        post(db, 'f', { tags: JSON.stringify(['svelte']), tldr: JSON.stringify(['short']) });
+        post(db, 'f', { tags: JSON.stringify(['svelte']) });
         expect(() =>
             db.query("update db_posts set public_id = ? where id = 'f'").run('a'.repeat(64))
         ).toThrow('immutable');

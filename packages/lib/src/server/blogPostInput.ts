@@ -103,8 +103,6 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
         };
         if (input.published && !post.excerpt)
             throw new Error('Excerpt is required to publish a post.');
-        if ('summary' in input) post.summary = text(input.summary, 5000);
-        if ('tldr' in input) post.tldr = input.tldr === null ? null : list(input.tldr, 4, 200);
         if (
             (post.collaborators as string[]).some(
                 value => !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(value)
