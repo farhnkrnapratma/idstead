@@ -15,8 +15,8 @@
         "bootstrap-icons": "^1.13.2",
         "js-yaml": "^5.5.0",
         "katex": "^0.19.1",
-        "lucide-static": "^1.61.0",
-        "marked": "^18.1.1",
+        "lucide-static": "^1.63.0",
+        "marked": "^18.1.2",
         "marked-footnote": "^1.4.0"
     }
 }
