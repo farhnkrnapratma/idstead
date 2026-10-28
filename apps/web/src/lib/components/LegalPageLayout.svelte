@@ -8,19 +8,12 @@
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
-    import SiteNav from './SiteNav.svelte';
     import TableOfContents from './TableOfContents.svelte';
     import HelpfulBlock from '../article/HelpfulBlock.svelte';
     import ContentActions from './ContentActions.svelte';
     import FooterSection from '../layout/FooterSection.svelte';
     import FeedbackButton from './FeedbackButton.svelte';
-    import {
-        Toast,
-        PageMain,
-        SkipLink,
-        ScrollToTopButton,
-        ReadingModeExitButton
-    } from '@idstead/ui';
+    import { Toast, PageMain, ScrollToTopButton, ReadingModeExitButton } from '@idstead/ui';
     import ArticleHeader from '../article/ArticleHeader.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
@@ -34,7 +27,6 @@
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
     import { goto } from '$app/navigation';
-    import { page } from '$app/state';
 
     interface Props {
         title: string;
@@ -59,8 +51,6 @@
         authorName = '',
         siteUrl = ''
     }: Props = $props();
-
-    let pageProjects = $derived((page?.data as any)?.projects ?? []);
 
     const feedback = createFeedbackClient(() => ({ type: 'legal', id: slug }));
     const isDark = $derived(themeStore.isDark);
@@ -241,14 +231,6 @@
 </svelte:head>
 
 <svelte:body onclick={handleArticleLinkClick} />
-
-<SkipLink />
-
-{#if !readingModeStore.active}
-    <SiteNav
-        projects={pageProjects}
-        onToggleReadingMode={readingModeStore.toggle} />
-{/if}
 
 <PageMain
     variant="article"

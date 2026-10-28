@@ -1,7 +1,7 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { House, MessageSquareWarning } from '@lucide/svelte';
-    import { Button, SkipLink, ErrorState } from '@idstead/ui';
+    import { Button, ErrorState } from '@idstead/ui';
 
     let errorTitle = $derived.by(() => {
         switch (page.status) {
@@ -57,8 +57,6 @@
         }
     });
 </script>
-
-<SkipLink />
 
 <div class="flex min-h-screen flex-col">
     <main

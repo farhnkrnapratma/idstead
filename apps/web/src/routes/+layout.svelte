@@ -14,6 +14,8 @@
     import { hiddenLegalPaths } from '#app/legalVisibility.ts';
     import { isLegalSlug } from '@idstead/domain/legal.ts';
     import ShortcutModeIndicator from '@idstead/ui/components/ShortcutModeIndicator.svelte';
+    import SkipLink from '@idstead/ui/components/SkipLink.svelte';
+    import SiteNav from '#app/components/SiteNav.svelte';
     import { platformStore } from '@idstead/ui/stores/platformStore.svelte.ts';
 
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
@@ -140,6 +142,14 @@
         title="Public API documentation"
         href={apiUrl('', publicEnv.PUBLIC_API_BASE_URL)} />
 </svelte:head>
+
+<SkipLink />
+
+{#if !readingModeStore.active}
+    <SiteNav
+        projects={data.projects}
+        readingMode={isArticleLikePage} />
+{/if}
 
 {@render children()}
 

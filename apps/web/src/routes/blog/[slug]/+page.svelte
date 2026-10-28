@@ -30,7 +30,6 @@
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
     import {
-        SkipLink,
         Button,
         EmptyState,
         StatusBanner,
@@ -46,7 +45,6 @@
         ReadingModeExitButton
     } from '@idstead/ui';
     import { CommentThread, ArticleMeta } from '#lib/index.ts';
-    import SiteNav from '#app/components/SiteNav.svelte';
     import JsonLd from '#app/components/JsonLd.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
@@ -539,14 +537,6 @@
 </svelte:head>
 
 <JsonLd data={jsonLd} />
-
-<SkipLink />
-
-{#if !readingModeStore.active}
-    <SiteNav
-        projects={data.projects}
-        onToggleReadingMode={readingModeStore.toggle} />
-{/if}
 
 <PageMain
     variant="article"

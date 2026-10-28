@@ -3,7 +3,6 @@
     import Button from '@idstead/ui/components/Button.svelte';
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import PageContainer from '@idstead/ui/layout/PageContainer.svelte';
-    import SkipLink from '@idstead/ui/components/SkipLink.svelte';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -41,8 +40,6 @@
         name="robots"
         content="noindex, nofollow" />
 </svelte:head>
-
-<SkipLink />
 
 <main id="main">
     <h1 class="sr-only">Unsubscribe</h1>
