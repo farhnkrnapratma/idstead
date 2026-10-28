@@ -353,15 +353,14 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                     return reject(op, actor);
             }
             const markdown = postMarkdownPath(postId, op.id);
-            const tldr = Array.isArray(data.tldr) ? arrayJson(data.tldr) : null;
             const readTime = typeof data.read_time === 'number' ? Math.trunc(data.read_time) : null;
             const text = (key: string) => (typeof data[key] === 'string' ? data[key] : null);
             if (!current)
                 statements.push(
                     db
                         .prepare(
-                            `INSERT INTO db_posts (id, title, slug, excerpt, tags, collaborators, published, storage_path, banner_version, summary, tldr, read_time, post_revision)
-                             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, 1)`
+                            `INSERT INTO db_posts (id, title, slug, excerpt, tags, collaborators, published, storage_path, banner_version, read_time, post_revision)
+                             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 1)`
                         )
                         .bind(
                             postId,
@@ -373,8 +372,6 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                             data.published === true || data.published === 'true' ? 1 : 0,
                             markdown,
                             version,
-                            text('summary'),
-                            tldr,
                             readTime
                         )
                 );
@@ -385,9 +382,7 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                             `UPDATE db_posts SET title = ?2, slug = ?3, excerpt = ?4, tags = ?5, collaborators = ?6, published = ?7,
                                  storage_path = ?8, banner_version = ?9,
                                  banner_path = CASE WHEN ?10 = 'keep' THEN banner_path END,
-                                 summary = CASE WHEN ?11 THEN ?12 ELSE summary END,
-                                 tldr = CASE WHEN ?13 THEN ?14 ELSE tldr END,
-                                 read_time = coalesce(?15, read_time),
+                                 read_time = coalesce(?11, read_time),
                                  updated_at = ${NOW}
                              WHERE id = ?1`
                         )
@@ -402,10 +397,6 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                             markdown,
                             version,
                             op.banner_operation,
-                            'summary' in data ? 1 : 0,
-                            text('summary'),
-                            'tldr' in data ? 1 : 0,
-                            tldr,
                             readTime
                         )
                 );

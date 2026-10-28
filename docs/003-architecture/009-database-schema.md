@@ -28,8 +28,6 @@ erDiagram
         text slug
         text title
         text excerpt
-        text summary
-        text tldr "array"
         text tags "array"
         text collaborators "array"
         boolean published
@@ -227,7 +225,7 @@ erDiagram
 The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/d1/migrations/`, which every data store reads and writes since the cutover on 2026-10-23. `0001_init.sql` was written from the live schema above, with these conversions:
 
 - **Types:** UUIDs, timestamps and dates are `TEXT` (UUIDs default to a random v4, timestamps to ISO 8601 UTC with milliseconds, `public_id` to 64 random hex characters); booleans are `INTEGER` 0 or 1; `jsonb` and `text[]` are JSON `TEXT` checked with `json_valid` and `json_type`.
-- **Checks:** D1 has no regular expressions, so pattern checks use `GLOB` (for example `public_id NOT GLOB '*[^0-9a-f]*'`), and checks that need a subquery (the length of each tag and TL;DR point) are `BEFORE` triggers.
+- **Checks:** D1 has no regular expressions, so pattern checks use `GLOB` (for example `public_id NOT GLOB '*[^0-9a-f]*'`), and checks that need a subquery (the length of each tag) are `BEFORE` triggers.
 - **Triggers:** every Postgres trigger has a SQLite equivalent (`RAISE(ABORT, ...)` for the guards), except the banner-version guard against the `anon` and `authenticated` roles, which has no meaning without browser access to the database. `start_date` and `end_date` on experiences and educations are generated columns.
 - **Counters:** `view_count`, `helpful_yes` and `helpful_no` move from `db_posts` to `db_post_stats`, so recording a view never changes a post row.
 - **Read cache:** `db_cache_generations` holds one generation per cached domain (`author`, `blog`, `legal` and `comments:<post id>`), bumped by triggers on every write to the tables behind it.

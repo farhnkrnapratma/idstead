@@ -47,7 +47,7 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 - [OpenAPI (YAML)](${API_URL}/openapi.yaml): Same spec in YAML format.
 - [Agent Skills Discovery](${SITE_URL}/.well-known/agent-skills/index.json): Per-endpoint agent skill descriptors with content digests for automated agent integration.
 - [API Catalog (RFC 9727)](${SITE_URL}/.well-known/api-catalog): Linkset of all public API endpoints for service discovery.
-- [Atom Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
+- [Atom Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog posts and their excerpts.
 - [XML Sitemap](${SITE_URL}/sitemap.xml): Complete URL index for web crawlers.
 - [CV Download PDF](${API_URL}/cv?output=pdf): Official curriculum vitae PDF file.
 - [CV Verification Bundle](${API_URL}/cv?output=zip): The CV PDF with its checksums, detached OpenPGP signatures, public key and VERIFY.txt.

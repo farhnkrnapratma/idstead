@@ -105,7 +105,7 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 | `/v1/blog/comments` | `id` (optional), `limit` (default 50, max 100) | Approved comments. See below. |
 | `/v1/blog/views?id=…` | `id` | `{id, slug, views}`. |
 
-Post metadata is `{id, slug, title, excerpt, summary, tldr, tags, collaborators, created_at, updated_at}`. `excerpt` is written by hand; `summary` and `tldr` are generated when the post is saved and may be `null`/`[]`.
+Post metadata is `{id, slug, title, excerpt, tags, collaborators, created_at, updated_at}`. `excerpt` is written by hand and may be `null`.
 
 ```sh
 curl "{{API_BASE_URL}}/v1/blog?id=update-gnome-51"

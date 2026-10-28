@@ -27,8 +27,6 @@ async function blogListData(blog: BlogRepository) {
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt,
-        summary: post.summary,
-        tldr: post.tldr,
         collaborators: post.collaborators,
         created_at: post.created_at,
         updated_at: post.updated_at

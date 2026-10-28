@@ -59,7 +59,6 @@
     import HelpfulBlock from '#app/article/HelpfulBlock.svelte';
     import SubscribeForm from '#app/components/SubscribeForm.svelte';
     import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
-    import PostInsights from '#app/article/PostInsights.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { formatReadTime } from '@idstead/domain';
@@ -764,17 +763,6 @@
                 {/snippet}
             </ArticleHeader>
 
-            {#if !readingModeStore.active && ((post.tldr && post.tldr.length > 0) || post.summary)}
-                <div
-                    transition:fade={{ duration: 150 }}
-                    class="mt-3 lg:hidden">
-                    <PostInsights
-                        tldr={post.tldr}
-                        summary={post.summary}
-                        class="mt-0!" />
-                </div>
-            {/if}
-
             {#if !readingModeStore.active}
                 <div
                     transition:fade={{ duration: 150 }}
@@ -1128,20 +1116,6 @@
                 transition:fade={{ duration: 150 }}
                 class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
                 aria-label="Article actions and insights">
-                {#if post.tldr && post.tldr.length > 0}
-                    <PostInsights
-                        mode="tldr-only"
-                        tldr={post.tldr}
-                        class="w-full shrink-0" />
-                {/if}
-
-                {#if post.summary}
-                    <PostInsights
-                        mode="summary-only"
-                        summary={post.summary}
-                        class="w-full shrink-0" />
-                {/if}
-
                 <ContentActions
                     variant="sidebar"
                     class="w-full shrink-0"

@@ -471,30 +471,6 @@
             const accessToken = sessionData.session?.access_token;
             if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             if (!pendingSave) {
-                let aiSummary: string | null = null;
-                let aiTldr: string[] | null = null;
-                const shouldGenerate =
-                    toBePublished
-                    && (!isEditMode || markdownContent.trim() !== initialMarkdownContent.trim());
-                if (shouldGenerate) {
-                    try {
-                        const response = await fetch('/api/internal/blog/generate', {
-                            method: 'POST',
-                            headers: {
-                                Authorization: `Bearer ${accessToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ markdown: markdownContent })
-                        });
-                        if (response.ok) {
-                            const generated = await readJson(response);
-                            aiSummary = generated.summary ?? null;
-                            aiTldr = generated.tldr ?? null;
-                        }
-                    } catch (error) {
-                        console.error('AI content generation failed:', error);
-                    }
-                }
                 const metadata = {
                     operationId: crypto.randomUUID(),
                     id: assetPostId,
@@ -508,9 +484,7 @@
                         .map(c => decodeHtmlEntities(c.trim().replace(/^@/, '')))
                         .filter(Boolean),
                     published: toBePublished,
-                    bannerOperation: bannerChange.operation,
-                    ...(!isEditMode || aiSummary !== null ? { summary: aiSummary } : {}),
-                    ...(!isEditMode || aiTldr !== null ? { tldr: aiTldr } : {})
+                    bannerOperation: bannerChange.operation
                 };
                 const form = new FormData();
                 form.set('post', JSON.stringify(metadata));

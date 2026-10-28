@@ -147,8 +147,6 @@ export async function buildDataExport(
             pinned: post.pinned,
             tags: post.tags,
             collaborators: post.collaborators,
-            summary: post.summary,
-            tldr: post.tldr,
             readTime: post.read_time,
             createdAt: post.created_at,
             updatedAt: post.updated_at,

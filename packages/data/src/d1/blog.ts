@@ -37,7 +37,7 @@ export interface D1RepositoryOptions {
 }
 
 const POST_COLUMNS =
-    'p.id, p.public_id, p.title, p.slug, p.pinned, p.created_at, p.updated_at, p.excerpt, p.tags, p.collaborators, p.summary, p.tldr, p.storage_path, p.banner_version, p.read_time';
+    'p.id, p.public_id, p.title, p.slug, p.pinned, p.created_at, p.updated_at, p.excerpt, p.tags, p.collaborators, p.storage_path, p.banner_version, p.read_time';
 const STATS_COLUMNS =
     '(SELECT count(*) FROM db_comments c WHERE c.post_id = p.id AND c.is_approved = 1) AS comment_count, coalesce((SELECT s.view_count FROM db_post_stats s WHERE s.post_id = p.id), 0) AS view_count';
 const SEARCH = "(p.title LIKE ?1 ESCAPE '\\' OR p.excerpt LIKE ?1 ESCAPE '\\')";
@@ -55,8 +55,6 @@ function postFromRow(row: D1Row, cdnBase: string | undefined): PublishedPost {
         excerpt: typeof row.excerpt === 'string' ? row.excerpt : null,
         tags: jsonStrings(row.tags),
         collaborators: jsonStrings(row.collaborators),
-        summary: typeof row.summary === 'string' ? row.summary : null,
-        tldr: jsonStrings(row.tldr),
         banner_url:
             cdnBase === undefined ? null : (
                 bannerUrl(

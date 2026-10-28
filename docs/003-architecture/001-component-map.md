@@ -47,7 +47,6 @@ flowchart LR
     ADMIN --> D1
     ADMIN --> R2
     ADMIN -->|"password, profile"| RL
-    ADMIN -->|"post summary, TL;DR"| AI
     ADMIN -->|"login"| TS
     ADMIN -->|"login alert, manual re-send"| RS
     ADMIN -->|"produce"| Q

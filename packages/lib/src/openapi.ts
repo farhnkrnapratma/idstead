@@ -42,8 +42,6 @@ const blogPostSchema = {
         slug: { type: 'string', example: 'update-gnome-51' },
         title: { type: 'string' },
         excerpt: { type: 'string', nullable: true },
-        summary: { type: 'string', nullable: true },
-        tldr: { type: 'array', items: { type: 'string' } },
         tags: { type: 'array', items: { type: 'string' } },
         collaborators: { type: 'array', items: { type: 'string' } },
         created_at: { type: 'string', format: 'date-time' },

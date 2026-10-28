@@ -131,7 +131,6 @@ API routes authenticate themselves:
 | `/api/internal/admin/comments/dismiss-reports` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/export` | GET | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/delete-all` | POST | same-origin + `requireAdminAuth`, password + Turnstile (`captchaToken`), lockout |
-| `/api/internal/blog/generate` | POST | same-origin + `requireAdminAuth` (Workers AI summary and TL;DR) |
 | `/api/internal/blog/validate-define` | POST | same-origin + `requireAdminAuth`; called by every admin MDRS editor |
 
 ## Source
