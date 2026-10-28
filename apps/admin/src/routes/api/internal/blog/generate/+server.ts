@@ -2,8 +2,10 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
-import { extractDefineBlock } from '@mdrs/core';
-import { isAiBindingAvailable, generateSummary, generateTldr } from '#lib/server/blogAi.ts';
+import { resolveDefines } from '@mdrs/core';
+import { isAiBindingAvailable, generatePostSummaries } from '#lib/server/blogAi.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
@@ -30,8 +32,6 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_GENERATE_CONTENT_REQUIRED', 'Markdown content is required.');
     }
 
-    const { body: markdownForSummary } = extractDefineBlock(rawMarkdown);
-
     const ai = await workerBinding('AI');
     if (!isAiBindingAvailable(ai)) {
         return apiError(
@@ -41,13 +41,14 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         );
     }
 
-    const [summaryResult, tldrResult] = await Promise.allSettled([
-        generateSummary(markdownForSummary, ai),
-        generateTldr(markdownForSummary, ai)
-    ]);
-
-    const summary = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
-    const tldr = tldrResult.status === 'fulfilled' ? tldrResult.value : null;
+    const markdown = await resolveDefines(
+        rawMarkdown,
+        mdrsResolvers(dataStores(platform).public)
+    ).catch(() => rawMarkdown);
+    const { summary, tldr } = await generatePostSummaries(markdown, ai).catch(() => ({
+        summary: null,
+        tldr: null
+    }));
 
     return Response.json({ summary, tldr });
 };
