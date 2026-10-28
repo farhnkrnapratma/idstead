@@ -1,15 +1,11 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { Pilcrow } from '@lucide/svelte';
-    import { avifSources, blogBannerAlt } from '#lib/blogBanner.ts';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import { activateHeadingAnchor } from '@mdrs/dom/headingAnchors.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
 
     interface Props {
         title: string;
-        banner?: string;
-        bannerAlt?: string;
         excerpt?: string;
         class?: string;
         titleClass?: string;
@@ -20,8 +16,6 @@
     let {
         title,
         excerpt = '',
-        banner = '',
-        bannerAlt,
         class: className = '',
         titleClass = 'text-fg-secondary',
         titleViewTransitionName = '',
@@ -42,13 +36,6 @@
 </script>
 
 <header class={cn('article-header border-b border-b-line-subtle pb-4', className)}>
-    {#if banner}<ImageWithSkeleton
-            src={banner}
-            sources={avifSources(banner)}
-            alt={bannerAlt ?? blogBannerAlt(title, excerpt)}
-            loading="eager"
-            aspectRatio="aspect-2/1"
-            class="mb-4 w-full" />{/if}
     <h1
         id="title"
         style={titleViewTransitionName ?

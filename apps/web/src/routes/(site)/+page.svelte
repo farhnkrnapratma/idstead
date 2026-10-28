@@ -19,13 +19,16 @@
     } from '#lib/siteIdentity.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import SubscribeForm from '#app/components/SubscribeForm.svelte';
-    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import ContentCard from '#app/components/ContentCard.svelte';
+    import ProjectMeta from '#app/components/ProjectMeta.svelte';
+    import ProjectLanguageTag from '#app/components/ProjectLanguageTag.svelte';
+    import ArticleMeta from '#lib/article/ArticleMeta.svelte';
+    import { postCard, postCardMeta, projectCard } from '#app/contentCards.ts';
     import ProfileCard from '#app/components/ProfileCard.svelte';
     import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
     import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
     import CvEntryList from '#app/components/CvEntryList.svelte';
-    import ProjectCard from '#app/components/ProjectCard.svelte';
-    import { homeProjects, isRepoNew, isRepoPinned } from '#app/projectLists.ts';
+    import { homeProjects } from '#app/projectLists.ts';
     import { legacySectionPath } from '#app/siteSections.ts';
 
     let { data } = $props();
@@ -281,7 +284,11 @@
                     {:else}
                         <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
                             {#each posts as post (post.id)}
-                                <BlogPostCard {post} />
+                                <ContentCard {...postCard(post, { banner: true })}>
+                                    {#snippet meta()}
+                                        <ArticleMeta {...postCardMeta(post)} />
+                                    {/snippet}
+                                </ContentCard>
                             {/each}
                         </div>
                     {/if}
@@ -313,14 +320,21 @@
                     {:else}
                         <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
                             {#each shownProjects as project (project.name)}
-                                <ProjectCard
-                                    {project}
-                                    pinned={isRepoPinned(project, pinnedRepoNames)}
-                                    isNew={isRepoNew(project)}
+                                {#snippet languageTag()}
+                                    <ProjectLanguageTag
+                                        {project}
+                                        languageHref="/projects?language={encodeURIComponent(
+                                            project.lang ?? ''
+                                        )}" />
+                                {/snippet}
+                                <ContentCard
+                                    {...projectCard(project, pinnedRepoNames)}
                                     tagItem={projectTag}
-                                    languageHref={project.lang ?
-                                        `/projects?language=${encodeURIComponent(project.lang)}`
-                                    :   undefined} />
+                                    leadingTag={project.lang ? languageTag : undefined}>
+                                    {#snippet meta()}
+                                        <ProjectMeta {project} />
+                                    {/snippet}
+                                </ContentCard>
                             {/each}
                         </div>
                     {/if}

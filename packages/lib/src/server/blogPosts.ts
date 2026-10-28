@@ -9,6 +9,7 @@ export interface BlogPost extends PublicPostFields {
     read_time?: string;
     comment_count?: number;
     views_count?: number;
+    banner_url?: string | null;
 }
 
 const FALLBACK_READ_TIME = '1 min read';
@@ -38,7 +39,8 @@ export async function loadPublishedPosts(
                     tags: fields.tags.map(decodeHtmlEntities),
                     read_time: await postReadTime(blog, post),
                     comment_count: post.comment_count,
-                    views_count: post.views_count
+                    views_count: post.views_count,
+                    banner_url: post.banner_url
                 } satisfies BlogPost;
             })
         );

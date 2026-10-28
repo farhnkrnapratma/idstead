@@ -1,7 +1,6 @@
 <script lang="ts">
     import Avatar from '@idstead/ui/components/Avatar.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
-    import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { createFeedbackClient } from '#app/feedbackClient.svelte.ts';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
@@ -46,7 +45,8 @@
     } from '@idstead/ui';
     import { CommentThread, ArticleMeta } from '#lib/index.ts';
     import JsonLd from '#app/components/JsonLd.svelte';
-    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import ContentCard from '#app/components/ContentCard.svelte';
+    import { postCard, postCardMeta } from '#app/contentCards.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import TableOfContents from '#app/components/TableOfContents.svelte';
     import ContentActions from '#app/components/ContentActions.svelte';
@@ -563,8 +563,6 @@
             onscroll={handleArticleScroll}
             class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
             <ArticleHeader
-                banner={bannerPublicUrl}
-                bannerAlt={blogBannerAlt(post.title, post.excerpt)}
                 title={post.title}
                 titleClass="text-fg"
                 titleViewTransitionName="post-title-{post.slug}">
@@ -796,9 +794,20 @@
                             {#each relatedPosts as related (related.id)}
                                 {@const relatedScope = `related-${related.id}`}
                                 <div use:focusScope={relatedScope}>
-                                    <BlogPostCard
-                                        post={{ ...related, created_at: related.created_at || '' }}
-                                        headingTag="h4" />
+                                    <ContentCard
+                                        {...postCard({
+                                            ...related,
+                                            created_at: related.created_at || ''
+                                        })}
+                                        headingTag="h4">
+                                        {#snippet meta()}
+                                            <ArticleMeta
+                                                {...postCardMeta({
+                                                    ...related,
+                                                    created_at: related.created_at || ''
+                                                })} />
+                                        {/snippet}
+                                    </ContentCard>
                                 </div>
                             {/each}
                         </div>

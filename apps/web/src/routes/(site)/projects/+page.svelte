@@ -26,9 +26,12 @@
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { decodeHtmlEntities } from '@mdrs/core';
     import FooterSection from '#app/layout/FooterSection.svelte';
-    import ProjectCard from '#app/components/ProjectCard.svelte';
+    import ContentCard from '#app/components/ContentCard.svelte';
+    import ProjectMeta from '#app/components/ProjectMeta.svelte';
+    import ProjectLanguageTag from '#app/components/ProjectLanguageTag.svelte';
+    import { projectCard } from '#app/contentCards.ts';
     import SiteMeta from '#app/components/SiteMeta.svelte';
-    import { isRepoNew, isRepoPinned } from '#app/projectLists.ts';
+    import { isRepoPinned } from '#app/projectLists.ts';
 
     let { data } = $props();
 
@@ -264,17 +267,27 @@
                         use:staggerChildren
                         class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
                         {#each paginatedProjectList as project (project.name)}
-                            <ProjectCard
-                                {project}
+                            {#snippet languageTag()}
+                                <ProjectLanguageTag
+                                    {project}
+                                    languageSelected={projectFilterStore.filters[
+                                        'language'
+                                    ]?.includes(project.lang ?? '') ?? false}
+                                    onLanguageSelect={language =>
+                                        projectFilterStore.toggleMultiFilter(
+                                            'language',
+                                            language
+                                        )} />
+                            {/snippet}
+                            <ContentCard
+                                {...projectCard(project, pinnedRepoNames)}
                                 headingTag="h2"
-                                pinned={isRepoPinned(project, pinnedRepoNames)}
-                                isNew={isRepoNew(project)}
                                 tagItem={filterableTag}
-                                languageSelected={projectFilterStore.filters['language']?.includes(
-                                    project.lang ?? ''
-                                ) ?? false}
-                                onLanguageSelect={language =>
-                                    projectFilterStore.toggleMultiFilter('language', language)} />
+                                leadingTag={project.lang ? languageTag : undefined}>
+                                {#snippet meta()}
+                                    <ProjectMeta {project} />
+                                {/snippet}
+                            </ContentCard>
                         {/each}
                     </div>
                     <div class="mt-6">
