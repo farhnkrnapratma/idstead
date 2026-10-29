@@ -1,6 +1,9 @@
 const ANCHOR_ICON =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-pilcrow" aria-hidden="true"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>';
 
+const LINK_ICON =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-link" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>';
+
 export function mdrsFragment(id: string): string {
     return id.startsWith('mdrs-') ? id.slice(5) : id;
 }
@@ -27,13 +30,31 @@ export function activateHeadingAnchor(anchor: HTMLAnchorElement): void {
     anchor.classList.add('mdrs-is-active');
 }
 
+export async function copyHeadingLink(
+    button: HTMLElement,
+    url: string,
+    onCopy?: (url: string, copied: boolean) => void
+): Promise<void> {
+    document
+        .querySelectorAll('.mdrs-heading .mdrs-copy-link.mdrs-is-active')
+        .forEach(active => active.classList.remove('mdrs-is-active'));
+    button.classList.add('mdrs-is-active');
+    try {
+        await navigator.clipboard.writeText(url);
+        onCopy?.(url, true);
+    } catch {
+        onCopy?.(url, false);
+    }
+}
+
 export interface HeadingAnchorOptions {
     bareFragments?: boolean;
+    onCopyLink?: (url: string, copied: boolean) => void;
 }
 
 export function enhanceHeadingAnchors(
     container: HTMLElement,
-    { bareFragments = false }: HeadingAnchorOptions = {}
+    { bareFragments = false, onCopyLink }: HeadingAnchorOptions = {}
 ): void {
     const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
         el => !el.closest('.mdrs-chart') && !el.closest('.mdrs-mermaid')
@@ -44,6 +65,7 @@ export function enhanceHeadingAnchors(
 
         el.classList.add('mdrs-heading');
 
+        el.querySelector('.mdrs-copy-link')?.remove();
         el.querySelector('.mdrs-anchor')?.remove();
 
         let headingText = el.querySelector('.mdrs-heading-text') as HTMLElement | null;
@@ -54,6 +76,24 @@ export function enhanceHeadingAnchors(
                 headingText.appendChild(el.firstChild);
             }
             el.appendChild(headingText);
+        }
+
+        if (onCopyLink) {
+            const fragment = bareFragments ? mdrsFragment(el.id) : el.id;
+            const copyButton = document.createElement('button');
+            copyButton.type = 'button';
+            copyButton.className = 'mdrs-copy-link';
+            copyButton.setAttribute('aria-label', 'Copy link to this section');
+            copyButton.dataset.tooltip = 'Copy link';
+            copyButton.innerHTML = LINK_ICON;
+            copyButton.addEventListener('click', () =>
+                copyHeadingLink(
+                    copyButton,
+                    `${window.location.origin}${window.location.pathname}#${fragment}`,
+                    onCopyLink
+                )
+            );
+            el.prepend(copyButton);
         }
 
         const anchor = document.createElement('a');

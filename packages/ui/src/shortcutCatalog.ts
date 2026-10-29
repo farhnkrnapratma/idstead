@@ -101,7 +101,7 @@ export function actionSection(
         return 'forms';
     if (
         pathname.startsWith('/blog/')
-        && ['moreActions', 'helpfulYes', 'helpfulNo', 'shareFeedback'].some(
+        && ['moreActions', 'permalinkHeading', 'helpfulYes', 'helpfulNo', 'shareFeedback'].some(
             id => normalizeKey(buttonKey(id)) === combo
         )
     )

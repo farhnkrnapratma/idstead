@@ -12,6 +12,7 @@ declare global {
         interface PageState {
             adminSearch?: string;
             adminScroll?: number;
+            permalink?: string;
         }
         interface Locals {
             supabase: import('#lib/server/supabaseAuth.ts').AuthClient;
