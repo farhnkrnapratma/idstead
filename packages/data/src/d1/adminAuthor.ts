@@ -301,7 +301,7 @@ export function createD1AdminAuthorStore(
                     funding,
                     contact,
                     repoRules,
-                    cvDocument,
+                    resumeDocument,
                     openPgpKey
                 ] = await Promise.all([
                     reader.profile({ includeEmail: true }),
@@ -312,7 +312,7 @@ export function createD1AdminAuthorStore(
                     reader.links('funding'),
                     reader.links('contact'),
                     reader.projectRepoRules(),
-                    reader.activeCvDocument(),
+                    reader.activeResumeDocument(),
                     reader.activeOpenPgpKey()
                 ]);
                 const rows = await identityRows(
@@ -326,7 +326,7 @@ export function createD1AdminAuthorStore(
                         avatar: identityMeta(rows, 'avatar', profile?.avatarVersion),
                         banner: identityMeta(rows, 'banner', profile?.bannerVersion)
                     },
-                    cv: {
+                    resume: {
                         experience: experience.map(experienceFromRow),
                         education: education.map(educationFromRow)
                     },
@@ -335,15 +335,15 @@ export function createD1AdminAuthorStore(
                     funding: funding.map(fundingLinkFromRow),
                     contact: contact.map(contactLinkFromRow),
                     repoRules,
-                    cvDocument,
+                    resumeDocument,
                     openPgpKey
                 };
             }),
 
         profile: () => reader.profile({ includeEmail: true }),
 
-        cvEntries: () =>
-            guarded('adminAuthor.cvEntries', async () => {
+        resumeEntries: () =>
+            guarded('adminAuthor.resumeEntries', async () => {
                 const [experience, education] = await Promise.all([
                     reader.experience(),
                     reader.education()
@@ -512,7 +512,7 @@ export function createD1AuthorWriter(db: D1Like): AuthorWriter {
     }
 
     return {
-        saveCv: (authorId, experiences, education) =>
+        saveResume: (authorId, experiences, education) =>
             write(() => {
                 const year = new Date().getUTCFullYear();
                 return [

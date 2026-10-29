@@ -5,15 +5,15 @@ import { sanitizePublicApiData } from '#lib/authorApi.ts';
 import { createMdrsResolvers, type MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
 
 async function authorData(author: AuthorRepository) {
-    const [profile, cv, funding, contact, skills, socials] = await Promise.all([
+    const [profile, resume, funding, contact, skills, socials] = await Promise.all([
         author.profile({ includeEmail: true }).catch(() => null),
-        author.cvEntries().catch(() => ({ experience: [], education: [] })),
+        author.resumeEntries().catch(() => ({ experience: [], education: [] })),
         author.fundingLinks().catch(() => []),
         author.contactLinks().catch(() => []),
         author.skillGroups().catch(() => []),
         author.socialLinks().catch(() => [])
     ]);
-    const combined = sanitizePublicApiData({ profile, cv, funding, contact, skills, socials });
+    const combined = sanitizePublicApiData({ profile, resume, funding, contact, skills, socials });
     if (profile?.email && combined.profile) combined.profile.email = profile.email;
     return combined;
 }

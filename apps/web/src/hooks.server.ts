@@ -15,6 +15,11 @@ import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
 
+const LEGACY_PATHS = new Map([
+    ['/home', '/'],
+    ['/cv', '/resume']
+]);
+
 const sentryInitHandle: Handle =
     import.meta.hot?.data.sentryInitHandle
     ?? (Sentry.getClient() ?
@@ -146,9 +151,8 @@ export const handle: Handle = sequence(
             }
         }
 
-        if (event.url.pathname.toLowerCase().replace(/\/$/, '') === '/home') {
-            throw redirect(308, '/');
-        }
+        const legacyTarget = LEGACY_PATHS.get(event.url.pathname.toLowerCase().replace(/\/$/, ''));
+        if (legacyTarget) throw redirect(308, legacyTarget + event.url.search);
 
         const isApiRequest =
             event.url.pathname.startsWith('/api/') || event.url.pathname === '/api';

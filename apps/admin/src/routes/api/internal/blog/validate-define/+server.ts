@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { requireAdminAuth } from '#lib/server/adminResume.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { validateDefineForSave } from '@mdrs/core';
 import { mdrsResolvers } from '#lib/server/mdrsData.ts';

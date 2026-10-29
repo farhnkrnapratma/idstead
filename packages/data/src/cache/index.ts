@@ -151,9 +151,9 @@ export function cachedRepositories(
             remember(domain('author'), 'author.contactLinks', [], CACHE_TTL_SECONDS, () =>
                 repos.author.contactLinks()
             ),
-        cvEntries: () =>
-            remember(domain('author'), 'author.cvEntries', [], CACHE_TTL_SECONDS, () =>
-                repos.author.cvEntries()
+        resumeEntries: () =>
+            remember(domain('author'), 'author.resumeEntries', [], CACHE_TTL_SECONDS, () =>
+                repos.author.resumeEntries()
             ),
         skillGroups: () =>
             remember(domain('author'), 'author.skillGroups', [], CACHE_TTL_SECONDS, () =>
@@ -163,9 +163,9 @@ export function cachedRepositories(
             remember(domain('author'), 'author.projectRepoRules', [], CACHE_TTL_SECONDS, () =>
                 repos.author.projectRepoRules()
             ),
-        activeCvDocument: () =>
-            remember(domain('author'), 'author.activeCvDocument', [], CACHE_TTL_SECONDS, () =>
-                repos.author.activeCvDocument()
+        activeResumeDocument: () =>
+            remember(domain('author'), 'author.activeResumeDocument', [], CACHE_TTL_SECONDS, () =>
+                repos.author.activeResumeDocument()
             ),
         activeOpenPgpKey: () =>
             remember(domain('author'), 'author.activeOpenPgpKey', [], CACHE_TTL_SECONDS, () =>

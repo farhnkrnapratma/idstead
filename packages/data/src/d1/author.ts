@@ -8,7 +8,7 @@ import { decodeHtmlEntities } from '@idstead/domain/entities.ts';
 import type { AuthorRepository } from '../author';
 import {
     authorRepositoryFromReader,
-    cvDocumentWithHash,
+    resumeDocumentWithHash,
     type AuthorReader,
     type Row
 } from '../authorReader';
@@ -40,7 +40,7 @@ export function profileRow(row: Row): Row {
     return parseJsonColumns(row, ['manifest_settings']);
 }
 
-function cvEntryRow(row: Row): Row {
+function resumeEntryRow(row: Row): Row {
     return booleanColumns(row, ['currently_in']);
 }
 
@@ -103,13 +103,13 @@ export function createD1AuthorReader(
         async experience() {
             return (
                 await all('author.experience', 'SELECT * FROM db_experiences ORDER BY sort_order')
-            ).map(cvEntryRow);
+            ).map(resumeEntryRow);
         },
 
         async education() {
             return (
                 await all('author.education', 'SELECT * FROM db_educations ORDER BY sort_order')
-            ).map(cvEntryRow);
+            ).map(resumeEntryRow);
         },
 
         async skills() {
@@ -141,12 +141,12 @@ export function createD1AuthorReader(
             );
         },
 
-        async activeCvDocument() {
+        async activeResumeDocument() {
             const row = await first(
-                'author.activeCvDocument',
+                'author.activeResumeDocument',
                 'SELECT * FROM db_documents WHERE is_active = 1 ORDER BY sort_order LIMIT 1'
             );
-            return row ? cvDocumentWithHash(documentRow(row), fetchFn) : null;
+            return row ? resumeDocumentWithHash(documentRow(row), fetchFn) : null;
         },
 
         async activeOpenPgpKey() {

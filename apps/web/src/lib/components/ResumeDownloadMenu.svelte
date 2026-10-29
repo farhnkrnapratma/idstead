@@ -14,13 +14,16 @@
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import Tooltip from '@idstead/ui/components/Tooltip.svelte';
     import { downloadUrl as download } from '@idstead/ui/utils/fileActions.ts';
-    import { CV_CHECKSUM_ALGORITHMS, type CvDocumentInfo } from '#lib/cvVerification.ts';
+    import {
+        RESUME_CHECKSUM_ALGORITHMS,
+        type ResumeDocumentInfo
+    } from '#lib/resumeVerification.ts';
     import { formatFingerprint, formatUserId } from '@idstead/domain/openpgpKey.ts';
 
-    const CV_UNAVAILABLE = 'No CV document is available yet.';
+    const RESUME_UNAVAILABLE = 'No resume document is available yet.';
 
     interface Props {
-        document: CvDocumentInfo | null;
+        document: ResumeDocumentInfo | null;
         shortcutGroup?: string;
         shortcutChordKey?: string;
         placement?: 'bottom-start' | 'bottom-end';
@@ -28,7 +31,7 @@
     }
 
     let {
-        document: cv,
+        document: resume,
         shortcutGroup,
         shortcutChordKey,
         placement = 'bottom-start',
@@ -38,8 +41,8 @@
     let isVerifyOpen = $state(false);
 
     const signedDate = $derived(
-        cv?.signature?.signedAt ?
-            new Date(cv.signature.signedAt).toLocaleDateString('en-GB', {
+        resume?.signature?.signedAt ?
+            new Date(resume.signature.signedAt).toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
@@ -47,7 +50,7 @@
         :   ''
     );
     const keyTabs = $derived.by(() => {
-        const key = cv?.publicKey;
+        const key = resume?.publicKey;
         if (!key) return [];
         return [
             ...key.wkd.map(email => ({
@@ -64,27 +67,27 @@
         ];
     });
     const checksumTabs = $derived(
-        cv ?
-            CV_CHECKSUM_ALGORITHMS.map(algorithm => ({
+        resume ?
+            RESUME_CHECKSUM_ALGORITHMS.map(algorithm => ({
                 label: algorithm.label,
-                code: `${algorithm.command} -c ${cv.filename}.${algorithm.ext}`
+                code: `${algorithm.command} -c ${resume.filename}.${algorithm.ext}`
             }))
         :   []
     );
     const digestTabs = $derived(
-        cv?.checksums ?
-            CV_CHECKSUM_ALGORITHMS.map(algorithm => ({
+        resume?.checksums ?
+            RESUME_CHECKSUM_ALGORITHMS.map(algorithm => ({
                 label: algorithm.label,
-                code: cv.checksums![algorithm.ext],
+                code: resume.checksums![algorithm.ext],
                 copyLabel: `${algorithm.label} checksum`,
-                downloadUrl: cv.files[algorithm.ext],
-                downloadLabel: `Download ${cv.filename}.${algorithm.ext}`
+                downloadUrl: resume.files[algorithm.ext],
+                downloadLabel: `Download ${resume.filename}.${algorithm.ext}`
             }))
         :   []
     );
-    const CHECKSUM_TAB_KEY = 'cv-checksum';
+    const CHECKSUM_TAB_KEY = 'resume-checksum';
     const steps = $derived.by(() => {
-        if (!cv) return [];
+        if (!resume) return [];
         const list: {
             text: string;
             ariaLabel?: string;
@@ -99,28 +102,28 @@
                 tabs: checksumTabs
             }
         ];
-        if (cv.signature && keyTabs.length)
+        if (resume.signature && keyTabs.length)
             list.push({
                 text: 'Import the public key from any of these sources:',
                 ariaLabel: 'Public key sources',
                 tabs: keyTabs
             });
-        if (cv.signature)
+        if (resume.signature)
             list.push({
                 text: 'Check the signature:',
                 ariaLabel: 'Signature formats',
                 tabs: [
                     {
                         label: 'Binary (.sig)',
-                        code: `gpg --verify ${cv.filename}.sig`,
-                        downloadUrl: cv.files.sig,
-                        downloadLabel: `Download ${cv.filename}.sig`
+                        code: `gpg --verify ${resume.filename}.sig`,
+                        downloadUrl: resume.files.sig,
+                        downloadLabel: `Download ${resume.filename}.sig`
                     },
                     {
                         label: 'Armored (.asc)',
-                        code: `gpg --verify ${cv.filename}.asc`,
-                        downloadUrl: cv.files.asc,
-                        downloadLabel: `Download ${cv.filename}.asc`
+                        code: `gpg --verify ${resume.filename}.asc`,
+                        downloadUrl: resume.files.asc,
+                        downloadLabel: `Download ${resume.filename}.asc`
                     }
                 ]
             });
@@ -133,12 +136,12 @@
         type="primary"
         tone="neutral"
         size="md"
-        aria-disabled={cv ? undefined : 'true'}
-        aria-haspopup={cv ? 'menu' : undefined}
-        aria-expanded={cv ? isOpen : undefined}
+        aria-disabled={resume ? undefined : 'true'}
+        aria-haspopup={resume ? 'menu' : undefined}
+        aria-expanded={resume ? isOpen : undefined}
         {shortcutGroup}
-        shortcutChordKey={cv ? shortcutChordKey : undefined}
-        shortcutLabel={cv ? 'Download CV' : undefined}
+        shortcutChordKey={resume ? shortcutChordKey : undefined}
+        shortcutLabel={resume ? 'Download resume' : undefined}
         onclick={toggle}
         class="w-full justify-center">
         {#snippet leading()}
@@ -146,12 +149,12 @@
                 class="size-3.5"
                 aria-hidden="true" />
         {/snippet}
-        Download CV
-        {#if !cv}
-            <span class="sr-only">{CV_UNAVAILABLE}</span>
+        Download resume
+        {#if !resume}
+            <span class="sr-only">{RESUME_UNAVAILABLE}</span>
         {/if}
         {#snippet trailing()}
-            {#if cv}
+            {#if resume}
                 <ChevronDown
                     class="size-3.5 transition-transform duration-200 ease-out motion-reduce:transition-none {(
                         isOpen
@@ -164,10 +167,10 @@
     </Button>
 {/snippet}
 
-{#if cv}
-    {@const info = cv}
+{#if resume}
+    {@const info = resume}
     <Dropdown
-        ariaLabel="Download CV"
+        ariaLabel="Download resume"
         {placement}
         class={className}
         actions={[
@@ -182,7 +185,7 @@
 
     <Dialog
         isOpen={isVerifyOpen}
-        title="Verify this CV"
+        title="Verify this resume"
         description={info.filename}
         size="lg"
         scrollBody
@@ -225,9 +228,9 @@
                 </p>
             {/if}
 
-            <section aria-labelledby="cv-verify-checksum">
+            <section aria-labelledby="resume-verify-checksum">
                 <h3
-                    id="cv-verify-checksum"
+                    id="resume-verify-checksum"
                     class="mb-2 type-card-title">
                     Checksums
                 </h3>
@@ -239,9 +242,9 @@
                 {/if}
             </section>
 
-            <section aria-labelledby="cv-verify-steps">
+            <section aria-labelledby="resume-verify-steps">
                 <h3
-                    id="cv-verify-steps"
+                    id="resume-verify-steps"
                     class="mb-2 type-card-title">
                     How to check
                 </h3>
@@ -296,7 +299,7 @@
     </Dialog>
 {:else}
     <Tooltip
-        content={CV_UNAVAILABLE}
+        content={RESUME_UNAVAILABLE}
         toggleOnClick
         wrapperClass={className}>
         {@render triggerButton()}

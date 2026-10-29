@@ -12,9 +12,9 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `DATA_CACHE` | var, optional | ✓ | ✓ | ✓ | ✓ | `1` or `true` caches the public reads (author, posts, comments per post, legal pages) in the Workers Cache API for a day, keyed by the Worker version and the `db_cache_generations` generation of each domain, so a write invalidates them at once. Post lists with view and comment counts are kept for 60 seconds and post renders for 5 minutes; errors are never cached. No effect on `supabase` or where the Cache API is missing (local dev). |
 | `WRITES_FROZEN` | var, optional | ✓ | ✓ | – | ✓ | `1` or `true` pauses writes for maintenance: `POST`, `PUT`, `PATCH` and `DELETE` requests under `/api/internal/**` answer `503 MAINTENANCE` with `Retry-After: 60`, `/oauth/token` and `/oauth/revoke` answer `503 temporarily_unavailable`, the jobs Worker retries queue messages after 5 minutes and skips its cron run. Reads keep working. |
 | `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror. Required: `apiBaseUrl()` throws without it. |
-| `PUBLIC_SITE_URL` | public | ✓ | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for `robots.txt`, the sitemap, the feed, `llms.txt` and the `.well-known` discovery files while no profile exists (`readSite()` in `server/publicMetadata.ts`, which answers 503 only when the database fails), for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, which throws without it), for the site links in the CV verification bundle (`adminCv.ts`), and for the generated website banner in admin |
+| `PUBLIC_SITE_URL` | public | ✓ | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for `robots.txt`, the sitemap, the feed, `llms.txt` and the `.well-known` discovery files while no profile exists (`readSite()` in `server/publicMetadata.ts`, which answers 503 only when the database fails), for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, which throws without it), for the site links in the resume verification bundle (`adminResume.ts`), and for the generated website banner in admin |
 | `PUBLIC_ADMIN_URL` | public, optional | ✓ | – | – | – | admin origin, used as the OpenID Connect `authorization_endpoint` host (`configuredAdminUrl` in `server/siteUrl.ts`). Setup derives it from `domains.admin`; without it the site falls back to `https://admin.<site host>` |
-| `PUBLIC_CDN_BASE_URL` | public | ✓ | ✓ | – | ✓ | public R2/CDN origin for `/static`, `/fonts`, `/logo`, CV URLs and the identity fallback |
+| `PUBLIC_CDN_BASE_URL` | public | ✓ | ✓ | – | ✓ | public R2/CDN origin for `/static`, `/fonts`, `/logo`, resume URLs and the identity fallback |
 | `PUBLIC_TURNSTILE_SITE_KEY` | public | ✓ | ✓ | – | – | Turnstile widget key |
 | `TURNSTILE_SECRET` | **secret** | ✓ | ✓ | – | – | server-side `siteverify`. The production value is also the Supabase Auth CAPTCHA secret. |
 | `RESEND_API_KEY` | **secret** | ✓ | ✓ | – | ✓ | email: confirm, contact, login alert, newsletter |
@@ -22,7 +22,7 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `IP_SALT` | **secret** | ✓ | ✓ | – | – | salt for SHA-256 IP hashing |
 | `OIDC_SIGNING_KEY` | **secret**, optional | ✓ | – | – | – | private ES256 JWK (`{"kty":"EC","crv":"P-256","x":…,"y":…,"d":…}`) that signs the OpenID Connect tokens; `bun tooling/oidc-key.ts` prints a new one. Without it "Sign in with Idstead" is off: `/.well-known/openid-configuration` and `/.well-known/jwks.json` answer 404 and WebFinger has no issuer link. It never enters the database or the data export |
 | `OIDC_ENABLED` | var, optional | – | ✓ | – | – | `1` or `true` turns on the OpenID Connect authorize and consent pages on the admin host, so the admin Worker never needs `OIDC_SIGNING_KEY`. Set it together with the web Worker's key; setup sets it to `1` whenever `OIDC_SIGNING_KEY` is present |
-| `GITHUB_PAT` | **secret**, optional | ✓ | ✓ | – | – | GitHub token whose owner's public, non-fork, non-archived repositories fill the projects section and the admin CV import; a fine-grained token with read-only access to public repositories is enough. Without it there are no projects |
+| `GITHUB_PAT` | **secret**, optional | ✓ | ✓ | – | – | GitHub token whose owner's public, non-fork, non-archived repositories fill the projects section and the admin resume import; a fine-grained token with read-only access to public repositories is enough. Without it there are no projects |
 | `PUBLIC_SENTRY_DSN` | public | ✓ | ✓ | ✓ | ✓ | Sentry DSN |
 | `PUBLIC_SENTRY_ENVIRONMENT` | public | ✓ | ✓ | ✓ | ✓ | `production`, `preview` or `development`. `preview` also turns on `noindex`. |
 | `PUBLIC_GA_MEASUREMENT_ID` | public, optional | ✓ | – | – | – | Google Analytics 4 property for `app.html`. Without it no analytics script loads. |
@@ -40,7 +40,7 @@ These are declared in each app's `wrangler.jsonc`. See [deployment](../006-opera
 | `AI` | web, admin | Workers AI (`remote: true`) |
 | `API_RATE_LIMITER` | web (namespace 1001), api (namespace 1002), admin (namespace 1003) | Workers Rate Limiting, 60 requests / 60 s |
 | `NEWSLETTER_QUEUE` | admin | Queue producer for `idstead-newsletter` |
-| `ASSET_BUCKET` | web, admin, jobs | R2 bucket `assetBucket` from `idstead.jsonc`, default `idstead-assets` (`remote: true`): identity assets, banners, content images, CV. Wrapped by `packages/lib/src/server/r2.ts`. |
+| `ASSET_BUCKET` | web, admin, jobs | R2 bucket `assetBucket` from `idstead.jsonc`, default `idstead-assets` (`remote: true`): identity assets, banners, content images, resume. Wrapped by `packages/lib/src/server/r2.ts`. |
 
 ## Worker secrets
 

@@ -47,7 +47,7 @@ describe('ARD manifest', () => {
         expect(manifest.entries.find(entry => entry.url?.endsWith('/v1'))?.type).toBe(
             'text/markdown'
         );
-        expect(manifest.entries.find(entry => entry.url?.endsWith('/v1/cv'))?.type).toBe(
+        expect(manifest.entries.find(entry => entry.url?.endsWith('/v1/resume'))?.type).toBe(
             'application/json'
         );
         expect(manifest.entries.some(entry => entry.url?.endsWith('/v1/docs'))).toBe(false);

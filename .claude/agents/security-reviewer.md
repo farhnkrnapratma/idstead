@@ -10,7 +10,7 @@ Start with `git diff develop...HEAD --stat` (or the files you were given) to sco
 
 - `apps/web/src/hooks.server.ts` and `apps/admin/src/hooks.server.ts`: request pipeline, CORS, rate limiting, CSP, the admin page guard (session with MFA) and the write freeze (`packages/lib/src/server/writeFreeze.ts`).
 - `packages/lib/src/server/data.ts`: `dataStores(platform)` returns `public` (read repositories) and `service` (every writer and admin store). D1 has no row-level security, so **every caller of `service` is the security boundary**.
-- `packages/lib/src/server/adminAuth.ts` (`verifyAdminToken`: Bearer token, `role` admin, MFA), `blogPostAuth.ts` (`blogAdmin` = same-origin + `verifyAdminToken`), `adminCv.ts` (`requireAdminAuth`), `sameOrigin.ts` (`isSameOriginRequest`), `supabaseAuth.ts` (cookie session, `getAdminSession`, `authTime`) and `supabaseAdmin.ts` (service-role Auth admin client).
+- `packages/lib/src/server/adminAuth.ts` (`verifyAdminToken`: Bearer token, `role` admin, MFA), `blogPostAuth.ts` (`blogAdmin` = same-origin + `verifyAdminToken`), `adminResume.ts` (`requireAdminAuth`), `sameOrigin.ts` (`isSameOriginRequest`), `supabaseAuth.ts` (cookie session, `getAdminSession`, `authTime`) and `supabaseAdmin.ts` (service-role Auth admin client).
 - `packages/lib/src/server/loginRateLimit.ts` (shared lockout on salted key hashes) and `rateLimit.ts` (per-IP limiter).
 - For OpenID Connect work: `packages/lib/src/server/oidc/` and `docs/003-architecture/012-identity-provider.md`.
 

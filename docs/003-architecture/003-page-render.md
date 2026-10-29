@@ -1,4 +1,4 @@
-# 3. Page Render (`/`, `/projects`, `/cv`, `/funding`, `/contact`, `/blog`, `/blog/[slug]`)
+# 3. Page Render (`/`, `/projects`, `/resume`, `/funding`, `/contact`, `/blog`, `/blog/[slug]`)
 
 How the public pages load their data. Every page load reads D1 through the public repositories of `dataStores()` (`packages/lib/src/server/data.ts`), which only expose published, public rows; with `DATA_CACHE=1` those reads are cached in the Workers Cache API. No session is involved. Posts, comments and author data are read through the `@idstead/data` repositories from `publicRepositories(fetch)`, so page data carries no database IDs.
 
@@ -22,16 +22,16 @@ sequenceDiagram
 
     alt GET /
         par Promise.all ((site)/+page.server.ts)
-            W->>DB: CV entries, site URL, active OpenPGP key
-            W->>DB: fetchActiveCvDocument() reads db_documents
+            W->>DB: Resume entries, site URL, active OpenPGP key
+            W->>DB: fetchActiveResumeDocument() reads db_documents
             W->>DB: loadPublishedPosts(limit 10)
         end
-        Note over W,DB: fetchActiveCvDocument is read-only. If hash is missing it reads file_url + .sha256<br/>for display. The hash is written only at CV upload
+        Note over W,DB: fetchActiveResumeDocument is read-only. If hash is missing it reads file_url + .sha256<br/>for display. The hash is written only at resume upload
         W-->>W: 2 experience, 1 education, 3 posts with pinned ones first,<br/>layout projects minus excluded repos (page shows 2: pinned first, then the most recently pushed)
     else GET /projects
         W-->>W: no page load: the layout's projects and pinnedRepoNames
-    else GET /cv
-        W->>DB: CV entries, grouped skills, active CV document, site URL, active OpenPGP key
+    else GET /resume
+        W->>DB: Resume entries, grouped skills, active resume document, site URL, active OpenPGP key
     else GET /funding
         W->>DB: funding links
     else GET /contact
@@ -75,7 +75,7 @@ sequenceDiagram
 ## Source
 
 - `apps/web/src/routes/+layout.server.ts`
-- `apps/web/src/routes/(site)/+page.server.ts`, `(site)/{projects,cv,funding,contact,blog}/+page.server.ts`
+- `apps/web/src/routes/(site)/+page.server.ts`, `(site)/{projects,resume,funding,contact,blog}/+page.server.ts`
 - `apps/web/src/routes/blog/[slug]/+page.server.ts`
 - `packages/data/src/author.ts`, `d1/author.ts`, `packages/domain/src/author.ts`
 - `packages/lib/src/server/blogPosts.ts`, `repositories.ts`, `githubProjects.ts`, `postRender.ts`

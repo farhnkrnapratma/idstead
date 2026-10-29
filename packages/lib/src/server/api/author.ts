@@ -1,27 +1,34 @@
-import type { CvDocument } from '@idstead/domain/author.ts';
+import type { ResumeDocument } from '@idstead/domain/author.ts';
 import { generateAuthorMarkdown, sanitizePublicApiData } from '#lib/authorApi.ts';
-import { buildCvBundle } from '#lib/server/cvBundle.ts';
+import { buildResumeBundle } from '#lib/server/resumeBundle.ts';
 import {
-    CV_CHECKSUM_ALGORITHMS,
-    cvBundleFilename,
-    cvDocumentInfo,
-    cvDocumentMarkdown,
-    type CvChecksumExt,
-    type CvChecksums
-} from '#lib/cvVerification.ts';
+    RESUME_CHECKSUM_ALGORITHMS,
+    resumeBundleFilename,
+    resumeDocumentInfo,
+    resumeDocumentMarkdown,
+    type ResumeChecksumExt,
+    type ResumeChecksums
+} from '#lib/resumeVerification.ts';
 import type { ApiContext } from './blog';
 import {
     ApiRequestError,
-    CV_FILE_OUTPUTS,
+    RESUME_FILE_OUTPUTS,
     parseApiParams,
     parseBoolean,
     resolveOutput,
     type ApiParam,
-    type CvFileOutput
+    type ResumeFileOutput
 } from './params';
 import { jsonResponse, textResponse } from './responses';
 
-export const AUTHOR_FIELDS = ['profile', 'contact', 'cv', 'funding', 'skills', 'socials'] as const;
+export const AUTHOR_FIELDS = [
+    'profile',
+    'contact',
+    'resume',
+    'funding',
+    'skills',
+    'socials'
+] as const;
 export type AuthorField = (typeof AUTHOR_FIELDS)[number];
 
 const PROFILE_ORDER = [
@@ -43,7 +50,7 @@ function loaders(ctx: ApiContext): Record<AuthorField, () => Promise<unknown>> {
     return {
         profile: () => ctx.repos.author.profile({ includeEmail: true }),
         contact: () => ctx.repos.author.contactLinks(),
-        cv: () => ctx.repos.author.cvEntries(),
+        resume: () => ctx.repos.author.resumeEntries(),
         funding: () => ctx.repos.author.fundingLinks(),
         skills: () => ctx.repos.author.skillGroups(),
         socials: () => ctx.repos.author.socialLinks()
@@ -133,31 +140,36 @@ async function readStored(ctx: ApiContext, url: string, missing: ApiRequestError
     try {
         response = await ctx.fetch(url);
     } catch {
-        throw new ApiRequestError(502, 'CV_FETCH_FAILED', 'Failed to fetch CV file.');
+        throw new ApiRequestError(502, 'RESUME_FETCH_FAILED', 'Failed to fetch resume file.');
     }
     if (missing && (response.status === 404 || response.status === 403)) throw missing;
-    if (!response.ok) throw new ApiRequestError(502, 'CV_FETCH_FAILED', 'Failed to fetch CV file.');
+    if (!response.ok)
+        throw new ApiRequestError(502, 'RESUME_FETCH_FAILED', 'Failed to fetch resume file.');
     return response.arrayBuffer();
 }
 
 async function assembleBundle(
     ctx: ApiContext,
-    document: CvDocument & { checksums: CvChecksums },
+    document: ResumeDocument & { checksums: ResumeChecksums },
     filename: string
 ) {
     const [key, profile] = await Promise.all([
         ctx.repos.author.activeOpenPgpKey(),
         ctx.repos.author.profile()
     ]).catch(() => {
-        throw new ApiRequestError(500, 'CV_METADATA_FETCH_FAILED', 'Could not fetch CV metadata.');
+        throw new ApiRequestError(
+            500,
+            'RESUME_METADATA_FETCH_FAILED',
+            'Could not fetch resume metadata.'
+        );
     });
     const signed = Boolean(
         document.signedAt && key && document.signerFingerprint === key.fingerprint
     );
     const signatureMissing = new ApiRequestError(
         404,
-        'CV_BUNDLE_NOT_FOUND',
-        'The verification bundle for this CV has not been built yet.'
+        'RESUME_BUNDLE_NOT_FOUND',
+        'The verification bundle for this resume has not been built yet.'
     );
     const pdf = new Uint8Array(await readStored(ctx, document.fileUrl, null));
     const signature =
@@ -171,15 +183,15 @@ async function assembleBundle(
                 )
             }
         :   null;
-    const zip = buildCvBundle({
+    const zip = buildResumeBundle({
         filename,
         pdf,
         checksumFiles: Object.fromEntries(
-            CV_CHECKSUM_ALGORITHMS.map(({ ext }) => [
+            RESUME_CHECKSUM_ALGORITHMS.map(({ ext }) => [
                 ext,
                 `${document.checksums[ext]}  ${filename}\n`
             ])
-        ) as Record<CvChecksumExt, string>,
+        ) as Record<ResumeChecksumExt, string>,
         signature,
         publicKey: key?.armored ?? null,
         key,
@@ -190,21 +202,25 @@ async function assembleBundle(
     return zip.slice().buffer;
 }
 
-async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boolean) {
+async function resumeFile(ctx: ApiContext, output: ResumeFileOutput, withChecksum: boolean) {
     let document;
     try {
-        document = await ctx.repos.author.activeCvDocument();
+        document = await ctx.repos.author.activeResumeDocument();
     } catch {
-        throw new ApiRequestError(500, 'CV_METADATA_FETCH_FAILED', 'Could not fetch CV metadata.');
+        throw new ApiRequestError(
+            500,
+            'RESUME_METADATA_FETCH_FAILED',
+            'Could not fetch resume metadata.'
+        );
     }
     if (!document?.fileUrl)
-        throw new ApiRequestError(404, 'CV_DOCUMENT_NOT_FOUND', 'CV document not found.');
+        throw new ApiRequestError(404, 'RESUME_DOCUMENT_NOT_FOUND', 'Resume document not found.');
 
-    const filename = (document.filename || 'cv.pdf').replace(/["\\\r\n]/g, '');
+    const filename = (document.filename || 'resume.pdf').replace(/["\\\r\n]/g, '');
     const signatureMissing = new ApiRequestError(
         404,
-        'CV_SIGNATURE_NOT_FOUND',
-        'This version of the CV is not signed yet.'
+        'RESUME_SIGNATURE_NOT_FOUND',
+        'This version of the resume is not signed yet.'
     );
     let body: ArrayBuffer | string;
     let type: string;
@@ -217,13 +233,13 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
     } else if (output === 'zip') {
         const missing = new ApiRequestError(
             404,
-            'CV_BUNDLE_NOT_FOUND',
-            'The verification bundle for this CV has not been built yet.'
+            'RESUME_BUNDLE_NOT_FOUND',
+            'The verification bundle for this resume has not been built yet.'
         );
         try {
             body = await readStored(
                 ctx,
-                document.fileUrl.replace(/[^/]+$/, cvBundleFilename(filename)),
+                document.fileUrl.replace(/[^/]+$/, resumeBundleFilename(filename)),
                 missing
             );
         } catch (error) {
@@ -235,13 +251,13 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
             );
         }
         type = 'application/zip';
-        name = cvBundleFilename(filename);
+        name = resumeBundleFilename(filename);
     } else if (output === 'asc' || output === 'sig') {
         const key = await ctx.repos.author.activeOpenPgpKey().catch(() => {
             throw new ApiRequestError(
                 500,
-                'CV_METADATA_FETCH_FAILED',
-                'Could not fetch CV metadata.'
+                'RESUME_METADATA_FETCH_FAILED',
+                'Could not fetch resume metadata.'
             );
         });
         if (!document.signedAt || !key || document.signerFingerprint !== key.fingerprint)
@@ -250,7 +266,7 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
         type = output === 'asc' ? 'application/pgp-signature' : 'application/octet-stream';
         name = `${filename}.${output}`;
     } else {
-        const ext = output as CvChecksumExt;
+        const ext = output as ResumeChecksumExt;
         const digest = document.checksums?.[ext];
         body =
             digest ?
@@ -272,15 +288,15 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
     return new Response(body, { headers });
 }
 
-async function cvDocumentFor(ctx: ApiContext) {
+async function resumeDocumentFor(ctx: ApiContext) {
     try {
         const [document, key, profile] = await Promise.all([
-            ctx.repos.author.activeCvDocument(),
+            ctx.repos.author.activeResumeDocument(),
             ctx.repos.author.activeOpenPgpKey(),
             ctx.repos.author.profile()
         ]);
         if (!document?.fileUrl) return null;
-        return cvDocumentInfo(document, key, profile?.siteUrl || '', ctx.url.origin);
+        return resumeDocumentInfo(document, key, profile?.siteUrl || '', ctx.url.origin);
     } catch {
         return null;
     }
@@ -291,34 +307,34 @@ export async function getAuthor(ctx: ApiContext, fixedFields?: readonly AuthorFi
         fixedFields ? ['output', 'checksum'] : ['field', 'output', 'checksum'];
     const params = parseApiParams(ctx.url, allowed);
     const fields = fixedFields ? [...fixedFields] : requestedFields(params.getAll('field'));
-    const cvOnly = fields.length === 1 && fields[0] === 'cv';
+    const resumeOnly = fields.length === 1 && fields[0] === 'resume';
     const output = resolveOutput(
         params,
         ctx.request,
-        cvOnly ? ['json', 'md', ...CV_FILE_OUTPUTS] : ['json', 'md'],
+        resumeOnly ? ['json', 'md', ...RESUME_FILE_OUTPUTS] : ['json', 'md'],
         'json'
     );
 
     if (params.has('checksum') && output !== 'pdf' && output !== 'zip')
         throw new ApiRequestError(
             400,
-            'CV_CHECKSUM_REQUIRES_PDF',
-            'The checksum parameter only applies to the CV PDF and its verification bundle.',
+            'RESUME_CHECKSUM_REQUIRES_PDF',
+            'The checksum parameter only applies to the resume PDF and its verification bundle.',
             "Add 'output=pdf' or 'output=zip', or remove 'checksum'."
         );
-    if ((CV_FILE_OUTPUTS as readonly string[]).includes(output))
-        return cvFile(ctx, output as CvFileOutput, parseBoolean(params, 'checksum', true));
+    if ((RESUME_FILE_OUTPUTS as readonly string[]).includes(output))
+        return resumeFile(ctx, output as ResumeFileOutput, parseBoolean(params, 'checksum', true));
 
     const load = loaders(ctx);
     let raw: Record<string, unknown>;
-    let cvDocument: Awaited<ReturnType<typeof cvDocumentFor>>;
+    let resumeDocument: Awaited<ReturnType<typeof resumeDocumentFor>>;
     try {
         const [values, document] = await Promise.all([
             Promise.all(fields.map(field => load[field]())),
-            fields.includes('cv') ? cvDocumentFor(ctx) : null
+            fields.includes('resume') ? resumeDocumentFor(ctx) : null
         ]);
         raw = Object.fromEntries(fields.map((field, index) => [field, values[index]]));
-        cvDocument = document;
+        resumeDocument = document;
     } catch {
         throw new ApiRequestError(
             500,
@@ -334,13 +350,13 @@ export async function getAuthor(ctx: ApiContext, fixedFields?: readonly AuthorFi
             (raw.profile as { email?: unknown } | undefined)?.email
         );
 
-    if (fields.includes('cv'))
-        data.cv = { ...((data.cv as object | undefined) ?? {}), document: cvDocument };
+    if (fields.includes('resume'))
+        data.resume = { ...((data.resume as object | undefined) ?? {}), document: resumeDocument };
 
     if (output === 'md')
         return textResponse(
             generateAuthorMarkdown(data)
-                + (cvDocument ? `\n${cvDocumentMarkdown(cvDocument)}` : ''),
+                + (resumeDocument ? `\n${resumeDocumentMarkdown(resumeDocument)}` : ''),
             'md'
         );
     return jsonResponse(data);

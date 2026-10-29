@@ -1,5 +1,5 @@
 <h1 align="center">Idstead</h1>
-<p align="center">A self-hostable personal site and identity home: profile, blog, projects, CV, funding and contact pages, an admin portal and a public API, running on Cloudflare Workers.</p>
+<p align="center">A self-hostable personal site and identity home: profile, blog, projects, resume, funding and contact pages, an admin portal and a public API, running on Cloudflare Workers.</p>
 <p align="center"><a href="https://fkp.my.id/">Live example</a></p>
 
 ---
@@ -8,16 +8,16 @@
 
 ## What you get
 
-- **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/cv`, `/funding` and `/contact`, and privacy, terms, security and AI disclosure pages.
+- **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/resume`, `/funding` and `/contact`, and privacy, terms, security and AI disclosure pages.
 - **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
 - **Machine-readable twins**: every post and legal page also exists as `.md` and `.txt`, next to an Atom feed, a sitemap, `llms.txt` and `.well-known` discovery documents.
-- **A public read-only REST API** (`/v1`) for posts, comments, the author profile, CV and search, with an OpenAPI description.
-- **An admin portal** on its own host, behind MFA or a passkey: a post editor with live preview, comment moderation, profile, CV and legal page management, and activity analytics.
-- **A downloadable CV** with checksums and a detached OpenPGP signature.
+- **A public read-only REST API** (`/v1`) for posts, comments, the author profile, resume and search, with an OpenAPI description.
+- **An admin portal** on its own host, behind MFA or a passkey: a post editor with live preview, comment moderation, profile, resume and legal page management, and activity analytics.
+- **A downloadable resume** with checksums and a detached OpenPGP signature.
 - **An identity home**: WebFinger, your avatar by email hash the way apps use Gravatar, and "Sign in with Idstead", an OpenID Connect provider for the apps you register ([Identity provider](docs/003-architecture/012-identity-provider.md)).
 - **Visitor controls**: light and dark themes, font scale, reduced motion, higher contrast, a dyslexia-friendly font and keyboard-first navigation.
 
-All personal content (name, bio, CV, skills, links, posts) lives in the database. The code holds none of it, so one codebase serves any number of sites.
+All personal content (name, bio, resume, skills, links, posts) lives in the database. The code holds none of it, so one codebase serves any number of sites.
 
 ## Requirements
 

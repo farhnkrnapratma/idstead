@@ -1,7 +1,7 @@
 import type {
     AuthorProfile,
     ContactInfo,
-    CvDocument,
+    ResumeDocument,
     EducationItem,
     ExperienceItem,
     ProjectRepoRules,
@@ -11,7 +11,7 @@ import type {
 } from '@idstead/domain/author.ts';
 import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 
-export interface CvEntries {
+export interface ResumeEntries {
     experience: ExperienceItem[];
     education: EducationItem[];
 }
@@ -21,10 +21,10 @@ export interface AuthorRepository {
     socialLinks(): Promise<SocialLink[]>;
     fundingLinks(): Promise<SponsorshipLink[]>;
     contactLinks(): Promise<ContactInfo[]>;
-    cvEntries(): Promise<CvEntries>;
+    resumeEntries(): Promise<ResumeEntries>;
     skillGroups(): Promise<SkillCategoryGroup[]>;
     projectRepoRules(): Promise<ProjectRepoRules>;
-    activeCvDocument(): Promise<CvDocument | null>;
+    activeResumeDocument(): Promise<ResumeDocument | null>;
     activeOpenPgpKey(): Promise<PublicOpenPgpKey | null>;
     siteUrl(): Promise<string>;
 }

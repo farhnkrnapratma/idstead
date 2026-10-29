@@ -89,7 +89,7 @@ The Service does not generate articles, summaries, or other editorial Content au
 
 ## 9. Document Integrity
 
-Public curriculum vitae documents offered for download are accompanied by a `SHA-256` checksum, published both as a companion `.sha256` file and in the `X-Checksum-SHA256` response header. You may use that checksum to verify that a downloaded document has not been altered in transit or by a third party.
+Public resume documents offered for download are accompanied by a `SHA-256` checksum, published both as a companion `.sha256` file and in the `X-Checksum-SHA256` response header. You may use that checksum to verify that a downloaded document has not been altered in transit or by a third party.
 
 The checksum attests to file integrity only. It is not a warranty as to the accuracy, completeness, or currency of the document's contents.
 

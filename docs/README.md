@@ -27,7 +27,7 @@ Documentation for Idstead, a self-hostable personal site and identity home. The 
 | Page | Covers |
 | --- | --- |
 | [004-api/](004-api/README.md) | Versions and versioning policy |
-| [001-v1/](004-api/001-v1/README.md) | `api.example.com/v1`: [parameters](004-api/001-v1/001-parameters.md), [errors](004-api/001-v1/002-errors.md), [blog](004-api/001-v1/003-blog.md), [author & CV](004-api/001-v1/004-author.md), [search](004-api/001-v1/005-search.md), [discovery](004-api/001-v1/006-discovery.md) |
+| [001-v1/](004-api/001-v1/README.md) | `api.example.com/v1`: [parameters](004-api/001-v1/001-parameters.md), [errors](004-api/001-v1/002-errors.md), [blog](004-api/001-v1/003-blog.md), [author & resume](004-api/001-v1/004-author.md), [search](004-api/001-v1/005-search.md), [discovery](004-api/001-v1/006-discovery.md) |
 | [002-ard.md](004-api/002-ard.md) | `example.com/api/ard` (Agent Registry Discovery, unversioned) |
 
 ## 005 Development

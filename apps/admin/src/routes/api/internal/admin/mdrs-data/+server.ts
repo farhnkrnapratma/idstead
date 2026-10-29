@@ -3,7 +3,7 @@ import { DefineError } from '@mdrs/core';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { requireAdminAuth } from '#lib/server/adminResume.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { mdrsLoaders } from '#lib/server/mdrsData.ts';
 

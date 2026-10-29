@@ -1,14 +1,14 @@
 import type {
     AuthorProfile,
     ContactInfo,
-    CvDocument,
+    ResumeDocument,
     ProjectRepoRules,
     SkillItem,
     SocialLink,
     SponsorshipLink
 } from '@idstead/domain/author.ts';
 import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
-import type { CvEntries } from './author';
+import type { ResumeEntries } from './author';
 
 export type IdentitySource = 'custom' | 'generated';
 
@@ -20,13 +20,13 @@ export interface IdentityVersionMeta {
 export interface AdminAuthorSnapshot {
     profile: AuthorProfile | null;
     identity: { avatar: IdentityVersionMeta | null; banner: IdentityVersionMeta | null };
-    cv: CvEntries;
+    resume: ResumeEntries;
     skills: SkillItem[];
     social: SocialLink[];
     funding: SponsorshipLink[];
     contact: ContactInfo[];
     repoRules: ProjectRepoRules;
-    cvDocument: CvDocument | null;
+    resumeDocument: ResumeDocument | null;
     openPgpKey: PublicOpenPgpKey | null;
 }
 
@@ -46,7 +46,7 @@ export type ProfileSave =
 export interface AdminAuthorStore {
     snapshot(): Promise<AdminAuthorSnapshot>;
     profile(): Promise<AuthorProfile | null>;
-    cvEntries(): Promise<CvEntries>;
+    resumeEntries(): Promise<ResumeEntries>;
     ensureProfileId(): Promise<string>;
     profileRecord(id?: string): Promise<ProfileRecord | null>;
     profileWithAvatarVersion(version: string): Promise<ProfileRecord | null>;
@@ -66,7 +66,7 @@ export type LinkCategory = 'social' | 'funding' | 'contact';
 export type AuthorWrite = { status: 'saved' } | { status: 'rejected'; message: string };
 
 export interface AuthorWriter {
-    saveCv(
+    saveResume(
         authorId: string,
         experiences: Record<string, unknown>[],
         education: Record<string, unknown>[]

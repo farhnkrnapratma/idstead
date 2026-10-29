@@ -1,6 +1,6 @@
-export const CV_TEMPLATE_VERSION = 1;
+export const RESUME_TEMPLATE_VERSION = 1;
 
-export interface CvSnapshot {
+export interface ResumeSnapshot {
     template: number;
     profile: {
         name: string;
@@ -37,16 +37,16 @@ export interface CvSnapshot {
     projects: { name: string; url: string; desc: string; lang: string }[];
 }
 
-export interface CvVersion {
+export interface ResumeVersion {
     major: number;
     minor: number;
 }
 
-export type CvBump = { level: 'major' | 'minor'; reasons: string[] } | null;
+export type ResumeBump = { level: 'major' | 'minor'; reasons: string[] } | null;
 
 const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
-export function cvSnapshot(input: {
+export function resumeSnapshot(input: {
     profile: Record<string, unknown>;
     avatar: string | null;
     links: string[];
@@ -54,9 +54,9 @@ export function cvSnapshot(input: {
     educations: Record<string, unknown>[];
     skills: { category: string; items: string[] }[];
     projects: { name: string; url: string; desc?: string | null; lang?: string | null }[];
-}): CvSnapshot {
+}): ResumeSnapshot {
     return {
-        template: CV_TEMPLATE_VERSION,
+        template: RESUME_TEMPLATE_VERSION,
         profile: {
             name: text(input.profile.name),
             title: text(input.profile.title),
@@ -109,10 +109,10 @@ function identities<T>(items: T[], key: (item: T) => string) {
     return items.map(key).sort();
 }
 
-const experienceKey = (item: CvSnapshot['experiences'][number]) =>
+const experienceKey = (item: ResumeSnapshot['experiences'][number]) =>
     [item.company, item.title, item.type, item.start, item.end, item.current].join('|');
 
-const educationKey = (item: CvSnapshot['educations'][number]) =>
+const educationKey = (item: ResumeSnapshot['educations'][number]) =>
     [item.institution, item.degree, item.field, item.start, item.end, item.current].join('|');
 
 function difference(previous: string[], next: string[]) {
@@ -134,7 +134,10 @@ function describe(kind: string, previous: string[], next: string[]) {
     return added ? `${kind} added` : `${kind} removed`;
 }
 
-export function cvVersionBump(previous: CvSnapshot | null, next: CvSnapshot): CvBump {
+export function resumeVersionBump(
+    previous: ResumeSnapshot | null,
+    next: ResumeSnapshot
+): ResumeBump {
     if (!previous) return { level: 'minor', reasons: ['No earlier snapshot to compare with'] };
     const major: string[] = [];
     if (previous.profile.name !== next.profile.name) major.push('Name changed');
@@ -173,18 +176,18 @@ export function cvVersionBump(previous: CvSnapshot | null, next: CvSnapshot): Cv
     return minor.length ? { level: 'minor', reasons: minor } : null;
 }
 
-export function parseCvVersion(filename?: string | null): CvVersion | null {
+export function parseResumeVersion(filename?: string | null): ResumeVersion | null {
     const match = filename?.match(/-v(\d+)\.(\d+)(?:\.\d+)?\.pdf$/i);
     return match ? { major: Number(match[1]), minor: Number(match[2]) } : null;
 }
 
-export function nextCvVersion(current: CvVersion | null, level: 'major' | 'minor') {
+export function nextResumeVersion(current: ResumeVersion | null, level: 'major' | 'minor') {
     if (!current) return { major: 1, minor: 0 };
     return level === 'major' ?
             { major: current.major + 1, minor: 0 }
         :   { major: current.major, minor: current.minor + 1 };
 }
 
-export function formatCvVersion(version: CvVersion) {
+export function formatResumeVersion(version: ResumeVersion) {
     return `${version.major}.${version.minor}`;
 }

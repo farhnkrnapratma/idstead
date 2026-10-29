@@ -12,7 +12,7 @@ web
 
 Secondary audiences, served by the homepage sections without displacing the reader:
 
-- People evaluating the author for work or collaboration (CV, projects, skills, contact).
+- People evaluating the author for work or collaboration (Resume, projects, skills, contact).
 - Supporters who back the work through the funding links.
 
 **Admin operator.** Each instance's admin portal (`admin.<domain>`) has exactly one user: the site owner, authenticated with MFA or a passkey, writing and publishing posts, moderating comments, and maintaining profile data.
@@ -21,12 +21,12 @@ Secondary audiences, served by the homepage sections without displacing the read
 
 ## Product Purpose
 
-Idstead is a self-hostable personal site and identity home. Each instance publishes one person's long-form writing and presents their profile, projects, CV, funding, and contact channels; later, each instance also serves that person's identity (avatar, banner, profile) to other apps. The reference instance is the owner's own site, which runs the same code with its own data.
+Idstead is a self-hostable personal site and identity home. Each instance publishes one person's long-form writing and presents their profile, projects, resume, funding, and contact channels; later, each instance also serves that person's identity (avatar, banner, profile) to other apps. The reference instance is the owner's own site, which runs the same code with its own data.
 
 Success for an instance owner, in no fixed order:
 
 - **Readership and subscribers:** posts are read, readers return, newsletter subscriptions grow.
-- **Opportunities and contact:** the site leads to messages, work or client conversations, and CV downloads.
+- **Opportunities and contact:** the site leads to messages, work or client conversations, and resume downloads.
 - **Credibility as proof:** the site's own engineering (security posture, public API, craft) demonstrates the skills the profile claims.
 - **Support and funding:** visitors become sponsors or backers.
 
@@ -36,7 +36,7 @@ A personal site whose content is equally available to humans and machines (publi
 
 ## Operating Context
 
-- **Public site (the instance's apex domain):** a homepage summarising the profile, recent experience, posts and projects; `/projects`, `/cv`, `/funding` and `/contact` pages; `/blog` index with search, tag filter, sort, and pagination; post pages with table of contents, references, comments, and helpful feedback; legal pages (privacy, terms, security); subscribe/unsubscribe flows.
+- **Public site (the instance's apex domain):** a homepage summarising the profile, recent experience, posts and projects; `/projects`, `/resume`, `/funding` and `/contact` pages; `/blog` index with search, tag filter, sort, and pagination; post pages with table of contents, references, comments, and helpful feedback; legal pages (privacy, terms, security); subscribe/unsubscribe flows.
 - **Reading formats:** every post and legal page also exists as `.md` and `.txt`; content is reachable through the instance's `/v1` API, Atom, sitemap, and `llms.txt`.
 - **Posts** are written in MDRS, the project's own Markdown dialect (callouts, tabs, snippets, steps, details, embeds, KaTeX math, filenamed and line-marked code blocks, references) and rendered server-side through an allowlist sanitizer.
 - **Newsletter:** publishing a post enqueues delivery to subscribers by email (Resend).
@@ -47,12 +47,12 @@ A personal site whose content is equally available to humans and machines (publi
 ## Capabilities and Constraints
 
 - SvelteKit 5 + Tailwind CSS 4 on Cloudflare Workers; all UI comes from the `@idstead/ui` design system and the shared `packages/lib` components. Pages reuse them rather than building one-off replacements.
-- **All profile content is data, never hardcoded:** name, bio, headline, CV, skills, funding, contact, and socials come from Supabase. Projects come from the author's GitHub repositories, filtered by pinned/excluded rules stored in Supabase.
+- **All profile content is data, never hardcoded:** name, bio, headline, resume, skills, funding, contact, and socials come from Supabase. Projects come from the author's GitHub repositories, filtered by pinned/excluded rules stored in Supabase.
 - Comments are moderated by Llama Guard 3; when moderation is unavailable, the comment is rejected rather than published unchecked.
 - Public output never exposes database IDs; posts are identified by an immutable 64-hex public ID or slug.
 - The public API is read-only and versioned (`/v1`); breaking changes require a new version.
 - Light and dark themes are both supported and visitor-selectable.
-- The CV is downloadable as PDF with SHA-256, SHA-512, MD5 and BLAKE2b checksum files and a detached OpenPGP signature verified against the published key (`/pgp.asc`, WKD, keyservers), individually or as one verification bundle.
+- The resume is downloadable as PDF with SHA-256, SHA-512, MD5 and BLAKE2b checksum files and a detached OpenPGP signature verified against the published key (`/pgp.asc`, WKD, keyservers), individually or as one verification bundle.
 
 ## Brand Commitments
 
@@ -64,7 +64,7 @@ A personal site whose content is equally available to humans and machines (publi
 
 ## Evidence on Hand
 
-- Each instance's author profile, CV, skills, funding links, and contact channels via `GET /v1/author` on its API (sourced from the database).
+- Each instance's author profile, resume, skills, funding links, and contact channels via `GET /v1/author` on its API (sourced from the database).
 - Published blog posts and their comments and helpful counts (Supabase, exposed through `/v1/blog`).
 - GitHub repositories surfaced as projects, with real stars and forks.
 - Funding platforms the owner lists (for example Ko-fi, Open Collective, GitHub Sponsors).
@@ -73,7 +73,7 @@ A personal site whose content is equally available to humans and machines (publi
 
 ## Product Principles
 
-1. **The reader comes first.** Homepage sections and conversion paths (contact, CV, funding) support the reading experience and never interrupt it.
+1. **The reader comes first.** Homepage sections and conversion paths (contact, resume, funding) support the reading experience and never interrupt it.
 2. **The site is the proof.** Every surface should show the engineering rigor the profile claims: secure, correct, fast, and honest about its data.
 3. **Every page has a machine-readable twin.** Human and machine access are equal; nothing is human-only.
 4. **The visitor controls presentation.** Theme, type scale, motion, contrast, and font are the visitor's choices, and the design holds up under all of them.

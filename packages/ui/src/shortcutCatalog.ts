@@ -19,7 +19,7 @@ export const SHORTCUT_SECTIONS = [
         id: 'sharing',
         label: 'Sharing & downloads',
         context:
-            'Page links, sharing, and CV downloads work across the site. Post IDs and article downloads require a blog post; copying Markdown or text also works on legal pages.'
+            'Page links, sharing, and resume downloads work across the site. Post IDs and article downloads require a blog post; copying Markdown or text also works on legal pages.'
     },
     {
         id: 'forms',
@@ -49,7 +49,7 @@ const commandSections: Record<string, ShortcutSection> = {
     '/home': 'navigation',
     '/projects': 'navigation',
     '/blog': 'navigation',
-    '/cv': 'navigation',
+    '/resume': 'navigation',
     '/funding': 'navigation',
     '/contact': 'navigation',
     '/back': 'navigation',

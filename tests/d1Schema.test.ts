@@ -124,7 +124,7 @@ describe('D1 schema', () => {
         );
     });
 
-    test('derives CV dates from month and year', () => {
+    test('derives resume dates from month and year', () => {
         const db = migratedDb();
         profile(db);
         db.query(

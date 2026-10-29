@@ -140,7 +140,7 @@ app.get('/v1/blog/content', c => runApi(() => getBlogContent(context(c))));
 app.get('/v1/blog/comments', c => runApi(() => getBlogComments(context(c))));
 app.get('/v1/blog/views', c => runApi(() => getBlogViews(context(c))));
 app.get('/v1/author', c => runApi(() => getAuthor(context(c))));
-app.get('/v1/cv', c => runApi(() => getAuthor(context(c), ['cv'])));
+app.get('/v1/resume', c => runApi(() => getAuthor(context(c), ['resume'])));
 app.get('/v1/search', c => runApi(() => getSearch(context(c))));
 
 function spec(c: Context<AppEnv>) {

@@ -2,13 +2,13 @@ import { socialLinkFromRow } from '@idstead/domain/author.ts';
 import type { ProfileRecord } from '../adminAuthor';
 import type { Row } from '../authorReader';
 import type {
-    CvDocumentStore,
-    CvSourceData,
-    NewCvDocument,
+    ResumeDocumentStore,
+    ResumeSourceData,
+    NewResumeDocument,
     OpenPgpKeyInput,
     OpenPgpKeyStore,
-    StoredCvDocument
-} from '../cvDocuments';
+    StoredResumeDocument
+} from '../resumeDocuments';
 import { DataError } from '../errors';
 import { booleanColumns, createD1AuthorReader, profileRow } from './author';
 import type { D1Like } from './client';
@@ -21,12 +21,12 @@ async function guarded<T>(operation: string, task: () => Promise<T>): Promise<T>
     }
 }
 
-export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
+export function createD1ResumeDocumentStore(db: D1Like): ResumeDocumentStore {
     const reader = createD1AuthorReader(db);
 
     return {
         sourceData: () =>
-            guarded('cvDocuments.sourceData', async (): Promise<CvSourceData | null> => {
+            guarded('resumeDocuments.sourceData', async (): Promise<ResumeSourceData | null> => {
                 const profile = await db.prepare('SELECT * FROM db_profiles LIMIT 1').first<Row>();
                 if (!profile?.id) return null;
                 const [experiences, educations, categories, socials, repoRules] = await Promise.all(
@@ -68,7 +68,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         active: () =>
-            guarded('cvDocuments.active', async (): Promise<StoredCvDocument | null> => {
+            guarded('resumeDocuments.active', async (): Promise<StoredResumeDocument | null> => {
                 const row = await db
                     .prepare(
                         'SELECT id, filename, file_url, signed_at FROM db_documents WHERE is_active = 1 LIMIT 1'
@@ -84,7 +84,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         activeFilenames: () =>
-            guarded('cvDocuments.activeFilenames', async () => {
+            guarded('resumeDocuments.activeFilenames', async () => {
                 const { results } = await db
                     .prepare('SELECT filename FROM db_documents WHERE is_active = 1')
                     .all<{ filename: string }>();
@@ -92,7 +92,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         findFilename: (filename: string) =>
-            guarded('cvDocuments.findFilename', async () => {
+            guarded('resumeDocuments.findFilename', async () => {
                 const row = await db
                     .prepare('SELECT filename FROM db_documents WHERE filename = ?1 LIMIT 1')
                     .bind(filename)
@@ -101,7 +101,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         snapshot: (documentId: string) =>
-            guarded('cvDocuments.snapshot', async () => {
+            guarded('resumeDocuments.snapshot', async () => {
                 const row = await db
                     .prepare('SELECT content FROM db_document_snapshots WHERE document_id = ?1')
                     .bind(documentId)
@@ -109,8 +109,8 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
                 return row ? JSON.parse(row.content) : null;
             }),
 
-        publish: (document: NewCvDocument, snapshot: unknown) =>
-            guarded('cvDocuments.publish', async () => {
+        publish: (document: NewResumeDocument, snapshot: unknown) =>
+            guarded('resumeDocuments.publish', async () => {
                 const id = crypto.randomUUID();
                 await db.batch([
                     db.prepare('UPDATE db_documents SET is_active = 0 WHERE is_active = 1'),
@@ -137,13 +137,13 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
                         .bind(id, JSON.stringify(snapshot))
                         .run();
                 } catch (error) {
-                    console.error('CV snapshot could not be saved:', error);
+                    console.error('Resume snapshot could not be saved:', error);
                 }
                 return { id };
             }),
 
         setChecksums: (documentId: string, checksums: Record<string, string>) =>
-            guarded('cvDocuments.setChecksums', async () => {
+            guarded('resumeDocuments.setChecksums', async () => {
                 await db
                     .prepare('UPDATE db_documents SET checksums = ?2 WHERE id = ?1')
                     .bind(documentId, JSON.stringify(checksums))
@@ -151,7 +151,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         setSignature: (documentId, signature) =>
-            guarded('cvDocuments.setSignature', async () => {
+            guarded('resumeDocuments.setSignature', async () => {
                 await db
                     .prepare(
                         'UPDATE db_documents SET signed_at = ?2, signer_fingerprint = ?3 WHERE id = ?1'
@@ -161,7 +161,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }),
 
         signerFingerprint: (documentId: string) =>
-            guarded('cvDocuments.signerFingerprint', async () => {
+            guarded('resumeDocuments.signerFingerprint', async () => {
                 const row = await db
                     .prepare('SELECT signer_fingerprint FROM db_documents WHERE id = ?1')
                     .bind(documentId)

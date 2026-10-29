@@ -1,7 +1,8 @@
 import { hashIp } from '@idstead/domain/hash.ts';
 import type { ActivityLog } from '@idstead/data';
 
-export type ActivityCategory = 'profile' | 'cv' | 'skills' | 'links' | 'blog' | 'auth' | 'security';
+export type ActivityCategory =
+    'profile' | 'resume' | 'skills' | 'links' | 'blog' | 'auth' | 'security';
 
 export interface LogActivityInput {
     actor: string | null;

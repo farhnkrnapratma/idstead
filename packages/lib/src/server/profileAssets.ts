@@ -130,7 +130,7 @@ export async function readAvatarBytes(
         const object = await readIdentityObject(platform, version, 'avatar.png');
         return object ? new Uint8Array(await object.arrayBuffer()) : null;
     } catch (error) {
-        console.warn('Avatar could not be read for CV generation:', error);
+        console.warn('Avatar could not be read for resume generation:', error);
         return null;
     }
 }

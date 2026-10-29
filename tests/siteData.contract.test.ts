@@ -64,7 +64,13 @@ describe('D1 site data adapter', () => {
             { author_id: PROFILE, rule_type: 'pin', repo_name: 'repo', sort_order: 1 }
         ]);
         insertRows(sqlite, 'db_documents', [
-            { filename: 'cv.pdf', file_url: 'u', hash: 'h', is_active: true, author_id: PROFILE },
+            {
+                filename: 'resume.pdf',
+                file_url: 'u',
+                hash: 'h',
+                is_active: true,
+                author_id: PROFILE
+            },
             { filename: 'old.pdf', file_url: 'u', hash: 'o', is_active: false, author_id: PROFILE }
         ]);
         insertRows(sqlite, 'db_admin_settings', [{ user_id: 'u', settings: '{"theme":"dark"}' }]);
@@ -80,7 +86,7 @@ describe('D1 site data adapter', () => {
             data.posts.map(post => [post.slug, post.view_count, post.published, post.tags])
         ).toEqual([['hello', 4, true, ['svelte']]]);
         expect(data.comments[0]).toMatchObject({ is_admin: false, is_approved: false });
-        expect(data.activeDocuments.map(doc => doc.filename)).toEqual(['cv.pdf']);
+        expect(data.activeDocuments.map(doc => doc.filename)).toEqual(['resume.pdf']);
         expect(data.settings).toEqual([{ settings: { theme: 'dark' } }]);
         expect(data.subscribers).toEqual([
             {
@@ -93,7 +99,7 @@ describe('D1 site data adapter', () => {
         ]);
         expect(data.avatarVersion).toBe(V1);
         expect(await store.deletionPlan()).toEqual({
-            documents: ['cv.pdf', 'old.pdf'],
+            documents: ['resume.pdf', 'old.pdf'],
             identityVersions: [V1],
             posts: [{ id: POST, slug: 'hello', published: true, banner_version: null }]
         });

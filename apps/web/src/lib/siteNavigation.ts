@@ -37,7 +37,7 @@ export const PAGE_LINKS: SiteNavLink[] = [
     page('Home', '/'),
     page('Blog', '/blog'),
     page('Projects', '/projects'),
-    page('Resume', '/cv')
+    page('Resume', '/resume')
 ];
 
 export const OTHER_GROUPS: SiteNavGroup[] = [

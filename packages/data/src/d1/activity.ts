@@ -19,7 +19,7 @@ import { flag, type D1Like, type D1Row } from './client';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IP_HASH = /^[a-f0-9]{64}$/;
 const LOG_SORTS = ['created_at', 'category', 'action', 'actor', 'summary', 'ip'];
-const LOG_CATEGORIES = ['profile', 'cv', 'skills', 'links', 'blog', 'auth', 'security'];
+const LOG_CATEGORIES = ['profile', 'resume', 'skills', 'links', 'blog', 'auth', 'security'];
 
 function parseJson(value: unknown): unknown {
     if (typeof value !== 'string') return value ?? null;

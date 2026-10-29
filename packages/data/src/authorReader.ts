@@ -1,6 +1,6 @@
 import {
     contactLinkFromRow,
-    cvDocumentFromRow,
+    resumeDocumentFromRow,
     educationFromRow,
     experienceFromRow,
     fundingLinkFromRow,
@@ -8,7 +8,7 @@ import {
     skillItemFromRow,
     socialLinkFromRow,
     type AuthorProfile,
-    type CvDocument,
+    type ResumeDocument,
     type ProjectRepoRules
 } from '@idstead/domain/author.ts';
 import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
@@ -48,12 +48,15 @@ export interface AuthorReader {
     education(): Promise<Row[]>;
     skills(): Promise<Row[]>;
     projectRepoRules(): Promise<ProjectRepoRules>;
-    activeCvDocument(): Promise<CvDocument | null>;
+    activeResumeDocument(): Promise<ResumeDocument | null>;
     activeOpenPgpKey(): Promise<PublicOpenPgpKey | null>;
     siteUrl(): Promise<string>;
 }
 
-export async function cvDocumentWithHash(data: Row, fetchFn: typeof fetch): Promise<CvDocument> {
+export async function resumeDocumentWithHash(
+    data: Row,
+    fetchFn: typeof fetch
+): Promise<ResumeDocument> {
     let hash: string = data.hash || '';
     if (hash.length < 64 && data.file_url) {
         try {
@@ -63,7 +66,7 @@ export async function cvDocumentWithHash(data: Row, fetchFn: typeof fetch): Prom
             if (match) hash = match[0];
         } catch {}
     }
-    return cvDocumentFromRow(data, hash);
+    return resumeDocumentFromRow(data, hash);
 }
 
 export function authorRepositoryFromReader(reader: AuthorReader): AuthorRepository {
@@ -85,7 +88,7 @@ export function authorRepositoryFromReader(reader: AuthorReader): AuthorReposito
             return (await reader.links('contact')).map(row => withoutId(contactLinkFromRow(row)));
         },
 
-        async cvEntries() {
+        async resumeEntries() {
             const [experience, education] = await Promise.all([
                 reader.experience(),
                 reader.education()
@@ -104,8 +107,8 @@ export function authorRepositoryFromReader(reader: AuthorReader): AuthorReposito
 
         projectRepoRules: () => reader.projectRepoRules(),
 
-        async activeCvDocument() {
-            const document = await reader.activeCvDocument();
+        async activeResumeDocument() {
+            const document = await reader.activeResumeDocument();
             return document ? withoutId(document) : null;
         },
 

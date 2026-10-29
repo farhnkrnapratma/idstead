@@ -3,7 +3,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { requireAdminAuth } from '#lib/server/adminResume.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
@@ -124,22 +124,22 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         }
     }
 
-    if (body.cv && typeof body.cv === 'object') {
+    if (body.resume && typeof body.resume === 'object') {
         try {
-            const hasExperience = Array.isArray(body.cv.experience);
-            const hasEducation = Array.isArray(body.cv.education);
+            const hasExperience = Array.isArray(body.resume.experience);
+            const hasEducation = Array.isArray(body.resume.education);
             if (hasExperience || hasEducation) {
-                const stored = hasExperience && hasEducation ? null : await store.cvEntries();
-                const result = await writer.saveCv(
+                const stored = hasExperience && hasEducation ? null : await store.resumeEntries();
+                const result = await writer.saveResume(
                     authorId,
-                    mapExperience(hasExperience ? body.cv.experience : stored!.experience),
-                    mapEducation(hasEducation ? body.cv.education : stored!.education)
+                    mapExperience(hasExperience ? body.resume.experience : stored!.experience),
+                    mapEducation(hasEducation ? body.resume.education : stored!.education)
                 );
                 if (result.status === 'rejected') throw new Error(result.message);
-                applied.push('cv');
+                applied.push('resume');
             }
         } catch (err) {
-            errors.cv = err instanceof Error ? err.message : 'Invalid CV data.';
+            errors.resume = err instanceof Error ? err.message : 'Invalid resume data.';
         }
     }
 
@@ -184,7 +184,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(
             400,
             'PROFILE_IMPORT_EMPTY',
-            'No recognized sections (profile, cv, skills, funding, contact, socials) found in the file.'
+            'No recognized sections (profile, resume, skills, funding, contact, socials) found in the file.'
         );
 
     const token = bearerToken(request);

@@ -8,44 +8,44 @@ import {
 } from '@idstead/domain/openpgpKey.ts';
 
 import {
-    CV_CHECKSUM_ALGORITHMS,
-    type CvChecksumExt,
-    type CvChecksums
-} from '@idstead/domain/cvChecksums.ts';
+    RESUME_CHECKSUM_ALGORITHMS,
+    type ResumeChecksumExt,
+    type ResumeChecksums
+} from '@idstead/domain/resumeChecksums.ts';
 
-export { CV_CHECKSUM_ALGORITHMS, type CvChecksumExt, type CvChecksums };
-export type CvSignatureExt = 'asc' | 'sig';
+export { RESUME_CHECKSUM_ALGORITHMS, type ResumeChecksumExt, type ResumeChecksums };
+export type ResumeSignatureExt = 'asc' | 'sig';
 
-export interface CvSigningKey {
+export interface ResumeSigningKey {
     fingerprint: string;
     userIds: OpenPgpUserId[];
     keyservers: OpenPgpKeyserver[];
 }
 
-export interface CvVerificationInput {
+export interface ResumeVerificationInput {
     filename: string;
     signed: boolean;
-    key: CvSigningKey | null;
+    key: ResumeSigningKey | null;
     siteUrl: string;
     apiBase?: string | null;
 }
 
-export function cvBundleFilename(filename: string) {
+export function resumeBundleFilename(filename: string) {
     return `${filename.replace(/\.pdf$/i, '')}-verify.zip`;
 }
 
-export function cvFileUrl(
-    output: 'pdf' | CvChecksumExt | CvSignatureExt | 'zip',
+export function resumeFileUrl(
+    output: 'pdf' | ResumeChecksumExt | ResumeSignatureExt | 'zip',
     apiBase?: string | null
 ) {
-    return apiUrl(`/cv?output=${output}`, apiBase);
+    return apiUrl(`/resume?output=${output}`, apiBase);
 }
 
 export function publicKeyUrl(siteUrl: string) {
     return `${siteUrl.replace(/\/+$/, '')}/pgp.asc`;
 }
 
-export function cvKeySources(key: CvSigningKey, siteUrl: string) {
+export function resumeKeySources(key: ResumeSigningKey, siteUrl: string) {
     const host = (() => {
         try {
             return new URL(siteUrl).host;
@@ -60,26 +60,28 @@ export function cvKeySources(key: CvSigningKey, siteUrl: string) {
     };
 }
 
-export function cvVerifyText(input: CvVerificationInput) {
+export function resumeVerifyText(input: ResumeVerificationInput) {
     const { filename, signed, key, siteUrl, apiBase } = input;
     const lines = [
         `Verifying ${filename}`,
         '',
         'Run these commands in the folder you extracted this archive into.',
-        `The PDF is also available on its own at ${cvFileUrl('pdf', apiBase)}`,
+        `The PDF is also available on its own at ${resumeFileUrl('pdf', apiBase)}`,
         '',
         '1. Checksums',
         '',
-        ...CV_CHECKSUM_ALGORITHMS.map(({ ext, command }) => `  ${command} -c ${filename}.${ext}`),
+        ...RESUME_CHECKSUM_ALGORITHMS.map(
+            ({ ext, command }) => `  ${command} -c ${filename}.${ext}`
+        ),
         '',
         '2. Signature',
         ''
     ];
     if (!signed || !key) {
-        lines.push('  This version of the CV is not signed yet.');
+        lines.push('  This version of the resume is not signed yet.');
         return `${lines.join('\n')}\n`;
     }
-    const sources = cvKeySources(key, siteUrl);
+    const sources = resumeKeySources(key, siteUrl);
     lines.push(
         ...key.userIds.map(user => `  Signed by:   ${formatUserId(user)}`),
         `  Fingerprint: ${formatFingerprint(key.fingerprint)}`,
@@ -99,23 +101,23 @@ export function cvVerifyText(input: CvVerificationInput) {
     return `${lines.join('\n')}\n`;
 }
 
-export interface CvDocumentSource {
+export interface ResumeDocumentSource {
     filename: string;
     version?: string | null;
     updatedAt?: string;
-    checksums?: CvChecksums | null;
+    checksums?: ResumeChecksums | null;
     signedAt?: string | null;
     signerFingerprint?: string | null;
 }
 
-export function cvDocumentInfo(
-    document: CvDocumentSource,
-    key: CvSigningKey | null,
+export function resumeDocumentInfo(
+    document: ResumeDocumentSource,
+    key: ResumeSigningKey | null,
     siteUrl: string,
     apiBase?: string | null
 ) {
     const signer = document.signedAt && key && document.signerFingerprint === key.fingerprint;
-    const sources = key ? cvKeySources(key, siteUrl) : null;
+    const sources = key ? resumeKeySources(key, siteUrl) : null;
     return {
         filename: document.filename,
         version: document.version ?? null,
@@ -126,14 +128,16 @@ export function cvDocumentInfo(
                 { signedAt: document.signedAt, fingerprint: key.fingerprint, signer: key.userIds }
             :   null,
         files: {
-            pdf: cvFileUrl('pdf', apiBase),
+            pdf: resumeFileUrl('pdf', apiBase),
             ...(Object.fromEntries(
-                CV_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, cvFileUrl(ext, apiBase)])
-            ) as Record<CvChecksumExt, string>),
-            ...(signer ? { asc: cvFileUrl('asc', apiBase), sig: cvFileUrl('sig', apiBase) } : {}),
-            zip: cvFileUrl('zip', apiBase)
-        } as Record<'pdf' | 'zip' | CvChecksumExt, string>
-            & Partial<Record<CvSignatureExt, string>>,
+                RESUME_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, resumeFileUrl(ext, apiBase)])
+            ) as Record<ResumeChecksumExt, string>),
+            ...(signer ?
+                { asc: resumeFileUrl('asc', apiBase), sig: resumeFileUrl('sig', apiBase) }
+            :   {}),
+            zip: resumeFileUrl('zip', apiBase)
+        } as Record<'pdf' | 'zip' | ResumeChecksumExt, string>
+            & Partial<Record<ResumeSignatureExt, string>>,
         publicKey:
             key && sources ?
                 {
@@ -146,15 +150,15 @@ export function cvDocumentInfo(
     };
 }
 
-export type CvDocumentInfo = ReturnType<typeof cvDocumentInfo>;
+export type ResumeDocumentInfo = ReturnType<typeof resumeDocumentInfo>;
 
-export function cvDocumentMarkdown(info: CvDocumentInfo) {
-    const lines = ['## CV Document', '', `- **File**: ${info.filename}`];
+export function resumeDocumentMarkdown(info: ResumeDocumentInfo) {
+    const lines = ['## Resume Document', '', `- **File**: ${info.filename}`];
     if (info.version) lines.push(`- **Version**: v${info.version}`);
     lines.push(`- **PDF**: ${info.files.pdf}`, `- **Verification bundle**: ${info.files.zip}`);
     if (info.checksums) {
         lines.push('', '### Checksums', '');
-        for (const { ext, label } of CV_CHECKSUM_ALGORITHMS)
+        for (const { ext, label } of RESUME_CHECKSUM_ALGORITHMS)
             lines.push(`- **${label}**: \`${info.checksums[ext]}\``);
     }
     lines.push('', '### Signature', '');

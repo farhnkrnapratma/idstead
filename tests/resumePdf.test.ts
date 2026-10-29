@@ -3,23 +3,23 @@ import { readFileSync } from 'node:fs';
 import { PDFDict, PDFDocument, PDFName } from 'pdf-lib';
 import {
     formatDateRange,
-    generateCvPdfBuffer,
+    generateResumePdfBuffer,
     gpaDisplay,
     sanitizePdfText,
-    type AuthorCvData,
-    type CvFontBytes
+    type AuthorResumeData,
+    type ResumeFontBytes
 } from '../packages/lib/src/server/pdfGenerator';
 
 const font = (path: string) => new Uint8Array(readFileSync(`node_modules/@fontsource/${path}`));
 
-const fonts: CvFontBytes = {
+const fonts: ResumeFontBytes = {
     sans: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff'),
     sansBold: font('ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff'),
     sansItalic: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff'),
     mono: font('lilex/files/lilex-latin-400-normal.woff')
 };
 
-const fixture = (): AuthorCvData => ({
+const fixture = (): AuthorResumeData => ({
     profile: {
         name: 'Farhan Kurnia Pratama',
         title: 'Software Engineer',
@@ -62,9 +62,9 @@ const fixture = (): AuthorCvData => ({
     skills: [{ category: 'Cybersecurity', items: ['GRC', 'IAM', 'Cryptography'] }]
 });
 
-describe('cv pdf', () => {
+describe('resume pdf', () => {
     test('renders one page with the web fonts embedded', async () => {
-        const bytes = await generateCvPdfBuffer(fixture(), fonts);
+        const bytes = await generateResumePdfBuffer(fixture(), fonts);
         const doc = await PDFDocument.load(bytes);
         expect(doc.getPageCount()).toBe(1);
         const baseFonts = doc.context
@@ -83,7 +83,7 @@ describe('cv pdf', () => {
     test('does not throw on glyphs missing from the fonts', async () => {
         const data = fixture();
         data.profile.bio = `Hello 世界 😀 ${String.fromCharCode(0x2014)} done`;
-        const bytes = await generateCvPdfBuffer(data, fonts);
+        const bytes = await generateResumePdfBuffer(data, fonts);
         expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
     });
 
@@ -111,7 +111,7 @@ describe('cv pdf', () => {
             title: `Role ${index}`,
             description: Array.from({ length: 6 }, () => 'Delivered a measurable win.').join('\n')
         }));
-        const doc = await PDFDocument.load(await generateCvPdfBuffer(data, fonts));
+        const doc = await PDFDocument.load(await generateResumePdfBuffer(data, fonts));
         expect(doc.getPageCount()).toBeGreaterThan(1);
     });
 
@@ -119,7 +119,7 @@ describe('cv pdf', () => {
         const countLinks = async (website: string) => {
             const data = fixture();
             data.profile.website = website;
-            const doc = await PDFDocument.load(await generateCvPdfBuffer(data, fonts));
+            const doc = await PDFDocument.load(await generateResumePdfBuffer(data, fonts));
             return doc.context
                 .enumerateIndirectObjects()
                 .filter(

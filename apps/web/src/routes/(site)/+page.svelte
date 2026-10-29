@@ -26,8 +26,8 @@
     import { postCard, postCardMeta, projectCard } from '#app/contentCards.ts';
     import ProfileCard from '#app/components/ProfileCard.svelte';
     import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
-    import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
-    import CvEntryList from '#app/components/CvEntryList.svelte';
+    import ResumeDownloadMenu from '#app/components/ResumeDownloadMenu.svelte';
+    import ResumeEntryList from '#app/components/ResumeEntryList.svelte';
     import { homeProjects } from '#app/projectLists.ts';
     import { legacySectionPath } from '#app/siteSections.ts';
 
@@ -61,7 +61,7 @@
         (data.pinnedRepoNames || []).map((n: string) => n.toLowerCase())
     );
     const shownProjects = $derived(homeProjects(projects, pinnedRepoNames, HOME_PROJECT_COUNT));
-    const hasCvEntries = $derived(data.experience.length > 0 || data.education.length > 0);
+    const hasResumeEntries = $derived(data.experience.length > 0 || data.education.length > 0);
     const siteHost = $derived(page.url.host);
     const showSubscribe = $derived(
         newsletterSignupVisible({
@@ -206,11 +206,11 @@
                     {#snippet actions()}
                         <div
                             class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(calc(10rem*var(--a11y-scale)),1fr))]">
-                            {#if data.cvDocument}
-                                <CvDownloadMenu
-                                    document={data.cvDocument}
+                            {#if data.resumeDocument}
+                                <ResumeDownloadMenu
+                                    document={data.resumeDocument}
                                     shortcutGroup="save"
-                                    shortcutChordKey={argKey('/save', 'cv')}
+                                    shortcutChordKey={argKey('/save', 'resume')}
                                     class="w-full" />
                             {/if}
 
@@ -246,26 +246,26 @@
 
                 <div>
                     <h2 class="mb-4 type-section-title">Experience</h2>
-                    <CvEntryList
+                    <ResumeEntryList
                         kind="experience"
                         entries={data.experience} />
                 </div>
 
                 <div>
                     <h2 class="mb-4 type-section-title">Education</h2>
-                    <CvEntryList
+                    <ResumeEntryList
                         kind="education"
                         entries={data.education} />
-                    {#if hasCvEntries}
+                    {#if hasResumeEntries}
                         <div class="mt-4 flex justify-end">
                             <Button
                                 type="ghost"
                                 size="sm"
-                                href="/cv"
-                                keyboardShortcut={buttonKey('viewFullCv')}
-                                shortcutLabel="View full CV"
-                                aria-label="View full CV including education and experience">
-                                <span class="leading-none">View full CV</span>
+                                href="/resume"
+                                keyboardShortcut={buttonKey('viewFullResume')}
+                                shortcutLabel="View full resume"
+                                aria-label="View full resume including education and experience">
+                                <span class="leading-none">View full resume</span>
                                 {#snippet trailing()}
                                     <ChevronRight class="size-3" />
                                 {/snippet}

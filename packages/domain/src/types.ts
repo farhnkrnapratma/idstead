@@ -1,4 +1,4 @@
-export type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding';
+export type Section = 'home' | 'blog' | 'contact' | 'resume' | 'projects' | 'funding';
 
 export interface Project {
     name: string;

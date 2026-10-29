@@ -77,11 +77,11 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             badge: 'Section'
         },
         {
-            id: 'cmd-cv',
+            id: 'cmd-resume',
             category: 'pages',
-            title: '/cv',
-            subtitle: 'View curriculum vitae and work experience.',
-            url: '/cv',
+            title: '/resume',
+            subtitle: 'View resume and work experience.',
+            url: '/resume',
             icon: FileUser,
             badge: 'Section'
         },

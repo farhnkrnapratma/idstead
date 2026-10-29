@@ -6,7 +6,7 @@ import {
     type AdminSettingsStore,
     type ArdIndexStore,
     type AuthorWriter,
-    type CvDocumentStore,
+    type ResumeDocumentStore,
     type IdentityVersionReader,
     type LegalPageWriter,
     type LoginLockoutStore,
@@ -30,7 +30,7 @@ import {
     createD1BlogRepository,
     createD1CommentRepository,
     createD1CommentWriter,
-    createD1CvDocumentStore,
+    createD1ResumeDocumentStore,
     createD1FeedbackRecorder,
     createD1IdentityVersionReader,
     createD1LegalPageRepository,
@@ -74,7 +74,7 @@ export interface ServiceStores extends Repositories {
     adminSettings: AdminSettingsStore;
     adminAuthor: AdminAuthorStore;
     adminPosts: AdminPostStores;
-    cvDocuments: CvDocumentStore;
+    resumeDocuments: ResumeDocumentStore;
     openPgpKeys: OpenPgpKeyStore;
     siteData: SiteDataStore;
     authorWriter: AuthorWriter;
@@ -147,7 +147,7 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
             operations: createD1PostOperationStore(db, bucket),
             cleanup: createD1PostCleanupStore(db, bucket)
         },
-        cvDocuments: createD1CvDocumentStore(db),
+        resumeDocuments: createD1ResumeDocumentStore(db),
         openPgpKeys: createD1OpenPgpKeyStore(db),
         siteData: createD1SiteDataStore(db, bucket),
         authorWriter: createD1AuthorWriter(db),

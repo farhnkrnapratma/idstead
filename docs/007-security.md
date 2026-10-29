@@ -48,7 +48,7 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-
 
 - **D1 has no row-level security**, so every read and write goes through the server-only data layer (`dataStores()` in `packages/lib/src/server/data.ts`):
     - `public` stores return only published posts, approved comments and the public profile fields; the API worker uses nothing else.
-    - `service` stores (writers, admin, newsletter, CV, activity) are used only in server code after the endpoint has checked its caller: same-origin and Turnstile checks for public writes, `requireAdminAuth`/`blogAdmin` with MFA for admin endpoints.
+    - `service` stores (writers, admin, newsletter, resume, activity) are used only in server code after the endpoint has checked its caller: same-origin and Turnstile checks for public writes, `requireAdminAuth`/`blogAdmin` with MFA for admin endpoints.
     - ESLint forbids `@idstead/data` and `server/` imports in browser code.
 - **Supabase is the auth provider only.** The service-role client (`packages/lib/src/server/supabaseAdmin.ts`) verifies admin tokens and manages the admin user; it never reads site data, and it is never imported from `.svelte` files or browser bundles.
 - **No database IDs in public output:** posts are exposed by their 64-hex `public_id`, and comments by no identifier at all.

@@ -236,7 +236,7 @@ export async function buildDataExport(
     const identityIds = ['id', 'sortOrder'];
     putJson(
         'identity/resume.json',
-        stripKeys(author?.cv ?? { experience: [], education: [] }, identityIds)
+        stripKeys(author?.resume ?? { experience: [], education: [] }, identityIds)
     );
     const sections: [string, unknown[]][] = [
         ['skills', (author?.skills ?? []).map(skillGroupFromItem)],
@@ -256,7 +256,7 @@ export async function buildDataExport(
                 );
 
     if (storage && documents.length)
-        for (const { key } of await guard('cv files', () => listKeys(platform, 'cv/'), []))
+        for (const { key } of await guard('resume files', () => listKeys(platform, 'resume/'), []))
             await fetchBinary(key, key);
 
     const logs: Record<string, unknown>[] = [];

@@ -129,7 +129,7 @@ describe('D1 activity log and settings', () => {
         });
         await log.append(entry('auth.login', 'ada@example.com'));
         await log.append(entry('auth.logout', 'bob@example.com'));
-        await log.append(entry('cv.save', null, 'cv'));
+        await log.append(entry('resume.save', null, 'resume'));
         const filter = {
             category: null,
             query: null,
@@ -145,7 +145,7 @@ describe('D1 activity log and settings', () => {
             'bob@example.com'
         ]);
         expect((page.data[0] as { details: unknown }).details).toEqual({ action: 'auth.login' });
-        expect((await log.export({ ...filter, category: 'cv' })).total).toBe(1);
+        expect((await log.export({ ...filter, category: 'resume' })).total).toBe(1);
         expect((await log.export({ ...filter, query: 'LOGOUT' })).total).toBe(1);
         await expect(log.list({ ...filter, sort: 'nope', limit: 10, offset: 0 })).rejects.toThrow(
             DataError

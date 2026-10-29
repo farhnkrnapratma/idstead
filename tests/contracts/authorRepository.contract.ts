@@ -113,14 +113,14 @@ export const AUTHOR_SEED: AuthorSeed = {
         },
         {
             uuid: uuid(51),
-            filename: 'cv.pdf',
-            fileUrl: 'https://storage.test/cv.pdf',
+            filename: 'resume.pdf',
+            fileUrl: 'https://storage.test/resume.pdf',
             hash: '',
             active: true,
             sortOrder: 2
         }
     ],
-    files: { 'https://storage.test/cv.pdf.sha256': `${'a'.repeat(64)}  cv.pdf\n` },
+    files: { 'https://storage.test/resume.pdf.sha256': `${'a'.repeat(64)}  resume.pdf\n` },
     openPgpKeys: [
         {
             fingerprint: FINGERPRINT,
@@ -161,8 +161,8 @@ export function authorRepositoryContract(name: string, factory: AuthorRepository
             ]);
         });
 
-        test('returns CV entries and skills in order with readable months', async () => {
-            const { experience, education } = await author.cvEntries();
+        test('returns resume entries and skills in order with readable months', async () => {
+            const { experience, education } = await author.resumeEntries();
             expect(experience.map(item => [item.title, item.startMonth])).toEqual([
                 ['First', 'January'],
                 ['Second', 'February']
@@ -180,9 +180,9 @@ export function authorRepositoryContract(name: string, factory: AuthorRepository
             });
         });
 
-        test('returns the active CV document with a full hash', async () => {
-            const document = (await author.activeCvDocument())!;
-            expect(document.filename).toBe('cv.pdf');
+        test('returns the active resume document with a full hash', async () => {
+            const document = (await author.activeResumeDocument())!;
+            expect(document.filename).toBe('resume.pdf');
             expect(document.hash).toBe('a'.repeat(64));
             expect(document).not.toHaveProperty('id');
         });
@@ -199,9 +199,9 @@ export function authorRepositoryContract(name: string, factory: AuthorRepository
                 await author.socialLinks(),
                 await author.fundingLinks(),
                 await author.contactLinks(),
-                await author.cvEntries(),
+                await author.resumeEntries(),
                 await author.skillGroups(),
-                await author.activeCvDocument()
+                await author.activeResumeDocument()
             ]);
             expect(output).not.toMatch(UUID);
         });

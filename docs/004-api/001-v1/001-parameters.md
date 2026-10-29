@@ -4,15 +4,15 @@ Every v1 endpoint parses its query string with `parseApiParams(url, allowed)` (`
 
 ## Names and aliases
 
-| Parameter  | Alias | Kind   | Values                                                        |
-| ---------- | ----- | ------ | ------------------------------------------------------------- |
-| `id`       | –     | single | post ID, unique ID prefix (7 or more hex characters), or slug |
-| `field`    | `f`   | multi  | `profile`, `contact`, `cv`, `funding`, `skills`, `socials`    |
-| `output`   | `o`   | single | `json`, `md`, `txt`, `pdf` (each endpoint accepts a subset)   |
-| `query`    | `q`   | single | search text                                                   |
-| `page`     | `p`   | single | 1-based page number                                           |
-| `limit`    | `n`   | single | results per page                                              |
-| `checksum` | `c`   | single | `true` or `false`                                             |
+| Parameter  | Alias | Kind   | Values                                                         |
+| ---------- | ----- | ------ | -------------------------------------------------------------- |
+| `id`       | –     | single | post ID, unique ID prefix (7 or more hex characters), or slug  |
+| `field`    | `f`   | multi  | `profile`, `contact`, `resume`, `funding`, `skills`, `socials` |
+| `output`   | `o`   | single | `json`, `md`, `txt`, `pdf` (each endpoint accepts a subset)    |
+| `query`    | `q`   | single | search text                                                    |
+| `page`     | `p`   | single | 1-based page number                                            |
+| `limit`    | `n`   | single | results per page                                               |
+| `checksum` | `c`   | single | `true` or `false`                                              |
 
 Which endpoint accepts which parameter:
 
@@ -24,7 +24,7 @@ Which endpoint accepts which parameter:
 | `/v1/blog/comments` | `id`, `limit`                            |
 | `/v1/blog/views`    | `id`                                     |
 | `/v1/author`        | `field`, `output`, `checksum`            |
-| `/v1/cv`            | `output`, `checksum`                     |
+| `/v1/resume`        | `output`, `checksum`                     |
 | `/v1/search`        | `query`, `page`, `limit`                 |
 
 `/v1/openapi.json` and `/v1/openapi.yaml` ignore the query string.
@@ -34,7 +34,7 @@ Which endpoint accepts which parameter:
 - **Unknown parameters:** a key the endpoint does not accept returns `400 UNKNOWN_PARAMETER`. The `details` field lists the accepted parameters.
 - **Name plus alias:** using both forms of one parameter (`?query=a&q=b`) returns `400 PARAM_CONFLICT`. Repeating a single-value parameter also returns `PARAM_CONFLICT`.
 - **Multi-value (`field`):**
-    - Values may be comma-separated, repeated, or both: `?f=profile,cv` is the same as `?f=profile&f=cv`.
+    - Values may be comma-separated, repeated, or both: `?f=profile,resume` is the same as `?f=profile&f=resume`.
     - Values are trimmed, lower-cased and de-duplicated.
     - An empty value (`?f=`) means "all sections".
 - **Single values** are trimmed. `output` and `checksum` are compared case-insensitively.

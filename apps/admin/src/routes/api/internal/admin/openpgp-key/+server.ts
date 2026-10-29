@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { processOpenPgpKey } from '#lib/server/adminCv.ts';
+import { processOpenPgpKey } from '#lib/server/adminResume.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 

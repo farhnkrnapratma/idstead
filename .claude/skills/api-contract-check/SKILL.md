@@ -29,8 +29,8 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
     - Single resources use `?id=`, never a path segment.
 
 5. **Outputs**:
-    - For each `resolveOutput(params, request, supported, fallback)`, confirm the supported list and default match the docs. For example, `/v1/blog/content` defaults to `md`, and `pdf` is valid only for `field=cv`.
-    - `/v1/cv` must stay byte-identical to `/v1/author?field=cv`.
+    - For each `resolveOutput(params, request, supported, fallback)`, confirm the supported list and default match the docs. For example, `/v1/blog/content` defaults to `md`, and `pdf` is valid only for `field=resume`.
+    - `/v1/resume` must stay byte-identical to `/v1/author?field=resume`.
 
 6. **No database IDs**: responses must expose posts only by `public_id` (as `id`). Flag any UUID or `*_id` column in a response shape.
 

@@ -8,7 +8,7 @@ import {
     type Signature
 } from 'openpgp';
 import type { OpenPgpUserId } from '@idstead/domain/openpgpKey.ts';
-import { CV_SIGNATURE_LIMIT } from '#lib/server/cvChecksums.ts';
+import { RESUME_SIGNATURE_LIMIT } from '#lib/server/resumeChecksums.ts';
 
 export const OPENPGP_KEY_LIMIT = 64 * 1024;
 
@@ -100,7 +100,7 @@ const DETACHED_HINT =
     'Upload a detached signature made with gpg --detach-sign (with or without --armor).';
 
 export async function parseDetachedSignature(bytes: Uint8Array) {
-    if (bytes.byteLength === 0 || bytes.byteLength > CV_SIGNATURE_LIMIT)
+    if (bytes.byteLength === 0 || bytes.byteLength > RESUME_SIGNATURE_LIMIT)
         throw new OpenPgpError('Signature files are at most 16 KiB.');
     const armored = armorText(bytes);
     if (armored !== null && !armored.trimStart().startsWith('-----BEGIN PGP SIGNATURE-----'))
