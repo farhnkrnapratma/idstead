@@ -114,13 +114,13 @@
                 ariaLabel: 'Signature formats',
                 tabs: [
                     {
-                        label: 'Binary (.sig)',
+                        label: 'Binary',
                         code: `gpg --verify ${resume.filename}.sig`,
                         downloadUrl: resume.files.sig,
                         downloadLabel: `Download ${resume.filename}.sig`
                     },
                     {
-                        label: 'Armored (.asc)',
+                        label: 'Armored',
                         code: `gpg --verify ${resume.filename}.asc`,
                         downloadUrl: resume.files.asc,
                         downloadLabel: `Download ${resume.filename}.asc`
