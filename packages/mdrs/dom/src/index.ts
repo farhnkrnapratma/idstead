@@ -5,6 +5,7 @@ export {
     enhanceHeadingAnchors,
     resolveMdrsHash,
     activateHeadingAnchor,
+    copyHeadingLink,
     mdrsFragment
 } from './headingAnchors';
 export type { HeadingAnchorOptions } from './headingAnchors';

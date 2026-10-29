@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
+    import { currentPermalink, showArticleFragment } from '#app/article/articleHash.ts';
     import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
     import { mdrsFragment } from '@mdrs/dom/headingAnchors.ts';
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
@@ -10,6 +10,8 @@
         ChevronsDownUp
     } from '@lucide/svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { proportionalScrollTop } from './tocScroll.ts';
     import { tocRail, type RailItem } from './tocRail.ts';
 
@@ -38,6 +40,14 @@
     }: Props = $props();
 
     let activeHeadingId = $state('');
+    const permalinkFragment = $derived(currentPermalink());
+    const permalinkHeadingId = $derived(
+        permalinkFragment ?
+            (headings.find(
+                h => h.id === permalinkFragment || mdrsFragment(h.id) === permalinkFragment
+            )?.id ?? '')
+        :   ''
+    );
     let tocListEl = $state<HTMLUListElement | null>(null);
     let scrollContainerEl = $state<HTMLDivElement | null>(null);
     let railItems = $state<RailItem[]>([]);
@@ -90,7 +100,7 @@
 
         target.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'start' });
 
-        void goto(`#${mdrsFragment(id)}`, { shallow: true });
+        showArticleFragment(id);
         activeHeadingId = id;
         revealActiveLink(id, undefined, undefined, true);
     }
@@ -324,7 +334,8 @@
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
-                        class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-line-strong hover:text-fg aria-[current=true]:text-fg"
+                        data-permalink={permalinkHeadingId === heading.id ? '' : undefined}
+                        class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-line-strong hover:text-fg aria-[current=true]:text-fg data-permalink:border-line-strong data-permalink:text-fg"
                         style:margin-left="{depth}rem">
                         <MdrsHtml
                             as="span"
@@ -337,6 +348,18 @@
 {/snippet}
 
 {#if headings.length > 0}
+    <button
+        type="button"
+        class="sr-only"
+        tabindex="-1"
+        onclick={() => navigateToHeading(permalinkHeadingId)}
+        use:shortcut={{
+            combo: buttonKey('permalinkHeading'),
+            label: 'Go to linked section',
+            disabled: !permalinkHeadingId
+        }}>
+        Go to linked section
+    </button>
     {#if collapsible}
         <details
             class={cn(

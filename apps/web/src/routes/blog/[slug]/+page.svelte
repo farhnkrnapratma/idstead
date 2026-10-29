@@ -15,12 +15,13 @@
     import hljs from 'highlight.js';
     import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
     import {
-        enhanceHeadingAnchors,
-        mdrsFragment,
-        resolveMdrsHash
-    } from '@mdrs/dom/headingAnchors.ts';
-    import { clearArticleHash, normalizeArticleHashOnEnter } from '#app/article/articleHash.ts';
+        announceLinkCopy,
+        clearArticleHash,
+        normalizeArticleHashOnEnter,
+        showArticleFragment
+    } from '#app/article/articleHash.ts';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
     import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
@@ -65,7 +66,7 @@
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { formatReadTime } from '@idstead/domain';
-    import { afterNavigate, goto } from '$app/navigation';
+    import { afterNavigate } from '$app/navigation';
     import { page, navigating } from '$app/state';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
 
@@ -230,7 +231,7 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        void goto(`#${mdrsFragment(targetEl.id)}`, { shallow: true });
+        showArticleFragment(targetEl.id);
         scrollToTarget(targetId, true);
     }
 
@@ -242,7 +243,7 @@
                 hljs.highlightElement(block as HTMLElement);
             });
             enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
-            enhanceHeadingAnchors(container, { bareFragments: true });
+            enhanceHeadingAnchors(container, { bareFragments: true, onCopyLink: announceLinkCopy });
         });
     };
 

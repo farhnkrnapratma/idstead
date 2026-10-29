@@ -211,37 +211,58 @@
     }
 
     .mdrs-heading {
-        @apply scroll-mt-20;
+        @apply relative scroll-mt-20;
+    }
+
+    .mdrs-heading:has(> .mdrs-copy-link) {
+        @apply md:-ml-8 md:pl-8;
     }
 
     .mdrs-heading a.mdrs-anchor {
-        @apply relative ml-[0.35rem]! inline-flex! scale-0 cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! transition-[color,scale] select-none;
+        @apply relative -my-[0.25em] ml-[0.15em]! inline-flex! size-[1.3em] cursor-pointer! items-center! justify-center! rounded-sm align-[-0.05em]! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-[color,opacity] select-none;
     }
 
     .mdrs-heading a.mdrs-anchor svg {
         @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline! select-none;
     }
 
-    .mdrs-heading:hover a.mdrs-anchor,
-    .mdrs-heading:focus-within a.mdrs-anchor,
-    .mdrs-heading:target a.mdrs-anchor {
-        @apply scale-100!;
+    .mdrs-heading:hover :is(a.mdrs-anchor, .mdrs-copy-link),
+    .mdrs-heading:focus-within :is(a.mdrs-anchor, .mdrs-copy-link),
+    .mdrs-heading :is(a.mdrs-anchor, .mdrs-copy-link).mdrs-is-active {
+        @apply opacity-100;
     }
 
     .mdrs-heading a.mdrs-anchor:hover,
     .mdrs-heading a.mdrs-anchor:focus-visible,
-    .mdrs-heading a.mdrs-anchor.mdrs-is-active,
-    .mdrs-heading:target a.mdrs-anchor {
-        @apply scale-100! text-fg-accent!;
+    .mdrs-heading .mdrs-copy-link:hover,
+    .mdrs-heading .mdrs-copy-link:focus-visible {
+        @apply text-fg!;
     }
 
-    .mdrs-heading a.mdrs-anchor::after {
+    .mdrs-heading a.mdrs-anchor.mdrs-is-active,
+    .mdrs-heading:target a.mdrs-anchor,
+    .mdrs-heading .mdrs-copy-link.mdrs-is-active {
+        @apply text-fg-accent!;
+    }
+
+    .mdrs-heading .mdrs-copy-link {
+        @apply absolute top-[0.5lh] left-0 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-fg-muted opacity-0 transition-[color,opacity] select-none focus-visible:outline-2 focus-visible:outline-focus-ring max-md:hidden;
+    }
+
+    .mdrs-heading .mdrs-copy-link svg {
+        @apply block size-[0.75em] shrink-0;
+    }
+
+    .mdrs-heading a.mdrs-anchor::after,
+    .mdrs-heading .mdrs-copy-link::after {
         content: attr(data-tooltip);
         @apply pointer-events-none absolute top-[calc(100%+0.5rem)] left-1/2 z-70 -translate-x-1/2 rounded-md border border-line-subtle bg-surface px-2 py-1 font-sans text-3xs leading-normal font-medium whitespace-nowrap text-fg opacity-0 shadow-lg transition-opacity;
     }
 
     .mdrs-heading a.mdrs-anchor:hover::after,
-    .mdrs-heading a.mdrs-anchor:focus-visible::after {
+    .mdrs-heading a.mdrs-anchor:focus-visible::after,
+    .mdrs-heading .mdrs-copy-link:hover::after,
+    .mdrs-heading .mdrs-copy-link:focus-visible::after {
         @apply opacity-100;
     }
 

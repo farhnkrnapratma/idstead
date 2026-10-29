@@ -22,12 +22,13 @@
     import { formatReadTime } from '@idstead/domain/formatters.ts';
     import { countReadingMinutes } from '@idstead/domain/readTime.ts';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
     import {
-        enhanceHeadingAnchors,
-        mdrsFragment,
-        resolveMdrsHash
-    } from '@mdrs/dom/headingAnchors.ts';
-    import { clearArticleHash, normalizeArticleHashOnEnter } from '../article/articleHash.ts';
+        announceLinkCopy,
+        clearArticleHash,
+        normalizeArticleHashOnEnter,
+        showArticleFragment
+    } from '../article/articleHash.ts';
     import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
@@ -160,7 +161,7 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        void goto(`#${mdrsFragment(targetEl.id)}`, { shallow: true });
+        showArticleFragment(targetEl.id);
         scrollToTarget(targetId, true);
     }
 
@@ -193,7 +194,7 @@
                 hljs.highlightElement(block as HTMLElement);
             });
             enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
-            enhanceHeadingAnchors(container, { bareFragments: true });
+            enhanceHeadingAnchors(container, { bareFragments: true, onCopyLink: announceLinkCopy });
         });
     };
 
