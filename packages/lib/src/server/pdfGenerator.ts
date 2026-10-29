@@ -15,7 +15,7 @@ import {
 } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
-export interface CvFontBytes {
+export interface ResumeFontBytes {
     sans: Uint8Array;
     sansBold: Uint8Array;
     sansItalic: Uint8Array;
@@ -71,7 +71,7 @@ export interface SkillCategoryData {
     items: string[];
 }
 
-export interface AuthorCvData {
+export interface AuthorResumeData {
     profile: AuthorProfileData;
     links: LinkData[];
     experiences: ExperienceData[];
@@ -234,14 +234,14 @@ async function embedAvatar(
     try {
         return bytes[0] === 0xff ? await pdfDoc.embedJpg(bytes) : await pdfDoc.embedPng(bytes);
     } catch (error) {
-        console.warn('CV avatar could not be embedded:', error);
+        console.warn('Resume avatar could not be embedded:', error);
         return null;
     }
 }
 
-export async function generateCvPdfBuffer(
-    data: AuthorCvData,
-    fonts: CvFontBytes
+export async function generateResumePdfBuffer(
+    data: AuthorResumeData,
+    fonts: ResumeFontBytes
 ): Promise<Uint8Array> {
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
@@ -258,10 +258,10 @@ export async function generateCvPdfBuffer(
     ]);
     const avatar = await embedAvatar(pdfDoc, data.profile.avatarBytes);
 
-    const name = fit(sansBold, data.profile.name) || 'Curriculum Vitae';
-    pdfDoc.setTitle(`${name} - Curriculum Vitae`);
+    const name = fit(sansBold, data.profile.name) || 'Resume';
+    pdfDoc.setTitle(`${name} - Resume`);
     pdfDoc.setAuthor(name);
-    pdfDoc.setSubject('Curriculum Vitae');
+    pdfDoc.setSubject('Resume');
     pdfDoc.setLanguage('en-US');
 
     const pages: PDFPage[] = [];
@@ -517,10 +517,7 @@ export async function generateCvPdfBuffer(
     }
 
     pages.forEach((target, index) => {
-        const footer = fit(
-            sans,
-            `${name} · Curriculum Vitae · Page ${index + 1} of ${pages.length}`
-        );
+        const footer = fit(sans, `${name} · Resume · Page ${index + 1} of ${pages.length}`);
         const width = sans.font.widthOfTextAtSize(footer, 7.5);
         target.drawText(footer, {
             x: (PAGE_WIDTH - width) / 2,

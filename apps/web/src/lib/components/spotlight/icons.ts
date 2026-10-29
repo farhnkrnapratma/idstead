@@ -84,7 +84,7 @@ export const SECTION_LABELS: Record<string, string> = {
     blog: 'Blog',
     projects: 'Projects',
     contact: 'Contact',
-    cv: 'CV',
+    resume: 'Resume',
     funding: 'Funding'
 };
 

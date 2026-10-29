@@ -2,7 +2,7 @@ import type { ProjectRepoRules, SocialLink } from '@idstead/domain/author.ts';
 import type { OpenPgpUserId, PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 import type { ProfileRecord } from './adminAuthor';
 
-export interface CvSourceData {
+export interface ResumeSourceData {
     profile: ProfileRecord;
     experiences: Record<string, unknown>[];
     educations: Record<string, unknown>[];
@@ -11,14 +11,14 @@ export interface CvSourceData {
     repoRules: ProjectRepoRules;
 }
 
-export interface StoredCvDocument {
+export interface StoredResumeDocument {
     id: string;
     filename: string;
     file_url: string;
     signed_at: string | null;
 }
 
-export interface NewCvDocument {
+export interface NewResumeDocument {
     authorId: string;
     filename: string;
     fileUrl: string;
@@ -27,13 +27,13 @@ export interface NewCvDocument {
     version: string;
 }
 
-export interface CvDocumentStore {
-    sourceData(): Promise<CvSourceData | null>;
-    active(): Promise<StoredCvDocument | null>;
+export interface ResumeDocumentStore {
+    sourceData(): Promise<ResumeSourceData | null>;
+    active(): Promise<StoredResumeDocument | null>;
     activeFilenames(): Promise<string[]>;
     findFilename(filename: string): Promise<string | null>;
     snapshot(documentId: string): Promise<unknown | null>;
-    publish(document: NewCvDocument, snapshot: unknown): Promise<{ id: string }>;
+    publish(document: NewResumeDocument, snapshot: unknown): Promise<{ id: string }>;
     setChecksums(documentId: string, checksums: Record<string, string>): Promise<void>;
     setSignature(
         documentId: string,

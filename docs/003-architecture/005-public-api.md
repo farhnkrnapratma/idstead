@@ -31,7 +31,7 @@ sequenceDiagram
     opt /v1/blog/content
         HND->>ST: GET public URL of storage_path
     end
-    opt /v1/cv?output=pdf
+    opt /v1/resume?output=pdf
         HND->>HND: fetch db_documents.file_url (CDN), add Repr-Digest / X-Checksum-SHA256
     end
     HND-->>R: Response or {code, message, details?}

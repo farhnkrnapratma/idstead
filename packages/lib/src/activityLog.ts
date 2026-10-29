@@ -1,6 +1,6 @@
 export const activityCategories = [
     { value: 'profile', label: 'Profile' },
-    { value: 'cv', label: 'CV' },
+    { value: 'resume', label: 'Resume' },
     { value: 'skills', label: 'Skills' },
     { value: 'links', label: 'Links' },
     { value: 'blog', label: 'Blog' },

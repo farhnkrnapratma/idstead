@@ -86,5 +86,5 @@ The retired Postgres schema enforced the same rule in `public.is_admin()`; on D1
 
 - `apps/admin/src/hooks.server.ts`, `apps/admin/src/routes/(admin)/+layout.server.ts`, `(admin)/login/+page.svelte`
 - `apps/admin/src/routes/api/internal/admin/login/+server.ts`
-- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminCv.ts` (`requireAdminAuth`), `loginRateLimit.ts`, `supabaseAuth.ts`
+- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminResume.ts` (`requireAdminAuth`), `loginRateLimit.ts`, `supabaseAuth.ts`
 - `packages/lib/src/adminAuthState.ts`

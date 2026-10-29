@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Idstead**: a self-hostable personal site and identity home (profile, blog, projects, CV, funding and contact pages, an admin portal and a public API) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Cloudflare D1 and R2 with Supabase Auth for admin sign-in, deployed as Cloudflare Workers. Anyone can run an instance with their own data; the owner's instance is described under [This instance](#this-instance). Worker names and hosts below are the defaults from `idstead.example.jsonc` for the site `example.com`:
+**Idstead**: a self-hostable personal site and identity home (profile, blog, projects, resume, funding and contact pages, an admin portal and a public API) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Cloudflare D1 and R2 with Supabase Auth for admin sign-in, deployed as Cloudflare Workers. Anyone can run an instance with their own data; the owner's instance is described under [This instance](#this-instance). Worker names and hosts below are the defaults from `idstead.example.jsonc` for the site `example.com`:
 
 | Workspace | Worker | Host | Role |
 | --- | --- | --- | --- |
@@ -46,7 +46,7 @@ Where the instance runs (domains, Worker, bucket and queue names, cron) lives in
 
 ## Rules for every task
 
-- **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from the database — never inline a literal stand-in. This doesn't apply to files that are inherently static by convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.).
+- **No hardcoded/raw content data in application code.** Author name, bio, contact info, resume entries, funding links, skills, etc. must always be fetched from the database — never inline a literal stand-in. This doesn't apply to files that are inherently static by convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.).
 - **No database IDs in public output.** Never return UUIDs or `*_id` columns from the API, page data, feeds or banner URLs; posts and comments are identified by their `public_id`.
 - **Writes stay first-party.** The API worker is read-only (`GET`/`HEAD`/`OPTIONS`); anything that writes lives under `/api/internal/**` on web or admin. D1 has no row-level security, so check the caller before using `dataStores().service`: public writes are same-origin and Turnstile-gated, admin endpoints verify the admin first.
 - **Naming.** Nothing in the repository names a particular person, domain or deployment outside the instance files: packages are `@idstead/*` and `@mdrs/*`, browser storage keys `idstead_*`, and docs and tests use `example.com` (MDRS examples `my-site.example`) and the default resource names. `tests/naming.test.ts` fails when the old personal prefix appears outside its allowlists.

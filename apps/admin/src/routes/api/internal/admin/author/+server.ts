@@ -3,7 +3,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminCv.ts';
+import { requireAdminAuth } from '#lib/server/adminResume.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url))

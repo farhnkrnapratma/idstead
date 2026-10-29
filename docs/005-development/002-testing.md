@@ -24,8 +24,8 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 
 | File | Covers |
 | --- | --- |
-| `apiV1.test.ts` | Live v1 contract: discovery, parameters/aliases, blog, comments, views, author/CV byte-equality, PDF checksum headers, search, CORS, 404/405, error envelope shape |
-| `apiV1Handlers.test.ts` | Offline v1 handlers: `/cv` equals `/author?field=cv`, no DB IDs, checksum rules, markdown negotiation, comment nesting |
+| `apiV1.test.ts` | Live v1 contract: discovery, parameters/aliases, blog, comments, views, author/Resume byte-equality, PDF checksum headers, search, CORS, 404/405, error envelope shape |
+| `apiV1Handlers.test.ts` | Offline v1 handlers: `/resume` equals `/author?field=resume`, no DB IDs, checksum rules, markdown negotiation, comment nesting |
 | `apiParams.test.ts` | `parseApiParams`, aliases, conflicts, `output` vs `Accept`, boolean and number parsing |
 | `postSlug.test.ts` | Post slugs and the slug regeneration plan |
 | `publicPost.test.ts` | `publicPostFields` keeps only public columns and swaps the UUID for the public ID |
@@ -55,8 +55,8 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `r2.test.ts` | `ASSET_BUCKET` binding helpers: missing binding, copy, paginated list and batched delete, create-once put |
 | `assetNaming.test.ts` | Asset file names and alt text |
 | `avatarFormats.test.ts`, `imageSources.test.ts`, `identityFallback.test.ts`, `siteBannerUpload.test.ts`, `contentImageAvif.test.ts` | Avatar WebP/AVIF validation, `<picture>` sources, identity fallbacks, site banner package, content image AVIF variant |
-| `cvPdf.test.ts`, `cvVersion.test.ts`, `cvChecksums.test.ts`, `author.test.ts`, `dataExport.test.ts` | CV PDF generation, CV version bumps, coreutils checksums and storage keys, author loading, data export |
-| `openpgp.test.ts`, `wkdRoute.test.ts` | OpenPGP key parsing, detached CV signatures, key discovery (WKD hashes, keyservers) and the CV verification bundle; WKD direct-method lookup |
+| `resumePdf.test.ts`, `resumeVersion.test.ts`, `resumeChecksums.test.ts`, `author.test.ts`, `dataExport.test.ts` | Resume PDF generation, resume version bumps, coreutils checksums and storage keys, author loading, data export |
+| `openpgp.test.ts`, `wkdRoute.test.ts` | OpenPGP key parsing, detached resume signatures, key discovery (WKD hashes, keyservers) and the resume verification bundle; WKD direct-method lookup |
 | `a11ySettings.test.ts`, `focusHighlight.test.ts`, `frameScheduler.test.ts`, `calendarWeekColumns.test.ts`, `analyticsTag.test.ts`, `codeScrollbar.test.ts`, `deviceClass.test.ts`, `qrSvg.test.ts`, `skipLink.test.ts` | UI helpers: accessibility settings, focus, frame scheduling, calendar, analytics tag, code block scrollbar, device class, QR SVG, one skip link per page |
 
 `tests/fixtures/` holds the binary and Markdown fixtures (AVIF images, OpenPGP keys, `markdown-demo.md`).

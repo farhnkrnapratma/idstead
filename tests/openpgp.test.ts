@@ -14,13 +14,13 @@ import {
     wkdEmails,
     wkdHash
 } from '../packages/domain/src/openpgpKey.ts';
-import { buildCvBundle } from '../packages/lib/src/server/cvBundle.ts';
-import { cvChecksums } from '../packages/lib/src/server/cvChecksums.ts';
+import { buildResumeBundle } from '../packages/lib/src/server/resumeBundle.ts';
+import { resumeChecksums } from '../packages/lib/src/server/resumeChecksums.ts';
 
 const fixture = async (name: string) =>
     new Uint8Array(await readFile(new URL(`./fixtures/openpgp/${name}`, import.meta.url)));
 const FPR = '73C032AD78AC6F2E7CE781A27ABA82BF0C80A58C';
-const pdf = await fixture('cv.pdf');
+const pdf = await fixture('resume.pdf');
 const armoredKey = await fixture('ada.pub.asc');
 
 describe('OpenPGP public keys', () => {
@@ -50,31 +50,34 @@ describe('OpenPGP public keys', () => {
 
 const { key } = await parsePublicKey(armoredKey);
 
-describe('detached CV signatures', () => {
-    test.each(['cv.pdf.asc', 'cv.pdf.sig'])('verifies %s and returns both formats', async name => {
-        const parsed = await parseDetachedSignature(await fixture(name));
-        await verifyDetachedSignature(pdf, parsed.signature, key);
-        expect(parsed.asc.startsWith('-----BEGIN PGP SIGNATURE-----')).toBe(true);
-        const roundTrip = await parseDetachedSignature(parsed.sig);
-        await verifyDetachedSignature(pdf, roundTrip.signature, key);
-    });
+describe('detached resume signatures', () => {
+    test.each(['resume.pdf.asc', 'resume.pdf.sig'])(
+        'verifies %s and returns both formats',
+        async name => {
+            const parsed = await parseDetachedSignature(await fixture(name));
+            await verifyDetachedSignature(pdf, parsed.signature, key);
+            expect(parsed.asc.startsWith('-----BEGIN PGP SIGNATURE-----')).toBe(true);
+            const roundTrip = await parseDetachedSignature(parsed.sig);
+            await verifyDetachedSignature(pdf, roundTrip.signature, key);
+        }
+    );
 
     test('rejects a signature over another file', async () => {
-        const parsed = await parseDetachedSignature(await fixture('cv.pdf.sig'));
+        const parsed = await parseDetachedSignature(await fixture('resume.pdf.sig'));
         await expect(
             verifyDetachedSignature(new TextEncoder().encode('other'), parsed.signature, key)
         ).rejects.toThrow('does not match the current PDF');
     });
 
     test('rejects a signature made with another key', async () => {
-        const parsed = await parseDetachedSignature(await fixture('cv.pdf.mallory.sig'));
+        const parsed = await parseDetachedSignature(await fixture('resume.pdf.mallory.sig'));
         await expect(verifyDetachedSignature(pdf, parsed.signature, key)).rejects.toThrow(
             `not your active key ${FPR}`
         );
     });
 
     test('rejects a signed message, a public key and oversized input', async () => {
-        await expect(parseDetachedSignature(await fixture('cv.pdf.gpg'))).rejects.toThrow(
+        await expect(parseDetachedSignature(await fixture('resume.pdf.gpg'))).rejects.toThrow(
             '--detach-sign'
         );
         await expect(parseDetachedSignature(armoredKey)).rejects.toThrow('--detach-sign');
@@ -134,11 +137,11 @@ describe('key discovery', () => {
 
 describe('verification bundle', () => {
     test('holds checksums, both signatures, the key and instructions', async () => {
-        const filename = 'CV-Ada-1234567-v1.0.pdf';
-        const { files } = await cvChecksums(pdf, filename);
-        const parsed = await parseDetachedSignature(await fixture('cv.pdf.sig'));
+        const filename = 'Resume-Ada-1234567-v1.0.pdf';
+        const { files } = await resumeChecksums(pdf, filename);
+        const parsed = await parseDetachedSignature(await fixture('resume.pdf.sig'));
         const zip = unzipSync(
-            buildCvBundle({
+            buildResumeBundle({
                 filename,
                 pdf,
                 checksumFiles: files,
@@ -175,11 +178,11 @@ describe('verification bundle', () => {
         expect(zip[filename]).toEqual(pdf);
     });
 
-    test('says so when the CV is unsigned', async () => {
-        const { files } = await cvChecksums(pdf, 'cv.pdf');
+    test('says so when the resume is unsigned', async () => {
+        const { files } = await resumeChecksums(pdf, 'resume.pdf');
         const zip = unzipSync(
-            buildCvBundle({
-                filename: 'cv.pdf',
+            buildResumeBundle({
+                filename: 'resume.pdf',
                 pdf,
                 checksumFiles: files,
                 signature: null,
@@ -190,7 +193,7 @@ describe('verification bundle', () => {
                 date: new Date()
             })
         );
-        expect(zip['cv.pdf.sig']).toBeUndefined();
+        expect(zip['resume.pdf.sig']).toBeUndefined();
         expect(strFromU8(zip['VERIFY.txt'])).toContain('not signed yet');
     });
 });

@@ -41,7 +41,7 @@ sequenceDiagram
 | Markdown image | `processContentImage.ts` → `workers/contentImage.worker.ts`: WebP + AVIF, max edge 2400, ≤ 500 KiB | `validateContentImage.ts` (`inspectWebp` + WebP decode) and `validateContentImageAvif` | `{home}/images/{name}.{avif,webp}` | CDN URL; markdown links the `.avif`, rendered as `<picture>` with the `.webp` fallback |
 | Markdown video | uploaded as-is, **WebM only** (EBML header with DocType `webm`, `isWebm()`) | `admin/blog/content-video` route | `{home}/videos/{name}.webm` | CDN URL, rendered as `<video>` |
 | Website banner | `processSiteBanner.ts` → `workers/siteBanner.worker.ts`: `banner.avif`, `banner.webp` (1280×640), `banner-og.webp` (1200×630) | `validateSiteBanner.ts`: `inspectAvif` / `inspectWebp` with exact dimensions | `identity/{name}`, next to the avatar | `/banner.{avif,webp}`, `/banner-og.webp` → `serveIdentityAsset()` |
-| CV PDF | generated server-side (`pdfGenerator.ts`) | – | `cv/{filename}` plus `.sha256`, `.sha512`, `.md5`, `.b2` and an optional `.asc` (see [011-cv-documents.md](011-cv-documents.md)) | `db_documents.file_url` (CDN URL), streamed by `/v1/cv?output=pdf` |
+| Resume PDF | generated server-side (`pdfGenerator.ts`) | – | `resume/{filename}` plus `.sha256`, `.sha512`, `.md5`, `.b2` and an optional `.asc` (see [011-resume-documents.md](011-resume-documents.md)) | `db_documents.file_url` (CDN URL), streamed by `/v1/resume?output=pdf` |
 | Post Markdown | – | – | R2 `content/posts/{postUuid}/{operationId}.md` | read by page loads and the API |
 
 ## Blog post assets

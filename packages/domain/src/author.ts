@@ -1,4 +1,4 @@
-import { CV_CHECKSUM_ALGORITHMS, type CvChecksums } from './cvChecksums';
+import { RESUME_CHECKSUM_ALGORITHMS, type ResumeChecksums } from './resumeChecksums';
 import { decodeHtmlEntities } from './entities';
 import { isFingerprint, safeKeyserverUrl, type PublicOpenPgpKey } from './openpgpKey';
 
@@ -83,7 +83,7 @@ export interface ContactInfo {
     sortOrder?: number;
 }
 
-export interface CvDocument {
+export interface ResumeDocument {
     id?: string;
     filename: string;
     fileUrl: string;
@@ -91,7 +91,7 @@ export interface CvDocument {
     version?: string | null;
     signedAt?: string | null;
     signerFingerprint?: string | null;
-    checksums?: CvChecksums | null;
+    checksums?: ResumeChecksums | null;
     isActive: boolean;
     sortOrder?: number;
     updatedAt?: string;
@@ -406,16 +406,16 @@ export function skillGroupFromItem(item: SkillItem): SkillCategoryGroup {
     };
 }
 
-export function cvChecksumsFrom(value: unknown): CvChecksums | null {
+export function resumeChecksumsFrom(value: unknown): ResumeChecksums | null {
     if (!value || typeof value !== 'object') return null;
     const record = value as Record<string, unknown>;
-    const entries = CV_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, record[ext]] as const);
+    const entries = RESUME_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, record[ext]] as const);
     return entries.every(([, digest]) => typeof digest === 'string' && /^[0-9a-f]+$/.test(digest)) ?
-            (Object.fromEntries(entries) as CvChecksums)
+            (Object.fromEntries(entries) as ResumeChecksums)
         :   null;
 }
 
-export function cvDocumentFromRow(data: Row, hash: string): CvDocument {
+export function resumeDocumentFromRow(data: Row, hash: string): ResumeDocument {
     return {
         id: data.id,
         filename: data.filename || '',
@@ -424,7 +424,7 @@ export function cvDocumentFromRow(data: Row, hash: string): CvDocument {
         version: data.version ?? null,
         signedAt: data.signed_at ?? null,
         signerFingerprint: data.signer_fingerprint ?? null,
-        checksums: cvChecksumsFrom(data.checksums),
+        checksums: resumeChecksumsFrom(data.checksums),
         isActive: data.is_active ?? true,
         sortOrder: data.sort_order,
         updatedAt: data.updated_at

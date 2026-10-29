@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { logAdminActivity, requireAdminAuth } from '#lib/server/adminCv.ts';
+import { logAdminActivity, requireAdminAuth } from '#lib/server/adminResume.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';

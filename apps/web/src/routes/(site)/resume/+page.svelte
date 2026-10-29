@@ -4,8 +4,8 @@
     import { EmptyState, PageContainer, PageMain, Section, SectionHeader } from '@idstead/ui';
     import { argKey } from '@idstead/ui/shortcuts.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
-    import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
-    import CvEntryList from '#app/components/CvEntryList.svelte';
+    import ResumeDownloadMenu from '#app/components/ResumeDownloadMenu.svelte';
+    import ResumeEntryList from '#app/components/ResumeEntryList.svelte';
     import SkillGroup from '#app/components/SkillGroup.svelte';
     import SiteMeta from '#app/components/SiteMeta.svelte';
     import {
@@ -15,14 +15,14 @@
 
     let { data } = $props();
 
-    const experiences = $derived(data.cv?.experience || []);
-    const education = $derived(data.cv?.education || []);
+    const experiences = $derived(data.resume?.experience || []);
+    const education = $derived(data.resume?.education || []);
     const skills = $derived<SkillGroupData[]>(normalizeSkillGroups(data.skills || []));
     const isEmpty = $derived(
         experiences.length === 0
             && education.length === 0
             && skills.length === 0
-            && !data.cvDocument
+            && !data.resumeDocument
     );
 
     function skillGroupBasis(skillCount: number): number {
@@ -31,11 +31,11 @@
 </script>
 
 <SiteMeta
-    title="Curriculum Vitae"
+    title="Resume"
     description={data.author?.name ?
         `Experience, education and skills of ${data.author.name}.`
     :   'Experience, education and skills.'}
-    path="/cv"
+    path="/resume"
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
 
@@ -50,31 +50,31 @@
             {#if isEmpty}
                 <EmptyState
                     icon={FileUser}
-                    title="No CV yet"
+                    title="No resume yet"
                     description="Check back soon." />
             {:else}
                 <SectionHeader
                     class="mb-6"
-                    title="Curriculum Vitae">
+                    title="Resume">
                     {#snippet actions()}
-                        <CvDownloadMenu
-                            document={data.cvDocument}
+                        <ResumeDownloadMenu
+                            document={data.resumeDocument}
                             placement="bottom-end"
                             shortcutGroup="save"
-                            shortcutChordKey={argKey('/save', 'cv')} />
+                            shortcutChordKey={argKey('/save', 'resume')} />
                     {/snippet}
                 </SectionHeader>
 
                 <div class="mt-8">
                     <h2 class="mb-4 type-section-title">Experience</h2>
-                    <CvEntryList
+                    <ResumeEntryList
                         kind="experience"
                         entries={experiences} />
                 </div>
 
                 <div class="mt-8">
                     <h2 class="mb-4 type-section-title">Education</h2>
-                    <CvEntryList
+                    <ResumeEntryList
                         kind="education"
                         entries={education} />
                 </div>

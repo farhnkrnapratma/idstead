@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { processCvGenerate } from '#lib/server/adminCv.ts';
+import { processResumeDelete } from '#lib/server/adminResume.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 
@@ -8,5 +8,5 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     }
 
-    return processCvGenerate(request, platform, getClientAddress);
+    return processResumeDelete(request, platform, getClientAddress);
 };

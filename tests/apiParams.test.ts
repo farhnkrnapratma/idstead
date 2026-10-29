@@ -30,14 +30,14 @@ describe('API parameters', () => {
     });
 
     test('reads multi-value parameters from commas or repetition', () => {
-        const commas = parseApiParams(url('?field=profile,cv'), ['field']);
-        const repeated = parseApiParams(url('?f=profile&f=cv&f=profile'), ['field']);
-        expect(commas.getAll('field')).toEqual(['profile', 'cv']);
-        expect(repeated.getAll('field')).toEqual(['profile', 'cv']);
+        const commas = parseApiParams(url('?field=profile,resume'), ['field']);
+        const repeated = parseApiParams(url('?f=profile&f=resume&f=profile'), ['field']);
+        expect(commas.getAll('field')).toEqual(['profile', 'resume']);
+        expect(repeated.getAll('field')).toEqual(['profile', 'resume']);
     });
 
     test('rejects a parameter sent under both its name and its alias', () => {
-        const error = rejection(() => parseApiParams(url('?f=cv&field=cv'), ['field']));
+        const error = rejection(() => parseApiParams(url('?f=resume&field=resume'), ['field']));
         expect(error.status).toBe(400);
         expect(error.code).toBe('PARAM_CONFLICT');
     });
@@ -52,7 +52,7 @@ describe('API parameters', () => {
         const error = rejection(() => parseApiParams(url('?format=md'), ['output']));
         expect(error.code).toBe('UNKNOWN_PARAMETER');
         expect(error.details).toContain("'format'");
-        expect(rejection(() => parseApiParams(url('?f=cv'), ['output'])).code).toBe(
+        expect(rejection(() => parseApiParams(url('?f=resume'), ['output'])).code).toBe(
             'UNKNOWN_PARAMETER'
         );
     });

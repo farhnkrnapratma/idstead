@@ -3,7 +3,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
+import { requireAdminAuth, deleteResumeFile } from '#lib/server/adminResume.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
@@ -101,7 +101,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     let cleanupFailed = false;
     for (const filename of plan.documents) {
-        if (!(await deleteCvFile(platform, service.cvDocuments, filename, true)))
+        if (!(await deleteResumeFile(platform, service.resumeDocuments, filename, true)))
             cleanupFailed = true;
     }
     try {

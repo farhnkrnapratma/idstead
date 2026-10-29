@@ -139,14 +139,14 @@ describe('D1 admin author store', () => {
 });
 
 describe('D1 author writer', () => {
-    test('replaces the CV, skills, links and repository rules of the author', async () => {
+    test('replaces the resume, skills, links and repository rules of the author', async () => {
         const { db } = d1Shim();
         const store = createD1AdminAuthorStore(db);
         const writer = createD1AuthorWriter(db);
         const author = createD1AuthorRepository(db);
         const id = await store.ensureProfileId();
         expect(
-            await writer.saveCv(
+            await writer.saveResume(
                 id,
                 [
                     {
@@ -160,13 +160,13 @@ describe('D1 author writer', () => {
                 [{ institution: 'Uni', start_year: 2018, end_year: '', end_month: '' }]
             )
         ).toEqual({ status: 'saved' });
-        const cv = await author.cvEntries();
-        expect(cv.experience).toHaveLength(1);
-        expect(cv.education).toHaveLength(1);
-        expect(await writer.saveCv(id, [{ title: 'Bad', start_year: 'soon' }], [])).toMatchObject({
-            status: 'rejected'
-        });
-        expect((await author.cvEntries()).experience).toHaveLength(1);
+        const resume = await author.resumeEntries();
+        expect(resume.experience).toHaveLength(1);
+        expect(resume.education).toHaveLength(1);
+        expect(
+            await writer.saveResume(id, [{ title: 'Bad', start_year: 'soon' }], [])
+        ).toMatchObject({ status: 'rejected' });
+        expect((await author.resumeEntries()).experience).toHaveLength(1);
         await writer.saveSkills(id, [{ category: 'Languages', skills: ['Rust', 'TypeScript'] }]);
         expect((await author.skillGroups())[0]).toMatchObject({ category: 'Languages' });
         expect(

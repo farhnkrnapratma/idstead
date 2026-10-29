@@ -55,7 +55,7 @@ const helpCommandCategories: HelpCategory[] = [
                     'home',
                     'blog',
                     'projects',
-                    'cv',
+                    'resume',
                     'funding',
                     'contact',
                     'terms',
@@ -95,11 +95,11 @@ const helpCommandCategories: HelpCategory[] = [
                 icon: FolderOpen
             },
             {
-                command: '/cv',
+                command: '/resume',
                 argHint: '',
-                description: 'View curriculum vitae and work experience.',
+                description: 'View resume and work experience.',
                 validArgs: [],
-                actionQuery: '/cv',
+                actionQuery: '/resume',
                 icon: FileUser
             },
             {
@@ -209,7 +209,7 @@ const helpCommandCategories: HelpCategory[] = [
                 command: '/save',
                 argHint: '[target]',
                 description: 'Download resume or export article file.',
-                validArgs: ['cv', 'md', 'txt'],
+                validArgs: ['resume', 'md', 'txt'],
                 actionQuery: '/save ',
                 icon: Save
             },

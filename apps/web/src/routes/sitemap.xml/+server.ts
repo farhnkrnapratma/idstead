@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ request, fetch, platform }) => {
                 { path: '/', updated: undefined as string | undefined },
                 { path: '/projects', updated: undefined as string | undefined },
                 { path: '/blog', updated: undefined as string | undefined },
-                { path: '/cv', updated: undefined as string | undefined },
+                { path: '/resume', updated: undefined as string | undefined },
                 { path: '/funding', updated: undefined as string | undefined },
                 { path: '/contact', updated: undefined as string | undefined },
                 { path: '/feedback', updated: undefined as string | undefined },

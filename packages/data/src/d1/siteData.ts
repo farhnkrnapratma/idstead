@@ -88,7 +88,10 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                     'project rules',
                     'SELECT rule_type, repo_name FROM db_project_repo_rules ORDER BY sort_order'
                 ),
-                rows('cv documents', 'SELECT filename, hash FROM db_documents WHERE is_active = 1'),
+                rows(
+                    'resume documents',
+                    'SELECT filename, hash FROM db_documents WHERE is_active = 1'
+                ),
                 rows('settings', 'SELECT settings FROM db_admin_settings', row => ({
                     settings: parseJson(row.settings)
                 })),

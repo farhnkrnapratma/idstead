@@ -313,10 +313,10 @@ export function createDynamicCommandItems(
                     badge: 'Section'
                 },
                 {
-                    name: 'cv',
-                    title: '/goto cv',
+                    name: 'resume',
+                    title: '/goto resume',
                     subtitle: 'View resume and work experience.',
-                    url: '/cv',
+                    url: '/resume',
                     icon: FileUser,
                     badge: 'Section'
                 },
@@ -538,13 +538,13 @@ export function createDynamicCommandItems(
             const isBlogPage = pathname.startsWith('/blog/') && pathname.length > 6;
             const currentSlug = isBlogPage ? pathname.replace('/blog/', '').split('/')[0] : '';
 
-            if (!arg || 'cv'.startsWith(arg) || 'curriculum-vitae'.startsWith(arg)) {
+            if (!arg || 'resume'.startsWith(arg) || 'resume'.startsWith(arg)) {
                 items.push({
-                    id: 'dyn-save-cv',
+                    id: 'dyn-save-resume',
                     category: 'actions',
-                    title: '/save cv',
+                    title: '/save resume',
                     subtitle: 'Download resume document as PDF.',
-                    url: apiUrl('/cv?output=pdf', publicEnv.PUBLIC_API_BASE_URL),
+                    url: apiUrl('/resume?output=pdf', publicEnv.PUBLIC_API_BASE_URL),
                     icon: Save,
                     badge: 'File'
                 });

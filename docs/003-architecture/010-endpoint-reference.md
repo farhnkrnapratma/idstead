@@ -22,7 +22,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/v1/blog/comments`                    | `getBlogComments`                             |
 | `/v1/blog/views`                       | `getBlogViews`                                |
 | `/v1/author`                           | `getAuthor`                                   |
-| `/v1/cv`                               | `getAuthor(ctx, ['cv'])`                      |
+| `/v1/resume`                           | `getAuthor(ctx, ['resume'])`                  |
 | `/v1/search`                           | `getSearch`                                   |
 | `/v1/openapi.json`, `/v1/openapi.yaml` | `openapiSpec`                                 |
 
@@ -30,7 +30,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 
 ### Pages
 
-`/`, `/projects`, `/blog`, `/blog/[slug]`, `/cv`, `/funding`, `/contact`, `/feedback`, `/privacy`, `/terms`, `/security`, `/ai-disclosure`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `GET /unsubscribe?token=` only stores the token in a short-lived httpOnly cookie and shows a confirm button; the page's default form action (`POST /unsubscribe`) unsubscribes. The legal pages answer 404 while their `db_legals` row is missing or empty, and the root layout returns the published ones as `legalPages`, so the footer, consent notices, Spotlight, keyboard shortcuts and the sitemap leave the others out. `/home` redirects 308 to `/`; the homepage replaces a legacy `/#section` URL with the matching page.
+`/`, `/projects`, `/blog`, `/blog/[slug]`, `/resume`, `/funding`, `/contact`, `/feedback`, `/privacy`, `/terms`, `/security`, `/ai-disclosure`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `GET /unsubscribe?token=` only stores the token in a short-lived httpOnly cookie and shows a confirm button; the page's default form action (`POST /unsubscribe`) unsubscribes. The legal pages answer 404 while their `db_legals` row is missing or empty, and the root layout returns the published ones as `legalPages`, so the footer, consent notices, Spotlight, keyboard shortcuts and the sitemap leave the others out. `/home` redirects 308 to `/`; the homepage replaces a legacy `/#section` URL with the matching page.
 
 ### Files and feeds (GET)
 
@@ -116,12 +116,12 @@ API routes authenticate themselves:
 | `/api/internal/admin/settings` | GET, PUT | same-origin + `verifyAdminToken` |
 | `/api/internal/admin/profile` | GET, POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/profile/import` | POST | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/cv` | POST | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/cv/generate` | POST | same-origin + `requireAdminAuth`, called inside `processCvGenerate()` |
-| `/api/internal/admin/cv/delete` | POST | same-origin + `requireAdminAuth`, called inside `processCvDelete()` |
-| `/api/internal/admin/cv/signature` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processCvSignature()` |
+| `/api/internal/admin/resume` | POST | same-origin + `requireAdminAuth` |
+| `/api/internal/admin/resume/generate` | POST | same-origin + `requireAdminAuth`, called inside `processResumeGenerate()` |
+| `/api/internal/admin/resume/delete` | POST | same-origin + `requireAdminAuth`, called inside `processResumeDelete()` |
+| `/api/internal/admin/resume/signature` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processResumeSignature()` |
 | `/api/internal/admin/openpgp-key` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processOpenPgpKey()` |
-| `/api/internal/admin/author` | GET | same-origin + `requireAdminAuth`; the admin editing snapshot (profile, identity metadata, CV, skills, links, repository rules, CV document, OpenPGP key), or `?part=profile` for the profile alone |
+| `/api/internal/admin/author` | GET | same-origin + `requireAdminAuth`; the admin editing snapshot (profile, identity metadata, resume, skills, links, repository rules, resume document, OpenPGP key), or `?part=profile` for the profile alone |
 | `/api/internal/admin/legal` | GET, POST | same-origin + `requireAdminAuth`; the privacy, security and terms pages, or `{slug, title, content}` to save one through `service.legalWriter` |
 | `/api/internal/admin/projects` | POST | same-origin + `requireAdminAuth`; `{pinned, excluded}` repository names for the projects section |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
@@ -137,4 +137,4 @@ API routes authenticate themselves:
 
 - `apps/api/src/index.ts`
 - `apps/web/src/routes/**`, `apps/admin/src/routes/**`
-- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminCv.ts`, `adminActivity.ts`, `adminWorkspace.ts` (the last two read and write through `AdminActivityStore` from `@idstead/data`)
+- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminResume.ts`, `adminActivity.ts`, `adminWorkspace.ts` (the last two read and write through `AdminActivityStore` from `@idstead/data`)

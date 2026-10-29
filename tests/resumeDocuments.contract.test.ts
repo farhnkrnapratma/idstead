@@ -1,12 +1,15 @@
-import { cvDocumentContract, type CvDocumentSeed } from './contracts/cvDocuments.contract.ts';
+import {
+    resumeDocumentContract,
+    type ResumeDocumentSeed
+} from './contracts/resumeDocuments.contract.ts';
 import { d1AuthorRows } from './support/authorTables.ts';
 import {
-    createD1CvDocumentStore,
+    createD1ResumeDocumentStore,
     createD1OpenPgpKeyStore
-} from '../packages/data/src/d1/cvDocuments.ts';
+} from '../packages/data/src/d1/resumeDocuments.ts';
 import { d1Shim, insertRows } from './support/d1.ts';
 
-function d1FromSeed(seed: CvDocumentSeed) {
+function d1FromSeed(seed: ResumeDocumentSeed) {
     const { db, sqlite } = d1Shim();
     for (const [table, rows] of Object.entries(d1AuthorRows(seed.author)))
         insertRows(sqlite, table, rows);
@@ -18,7 +21,7 @@ function d1FromSeed(seed: CvDocumentSeed) {
             content: JSON.stringify(snapshot.content)
         }))
     );
-    return { documents: createD1CvDocumentStore(db), keys: createD1OpenPgpKeyStore(db) };
+    return { documents: createD1ResumeDocumentStore(db), keys: createD1OpenPgpKeyStore(db) };
 }
 
-cvDocumentContract('D1 adapter', d1FromSeed);
+resumeDocumentContract('D1 adapter', d1FromSeed);

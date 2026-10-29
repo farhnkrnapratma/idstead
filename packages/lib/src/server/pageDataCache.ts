@@ -4,7 +4,7 @@ import { runInBackground } from './workerEnv';
 
 export const PAGE_DATA_CACHE_SECONDS = 60;
 
-const CACHEABLE_PAGES = new Set(['/', '/projects', '/blog', '/cv', '/funding', '/contact']);
+const CACHEABLE_PAGES = new Set(['/', '/projects', '/blog', '/resume', '/funding', '/contact']);
 const DATA_SUFFIX = '/__data.json';
 const TRACKING_PARAM = /^(_gl|_ga|gclid|fbclid|msclkid|utm_[a-z_]+)$/i;
 

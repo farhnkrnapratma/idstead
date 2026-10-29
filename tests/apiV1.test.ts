@@ -128,7 +128,7 @@ describe.skipIf(!baseUrl)('public API v1', () => {
         });
 
         test('a parameter cannot be sent under both its name and its alias', async () => {
-            await expectApiError('/author?f=cv&field=cv', 400, 'PARAM_CONFLICT');
+            await expectApiError('/author?f=resume&field=resume', 400, 'PARAM_CONFLICT');
         });
 
         test('aliases and full names produce the same response', async () => {
@@ -233,7 +233,7 @@ describe.skipIf(!baseUrl)('public API v1', () => {
         });
     });
 
-    describe('author and CV', () => {
+    describe('author and resume', () => {
         test('GET /v1/author returns every section by default', async () => {
             const { body } = await getJson('/author');
             expect(body).toHaveProperty('profile');
@@ -245,17 +245,17 @@ describe.skipIf(!baseUrl)('public API v1', () => {
             await expectApiError('/author/skills', 404, 'NOT_FOUND');
         });
 
-        test('GET /v1/cv matches /v1/author?field=cv byte for byte', async () => {
-            const cv = await api('/cv');
-            const author = await api('/author?field=cv');
-            expect(cv.status).toBe(200);
-            expect(cv.headers.get('location')).toBeNull();
-            expect(cv.headers.get('etag')).toBe(author.headers.get('etag'));
-            expect(await cv.text()).toBe(await author.text());
+        test('GET /v1/resume matches /v1/author?field=resume byte for byte', async () => {
+            const resume = await api('/resume');
+            const author = await api('/author?field=resume');
+            expect(resume.status).toBe(200);
+            expect(resume.headers.get('location')).toBeNull();
+            expect(resume.headers.get('etag')).toBe(author.headers.get('etag'));
+            expect(await resume.text()).toBe(await author.text());
         });
 
-        test('HEAD /v1/cv?o=pdf sends checksum headers by default', async () => {
-            const response = await api('/cv?o=pdf', { method: 'HEAD' });
+        test('HEAD /v1/resume?o=pdf sends checksum headers by default', async () => {
+            const response = await api('/resume?o=pdf', { method: 'HEAD' });
             expect(response.status).toBe(200);
             expect(response.headers.get('content-type')).toContain('application/pdf');
             expect(response.headers.get('content-disposition')).toMatch(/^attachment;/);
@@ -263,15 +263,15 @@ describe.skipIf(!baseUrl)('public API v1', () => {
             expect(response.headers.get('repr-digest')).toMatch(/^sha-256=:[A-Za-z0-9+/]+=*:$/);
         });
 
-        test('HEAD /v1/cv?o=pdf&c=false omits checksum headers', async () => {
-            const response = await api('/cv?o=pdf&c=false', { method: 'HEAD' });
+        test('HEAD /v1/resume?o=pdf&c=false omits checksum headers', async () => {
+            const response = await api('/resume?o=pdf&c=false', { method: 'HEAD' });
             expect(response.status).toBe(200);
             expect(response.headers.get('x-checksum-sha256')).toBeNull();
             expect(response.headers.get('repr-digest')).toBeNull();
         });
 
-        test('checksum needs PDF output and PDF needs the CV alone', async () => {
-            await expectApiError('/cv?checksum=true', 400, 'CV_CHECKSUM_REQUIRES_PDF');
+        test('checksum needs PDF output and PDF needs the resume alone', async () => {
+            await expectApiError('/resume?checksum=true', 400, 'RESUME_CHECKSUM_REQUIRES_PDF');
             await expectApiError('/author?f=profile&o=pdf', 400, 'OUTPUT_UNSUPPORTED');
         });
     });

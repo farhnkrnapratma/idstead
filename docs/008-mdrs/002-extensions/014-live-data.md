@@ -24,7 +24,7 @@ The author profile, shaped like the public API's `GET /v1/author` response:
 | Path                    | Contains                                                           |
 | ----------------------- | ------------------------------------------------------------------ |
 | `api.v1.author.profile` | Name, bio, avatar, site URL and other profile fields, plus `email` |
-| `api.v1.author.cv`      | CV entries                                                         |
+| `api.v1.author.resume`  | Resume entries                                                     |
 | `api.v1.author.funding` | Funding links                                                      |
 | `api.v1.author.contact` | Contact information                                                |
 | `api.v1.author.skills`  | Skills, grouped                                                    |

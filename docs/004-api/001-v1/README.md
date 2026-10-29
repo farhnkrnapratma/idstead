@@ -15,7 +15,7 @@ curl https://api.example.com/v1/blog
 | [parameters.md](001-parameters.md) | Query parameters, aliases, output negotiation, post IDs |
 | [errors.md](002-errors.md) | Error envelope and every v1 error code |
 | [blog.md](003-blog.md) | `/v1/blog`, `/v1/blog/content`, `/v1/blog/comments`, `/v1/blog/views` |
-| [author.md](004-author.md) | `/v1/author`, `/v1/cv` |
+| [author.md](004-author.md) | `/v1/author`, `/v1/resume` |
 | [search.md](005-search.md) | `/v1/search` |
 | [discovery.md](006-discovery.md) | `/v1`, OpenAPI, `.well-known`, `llms.txt`, agent skills |
 
@@ -28,8 +28,8 @@ curl https://api.example.com/v1/blog
 | GET | `/v1/blog/content?id=` | `md` | `txt`, `json` |
 | GET | `/v1/blog/comments` | `json` | – |
 | GET | `/v1/blog/views?id=` | `json` | – |
-| GET | `/v1/author` | `json` | `md`, plus `pdf` with `field=cv` only |
-| GET | `/v1/cv` | `json` | `md`, `pdf` |
+| GET | `/v1/author` | `json` | `md`, plus `pdf` with `field=resume` only |
+| GET | `/v1/resume` | `json` | `md`, `pdf` |
 | GET | `/v1/search` | `json` | – |
 | GET | `/v1/openapi.json`, `/v1/openapi.yaml` | spec | – |
 

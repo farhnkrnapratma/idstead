@@ -2,7 +2,7 @@
     import { FileUser } from '@lucide/svelte';
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import type { EducationItem, ExperienceItem } from '#lib/author.ts';
-    import CvEntryCard from './CvEntryCard.svelte';
+    import ResumeEntryCard from './ResumeEntryCard.svelte';
     import { formatPeriod } from '../profilePageHelpers';
 
     type Props =
@@ -30,7 +30,7 @@
     <div class="divide-y divide-line-subtle/40 overflow-hidden rounded-md glass-card text-left">
         {#if props.kind === 'experience'}
             {#each props.entries as exp (exp.company + exp.location + exp.startYear)}
-                <CvEntryCard
+                <ResumeEntryCard
                     role={exp.title}
                     organization={exp.company}
                     location={exp.location}
@@ -45,7 +45,7 @@
             {/each}
         {:else}
             {#each props.entries as edu (edu.institution + edu.startYear)}
-                <CvEntryCard
+                <ResumeEntryCard
                     role={edu.degree}
                     organization={edu.institution}
                     period={formatPeriod(

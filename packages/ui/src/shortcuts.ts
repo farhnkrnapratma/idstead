@@ -68,7 +68,7 @@ export const BUTTON_SHORTCUTS: Record<string, { combo: string; mirrors?: string 
     viewAllProjects: { combo: 'J', mirrors: '/projects' },
     viewAllPosts: { combo: 'B', mirrors: '/blog' },
     getInTouch: { combo: 'N', mirrors: '/contact' },
-    viewFullCv: { combo: 'V', mirrors: '/cv' },
+    viewFullResume: { combo: 'V', mirrors: '/resume' },
     becomeSponsor: { combo: 'U', mirrors: '/funding' },
     feed: { combo: 'R', mirrors: '/rss' },
     termsLink: { combo: 'M', mirrors: '/terms' },
@@ -90,7 +90,7 @@ export function buttonKey(id: keyof typeof BUTTON_SHORTCUTS | string): string {
 
 export const COMMAND_ARG_KEYS = {
     '/copy': { url: 'U', pid: 'P', md: 'M', txt: 'T' },
-    '/save': { cv: 'C', md: 'M', txt: 'T' },
+    '/save': { resume: 'C', md: 'M', txt: 'T' },
     '/code': { theme: 'T', wrap: 'W', lines: 'L', clean: 'C' }
 } as const;
 
@@ -119,7 +119,7 @@ export const COMMAND_SHORTCUTS: Record<string, string> = {
     '/home': 'H',
     '/projects': 'J',
     '/blog': 'B',
-    '/cv': 'V',
+    '/resume': 'V',
     '/funding': 'U',
     '/contact': 'N',
     '/privacy': 'Y',
@@ -156,7 +156,7 @@ export const COMMAND_LABELS: Record<string, string> = {
     '/home': 'Home',
     '/projects': 'Projects',
     '/blog': 'Blog',
-    '/cv': 'CV',
+    '/resume': 'Resume',
     '/funding': 'Funding',
     '/contact': 'Contact',
     '/privacy': 'Privacy policy',

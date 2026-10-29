@@ -1,18 +1,18 @@
 import { describe, expect, test } from 'bun:test';
-import type { CvDocumentStore, OpenPgpKeyStore } from '../../packages/data/src/index.ts';
+import type { ResumeDocumentStore, OpenPgpKeyStore } from '../../packages/data/src/index.ts';
 import { AUTHOR_SEED, type AuthorSeed } from './authorRepository.contract.ts';
 
-export interface CvDocumentSeed {
+export interface ResumeDocumentSeed {
     author: AuthorSeed;
     snapshots: Array<{ documentUuid: string; content: unknown }>;
 }
 
-export type CvDocumentStoresFactory = (seed: CvDocumentSeed) => {
-    documents: CvDocumentStore;
+export type ResumeDocumentStoresFactory = (seed: ResumeDocumentSeed) => {
+    documents: ResumeDocumentStore;
     keys: OpenPgpKeyStore;
 };
 
-const CV_DOCUMENT_SEED: CvDocumentSeed = {
+const RESUME_DOCUMENT_SEED: ResumeDocumentSeed = {
     author: AUTHOR_SEED,
     snapshots: [{ documentUuid: AUTHOR_SEED.documents[1].uuid, content: { version: 1 } }]
 };
@@ -28,10 +28,10 @@ const NEW_KEY = {
     keyservers: [{ label: 'keys', url: 'https://keys.openpgp.org/' }]
 };
 
-export function cvDocumentContract(name: string, factory: CvDocumentStoresFactory) {
-    describe(`CvDocumentStore contract: ${name}`, () => {
-        test('collects the data a CV is generated from', async () => {
-            const source = await factory(CV_DOCUMENT_SEED).documents.sourceData();
+export function resumeDocumentContract(name: string, factory: ResumeDocumentStoresFactory) {
+    describe(`ResumeDocumentStore contract: ${name}`, () => {
+        test('collects the data a resume is generated from', async () => {
+            const source = await factory(RESUME_DOCUMENT_SEED).documents.sourceData();
             expect(source?.profile.id).toBe(AUTHOR_SEED.profile.uuid);
             expect(source?.experiences.map(item => item.title)).toEqual(['First', 'Second']);
             expect(source?.skills).toEqual([
@@ -45,7 +45,7 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
         });
 
         test('finds the active document, its snapshot and filenames', async () => {
-            const { documents } = factory(CV_DOCUMENT_SEED);
+            const { documents } = factory(RESUME_DOCUMENT_SEED);
             expect(await documents.active()).toMatchObject({
                 id: ACTIVE.uuid,
                 filename: ACTIVE.filename,
@@ -60,24 +60,24 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
         });
 
         test('publishing a version makes it the only active document', async () => {
-            const { documents } = factory(CV_DOCUMENT_SEED);
+            const { documents } = factory(RESUME_DOCUMENT_SEED);
             const { id } = await documents.publish(
                 {
                     authorId: AUTHOR_SEED.profile.uuid,
-                    filename: 'cv-v2.pdf',
-                    fileUrl: 'https://storage.test/cv-v2.pdf',
+                    filename: 'resume-v2.pdf',
+                    fileUrl: 'https://storage.test/resume-v2.pdf',
                     hash: 'c'.repeat(64),
                     checksums: { sha256: 'c'.repeat(64) },
                     version: '2.0'
                 },
                 { version: 2 }
             );
-            expect(await documents.activeFilenames()).toEqual(['cv-v2.pdf']);
+            expect(await documents.activeFilenames()).toEqual(['resume-v2.pdf']);
             expect(await documents.snapshot(id)).toEqual({ version: 2 });
         });
 
         test('records and clears a signature', async () => {
-            const { documents } = factory(CV_DOCUMENT_SEED);
+            const { documents } = factory(RESUME_DOCUMENT_SEED);
             await documents.setSignature(ACTIVE.uuid, {
                 signedAt: '2026-10-02T00:00:00Z',
                 fingerprint: 'A'.repeat(40)
@@ -89,13 +89,13 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
         });
 
         test('deletes a document by filename', async () => {
-            const { documents } = factory(CV_DOCUMENT_SEED);
+            const { documents } = factory(RESUME_DOCUMENT_SEED);
             expect(await documents.delete(ACTIVE.filename)).toBe(true);
             expect(await documents.active()).toBeNull();
         });
 
         test('reads the site URL for verification links', async () => {
-            expect(await factory(CV_DOCUMENT_SEED).documents.siteUrl()).toBe(
+            expect(await factory(RESUME_DOCUMENT_SEED).documents.siteUrl()).toBe(
                 AUTHOR_SEED.profile.siteUrl
             );
         });
@@ -103,7 +103,7 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
 
     describe(`OpenPgpKeyStore contract: ${name}`, () => {
         test('publishing a new key replaces the active one', async () => {
-            const { keys } = factory(CV_DOCUMENT_SEED);
+            const { keys } = factory(RESUME_DOCUMENT_SEED);
             await keys.publish(NEW_KEY);
             expect(await keys.active()).toMatchObject({
                 fingerprint: NEW_KEY.fingerprint,
@@ -112,7 +112,7 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
         });
 
         test('republishing the active key updates its keyservers', async () => {
-            const { keys } = factory(CV_DOCUMENT_SEED);
+            const { keys } = factory(RESUME_DOCUMENT_SEED);
             await keys.publish(NEW_KEY);
             await keys.publish({
                 ...NEW_KEY,
@@ -124,7 +124,7 @@ export function cvDocumentContract(name: string, factory: CvDocumentStoresFactor
         });
 
         test('removes the active key', async () => {
-            const { keys } = factory(CV_DOCUMENT_SEED);
+            const { keys } = factory(RESUME_DOCUMENT_SEED);
             await keys.removeActive();
             expect(await keys.active()).toBeNull();
         });

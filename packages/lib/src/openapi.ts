@@ -95,9 +95,10 @@ const searchResultSchema = {
     }
 };
 
-const cvDocumentSchema = {
+const resumeDocumentSchema = {
     type: ['object', 'null'],
-    description: 'The active CV PDF, or null when none exists or its metadata could not be read.',
+    description:
+        'The active resume PDF, or null when none exists or its metadata could not be read.',
     properties: {
         filename: { type: 'string' },
         version: { type: ['string', 'null'] },
@@ -155,12 +156,12 @@ const cvDocumentSchema = {
 const authorSchema = {
     type: 'object',
     description:
-        'One key per requested field (profile, contact, cv, funding, skills, socials). Internal keys such as IDs and sort orders are removed.',
+        'One key per requested field (profile, contact, resume, funding, skills, socials). Internal keys such as IDs and sort orders are removed.',
     properties: {
-        cv: {
+        resume: {
             type: 'object',
             additionalProperties: true,
-            properties: { document: cvDocumentSchema }
+            properties: { document: resumeDocumentSchema }
         }
     },
     additionalProperties: true
@@ -399,7 +400,7 @@ export const openapiSpec = {
             get: {
                 summary: 'Read the author profile',
                 description:
-                    '`field` selects sections (comma-separated or repeated); all sections by default. The file outputs (`pdf`, `sha256`, `sha512`, `md5`, `b2`, `asc`, `sig`, `zip`) are only available when `field` is exactly `cv`. When `cv` is requested, `cv.document` describes the active PDF: checksums, signature, file URLs and where to find the signing key.',
+                    '`field` selects sections (comma-separated or repeated); all sections by default. The file outputs (`pdf`, `sha256`, `sha512`, `md5`, `b2`, `asc`, `sig`, `zip`) are only available when `field` is exactly `resume`. When `resume` is requested, `resume.document` describes the active PDF: checksums, signature, file URLs and where to find the signing key.',
                 parameters: [
                     param(
                         'field',
@@ -408,7 +409,14 @@ export const openapiSpec = {
                             type: 'array',
                             items: {
                                 type: 'string',
-                                enum: ['profile', 'contact', 'cv', 'funding', 'skills', 'socials']
+                                enum: [
+                                    'profile',
+                                    'contact',
+                                    'resume',
+                                    'funding',
+                                    'skills',
+                                    'socials'
+                                ]
                             }
                         },
                         'Sections to include.'
@@ -441,23 +449,23 @@ export const openapiSpec = {
                     },
                     ...commonErrors,
                     '400': errorResponse(
-                        'AUTHOR_FIELD_INVALID, CV_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
+                        'AUTHOR_FIELD_INVALID, RESUME_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
                     ),
                     '404': errorResponse(
-                        'CV_DOCUMENT_NOT_FOUND (no active CV PDF), CV_SIGNATURE_NOT_FOUND (asc/sig while the CV is unsigned) or CV_BUNDLE_NOT_FOUND (zip not built yet).'
+                        'RESUME_DOCUMENT_NOT_FOUND (no active resume PDF), RESUME_SIGNATURE_NOT_FOUND (asc/sig while the resume is unsigned) or RESUME_BUNDLE_NOT_FOUND (zip not built yet).'
                     ),
-                    '500': errorResponse('AUTHOR_FETCH_FAILED or CV_METADATA_FETCH_FAILED.'),
+                    '500': errorResponse('AUTHOR_FETCH_FAILED or RESUME_METADATA_FETCH_FAILED.'),
                     '502': errorResponse(
-                        'CV_FETCH_FAILED: a CV file could not be read from storage.'
+                        'RESUME_FETCH_FAILED: a resume file could not be read from storage.'
                     )
                 }
             }
         },
-        '/v1/cv': {
+        '/v1/resume': {
             get: {
-                summary: 'Read the CV',
+                summary: 'Read the resume',
                 description:
-                    'Identical to GET /v1/author?field=cv. `output=pdf` downloads the PDF; `sha256`, `sha512`, `md5` and `b2` download its coreutils checksum files; `asc` and `sig` download its armored and binary detached OpenPGP signature; `zip` downloads everything in one archive (the PDF, checksums, signatures, public key and VERIFY.txt). Every file output is an attachment named for `sha256sum -c` and `gpg --verify`. PDF and bundle digests are sent in Repr-Digest (sha-256, sha-512) and X-Checksum-SHA256 unless checksum=false.',
+                    'Identical to GET /v1/author?field=resume. `output=pdf` downloads the PDF; `sha256`, `sha512`, `md5` and `b2` download its coreutils checksum files; `asc` and `sig` download its armored and binary detached OpenPGP signature; `zip` downloads everything in one archive (the PDF, checksums, signatures, public key and VERIFY.txt). Every file output is an attachment named for `sha256sum -c` and `gpg --verify`. PDF and bundle digests are sent in Repr-Digest (sha-256, sha-512) and X-Checksum-SHA256 unless checksum=false.',
                 parameters: [
                     outputParam(
                         ['json', 'md', 'pdf', 'sha256', 'sha512', 'md5', 'b2', 'asc', 'sig', 'zip'],
@@ -487,14 +495,14 @@ export const openapiSpec = {
                     },
                     ...commonErrors,
                     '400': errorResponse(
-                        'CV_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
+                        'RESUME_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
                     ),
                     '404': errorResponse(
-                        'CV_DOCUMENT_NOT_FOUND (no active CV PDF), CV_SIGNATURE_NOT_FOUND (asc/sig while the CV is unsigned) or CV_BUNDLE_NOT_FOUND (zip not built yet).'
+                        'RESUME_DOCUMENT_NOT_FOUND (no active resume PDF), RESUME_SIGNATURE_NOT_FOUND (asc/sig while the resume is unsigned) or RESUME_BUNDLE_NOT_FOUND (zip not built yet).'
                     ),
-                    '500': errorResponse('AUTHOR_FETCH_FAILED or CV_METADATA_FETCH_FAILED.'),
+                    '500': errorResponse('AUTHOR_FETCH_FAILED or RESUME_METADATA_FETCH_FAILED.'),
                     '502': errorResponse(
-                        'CV_FETCH_FAILED: a CV file could not be read from storage.'
+                        'RESUME_FETCH_FAILED: a resume file could not be read from storage.'
                     )
                 }
             }

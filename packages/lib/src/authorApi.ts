@@ -87,11 +87,11 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
         lines.push('');
     }
 
-    if (data.cv && (data.cv.experience?.length || data.cv.education?.length)) {
-        if (data.cv.experience && data.cv.experience.length > 0) {
+    if (data.resume && (data.resume.experience?.length || data.resume.education?.length)) {
+        if (data.resume.experience && data.resume.experience.length > 0) {
             lines.push('## Work Experience');
             lines.push('');
-            data.cv.experience.forEach((exp: any) => {
+            data.resume.experience.forEach((exp: any) => {
                 const start = `${exp.startMonth || ''} ${exp.startYear || ''}`.trim();
                 const end =
                     exp.currentlyIn ? 'Present' : (
@@ -111,10 +111,10 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
             });
         }
 
-        if (data.cv.education && data.cv.education.length > 0) {
+        if (data.resume.education && data.resume.education.length > 0) {
             lines.push('## Education');
             lines.push('');
-            data.cv.education.forEach((edu: any) => {
+            data.resume.education.forEach((edu: any) => {
                 const start = `${edu.startMonth || ''} ${edu.startYear || ''}`.trim();
                 const end =
                     edu.currentlyIn ? 'Present' : (

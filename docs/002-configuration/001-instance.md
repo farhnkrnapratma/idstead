@@ -2,7 +2,7 @@
 
 An Idstead instance describes where it runs in `idstead.jsonc` at the repository root. `bun run configure` renders each `apps/*/wrangler.jsonc` from `apps/*/wrangler.template.jsonc` and that file. The rendered files are committed, so Workers Builds deploys them as they are. `bun run check` runs `bun run configure --check` first and fails when a rendered file no longer matches `idstead.jsonc` or its template.
 
-Personal content (name, bio, CV, links, legal pages) never goes in this file. It lives in the database and is edited in the admin.
+Personal content (name, bio, resume, links, legal pages) never goes in this file. It lives in the database and is edited in the admin.
 
 ## Fields
 

@@ -49,7 +49,7 @@ export function adminAuthorContract(name: string, factory: AdminAuthorStoresFact
                 avatar: { source: 'generated', fingerprint: 'f'.repeat(64) },
                 banner: null
             });
-            expect(snapshot.cv.experience.map(item => [item.id, item.title])).toEqual([
+            expect(snapshot.resume.experience.map(item => [item.id, item.title])).toEqual([
                 [AUTHOR_SEED.experiences[1].uuid, 'First'],
                 [AUTHOR_SEED.experiences[0].uuid, 'Second']
             ]);
@@ -64,9 +64,9 @@ export function adminAuthorContract(name: string, factory: AdminAuthorStoresFact
                 pinned: ['pinned-repo'],
                 excluded: ['hidden-repo']
             });
-            expect(snapshot.cvDocument).toMatchObject({
+            expect(snapshot.resumeDocument).toMatchObject({
                 id: AUTHOR_SEED.documents[1].uuid,
-                filename: 'cv.pdf'
+                filename: 'resume.pdf'
             });
             expect(snapshot.openPgpKey?.fingerprint).toBe(AUTHOR_SEED.openPgpKeys[0].fingerprint);
         });
@@ -118,11 +118,11 @@ export function adminAuthorContract(name: string, factory: AdminAuthorStoresFact
                 identityVersions: []
             }).store.snapshot();
             expect(snapshot).toMatchObject({
-                cv: { experience: [], education: [] },
+                resume: { experience: [], education: [] },
                 skills: [],
                 social: [],
                 repoRules: { pinned: [], excluded: [] },
-                cvDocument: null,
+                resumeDocument: null,
                 openPgpKey: null
             });
         });

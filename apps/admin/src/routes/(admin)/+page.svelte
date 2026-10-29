@@ -184,9 +184,9 @@
         type ContactInfo,
         type SocialLink,
         type SkillItem,
-        type CvDocument
+        type ResumeDocument
     } from '#lib/author.ts';
-    import { CV_CHECKSUM_ALGORITHMS, cvFileUrl } from '#lib/cvVerification.ts';
+    import { RESUME_CHECKSUM_ALGORITHMS, resumeFileUrl } from '#lib/resumeVerification.ts';
     import { copyText, downloadUrl as downloadFrom } from '@idstead/ui/utils/fileActions.ts';
     import {
         KEYSERVER_PRESETS,
@@ -251,7 +251,7 @@
     let deleteAllTurnstileEl = $state<HTMLDivElement | null>(null);
     let hasExportedAllData = $state(false);
     let isExportingAllData = $state(false);
-    let showDeleteCvDocDialog = $state(false);
+    let showDeleteResumeDocDialog = $state(false);
     let showLogoutDialog = $state(false);
 
     interface AdminComment {
@@ -1012,7 +1012,7 @@
         return authorValidation.submit(undefined, !authorState.id);
     }
 
-    let cvState = $state<{ experience: ExperienceItem[]; education: EducationItem[] }>({
+    let resumeState = $state<{ experience: ExperienceItem[]; education: EducationItem[] }>({
         experience: [],
         education: []
     });
@@ -1024,7 +1024,7 @@
     let pinnedReposState = $state<string[]>([]);
     let excludedReposState = $state<string[]>([]);
 
-    let cvInitial = $state<typeof cvState | null>(null);
+    let resumeInitial = $state<typeof resumeState | null>(null);
     let skillsInitial = $state<SkillItem[] | null>(null);
     let socialInitial = $state<SocialLink[] | null>(null);
 
@@ -1295,8 +1295,8 @@
         });
     onDestroy(() => termValidation.destroy());
 
-    const cvIsDirty = $derived(
-        cvInitial !== null && JSON.stringify(cvState) !== JSON.stringify(cvInitial)
+    const resumeIsDirty = $derived(
+        resumeInitial !== null && JSON.stringify(resumeState) !== JSON.stringify(resumeInitial)
     );
     const skillsIsDirty = $derived(
         skillsInitial !== null && JSON.stringify(skillsState) !== JSON.stringify(skillsInitial)
@@ -1317,43 +1317,50 @@
                 || JSON.stringify(excludedReposState) !== JSON.stringify(excludedReposInitial))
     );
     let isSavingProjects = $state(false);
-    let cvDocState = $state<CvDocument>({ filename: '', fileUrl: '', hash: '', isActive: false });
+    let resumeDocState = $state<ResumeDocument>({
+        filename: '',
+        fileUrl: '',
+        hash: '',
+        isActive: false
+    });
     let isGeneratingPdf = $state(false);
-    let isDownloadingCv = $state(false);
+    let isDownloadingResume = $state(false);
 
-    const isCvAvailable = $derived(Boolean(cvDocState?.filename && cvDocState?.isActive));
+    const isResumeAvailable = $derived(
+        Boolean(resumeDocState?.filename && resumeDocState?.isActive)
+    );
 
-    const cvLastUpdated = $derived.by(() => {
-        if (!cvDocState?.updatedAt) return '';
-        const d = new Date(cvDocState.updatedAt);
+    const resumeLastUpdated = $derived.by(() => {
+        if (!resumeDocState?.updatedAt) return '';
+        const d = new Date(resumeDocState.updatedAt);
         if (isNaN(d.getTime())) return '';
         return formatAdminDateTime(d, undefined, adminDisplayStore.current);
     });
 
-    const cvVersion = $derived.by(() => {
-        if (cvDocState?.version) return `v${cvDocState.version}`;
-        const match = cvDocState?.filename?.match(/-v(\d+\.\d+(?:\.\d+)?)\.pdf$/i);
+    const resumeVersion = $derived.by(() => {
+        if (resumeDocState?.version) return `v${resumeDocState.version}`;
+        const match = resumeDocState?.filename?.match(/-v(\d+\.\d+(?:\.\d+)?)\.pdf$/i);
         return match ? `v${match[1]}` : '';
     });
 
-    async function downloadCvDocument() {
-        if (!cvDocState.fileUrl) return;
-        isDownloadingCv = true;
+    async function downloadResumeDocument() {
+        if (!resumeDocState.fileUrl) return;
+        isDownloadingResume = true;
         try {
-            const res = await fetch(cvDocState.fileUrl);
+            const res = await fetch(resumeDocState.fileUrl);
             if (!res.ok) throw new Error('Download failed');
             const blob = await res.blob();
             const objectUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = objectUrl;
-            a.download = cvDocState.filename || 'cv.pdf';
+            a.download = resumeDocState.filename || 'resume.pdf';
             a.click();
             URL.revokeObjectURL(objectUrl);
         } catch {
             toastStore.error('Could not download directly, opening in a new tab');
-            window.open(cvDocState.fileUrl, '_blank');
+            window.open(resumeDocState.fileUrl, '_blank');
         } finally {
-            isDownloadingCv = false;
+            isDownloadingResume = false;
         }
     }
 
@@ -1368,34 +1375,34 @@
     let customKeyserver = $state('');
     let showRemoveKeyDialog = $state(false);
 
-    const cvSignedByKey = $derived(
+    const resumeSignedByKey = $derived(
         Boolean(
-            cvDocState.signedAt
+            resumeDocState.signedAt
             && openPgpKey
-            && cvDocState.signerFingerprint === openPgpKey.fingerprint
+            && resumeDocState.signerFingerprint === openPgpKey.fingerprint
         )
     );
-    const cvChecksumTabs = $derived(
-        cvDocState.checksums ?
-            CV_CHECKSUM_ALGORITHMS.map(algorithm => ({
+    const resumeChecksumTabs = $derived(
+        resumeDocState.checksums ?
+            RESUME_CHECKSUM_ALGORITHMS.map(algorithm => ({
                 label: algorithm.label,
-                code: cvDocState.checksums![algorithm.ext],
+                code: resumeDocState.checksums![algorithm.ext],
                 copyLabel: `${algorithm.label} checksum`,
-                downloadUrl: cvApiFile(algorithm.ext),
-                downloadLabel: `Download ${cvDocState.filename}.${algorithm.ext}`
+                downloadUrl: resumeApiFile(algorithm.ext),
+                downloadLabel: `Download ${resumeDocState.filename}.${algorithm.ext}`
             }))
         :   []
     );
-    const cvSignTabs = $derived(
+    const resumeSignTabs = $derived(
         openPgpKey ?
             [
                 {
                     label: 'Binary (.sig)',
-                    code: `gpg --local-user ${openPgpKey.fingerprint} --detach-sign ${cvDocState.filename}`
+                    code: `gpg --local-user ${openPgpKey.fingerprint} --detach-sign ${resumeDocState.filename}`
                 },
                 {
                     label: 'Armored (.asc)',
-                    code: `gpg --local-user ${openPgpKey.fingerprint} --armor --detach-sign ${cvDocState.filename}`
+                    code: `gpg --local-user ${openPgpKey.fingerprint} --armor --detach-sign ${resumeDocState.filename}`
                 }
             ]
         :   []
@@ -1411,9 +1418,13 @@
         return wkdEmails(openPgpKey.userIds, new URL(publicSiteUrl).host);
     });
 
-    const cvSignedAt = $derived(
-        cvDocState.signedAt ?
-            formatAdminDateTime(new Date(cvDocState.signedAt), undefined, adminDisplayStore.current)
+    const resumeSignedAt = $derived(
+        resumeDocState.signedAt ?
+            formatAdminDateTime(
+                new Date(resumeDocState.signedAt),
+                undefined,
+                adminDisplayStore.current
+            )
         :   ''
     );
     const keyCreated = $derived(
@@ -1435,8 +1446,8 @@
         :   ''
     );
 
-    function cvApiFile(output: Parameters<typeof cvFileUrl>[0]) {
-        return cvFileUrl(output, publicEnv.PUBLIC_API_BASE_URL);
+    function resumeApiFile(output: Parameters<typeof resumeFileUrl>[0]) {
+        return resumeFileUrl(output, publicEnv.PUBLIC_API_BASE_URL);
     }
 
     function syncKeyserverChoice(key: PublicOpenPgpKey | null) {
@@ -1466,7 +1477,7 @@
         return { res, error: res?.message ?? res?.error?.message ?? fallback };
     }
 
-    async function updateCvSignature(file: File | null) {
+    async function updateResumeSignature(file: File | null) {
         signatureError = '';
         if (!file) return;
         if (file.size > 16 * 1024) {
@@ -1475,7 +1486,7 @@
         }
         isSavingSignature = true;
         try {
-            const response = await fetch('/api/internal/admin/cv/signature', {
+            const response = await fetch('/api/internal/admin/resume/signature', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/octet-stream',
@@ -1485,8 +1496,8 @@
             });
             const { res, error } = await responseMessage(response, 'Upload failed.');
             if (error) throw new Error(error);
-            cvDocState = {
-                ...cvDocState,
+            resumeDocState = {
+                ...resumeDocState,
                 signedAt: res.signedAt,
                 signerFingerprint: res.signerFingerprint
             };
@@ -1498,19 +1509,19 @@
         }
     }
 
-    async function removeCvSignature() {
+    async function removeResumeSignature() {
         showRemoveSignatureDialog = false;
         isSavingSignature = true;
         signatureError = '';
         try {
-            const response = await fetch('/api/internal/admin/cv/signature', {
+            const response = await fetch('/api/internal/admin/resume/signature', {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${await adminToken()}` }
             });
             const { error } = await responseMessage(response, 'Removal failed.');
             if (error) throw new Error(error);
-            cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
-            toastStore.success('CV signature deleted.');
+            resumeDocState = { ...resumeDocState, signedAt: null, signerFingerprint: null };
+            toastStore.success('Resume signature deleted.');
         } catch (err) {
             signatureError = err instanceof Error ? err.message : 'Removal failed.';
         } finally {
@@ -1575,8 +1586,8 @@
             openPgpKey = { ...res.key, armored: res.key.armored ?? '' };
             syncKeyserverChoice(openPgpKey);
             if (res.signatureCleared) {
-                cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
-                toastStore.success('Key saved. Sign the CV again with the new key.');
+                resumeDocState = { ...resumeDocState, signedAt: null, signerFingerprint: null };
+                toastStore.success('Key saved. Sign the resume again with the new key.');
             } else toastStore.success(file ? 'OpenPGP key published.' : 'Keyservers saved.');
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Could not save the key.';
@@ -1600,7 +1611,7 @@
             if (error) throw new Error(error);
             openPgpKey = null;
             syncKeyserverChoice(null);
-            cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
+            resumeDocState = { ...resumeDocState, signedAt: null, signerFingerprint: null };
             toastStore.success('OpenPGP key deleted.');
         } catch (err) {
             toastStore.error(err instanceof Error ? err.message : 'Could not delete the key.');
@@ -1627,8 +1638,8 @@
     function listConfig(group: ListGroup) {
         const configs = {
             experience: {
-                items: cvState.experience,
-                baseline: cvInitial?.experience,
+                items: resumeState.experience,
+                baseline: resumeInitial?.experience,
                 errors: experienceErrors,
                 valid: experienceValid,
                 fields: {
@@ -1641,8 +1652,8 @@
                 }
             },
             education: {
-                items: cvState.education,
-                baseline: cvInitial?.education,
+                items: resumeState.education,
+                baseline: resumeInitial?.education,
                 errors: educationErrors,
                 valid: educationValid,
                 fields: {
@@ -1832,8 +1843,8 @@
     let pdfGeneratedFilename = $state('');
     let pdfDeleteSuccess = $state(false);
 
-    let isSavingCv = $state(false);
-    let cvSaveSuccess = $state(false);
+    let isSavingResume = $state(false);
+    let resumeSaveSuccess = $state(false);
     let isSavingSkills = $state(false);
     let skillsSaveSuccess = $state(false);
     let isSavingSocials = $state(false);
@@ -2240,12 +2251,12 @@
             const {
                 profile: p,
                 identity,
-                cv,
+                resume,
                 funding: sp,
                 contact: ct,
                 social: soc,
                 skills: sk,
-                cvDocument: doc,
+                resumeDocument: doc,
                 repoRules: rules,
                 openPgpKey: pgpKey
             } = await adminRequest<AdminAuthorSnapshot>('author', {
@@ -2254,8 +2265,8 @@
             if (p) authorState = p;
             identityMeta = identity;
             authorInitial = { ...authorState };
-            if (cv) cvState = cv;
-            cvInitial = $state.snapshot(cvState);
+            if (resume) resumeState = resume;
+            resumeInitial = $state.snapshot(resumeState);
             listValidation.reset();
             if (sp) sponsorshipState = sp;
             sponsorshipInitial = $state.snapshot(sponsorshipState);
@@ -2275,7 +2286,7 @@
                 pinnedReposInitial = $state.snapshot(pinnedReposState);
                 excludedReposInitial = $state.snapshot(excludedReposState);
             }
-            cvDocState = doc || { filename: '', fileUrl: '', hash: '', isActive: false };
+            resumeDocState = doc || { filename: '', fileUrl: '', hash: '', isActive: false };
             openPgpKey = pgpKey;
             syncKeyserverChoice(pgpKey);
         } catch (err) {
@@ -2662,7 +2673,7 @@
             const currentAdminUrl = adminUrl();
             await refreshAll();
             navigateAdmin(currentAdminUrl, true);
-            executeGenerateCvPdf();
+            executeGenerateResumePdf();
         } catch (err: any) {
             console.error('Error saving author profile:', err);
             authorSaveError = err.message || 'Failed to save author profile.';
@@ -2808,19 +2819,19 @@
         }
     }
 
-    async function handleSaveCv(e: SubmitEvent) {
+    async function handleSaveResume(e: SubmitEvent) {
         e.preventDefault();
-        if (isSavingCv) return;
+        if (isSavingResume) return;
         const experienceOk = await validateAllExperience();
         const educationOk = await validateAllEducation();
         if (!experienceOk || !educationOk) {
             toastStore.error('Please fix the errors below before saving.');
             return;
         }
-        isSavingCv = true;
-        cvSaveSuccess = false;
+        isSavingResume = true;
+        resumeSaveSuccess = false;
         try {
-            const experiences = cvState.experience.map((item, idx) => ({
+            const experiences = resumeState.experience.map((item, idx) => ({
                 title: sanitizeInput(item.title.trim()),
                 type: item.type || '',
                 company: sanitizeInput(item.company.trim()),
@@ -2835,7 +2846,7 @@
                 sort_order: idx + 1
             }));
 
-            const education = cvState.education.map((item, idx) => ({
+            const education = resumeState.education.map((item, idx) => ({
                 institution: sanitizeInput(item.institution.trim()),
                 degree: sanitizeInput(item.degree.trim()),
                 field: sanitizeInput(item.field.trim()),
@@ -2850,7 +2861,7 @@
             }));
 
             const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/cv', {
+            const res = await fetch('/api/internal/admin/resume', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2860,21 +2871,21 @@
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
-                throw new Error(body?.error?.message || 'Failed to save CV entries.');
+                throw new Error(body?.error?.message || 'Failed to save resume entries.');
             }
 
-            cvInitial = $state.snapshot(cvState);
+            resumeInitial = $state.snapshot(resumeState);
             listValidation.reset();
-            cvSaveSuccess = true;
-            setTimeout(() => (cvSaveSuccess = false), 2500);
-            toastStore.success('CV entries saved.');
-            executeGenerateCvPdf();
+            resumeSaveSuccess = true;
+            setTimeout(() => (resumeSaveSuccess = false), 2500);
+            toastStore.success('Resume entries saved.');
+            executeGenerateResumePdf();
         } catch (err: any) {
-            console.error('Error saving CV entries:', err);
-            const msg = err?.message || err?.error || 'Failed to save CV entries.';
+            console.error('Error saving resume entries:', err);
+            const msg = err?.message || err?.error || 'Failed to save resume entries.';
             toastStore.error(msg);
         } finally {
-            isSavingCv = false;
+            isSavingResume = false;
         }
     }
 
@@ -2916,7 +2927,7 @@
             skillsSaveSuccess = true;
             setTimeout(() => (skillsSaveSuccess = false), 2500);
             toastStore.success('Skills saved.');
-            executeGenerateCvPdf();
+            executeGenerateResumePdf();
         } catch (err: any) {
             console.error('Error saving skills:', err);
             const msg = err?.message || err?.error || 'Failed to save skills.';
@@ -3101,7 +3112,7 @@
         }
     }
 
-    async function executeGenerateCvPdf(options: { force?: boolean; manual?: boolean } = {}) {
+    async function executeGenerateResumePdf(options: { force?: boolean; manual?: boolean } = {}) {
         isGeneratingPdf = true;
         pdfUploadError = '';
         pdfGeneratedFilename = '';
@@ -3122,7 +3133,7 @@
                 throw new Error('Your admin session has expired. Please log in again.');
             }
 
-            const response = await fetch('/api/internal/admin/cv/generate', {
+            const response = await fetch('/api/internal/admin/resume/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3137,17 +3148,17 @@
                     typeof res?.message === 'string' ? res.message
                     : typeof res?.error?.message === 'string' ? res.error.message
                     : typeof res?.error === 'string' ? res.error
-                    : 'Failed to generate CV PDF';
+                    : 'Failed to generate resume PDF';
                 throw new Error(errorMsg);
             }
 
             if (res.upToDate) {
                 if (options.manual || options.force)
-                    toastStore.success(`The CV is already up to date (v${res.version}).`);
+                    toastStore.success(`The resume is already up to date (v${res.version}).`);
                 return;
             }
 
-            cvDocState = {
+            resumeDocState = {
                 filename: res.filename,
                 fileUrl: res.fileUrl,
                 hash: res.hash,
@@ -3161,27 +3172,27 @@
 
             pdfGeneratedFilename = res.filename;
             toastStore.success(
-                `CV PDF generated (v${res.version}: ${(res.reasons ?? []).join(', ')})`
+                `Resume PDF generated (v${res.version}: ${(res.reasons ?? []).join(', ')})`
             );
         } catch (err: any) {
             console.error('PDF generation error:', err);
             pdfUploadError =
                 typeof err?.message === 'string' ? err.message
                 : typeof err === 'string' ? err
-                : 'Failed to generate CV PDF';
+                : 'Failed to generate resume PDF';
             toastStore.error(pdfUploadError);
         } finally {
             isGeneratingPdf = false;
         }
     }
 
-    function confirmDeleteCvDoc() {
-        if (!cvDocState.filename) return;
-        showDeleteCvDocDialog = true;
+    function confirmDeleteResumeDoc() {
+        if (!resumeDocState.filename) return;
+        showDeleteResumeDocDialog = true;
     }
 
-    async function executeDeleteCvDoc() {
-        showDeleteCvDocDialog = false;
+    async function executeDeleteResumeDoc() {
+        showDeleteResumeDocDialog = false;
         try {
             const {
                 data: { user },
@@ -3196,19 +3207,19 @@
                 throw new Error('Your admin session has expired. Please log in again.');
             }
 
-            const response = await fetch('/api/internal/admin/cv/delete', {
+            const response = await fetch('/api/internal/admin/resume/delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${accessToken}`
                 },
-                body: JSON.stringify({ filename: cvDocState.filename })
+                body: JSON.stringify({ filename: resumeDocState.filename })
             });
 
             const result = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                cvDocState = {
+                resumeDocState = {
                     filename: '',
                     fileUrl: '',
                     hash: '',
@@ -3218,26 +3229,27 @@
                 pdfGeneratedFilename = '';
                 pdfDeleteSuccess = true;
                 setTimeout(() => (pdfDeleteSuccess = false), 3000);
-                toastStore.success('CV deleted.');
+                toastStore.success('Resume deleted.');
             } else {
                 const errMsg =
                     typeof result?.message === 'string' ? result.message
                     : typeof result?.error?.message === 'string' ? result.error.message
                     : typeof result?.error === 'string' ? result.error
-                    : 'Failed to delete CV document.';
+                    : 'Failed to delete resume document.';
                 toastStore.error(errMsg);
             }
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Failed to delete CV document.';
-            console.error('Failed to delete CV document:', err);
+            const message =
+                err instanceof Error ? err.message : 'Failed to delete resume document.';
+            console.error('Failed to delete resume document:', err);
             toastStore.error(message);
         }
     }
 
-    function handleAddCvEntry(type: 'experience' | 'education') {
+    function handleAddResumeEntry(type: 'experience' | 'education') {
         if (type === 'experience') {
-            cvState.experience = [
-                ...cvState.experience,
+            resumeState.experience = [
+                ...resumeState.experience,
                 {
                     id: crypto.randomUUID(),
                     title: '',
@@ -3254,8 +3266,8 @@
                 }
             ];
         } else {
-            cvState.education = [
-                ...cvState.education,
+            resumeState.education = [
+                ...resumeState.education,
                 {
                     id: crypto.randomUUID(),
                     institution: '',
@@ -3274,21 +3286,21 @@
     }
 
     type RemovableEntry =
-        'cv-experience' | 'cv-education' | 'skill' | 'social' | 'sponsorship' | 'contact';
+        'resume-experience' | 'resume-education' | 'skill' | 'social' | 'sponsorship' | 'contact';
     let showRemoveEntryDialog = $state(false);
     let pendingRemove = $state<{ type: RemovableEntry; idx: number } | null>(null);
 
     const removeEntryLabels: Record<RemovableEntry, string> = {
-        'cv-experience': 'this experience entry',
-        'cv-education': 'this education entry',
+        'resume-experience': 'this experience entry',
+        'resume-education': 'this education entry',
         skill: 'this skill category',
         social: 'this social link',
         sponsorship: 'this funding link',
         contact: 'this contact'
     };
     const removeEntryTitles: Record<RemovableEntry, string> = {
-        'cv-experience': 'Delete Experience',
-        'cv-education': 'Delete Education',
+        'resume-experience': 'Delete Experience',
+        'resume-education': 'Delete Education',
         skill: 'Delete Skill Category',
         social: 'Delete Social Link',
         sponsorship: 'Delete Funding',
@@ -3300,8 +3312,11 @@
         :   ''
     );
 
-    function confirmRemoveCvEntry(type: 'experience' | 'education', idx: number) {
-        pendingRemove = { type: type === 'experience' ? 'cv-experience' : 'cv-education', idx };
+    function confirmRemoveResumeEntry(type: 'experience' | 'education', idx: number) {
+        pendingRemove = {
+            type: type === 'experience' ? 'resume-experience' : 'resume-education',
+            idx
+        };
         showRemoveEntryDialog = true;
     }
 
@@ -3328,10 +3343,10 @@
     function executeRemoveEntry() {
         if (!pendingRemove) return;
         const { type, idx } = pendingRemove;
-        if (type === 'cv-experience') {
-            cvState.experience = cvState.experience.filter((_, i) => i !== idx);
-        } else if (type === 'cv-education') {
-            cvState.education = cvState.education.filter((_, i) => i !== idx);
+        if (type === 'resume-experience') {
+            resumeState.experience = resumeState.experience.filter((_, i) => i !== idx);
+        } else if (type === 'resume-education') {
+            resumeState.education = resumeState.education.filter((_, i) => i !== idx);
         } else if (type === 'skill') {
             skillsState = skillsState.filter((_, i) => i !== idx);
         } else if (type === 'social') {
@@ -4673,15 +4688,15 @@
             <div class="mb-6">
                 <h1 class="type-page-title">Resume</h1>
                 <p class="mt-1 type-body text-fg-secondary">
-                    Manage work experience, education, and the CV document.
+                    Manage work experience, education, and the resume document.
                 </p>
             </div>
 
             <form
-                onsubmit={handleSaveCv}
+                onsubmit={handleSaveResume}
                 novalidate
                 class="flex flex-col gap-8">
-                {#if cvSaveSuccess}
+                {#if resumeSaveSuccess}
                     <StatusBanner
                         variant="success"
                         message="Resume saved successfully!" />
@@ -4704,7 +4719,7 @@
                             responsiveIconOnly
                             aria-label="Add Experience"
                             title="Add Experience"
-                            onclick={() => handleAddCvEntry('experience')}>
+                            onclick={() => handleAddResumeEntry('experience')}>
                             {#snippet leading()}
                                 <Plus class="size-3.5" />
                             {/snippet}
@@ -4712,13 +4727,13 @@
                         </Button>
                     </div>
                     <div class="flex flex-col gap-6">
-                        {#if cvState.experience.length === 0}
+                        {#if resumeState.experience.length === 0}
                             <EmptyState
                                 icon={FileUser}
                                 title="No experience entries yet"
                                 description="Add your first experience entry below." />
                         {/if}
-                        {#each cvState.experience as exp, idx (exp.id)}
+                        {#each resumeState.experience as exp, idx (exp.id)}
                             <div
                                 class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
@@ -4735,8 +4750,8 @@
                                             title="Move experience item up"
                                             disabled={idx === 0}
                                             onclick={() =>
-                                                (cvState.experience = moveArrayItem(
-                                                    cvState.experience,
+                                                (resumeState.experience = moveArrayItem(
+                                                    resumeState.experience,
                                                     idx,
                                                     'up'
                                                 ))}><ArrowUp class="size-3.5" /></Button>
@@ -4746,10 +4761,10 @@
                                             size="sm"
                                             aria-label="Move experience item down"
                                             title="Move experience item down"
-                                            disabled={idx === cvState.experience.length - 1}
+                                            disabled={idx === resumeState.experience.length - 1}
                                             onclick={() =>
-                                                (cvState.experience = moveArrayItem(
-                                                    cvState.experience,
+                                                (resumeState.experience = moveArrayItem(
+                                                    resumeState.experience,
                                                     idx,
                                                     'down'
                                                 ))}><ArrowDown class="size-3.5" /></Button>
@@ -5039,7 +5054,7 @@
                                         class="w-full sm:w-auto"
                                         aria-label="Delete Experience"
                                         title="Delete Experience"
-                                        onclick={() => confirmRemoveCvEntry('experience', idx)}>
+                                        onclick={() => confirmRemoveResumeEntry('experience', idx)}>
                                         {#snippet leading()}
                                             <Trash class="size-3.5" />
                                         {/snippet}
@@ -5051,7 +5066,7 @@
                     </div>
 
                     <FormActions>
-                        {#if cvIsDirty}
+                        {#if resumeIsDirty}
                             <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
@@ -5062,8 +5077,8 @@
                             size="md"
                             aria-label="Save Experiences"
                             title="Save Experiences"
-                            disabled={!cvIsDirty}
-                            isLoading={isSavingCv}>
+                            disabled={!resumeIsDirty}
+                            isLoading={isSavingResume}>
                             {#snippet leading()}
                                 <Save class="size-3.5" />
                             {/snippet}
@@ -5089,7 +5104,7 @@
                             responsiveIconOnly
                             aria-label="Add Education"
                             title="Add Education"
-                            onclick={() => handleAddCvEntry('education')}>
+                            onclick={() => handleAddResumeEntry('education')}>
                             {#snippet leading()}
                                 <Plus class="size-3.5" />
                             {/snippet}
@@ -5097,13 +5112,13 @@
                         </Button>
                     </div>
                     <div class="flex flex-col gap-6">
-                        {#if cvState.education.length === 0}
+                        {#if resumeState.education.length === 0}
                             <EmptyState
                                 icon={FileUser}
                                 title="No education entries yet"
                                 description="Add your first education entry below." />
                         {/if}
-                        {#each cvState.education as edu, idx (edu.id)}
+                        {#each resumeState.education as edu, idx (edu.id)}
                             <div
                                 class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
@@ -5120,8 +5135,8 @@
                                             title="Move education item up"
                                             disabled={idx === 0}
                                             onclick={() =>
-                                                (cvState.education = moveArrayItem(
-                                                    cvState.education,
+                                                (resumeState.education = moveArrayItem(
+                                                    resumeState.education,
                                                     idx,
                                                     'up'
                                                 ))}><ArrowUp class="size-3.5" /></Button>
@@ -5131,10 +5146,10 @@
                                             size="sm"
                                             aria-label="Move education item down"
                                             title="Move education item down"
-                                            disabled={idx === cvState.education.length - 1}
+                                            disabled={idx === resumeState.education.length - 1}
                                             onclick={() =>
-                                                (cvState.education = moveArrayItem(
-                                                    cvState.education,
+                                                (resumeState.education = moveArrayItem(
+                                                    resumeState.education,
                                                     idx,
                                                     'down'
                                                 ))}><ArrowDown class="size-3.5" /></Button>
@@ -5397,7 +5412,7 @@
                                         class="w-full sm:w-auto"
                                         aria-label="Delete Education"
                                         title="Delete Education"
-                                        onclick={() => confirmRemoveCvEntry('education', idx)}>
+                                        onclick={() => confirmRemoveResumeEntry('education', idx)}>
                                         {#snippet leading()}
                                             <Trash class="size-3.5" />
                                         {/snippet}
@@ -5409,7 +5424,7 @@
                     </div>
 
                     <FormActions>
-                        {#if cvIsDirty}
+                        {#if resumeIsDirty}
                             <p class="text-xs text-fg-secondary select-none">
                                 You have unsaved changes.
                             </p>
@@ -5420,8 +5435,8 @@
                             size="md"
                             aria-label="Save Education"
                             title="Save Education"
-                            disabled={!cvIsDirty}
-                            isLoading={isSavingCv}>
+                            disabled={!resumeIsDirty}
+                            isLoading={isSavingResume}>
                             {#snippet leading()}
                                 <Save class="size-3.5" />
                             {/snippet}
@@ -5444,27 +5459,27 @@
                 class="mt-10 flex flex-col gap-4">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                        <h2 class="type-section-title">CV Document</h2>
+                        <h2 class="type-section-title">Resume Document</h2>
                         <p class="mt-1 type-body text-fg-secondary">
-                            The PDF visitors download from your CV section and the public API.
+                            The PDF visitors download from your resume section and the public API.
                         </p>
                     </div>
-                    {#if isCvAvailable}
+                    {#if isResumeAvailable}
                         <ActionMenu
-                            ariaLabel="More CV actions"
+                            ariaLabel="More resume actions"
                             items={[
                                 {
                                     label: 'Regenerate',
                                     icon: RefreshCw,
                                     disabled: isGeneratingPdf,
-                                    onSelect: () => executeGenerateCvPdf({ force: true })
+                                    onSelect: () => executeGenerateResumePdf({ force: true })
                                 },
                                 { divider: true },
                                 {
-                                    label: 'Delete CV',
+                                    label: 'Delete resume',
                                     icon: Trash,
                                     danger: true,
-                                    onSelect: confirmDeleteCvDoc
+                                    onSelect: confirmDeleteResumeDoc
                                 }
                             ]} />
                     {/if}
@@ -5487,16 +5502,16 @@
                 {#if pdfDeleteSuccess}
                     <StatusBanner
                         variant="success"
-                        message="CV deleted." />
+                        message="Resume deleted." />
                 {/if}
 
-                {#if !isCvAvailable}
+                {#if !isResumeAvailable}
                     <EmptyState
                         icon={FileUser}
-                        title="No CV generated yet"
+                        title="No resume generated yet"
                         description={hasSavedProfile ?
-                            'Build a PDF from your profile, experience, education, skills and pinned projects. Visitors can then download it from the CV section and the API.'
-                        :   'Save your profile first. The CV is built from it.'}>
+                            'Build a PDF from your profile, experience, education, skills and pinned projects. Visitors can then download it from the resume section and the API.'
+                        :   'Save your profile first. The resume is built from it.'}>
                         {#snippet actions()}
                             <Button
                                 htmlType="button"
@@ -5504,11 +5519,11 @@
                                 size="sm"
                                 isLoading={isGeneratingPdf}
                                 disabled={isGeneratingPdf || !hasSavedProfile}
-                                onclick={() => executeGenerateCvPdf({ manual: true })}>
+                                onclick={() => executeGenerateResumePdf({ manual: true })}>
                                 {#snippet leading()}
                                     <RefreshCw class="size-3.5" />
                                 {/snippet}
-                                <span>Generate CV</span>
+                                <span>Generate resume</span>
                             </Button>
                         {/snippet}
                     </EmptyState>
@@ -5523,14 +5538,14 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="font-mono text-sm font-semibold break-all text-fg">
-                                        {cvDocState.filename}
+                                        {resumeDocState.filename}
                                     </p>
                                     <div
                                         class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
-                                        {#if cvVersion}
-                                            <Badge size="sm">{cvVersion}</Badge>
+                                        {#if resumeVersion}
+                                            <Badge size="sm">{resumeVersion}</Badge>
                                         {/if}
-                                        {#if cvSignedByKey}
+                                        {#if resumeSignedByKey}
                                             <Badge
                                                 size="sm"
                                                 variant="success">
@@ -5539,7 +5554,7 @@
                                                     aria-hidden="true" />
                                                 Signed
                                             </Badge>
-                                        {:else if cvDocState.signedAt}
+                                        {:else if resumeDocState.signedAt}
                                             <Badge
                                                 size="sm"
                                                 variant="warning">
@@ -5558,8 +5573,8 @@
                                                 Unsigned
                                             </Badge>
                                         {/if}
-                                        {#if cvLastUpdated}
-                                            <span>Updated {cvLastUpdated}</span>
+                                        {#if resumeLastUpdated}
+                                            <span>Updated {resumeLastUpdated}</span>
                                         {/if}
                                     </div>
                                 </div>
@@ -5570,7 +5585,7 @@
                                     type="secondary"
                                     size="sm"
                                     onclick={() =>
-                                        window.open(cvDocState.fileUrl, '_blank', 'noopener')}>
+                                        window.open(resumeDocState.fileUrl, '_blank', 'noopener')}>
                                     {#snippet leading()}
                                         <SquareArrowOutUpRight class="size-3.5" />
                                     {/snippet}
@@ -5580,7 +5595,7 @@
                                     htmlType="button"
                                     type="secondary"
                                     size="sm"
-                                    onclick={() => downloadFrom(cvApiFile('zip'))}>
+                                    onclick={() => downloadFrom(resumeApiFile('zip'))}>
                                     {#snippet leading()}
                                         <FileArchive class="size-3.5" />
                                     {/snippet}
@@ -5591,9 +5606,9 @@
                                     type="primary"
                                     size="sm"
                                     class="col-span-2 sm:col-auto"
-                                    disabled={isDownloadingCv}
-                                    isLoading={isDownloadingCv}
-                                    onclick={downloadCvDocument}>
+                                    disabled={isDownloadingResume}
+                                    isLoading={isDownloadingResume}
+                                    onclick={downloadResumeDocument}>
                                     {#snippet leading()}
                                         <Download class="size-3.5" />
                                     {/snippet}
@@ -5603,13 +5618,13 @@
                         </div>
 
                         <section
-                            aria-labelledby="cv-checksums-heading"
+                            aria-labelledby="resume-checksums-heading"
                             class="border-t border-line-subtle p-4">
-                            {@render bandLabel('cv-checksums-heading', 'Checksums')}
-                            {#if cvChecksumTabs.length}
+                            {@render bandLabel('resume-checksums-heading', 'Checksums')}
+                            {#if resumeChecksumTabs.length}
                                 <CodeTabs
                                     class="mt-3"
-                                    tabs={cvChecksumTabs}
+                                    tabs={resumeChecksumTabs}
                                     ariaLabel="Checksums" />
                             {:else}
                                 <p class="mt-2 text-xs text-fg-muted">
@@ -5619,15 +5634,15 @@
                         </section>
 
                         <section
-                            aria-labelledby="cv-signature-heading"
+                            aria-labelledby="resume-signature-heading"
                             class="flex flex-col gap-3 border-t border-line-subtle p-4">
-                            {@render bandLabel('cv-signature-heading', 'GPG signature')}
+                            {@render bandLabel('resume-signature-heading', 'GPG signature')}
                             {#if !openPgpKey}
                                 <p class="text-sm text-fg-secondary">
                                     Add your OpenPGP public key below first. Visitors use it to
                                     confirm that you signed this file.
                                 </p>
-                            {:else if cvSignedByKey}
+                            {:else if resumeSignedByKey}
                                 <dl
                                     class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
                                     {#each openPgpKey.userIds as user, index (index)}
@@ -5641,9 +5656,9 @@
                                         class="min-w-0 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums">
                                         {formatFingerprint(openPgpKey.fingerprint)}
                                     </dd>
-                                    {#if cvSignedAt}
+                                    {#if resumeSignedAt}
                                         <dt class="text-fg-muted">Signed</dt>
-                                        <dd class="text-fg">{cvSignedAt}</dd>
+                                        <dd class="text-fg">{resumeSignedAt}</dd>
                                     {/if}
                                 </dl>
                                 <div class="flex flex-wrap items-center gap-2">
@@ -5651,7 +5666,7 @@
                                         htmlType="button"
                                         type="secondary"
                                         size="xs"
-                                        onclick={() => downloadFrom(cvApiFile('sig'))}>
+                                        onclick={() => downloadFrom(resumeApiFile('sig'))}>
                                         {#snippet leading()}
                                             <Download class="size-3.5" />
                                         {/snippet}
@@ -5661,7 +5676,7 @@
                                         htmlType="button"
                                         type="secondary"
                                         size="xs"
-                                        onclick={() => downloadFrom(cvApiFile('asc'))}>
+                                        onclick={() => downloadFrom(resumeApiFile('asc'))}>
                                         {#snippet leading()}
                                             <Download class="size-3.5" />
                                         {/snippet}
@@ -5678,7 +5693,7 @@
                                     </Button>
                                 </div>
                             {:else}
-                                {#if cvDocState.signedAt}
+                                {#if resumeDocState.signedAt}
                                     <StatusBanner
                                         variant="warning"
                                         message="The stored signature was made with a different key. Sign this PDF again with your active key." />
@@ -5689,14 +5704,14 @@
                                 </p>
                                 <CodeTabs
                                     command
-                                    tabs={cvSignTabs}
+                                    tabs={resumeSignTabs}
                                     ariaLabel="Signing commands" />
                             {/if}
                             {#if openPgpKey}
                                 <FileUploadField
-                                    id="cv-signature-file"
+                                    id="resume-signature-file"
                                     compact
-                                    label={cvSignedByKey ? 'Replace the signature' : (
+                                    label={resumeSignedByKey ? 'Replace the signature' : (
                                         'Upload the signature'
                                     )}
                                     hint=".sig, .gpg or .asc · detached signature, at most 16 KiB"
@@ -5705,7 +5720,7 @@
                                     isUploading={isSavingSignature}
                                     uploadingLabel="Verifying signature…"
                                     error={signatureError}
-                                    onFileSelect={updateCvSignature} />
+                                    onFileSelect={updateResumeSignature} />
                             {/if}
                         </section>
                     </div>
@@ -5723,7 +5738,7 @@
                             OpenPGP key
                         </h2>
                         <p class="mt-1 type-body text-fg-secondary">
-                            The public key that signs your CV, published at /pgp.asc and through
+                            The public key that signs your resume, published at /pgp.asc and through
                             WKD.
                         </p>
                     </div>
@@ -5825,8 +5840,8 @@
                             <div>
                                 {@render bandLabel('openpgp-keyservers-heading', 'Keyservers')}
                                 <p class="mt-1 text-xs text-fg-muted">
-                                    Listed as independent sources on your CV. Each one is checked
-                                    for this exact key when you save.
+                                    Listed as independent sources on your resume. Each one is
+                                    checked for this exact key when you save.
                                 </p>
                             </div>
                             <div class="flex flex-col gap-2">
@@ -5872,7 +5887,7 @@
                                 id="openpgp-key-file"
                                 compact
                                 label="Upload a new public key"
-                                hint="A different key removes the current CV signature."
+                                hint="A different key removes the current resume signature."
                                 accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
                                 disabled={isSavingKey}
                                 isUploading={isSavingKey}
@@ -7209,27 +7224,27 @@
 </ConfirmationDialog>
 
 <ConfirmationDialog
-    bind:isOpen={showDeleteCvDocDialog}
-    title="Delete CV?"
-    message="Permanently delete this CV and all its files. This can't be undone."
-    confirmLabel="Delete CV"
+    bind:isOpen={showDeleteResumeDocDialog}
+    title="Delete resume?"
+    message="Permanently delete this resume and all its files. This can't be undone."
+    confirmLabel="Delete resume"
     requiredKeyword="DELETE"
     isDestructive
-    onConfirm={executeDeleteCvDoc} />
+    onConfirm={executeDeleteResumeDoc} />
 
 <ConfirmationDialog
     bind:isOpen={showRemoveSignatureDialog}
     title="Delete signature?"
-    message="Permanently delete the CV signature. The CV stays available without it."
+    message="Permanently delete the resume signature. The resume stays available without it."
     confirmLabel="Delete signature"
     requiredKeyword="DELETE"
     isDestructive
-    onConfirm={removeCvSignature} />
+    onConfirm={removeResumeSignature} />
 
 <ConfirmationDialog
     bind:isOpen={showRemoveKeyDialog}
     title="Delete OpenPGP key?"
-    message="Permanently delete your public key and the CV signature. This can't be undone."
+    message="Permanently delete your public key and the resume signature. This can't be undone."
     confirmLabel="Delete key"
     requiredKeyword="DELETE"
     isDestructive

@@ -14,7 +14,7 @@ Low-level diagrams of how a request travels from the browser through the Cloudfl
 | 8 | [Image pipeline](008-asset-pipeline.md) | Encode, validate, R2 keys, serving, cleanup |
 | 9 | [Database schema](009-database-schema.md) | Live tables, foreign keys, functions, cron |
 | 10 | [Endpoint reference](010-endpoint-reference.md) | Every route on every host, with its guard |
-| 11 | [CV documents](011-cv-documents.md) | CV versioning (major/minor), `cv/` files, checksums, GPG signature |
+| 11 | [Resume documents](011-resume-documents.md) | Resume versioning (major/minor), `resume/` files, checksums, GPG signature |
 | 12 | [Identity provider](012-identity-provider.md) | WebFinger, avatar by email hash, Sign in with Idstead (OpenID Connect) |
 
 Last verified against the code and the live database on **2026-10-15**.
