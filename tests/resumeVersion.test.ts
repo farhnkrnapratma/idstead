@@ -106,7 +106,7 @@ describe('resumeVersionBump', () => {
             (s: ResumeSnapshot) => s.links.push('https://linkedin.com/in/ada'),
             'Contact details or links changed'
         ],
-        ['template', (s: ResumeSnapshot) => (s.template = 2), 'PDF template changed']
+        ['template', (s: ResumeSnapshot) => (s.template += 1), 'PDF template changed']
     ])('%s is minor', (_label, change, reason) => {
         expect(resumeVersionBump(base(), edit(change))).toEqual({
             level: 'minor',
