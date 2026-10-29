@@ -1,6 +1,6 @@
 <script lang="ts">
     import {
-        Keyboard,
+        KeySquare,
         Command,
         Option,
         ChevronUp,
@@ -55,7 +55,7 @@
         aria-hidden="true">
         {#if leader}
             <kbd class={cn(KEY_SEGMENT_CLASS, tone)}>
-                <Keyboard class="size-2.5" />
+                <KeySquare class="size-2.5" />
             </kbd>
         {/if}
         {#each labels as label, index (`${index}-${label.text}`)}

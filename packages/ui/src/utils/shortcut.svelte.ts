@@ -1,6 +1,6 @@
 import { shortcutStore } from '../stores/shortcutStore.svelte.ts';
 import { platformStore } from '../stores/platformStore.svelte.ts';
-import { keyLabel } from '../shortcuts.ts';
+import { keyLabel, sequenceStep } from '../shortcuts.ts';
 
 export interface ShortcutParams {
     combo?: string;
@@ -164,10 +164,11 @@ export function shortcut(node: HTMLElement, params: ShortcutParams = {}) {
             return;
         }
 
+        const sequence = next.group ? null : sequenceStep(combos[0] ?? '');
         const entry = {
-            combos,
-            group: next.group,
-            chordKey: next.chordKey?.toLowerCase(),
+            combos: sequence ? [] : combos,
+            group: sequence?.group ?? next.group,
+            chordKey: sequence?.key ?? next.chordKey?.toLowerCase(),
             label: resolveLabel(node, next.label),
             scope: next.scope ?? inheritedScope(node),
             element: node

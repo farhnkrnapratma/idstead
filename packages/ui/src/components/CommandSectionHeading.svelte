@@ -5,8 +5,8 @@
     let { label, context }: { label: string; context?: string } = $props();
 </script>
 
-<div class="flex items-center gap-1.5 px-2 pb-1.5">
-    <h3 class="text-xxs font-bold tracking-wider text-fg-muted">{label}</h3>
+<div class="flex items-center gap-1 px-2 pb-1">
+    <h3 class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">{label}</h3>
     {#if context}
         <Tooltip
             content={context}

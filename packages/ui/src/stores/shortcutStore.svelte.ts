@@ -132,8 +132,18 @@ function isVisible(entry: ShortcutEntry) {
     return el.getClientRects().length > 0;
 }
 
+function groupCommandKey(groupId: string, chordKey: string) {
+    const prefix = CHORD_GROUPS[groupId]?.combos[0];
+    return prefix ? `${normalizeKey(prefix)} ${chordKey}` : '';
+}
+
 function groupHasMembers(groupId: string) {
-    return [...entries.values()].some(entry => entry.group === groupId && entryInScope(entry));
+    if ([...entries.values()].some(entry => entry.group === groupId && entryInScope(entry)))
+        return true;
+    const prefix = groupCommandKey(groupId, '');
+    return (
+        Boolean(prefix) && !modalActive && [...commands.keys()].some(key => key.startsWith(prefix))
+    );
 }
 
 function armGroup(groupId: string) {
@@ -182,6 +192,7 @@ function resolveChord(e: KeyboardEvent, group: string) {
     const match = matches.find(isVisible) ?? matches[0];
     disarm();
     if (match) trigger(match);
+    else if (!modalActive) commands.get(groupCommandKey(group, chordKey))?.run();
 }
 
 function handleKeydown(e: KeyboardEvent) {

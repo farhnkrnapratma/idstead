@@ -30,7 +30,7 @@
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import CommandSectionHeading from '@idstead/ui/components/CommandSectionHeading.svelte';
     import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
-    import { CATALOG_KEY, COMMAND_SHORTCUTS, LEADER_COMBO } from '@idstead/ui/shortcuts.ts';
+    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
     import { lockScroll } from '@idstead/ui/utils/scroll.ts';
     import { visualViewport } from '@idstead/ui/utils/visualViewport.svelte.ts';
     import ShareDialog from './ShareDialog.svelte';
@@ -1331,7 +1331,7 @@
                                 Recents
                             </span>
                         </div>
-                        <div class="flex flex-col gap-0.5">
+                        <div class="flex flex-col">
                             {#each filteredHistory as entry, idx (entry.id)}
                                 {@const historyDisplay = getHistoryDisplay(entry)}
                                 {@const EntryIcon = historyDisplay.icon}
@@ -1349,7 +1349,7 @@
                                     onkeydown={e => handleHistoryKeydown(e, entry)}
                                     onpointermove={e => handleItemPointerMove(e, idx)}
                                     class={cn(
-                                        'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
+                                        'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                         activeIndex === idx ?
                                             'bg-accent/10 text-fg dark:bg-accent/20'
                                         :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
@@ -1357,7 +1357,7 @@
                                     <div class="flex min-w-0 flex-1 items-center gap-1.5">
                                         <div
                                             class={cn(
-                                                'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
+                                                'flex size-5 shrink-0 items-center justify-center transition-colors select-none',
                                                 activeIndex === idx ? 'text-fg-accent' : (
                                                     'text-fg-secondary group-hover:text-fg-accent'
                                                 )
@@ -1448,7 +1448,7 @@
                                         {/if}
                                         <span
                                             aria-hidden="true"
-                                            class="flex size-6 shrink-0 items-center justify-center">
+                                            class="flex size-5 shrink-0 items-center justify-center">
                                             <CornerDownLeft
                                                 strokeWidth={1.5}
                                                 class={cn(
@@ -1539,7 +1539,7 @@
                                     {/if}
                                 </div>
                             </div>
-                            <div class="flex flex-col gap-0.5">
+                            <div class="flex flex-col">
                                 {#each group.items as item (item.id)}
                                     {@const globalIdx =
                                         (indexById.get(item.id) ?? 0) + filteredHistory.length}
@@ -1558,7 +1558,7 @@
                                         onkeydown={e => handleResultKeydown(e, item)}
                                         onpointermove={e => handleItemPointerMove(e, globalIdx)}
                                         class={cn(
-                                            'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
+                                            'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                             activeIndex === globalIdx ?
                                                 'bg-accent/10 text-fg dark:bg-accent/20'
                                             :   'text-fg-secondary hover:bg-surface-hover hover:text-fg'
@@ -1566,7 +1566,7 @@
                                         <div class="flex min-w-0 flex-1 items-center gap-1.5">
                                             <div
                                                 class={cn(
-                                                    'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
+                                                    'flex size-5 shrink-0 items-center justify-center transition-colors select-none',
                                                     activeIndex === globalIdx ? 'text-fg-accent' : (
                                                         'text-fg-secondary group-hover:text-fg-accent'
                                                     )
@@ -1657,7 +1657,7 @@
                                             {/if}
                                             <span
                                                 aria-hidden="true"
-                                                class="flex size-6 shrink-0 items-center justify-center">
+                                                class="flex size-5 shrink-0 items-center justify-center">
                                                 <CornerDownLeft
                                                     strokeWidth={1.5}
                                                     class={cn(
@@ -1680,14 +1680,6 @@
                 class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
                 <div
                     class="flex min-w-0 flex-1 items-center gap-3 text-2xs leading-none font-medium text-fg-muted">
-                    <span
-                        class="flex items-center"
-                        title="Shortcut mode">
-                        <span class="sr-only">Shortcut mode:</span>
-                        <ShortcutBadge
-                            combo={LEADER_COMBO}
-                            leader />
-                    </span>
                     {#if isLoading}
                         <span>Searching…</span>
                     {:else if rawQuery.trim()}
