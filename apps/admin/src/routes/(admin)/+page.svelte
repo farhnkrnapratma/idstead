@@ -1397,11 +1397,11 @@
         openPgpKey ?
             [
                 {
-                    label: 'Binary (.sig)',
+                    label: 'Binary',
                     code: `gpg --local-user ${openPgpKey.fingerprint} --detach-sign ${resumeDocState.filename}`
                 },
                 {
-                    label: 'Armored (.asc)',
+                    label: 'Armored',
                     code: `gpg --local-user ${openPgpKey.fingerprint} --armor --detach-sign ${resumeDocState.filename}`
                 }
             ]
