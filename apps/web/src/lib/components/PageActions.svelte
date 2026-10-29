@@ -233,11 +233,6 @@
     ]);
 
     const actions = $derived(groups.flat().filter(item => !item.shortcut.disabled));
-    const columns = $derived(
-        [groups.slice(0, 2), groups.slice(2)]
-            .map(column => column.filter(group => group.length > 0))
-            .filter(column => column.length > 0)
-    );
 </script>
 
 {#snippet itemIcon(item: ActionItem)}
@@ -316,73 +311,63 @@
         {/snippet}
         {#snippet children({ close })}
             <div
-                class="flex max-h-[min(75vh,32rem)] w-72 max-w-[calc(100vw-1rem)] scrollbar-none flex-col overflow-y-auto py-1 [-ms-overflow-style:none] lg:grid lg:max-h-none lg:w-160 lg:grid-cols-2 [&::-webkit-scrollbar]:hidden">
-                {#each columns as column, columnIndex (column[0][0].id)}
-                    <div class="flex flex-col lg:border-line-subtle lg:not-first:border-l">
-                        {#each column as group, index (group[0].id)}
-                            {#if index > 0 || columnIndex > 0}
-                                <hr
-                                    class={cn(
-                                        'my-1 border-line-subtle lg:my-0.5',
-                                        index === 0 && 'lg:hidden'
-                                    )} />
-                            {/if}
-                            {#each group as item (item.id)}
-                                {@const rowClass = cn(
-                                    'flex w-full cursor-pointer items-start gap-3 px-3 py-2 text-left no-underline transition-colors focus-visible:outline-none lg:items-center lg:py-1.5',
-                                    MENU_ITEM_TONE_CLASSES.default
-                                )}
-                                {#if item.href}
-                                    <a
-                                        href={item.href}
-                                        target={item.external ? '_blank' : undefined}
-                                        rel={item.external ? 'noopener noreferrer' : undefined}
-                                        data-sveltekit-reload={item.external ? undefined : true}
-                                        onclick={close}
-                                        use:shortcut={item.shortcut}
-                                        class={rowClass}>
-                                        <span
-                                            class="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-line-subtle text-fg-secondary lg:mt-0">
-                                            {@render itemIcon(item)}
-                                        </span>
-                                        <span class="flex min-w-0 flex-col">
-                                            <span
-                                                class="inline-flex items-center gap-1 text-xs font-medium">
-                                                {item.label}
-                                                {#if item.external}
-                                                    <SquareArrowOutUpRight
-                                                        class="size-3 text-fg-muted"
-                                                        aria-hidden="true" />
-                                                    <span class="sr-only">(opens in new tab)</span>
-                                                {/if}
-                                            </span>
-                                            <span class="text-2xs text-fg-muted"
-                                                >{item.description}</span>
-                                        </span>
-                                    </a>
-                                {:else}
-                                    <button
-                                        type="button"
-                                        onclick={() => {
-                                            close();
-                                            item.run?.();
-                                        }}
-                                        use:shortcut={item.shortcut}
-                                        class={rowClass}>
-                                        <span
-                                            class="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-line-subtle text-fg-secondary lg:mt-0">
-                                            {@render itemIcon(item)}
-                                        </span>
-                                        <span class="flex min-w-0 flex-col">
-                                            <span class="text-xs font-medium">{item.label}</span>
-                                            <span class="text-2xs text-fg-muted"
-                                                >{item.description}</span>
-                                        </span>
-                                    </button>
-                                {/if}
-                            {/each}
-                        {/each}
-                    </div>
+                class="flex w-80 max-w-[calc(100vw-1rem)] scrollbar-none flex-col overflow-y-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {#each groups.filter(group => group.length > 0) as group, index (group[0].id)}
+                    {#if index > 0}
+                        <hr class="my-0.5 border-line-subtle" />
+                    {/if}
+                    {#each group as item (item.id)}
+                        {@const rowClass = cn(
+                            'flex w-full cursor-pointer items-center gap-3 px-3 py-1.5 text-left no-underline transition-colors focus-visible:outline-none',
+                            MENU_ITEM_TONE_CLASSES.default
+                        )}
+                        {#if item.href}
+                            <a
+                                href={item.href}
+                                target={item.external ? '_blank' : undefined}
+                                rel={item.external ? 'noopener noreferrer' : undefined}
+                                data-sveltekit-reload={item.external ? undefined : true}
+                                onclick={close}
+                                use:shortcut={item.shortcut}
+                                class={rowClass}>
+                                <span
+                                    class="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-line-subtle text-fg-secondary">
+                                    {@render itemIcon(item)}
+                                </span>
+                                <span class="flex min-w-0 flex-col">
+                                    <span
+                                        class="inline-flex items-center gap-1 text-xs font-medium">
+                                        {item.label}
+                                        {#if item.external}
+                                            <SquareArrowOutUpRight
+                                                class="size-3 text-fg-muted"
+                                                aria-hidden="true" />
+                                            <span class="sr-only">(opens in new tab)</span>
+                                        {/if}
+                                    </span>
+                                    <span class="text-2xs text-fg-muted">{item.description}</span>
+                                </span>
+                            </a>
+                        {:else}
+                            <button
+                                type="button"
+                                onclick={() => {
+                                    close();
+                                    item.run?.();
+                                }}
+                                use:shortcut={item.shortcut}
+                                class={rowClass}>
+                                <span
+                                    class="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-line-subtle text-fg-secondary">
+                                    {@render itemIcon(item)}
+                                </span>
+                                <span class="flex min-w-0 flex-col">
+                                    <span class="text-xs font-medium">{item.label}</span>
+                                    <span class="text-2xs text-fg-muted">{item.description}</span>
+                                </span>
+                            </button>
+                        {/if}
+                    {/each}
                 {/each}
             </div>
         {/snippet}
