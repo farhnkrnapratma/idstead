@@ -18,6 +18,7 @@
             "args": ["-y", "@playwright/mcp@0.0.83"]
         },
         "cloudflare-api": { "type": "http", "url": "https://mcp.cloudflare.com/mcp" },
-        "graphify": { "type": "http", "url": "https://api.graphify.com/mcp" }
+        "graphify": { "type": "http", "url": "https://api.graphify.com/mcp" },
+        "bun": { "type": "http", "url": "https://bun.com/docs/mcp" }
     }
 }
