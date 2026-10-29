@@ -48,7 +48,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `safeRedirect.test.ts` | Admin login `redirectTo` safety |
 | `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |
 | `safeupdate.test.ts` | Every `UPDATE`/`DELETE` in migrations has a `WHERE` (PostgREST `safeupdate`) |
-| `pageFeedbackDeleteMigration.test.ts`, `blogTranslationRemoval.test.ts` | Specific migrations |
+| `pageFeedbackDeleteMigration.test.ts` | Specific migrations |
 | `newsletterQueue.test.ts`, `newsletterBroadcast.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation; broadcast claims, idempotency keys and the `PUBLIC_SITE_URL` link fallback; unsubscribe URL; contact email rendering |
 | `blogBannerRoute.test.ts` | Banner object keys and CDN URLs, reserved slugs, and that the old Worker banner and content routes no longer exist |
 | `blogStorageCleanup.test.ts`, `blogPostInput.test.ts`, `postSaveClient.test.ts` | Markdown cleanup queue, post input validation, save button label |
