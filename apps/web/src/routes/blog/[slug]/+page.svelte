@@ -15,7 +15,12 @@
     import hljs from 'highlight.js';
     import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
+    import {
+        enhanceHeadingAnchors,
+        mdrsFragment,
+        resolveMdrsHash
+    } from '@mdrs/dom/headingAnchors.ts';
+    import { clearArticleHash, normalizeArticleHashOnEnter } from '#app/article/articleHash.ts';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
     import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
@@ -128,6 +133,11 @@
         articleClientHeight = target.clientHeight;
     }
 
+    function showArticleTitle() {
+        scrollArticleToTop();
+        clearArticleHash();
+    }
+
     function scrollArticleToTop() {
         if (articleBodyEl) {
             const container = articleBodyEl.closest(
@@ -144,6 +154,8 @@
     let articleEl = $state<HTMLElement | null>(null);
     let articleBodyEl: HTMLElement | undefined = $state();
     let cancelHighlight: (() => void) | undefined;
+
+    normalizeArticleHashOnEnter(() => articleBodyEl);
 
     function scrollToTarget(targetId: string, smooth = true) {
         const targetEl = resolveMdrsHash(targetId, articleBodyEl);
@@ -218,7 +230,7 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        void goto(`#${targetId}`, { shallow: true });
+        void goto(`#${mdrsFragment(targetEl.id)}`, { shallow: true });
         scrollToTarget(targetId, true);
     }
 
@@ -230,7 +242,7 @@
                 hljs.highlightElement(block as HTMLElement);
             });
             enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
-            enhanceHeadingAnchors(container);
+            enhanceHeadingAnchors(container, { bareFragments: true });
         });
     };
 
@@ -548,8 +560,9 @@
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
-            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0">
+            class="article-scroll-container flex w-full min-w-0 scrollbar-none flex-col [-ms-overflow-style:none] lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0 [&::-webkit-scrollbar]:hidden">
             <ArticleHeader
+                onPermalink={showArticleTitle}
                 title={post.title}
                 titleClass="text-fg"
                 titleViewTransitionName="post-title-{post.slug}">

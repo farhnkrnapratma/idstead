@@ -77,5 +77,6 @@ Heading IDs carry the prefix so they can't collide with the page around them. A 
 
 - Links inside the document (`[setup](#setup)`) are rewritten to `#mdrs-setup` when that heading exists (`prefixHashLinks`).
 - A URL such as `/blog/post#setup` scrolls to `#mdrs-setup`. The post and legal pages resolve hashes with `resolveMdrsHash`, which prefers the prefixed ID inside the article.
+- The prefix stays out of the address bar. With `enhanceHeadingAnchors(container, { bareFragments: true })` the ¶ links point to `#setup`, and the post and legal pages write `#setup` to the URL when a table-of-contents entry or a same-document link is followed, and replace an older `#mdrs-setup` URL with `#setup` on load. `mdrsFragment(id)` strips the prefix. The title ¶ link points to the page URL without a fragment.
 
-Source: `packages/mdrs/dom/src/mdrs.css`, `packages/mdrs/core/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/core/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/mdrs/dom/src/headingAnchors.ts` (`resolveMdrsHash`).
+Source: `packages/mdrs/dom/src/mdrs.css`, `packages/mdrs/core/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/core/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/mdrs/dom/src/headingAnchors.ts` (`resolveMdrsHash`, `mdrsFragment`, `enhanceHeadingAnchors`).

@@ -22,7 +22,12 @@
     import { formatReadTime } from '@idstead/domain/formatters.ts';
     import { countReadingMinutes } from '@idstead/domain/readTime.ts';
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
+    import {
+        enhanceHeadingAnchors,
+        mdrsFragment,
+        resolveMdrsHash
+    } from '@mdrs/dom/headingAnchors.ts';
+    import { clearArticleHash, normalizeArticleHashOnEnter } from '../article/articleHash.ts';
     import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
@@ -79,6 +84,8 @@
     let articleEl = $state<HTMLElement | null>(null);
     let articleBodyEl: HTMLElement | undefined = $state();
     let cancelHighlight: (() => void) | undefined;
+
+    normalizeArticleHashOnEnter(() => articleBodyEl);
 
     function scrollToTarget(targetId: string, smooth = true) {
         const targetEl = resolveMdrsHash(targetId, articleBodyEl);
@@ -153,8 +160,13 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        void goto(`#${targetId}`, { shallow: true });
+        void goto(`#${mdrsFragment(targetEl.id)}`, { shallow: true });
         scrollToTarget(targetId, true);
+    }
+
+    function showArticleTitle() {
+        scrollArticleToTop();
+        clearArticleHash();
     }
 
     function scrollArticleToTop() {
@@ -181,7 +193,7 @@
                 hljs.highlightElement(block as HTMLElement);
             });
             enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
-            enhanceHeadingAnchors(container);
+            enhanceHeadingAnchors(container, { bareFragments: true });
         });
     };
 
@@ -242,8 +254,9 @@
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
-            class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0">
+            class="article-scroll-container flex w-full min-w-0 scrollbar-none flex-col [-ms-overflow-style:none] lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0 [&::-webkit-scrollbar]:hidden">
             <ArticleHeader
+                onPermalink={showArticleTitle}
                 {title}
                 titleClass="text-fg">
                 {#snippet meta()}

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import MdrsHtml from '@mdrs/dom/MdrsHtml.svelte';
+    import { mdrsFragment } from '@mdrs/dom/headingAnchors.ts';
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import { onMount } from 'svelte';
     import {
@@ -89,7 +90,7 @@
 
         target.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'start' });
 
-        void goto(`#${id}`, { shallow: true });
+        void goto(`#${mdrsFragment(id)}`, { shallow: true });
         activeHeadingId = id;
         revealActiveLink(id, undefined, undefined, true);
     }
@@ -102,7 +103,9 @@
     ) {
         if (!tocListEl) return;
 
-        const activeEl = tocListEl.querySelector(`[href="#${id}"]`) as HTMLElement;
+        const activeEl = tocListEl.querySelector(
+            `[data-toc-id="${CSS.escape(id)}"]`
+        ) as HTMLElement;
 
         if (activeEl) {
             const top = forcedTop !== undefined ? forcedTop : activeEl.offsetTop;
@@ -134,7 +137,9 @@
 
             const tocLinks = headings
                 .map(h => {
-                    const link = tocListEl?.querySelector(`[href="#${h.id}"]`) as HTMLElement;
+                    const link = tocListEl?.querySelector(
+                        `[data-toc-id="${CSS.escape(h.id)}"]`
+                    ) as HTMLElement;
 
                     return link ?
                             { id: h.id, top: link.offsetTop, height: link.offsetHeight }
@@ -260,7 +265,7 @@
 {#snippet tocList()}
     <div
         {@attach elementRef<HTMLDivElement>(node => (scrollContainerEl = node))}
-        class="relative -mx-2 min-h-0 flex-1 overflow-y-auto px-2 py-2">
+        class="relative -mx-2 min-h-0 flex-1 scrollbar-none overflow-y-auto px-2 py-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <ul
             id="toc-list"
             {@attach elementRef<HTMLUListElement>(node => (tocListEl = node))}
@@ -295,7 +300,7 @@
                         <svg
                             aria-hidden="true"
                             class="block h-2 text-line-subtle"
-                            style:margin-left="calc({Math.min(depth, previousDepth)}rem - 0.0625rem)"
+                            style:margin-left="calc({Math.min(depth, previousDepth)}rem + 0.0625rem)"
                             style:width="{Math.abs(depth - previousDepth)}rem"
                             viewBox="0 0 1 1"
                             preserveAspectRatio="none"
@@ -311,15 +316,16 @@
                         </svg>
                     {/if}
                     <a
-                        href="#{heading.id}"
+                        href="#{mdrsFragment(heading.id)}"
                         data-toc-link
+                        data-toc-id={heading.id}
                         onclick={e => {
                             e.preventDefault();
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
                         class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-line-strong hover:text-fg aria-[current=true]:text-fg"
-                        style:margin-left="calc({depth}rem - 0.125rem)">
+                        style:margin-left="{depth}rem">
                         <MdrsHtml
                             as="span"
                             html={formatHeadingText(heading.text)} />
