@@ -36,7 +36,8 @@ export const CHORD_GROUPS: Record<string, ChordGroupSpec> = {
     copy: { id: 'copy', label: 'Copy', combos: ['C'], shadows: '/copy' },
     save: { id: 'save', label: 'Save', combos: ['S'], shadows: '/save' },
     code: { id: 'code', label: 'Code blocks', combos: ['E'], shadows: '/code' },
-    view: { id: 'view', label: 'View', combos: ['Shift+V'] },
+    view: { id: 'view', label: 'View', combos: ['V'] },
+    go: { id: 'go', label: 'Go to', combos: ['G'] },
     // Armed by a command shortcut rather than a typed prefix, so it owns no key.
     args: { id: 'args', label: 'Command options', combos: [] }
 };
@@ -47,14 +48,13 @@ export const CHORD_GROUPS: Record<string, ChordGroupSpec> = {
  * answers inside the open palette, so the two never compete.
  */
 export const BUTTON_SHORTCUTS: Record<string, { combo: string; mirrors?: string }> = {
-    back: { combo: 'Z', mirrors: '/back' },
-    scrollTop: { combo: 'W', mirrors: '/top' },
+    back: { combo: 'ArrowLeft', mirrors: '/back' },
+    scrollTop: { combo: 'ArrowUp', mirrors: '/top' },
     themeToggle: { combo: 'T', mirrors: '/theme' },
     accessibility: { combo: 'I', mirrors: '/a11y' },
     readingMode: { combo: 'D', mirrors: '/read' },
-    subscribe: { combo: 'Shift+H' },
+    subscribe: { combo: 'U' },
     feedback: { combo: 'Shift+D', mirrors: '/feedback' },
-    notifications: { combo: 'Shift+N' },
     dialogClose: { combo: 'Esc' },
     skipLink: { combo: 'Enter' },
     filterSearch: { combo: 'Shift+Q' },
@@ -64,22 +64,22 @@ export const BUTTON_SHORTCUTS: Record<string, { combo: string; mirrors?: string 
     pageNext: { combo: ']' },
     formClear: { combo: 'Shift+Z' },
     formSubmit: { combo: 'Shift+Y' },
-    browseProjects: { combo: 'J', mirrors: '/projects' },
-    viewAllProjects: { combo: 'J', mirrors: '/projects' },
-    viewAllPosts: { combo: 'B', mirrors: '/blog' },
-    getInTouch: { combo: 'N', mirrors: '/contact' },
-    viewFullResume: { combo: 'V', mirrors: '/resume' },
-    becomeSponsor: { combo: 'U', mirrors: '/funding' },
-    feed: { combo: 'R', mirrors: '/rss' },
-    termsLink: { combo: 'M', mirrors: '/terms' },
-    privacyLink: { combo: 'Y', mirrors: '/privacy' },
-    securityLink: { combo: 'K', mirrors: '/security' },
-    aiDisclosureLink: { combo: 'Shift+A', mirrors: '/ai-disclosure' },
+    browseProjects: { combo: 'G P', mirrors: '/projects' },
+    viewAllProjects: { combo: 'G P', mirrors: '/projects' },
+    viewAllPosts: { combo: 'G B', mirrors: '/blog' },
+    getInTouch: { combo: 'G C', mirrors: '/contact' },
+    viewFullResume: { combo: 'G R', mirrors: '/resume' },
+    becomeSponsor: { combo: 'G F', mirrors: '/funding' },
+    feed: { combo: 'G S', mirrors: '/rss' },
+    termsLink: { combo: 'G T', mirrors: '/terms' },
+    privacyLink: { combo: 'G Y', mirrors: '/privacy' },
+    securityLink: { combo: 'G K', mirrors: '/security' },
+    aiDisclosureLink: { combo: 'G A', mirrors: '/ai-disclosure' },
     cookiesLink: { combo: 'Shift+K', mirrors: '/cookies' },
-    sitemapLink: { combo: 'Shift+M', mirrors: '/sitemap' },
+    sitemapLink: { combo: 'G M', mirrors: '/sitemap' },
     navMenu: { combo: 'O' },
     permalinkHeading: { combo: 'L' },
-    moreActions: { combo: '.' },
+    moreActions: { combo: 'M' },
     helpfulYes: { combo: 'Alt+Y' },
     helpfulNo: { combo: 'Alt+N' },
     shareFeedback: { combo: 'Alt+F' },
@@ -113,45 +113,46 @@ export function sectionCommandKey(target: string): string {
 }
 
 /**
- * One key per slash command, pressed after the leader. The 26 bare letters are
- * fully allocated, so the overflow sits on Shift+letter. Ctrl+K and "/" belong
- * to the command palette itself and are deliberately absent.
+ * One binding per slash command, pressed after the leader. Arrow keys move,
+ * G then a letter goes to a page, single letters act on the current page,
+ * Shift+letter covers secondary actions and Alt+letter blog-only ones.
+ * Ctrl+K and "/" also open the command palette without the leader.
  */
 export const COMMAND_SHORTCUTS: Record<string, string> = {
-    '/home': 'H',
-    '/projects': 'J',
-    '/blog': 'B',
-    '/resume': 'V',
-    '/funding': 'U',
-    '/contact': 'N',
-    '/privacy': 'Y',
-    '/terms': 'M',
-    '/security': 'K',
-    '/ai-disclosure': 'Shift+A',
+    '/home': 'G H',
+    '/projects': 'G P',
+    '/blog': 'G B',
+    '/resume': 'G R',
+    '/funding': 'G F',
+    '/contact': 'G C',
+    '/privacy': 'G Y',
+    '/terms': 'G T',
+    '/security': 'G K',
+    '/ai-disclosure': 'G A',
+    '/rss': 'G S',
+    '/sitemap': 'G M',
+    '/llms': 'G L',
+    '/api': 'G I',
+    '/back': 'ArrowLeft',
+    '/forward': 'ArrowRight',
+    '/top': 'ArrowUp',
+    '/bottom': 'ArrowDown',
     '/read': 'D',
-    '/open': 'O',
-    '/refresh': 'G',
+    '/print': 'P',
+    '/qr': 'Q',
+    '/refresh': 'R',
     '/theme': 'T',
-    '/code': 'E',
     '/a11y': 'I',
+    '/code': 'E',
     '/copy': 'C',
     '/save': 'S',
-    '/back': 'Z',
-    '/forward': 'X',
-    '/top': 'W',
-    '/bottom': 'A',
-    '/print': 'P',
-    '/rss': 'R',
-    '/qr': 'Q',
-    '/feedback': 'Shift+D',
-    '/llms': 'Shift+L',
-    '/cookies': 'Shift+K',
-    '/sitemap': 'Shift+M',
-    '/api': 'Shift+I',
     '/share': 'Shift+E',
+    '/feedback': 'Shift+D',
+    '/cookies': 'Shift+K',
     '/exit': 'Shift+X',
-    '/keyboard': 'Space',
-    '/help': 'Shift+F'
+    '/open': '/',
+    '/help': '?',
+    '/keyboard': 'Space'
 };
 
 export const COMMAND_LABELS: Record<string, string> = {
@@ -196,10 +197,12 @@ export function normalizeKey(spec: string): string {
         .split('+')
         .map(part => part.trim())
         .filter(Boolean);
-    const key = (parts.pop() ?? '').toLowerCase();
+    const raw = (parts.pop() ?? '').toLowerCase();
+    const key = raw === '?' ? '/' : raw;
     const has = (name: string) => parts.some(part => part.toLowerCase() === name);
     const alt = has('alt') || has('option');
-    return `${alt ? 'alt+' : ''}${has('shift') ? 'shift+' : ''}${key}`;
+    const shift = has('shift') || raw === '?';
+    return `${alt ? 'alt+' : ''}${shift ? 'shift+' : ''}${key}`;
 }
 
 export const ARM_TIMEOUT_MS = 5000;
@@ -227,7 +230,15 @@ const KEY_TOKENS: Record<string, string> = {
     pgup: 'PageUp',
     pagedown: 'PageDown',
     pgdn: 'PageDown',
-    slash: '/'
+    slash: '/',
+    arrowleft: 'ArrowLeft',
+    arrowright: 'ArrowRight',
+    arrowup: 'ArrowUp',
+    arrowdown: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    up: 'ArrowUp',
+    down: 'ArrowDown'
 };
 
 const MODIFIER_ORDER: Record<'mac' | 'default', string[]> = {
@@ -268,6 +279,13 @@ export interface KeyLabel {
     icon?: KeyIcon;
 }
 
+const ARROW_KEYS: Record<string, KeyLabel> = {
+    ArrowLeft: { text: '←', name: 'Left arrow' },
+    ArrowRight: { text: '→', name: 'Right arrow' },
+    ArrowUp: { text: '↑', name: 'Up arrow' },
+    ArrowDown: { text: '↓', name: 'Down arrow' }
+};
+
 const MAC_KEYS: Record<string, KeyLabel> = {
     Mod: { text: '⌘', name: 'Command', icon: 'Command' },
     Meta: { text: '⌘', name: 'Command', icon: 'Command' },
@@ -278,7 +296,8 @@ const MAC_KEYS: Record<string, KeyLabel> = {
     Tab: { text: '⇥', name: 'Tab', icon: 'ArrowRightToLine' },
     CapsLock: { text: '⇪', name: 'Caps Lock', icon: 'ArrowBigUpDash' },
     PageUp: { text: '⇞', name: 'Page Up' },
-    PageDown: { text: '⇟', name: 'Page Down' }
+    PageDown: { text: '⇟', name: 'Page Down' },
+    ...ARROW_KEYS
 };
 
 const PC_KEYS: Record<string, KeyLabel> = {
@@ -290,7 +309,8 @@ const PC_KEYS: Record<string, KeyLabel> = {
     Tab: { text: 'Tab', name: 'Tab' },
     CapsLock: { text: 'Caps Lock', name: 'Caps Lock' },
     PageUp: { text: 'PgUp', name: 'Page Up' },
-    PageDown: { text: 'PgDn', name: 'Page Down' }
+    PageDown: { text: 'PgDn', name: 'Page Down' },
+    ...ARROW_KEYS
 };
 
 const META_BY_PLATFORM: Record<Platform, KeyLabel> = {
@@ -306,6 +326,13 @@ export function keyLabel(token: string, platform: Platform = 'other'): KeyLabel 
     const label = table[token] ?? { text: token, name: token };
     return { ...label, text: label.text.toLowerCase() };
 }
+
+const ARROW_CODES: Record<string, string> = {
+    ArrowLeft: 'arrowleft',
+    ArrowRight: 'arrowright',
+    ArrowUp: 'arrowup',
+    ArrowDown: 'arrowdown'
+};
 
 const PUNCTUATION_CODES: Record<string, string> = {
     BracketLeft: '[',
@@ -330,7 +357,8 @@ export function leaderKeyFromEvent(e: KeyboardEvent): string | null {
     if (code.startsWith('Key')) key = code.slice(3).toLowerCase();
     else if (code.startsWith('Digit')) key = code.slice(5);
     else if (code.startsWith('Numpad') && /\d$/.test(code)) key = code.slice(-1);
-    else if (code === 'Slash') key = 'slash';
+    else if (code === 'Slash') key = '/';
+    else if (code in ARROW_CODES) key = ARROW_CODES[code];
     else if (code === 'Space') key = 'space';
     else if (code === 'Enter' || code === 'NumpadEnter') key = 'enter';
     else if (code in PUNCTUATION_CODES) key = PUNCTUATION_CODES[code];
@@ -379,6 +407,13 @@ export function isTextEntryTarget(target: unknown): boolean {
     }
     if (['TEXTAREA', 'SELECT'].includes(el.tagName || '')) return true;
     return Boolean(el.isContentEditable);
+}
+
+export function sequenceStep(combo: string): { group: string; key: string } | null {
+    const steps = combo.trim().split(/\s+/);
+    if (steps.length !== 2) return null;
+    const group = groupForKey(normalizeKey(steps[0]));
+    return group ? { group, key: steps[1].toLowerCase() } : null;
 }
 
 export function groupForKey(key: string): string | null {

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
-    import { Keyboard } from '@lucide/svelte';
+    import { KeySquare } from '@lucide/svelte';
     import { CHORD_GROUPS, CATALOG_KEY, ARM_TIMEOUT_MS } from '../shortcuts.ts';
     import { shortcutStore } from '../stores/shortcutStore.svelte';
     import ShortcutBadge from './ShortcutBadge.svelte';
@@ -20,7 +20,7 @@
         class="pointer-events-none fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-200 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-md glass-overlay border border-accent/40 font-sans text-2xs text-fg shadow-lg">
         <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-3 py-2">
             <span class="flex items-center gap-1.5 font-semibold">
-                <Keyboard
+                <KeySquare
                     class="size-3.5 shrink-0 text-fg-accent"
                     aria-hidden="true" />
                 {pendingLabel || 'Shortcut mode'}

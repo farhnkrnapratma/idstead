@@ -1,9 +1,15 @@
 <script lang="ts">
+    import { SvelteSet } from 'svelte/reactivity';
     import Dialog from './Dialog.svelte';
     import ShortcutBadge from './ShortcutBadge.svelte';
     import CommandSectionHeading from './CommandSectionHeading.svelte';
-    import { page } from '$app/state';
-    import { SHORTCUT_SECTIONS, commandSection, actionSection } from '../shortcutCatalog.ts';
+    import {
+        SHORTCUT_SECTIONS,
+        actionSection,
+        commandSection,
+        compareCombos,
+        type ShortcutSection
+    } from '../shortcutCatalog.ts';
     import { shortcutStore } from '../stores/shortcutStore.svelte';
     import {
         CHORD_GROUPS,
@@ -19,14 +25,21 @@
         hiddenCommands?: string[];
     }
 
+    interface CatalogRow {
+        id: string;
+        label: string;
+        combo: string;
+        section: ShortcutSection;
+    }
+
     let { hiddenCommands = [] }: Props = $props();
 
-    const commandRows = $derived(
+    const commandRows: CatalogRow[] = $derived(
         Object.entries(COMMAND_SHORTCUTS)
             .filter(([command]) => COMMAND_LABELS[command] && !hiddenCommands.includes(command))
             .map(([command, combo]) => ({
                 id: command,
-                label: `${COMMAND_LABELS[command]} or ${command}`,
+                label: COMMAND_LABELS[command],
                 section: commandSection(command),
                 combo
             }))
@@ -36,89 +49,85 @@
 
     const entries = $derived(shortcutStore.catalogOpen ? shortcutStore.catalogEntries() : []);
 
-    const actionRows = $derived.by(() => {
-        const keyOf = (entry: (typeof entries)[number]) =>
-            `${entry.scope}|${normalizeKey(entry.combos[0] ?? '')}`;
-        return entries.flatMap((entry, index) => {
-            if (!entry.group) {
-                const combo = entry.combos[0];
-                if (
-                    !combo
-                    || (entry.scope === 'page' && commandKeys.has(normalizeKey(combo)))
-                    || entries.findIndex(other => !other.group && keyOf(other) === keyOf(entry))
-                        !== index
-                )
-                    return [];
-                return [
-                    {
-                        id: entry.id,
-                        label: entry.label,
-                        combo,
-                        section: actionSection(entry, page.url.pathname)
-                    }
-                ];
-            }
-            const spec = CHORD_GROUPS[entry.group];
-            if (!spec || spec.listed === false || !spec.combos[0]) return [];
-            return [
-                {
-                    id: entry.id,
-                    label: entry.label,
-                    section: actionSection(entry, page.url.pathname),
-                    combo: `${spec.combos[0]} ${entry.chordKey ?? ''}`
-                }
-            ];
+    const actionRows: CatalogRow[] = $derived.by(() => {
+        const seen = new SvelteSet<string>();
+        return entries.flatMap(entry => {
+            const spec = entry.group ? CHORD_GROUPS[entry.group] : undefined;
+            if (entry.group === 'go' || spec?.listed === false) return [];
+            const combo =
+                spec ? `${spec.combos[0] ?? ''} ${entry.chordKey ?? ''}`.trim() : entry.combos[0];
+            if (!combo || (entry.scope === 'page' && !spec && commandKeys.has(normalizeKey(combo))))
+                return [];
+            const key = `${entry.scope}|${normalizeKey(combo)}`;
+            if (seen.has(key)) return [];
+            seen.add(key);
+            return [{ id: entry.id, label: entry.label, combo, section: actionSection(entry) }];
         });
     });
+
+    const listRows: CatalogRow[] = $derived(
+        Object.values(CHORD_GROUPS)
+            .filter(
+                spec =>
+                    spec.listed === false
+                    && spec.combos[0]
+                    && entries.some(entry => entry.group === spec.id)
+            )
+            .map(spec => ({
+                id: `list-${spec.id}`,
+                label: `${spec.label}, then the item number`,
+                combo: spec.combos[0],
+                section: 'lists' as const
+            }))
+    );
 
     const sections = $derived(
         SHORTCUT_SECTIONS.map(section => ({
             ...section,
-            rows: [...actionRows, ...commandRows].filter(row => row.section === section.id)
+            rows: [...commandRows, ...actionRows, ...listRows]
+                .filter(row => row.section === section.id)
+                .sort((a, b) => compareCombos(a.combo, b.combo))
         })).filter(section => section.rows.length > 0)
     );
 </script>
 
-{#snippet row(label: string, badge: string)}
+{#snippet row(label: string, combo: string, leader = true)}
     <div
-        class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-surface-hover">
-        <span class="min-w-0 text-xs wrap-break-word text-fg">{label}</span>
+        class="flex min-w-0 items-center justify-between gap-3 rounded-sm px-2 py-1 text-xs text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg">
+        <span class="min-w-0 truncate">{label}</span>
         <ShortcutBadge
-            combo={badge}
-            leader />
+            {combo}
+            {leader} />
     </div>
 {/snippet}
 
 <Dialog
     isOpen={shortcutStore.catalogOpen}
     title="Keyboard shortcuts"
-    description="Browse shortcuts by context. Use the info icons to check where each group works."
+    description="Press ctrl+space, then a key. Keys followed by a second key open a group."
     size="2xl"
     scrollBody
     trapShortcuts={false}
     onClose={() => (shortcutStore.catalogOpen = false)}>
-    <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-0.5">
+    <div class="flex flex-col gap-4">
+        <div class="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
             <div
-                class="flex flex-col items-start justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-surface-hover sm:flex-row sm:items-center sm:gap-3">
-                <span class="min-w-0 text-xs text-fg">Toggle shortcut mode</span>
-                <span class="flex shrink-0 items-center gap-1.5 text-xs text-fg-muted">
+                class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-sm px-2 py-1 text-xs text-fg-secondary">
+                <span class="shrink-0">Shortcut mode</span>
+                <span class="ml-auto flex shrink-0 items-center gap-1 text-fg-muted">
                     <ShortcutBadge combo={LEADER_COMBO} />
-                    /
                     <ShortcutBadge combo={LEADER_FALLBACK_COMBO} />
                 </span>
             </div>
             {@render row('Open this list', CATALOG_KEY)}
         </div>
 
-        <hr class="border-line-subtle" />
-
         {#each sections as section (section.id)}
             <section aria-label={section.label}>
                 <CommandSectionHeading
                     label={section.label}
                     context={section.context} />
-                <div class="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
                     {#each section.rows as action (action.id)}
                         {@render row(action.label, action.combo)}
                     {/each}
