@@ -77,6 +77,7 @@ export const BUTTON_SHORTCUTS: Record<string, { combo: string; mirrors?: string 
     aiDisclosureLink: { combo: 'Shift+A', mirrors: '/ai-disclosure' },
     cookiesLink: { combo: 'Shift+K', mirrors: '/cookies' },
     sitemapLink: { combo: 'Shift+M', mirrors: '/sitemap' },
+    navMenu: { combo: 'O' },
     moreActions: { combo: '.' },
     helpfulYes: { combo: 'Alt+Y' },
     helpfulNo: { combo: 'Alt+N' },
