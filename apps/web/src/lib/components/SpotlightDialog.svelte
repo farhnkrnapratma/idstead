@@ -1218,10 +1218,10 @@
         use:portal
         style:top={visualViewportTop !== null ? `${visualViewportTop}px` : undefined}
         style:height={visualViewportHeight !== null ? `${visualViewportHeight}px` : undefined}
-        class="fixed inset-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        class="fixed inset-0 z-99999 flex items-start justify-center overscroll-contain p-4 transition-[top,height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] sm:pt-[12vh]">
         <button
             type="button"
-            class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
+            class="fixed inset-0 cursor-default touch-none bg-overlay/50 transition-opacity duration-200"
             aria-label="Close search"
             tabindex="-1"
             onwheel={e => e.preventDefault()}
