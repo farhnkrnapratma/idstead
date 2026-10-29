@@ -10,7 +10,7 @@ This **AI Disclosure** explains where **${site}** (the "**Website**") uses artif
 
 ## 1. Authored Content
 
-Every post, page and project description on the Website is written and published by **${name}**. The Website does not generate articles, summaries, translations or other editorial content with AI.
+Every post, page and project description on the Website is written and published by **${name}**. The Website does not generate articles, summaries or other editorial content with AI.
 
 ## 2. Comment Moderation
 
