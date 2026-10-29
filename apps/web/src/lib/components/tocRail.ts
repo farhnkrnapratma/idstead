@@ -18,7 +18,7 @@ export interface RailGeometry {
 const CURVE_SAMPLES = 16;
 
 function railX(depth: number, step: number) {
-    return depth * step - 1;
+    return depth * step + 1;
 }
 
 function curveLength(x1: number, y1: number, x2: number, y2: number) {

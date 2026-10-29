@@ -1,6 +1,10 @@
 const ANCHOR_ICON =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-pilcrow" aria-hidden="true"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>';
 
+export function mdrsFragment(id: string): string {
+    return id.startsWith('mdrs-') ? id.slice(5) : id;
+}
+
 export function resolveMdrsHash(hash: string, container?: HTMLElement | null): HTMLElement | null {
     let id = hash.replace(/^#/, '');
     if (!id) return null;
@@ -23,7 +27,14 @@ export function activateHeadingAnchor(anchor: HTMLAnchorElement): void {
     anchor.classList.add('mdrs-is-active');
 }
 
-export function enhanceHeadingAnchors(container: HTMLElement): void {
+export interface HeadingAnchorOptions {
+    bareFragments?: boolean;
+}
+
+export function enhanceHeadingAnchors(
+    container: HTMLElement,
+    { bareFragments = false }: HeadingAnchorOptions = {}
+): void {
     const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
         el => !el.closest('.mdrs-chart') && !el.closest('.mdrs-mermaid')
     ) as HTMLElement[];
@@ -46,7 +57,7 @@ export function enhanceHeadingAnchors(container: HTMLElement): void {
         }
 
         const anchor = document.createElement('a');
-        anchor.href = `#${el.id}`;
+        anchor.href = `#${bareFragments ? mdrsFragment(el.id) : el.id}`;
         anchor.className = 'mdrs-anchor';
         anchor.tabIndex = 0;
         anchor.setAttribute('aria-label', 'Permanent link');

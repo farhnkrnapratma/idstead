@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { Pilcrow } from '@lucide/svelte';
+    import { page } from '$app/state';
     import { activateHeadingAnchor } from '@mdrs/dom/headingAnchors.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
 
@@ -11,6 +12,7 @@
         titleClass?: string;
         titleViewTransitionName?: string;
         meta?: Snippet;
+        onPermalink?: () => void;
     }
 
     let {
@@ -19,7 +21,8 @@
         class: className = '',
         titleClass = 'text-fg-secondary',
         titleViewTransitionName = '',
-        meta
+        meta,
+        onPermalink
     }: Props = $props();
 
     let titleParts = $derived.by(() => {
@@ -35,9 +38,24 @@
     });
 </script>
 
+{#snippet permalink()}<a
+        href={page.url.pathname}
+        aria-label="Permanent link"
+        data-tooltip="Permanent link"
+        class="mdrs-anchor"
+        onclick={event => {
+            event.preventDefault();
+            activateHeadingAnchor(event.currentTarget);
+            onPermalink?.();
+        }}
+        tabindex="0">
+        <Pilcrow
+            class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
+            aria-hidden="true" />
+    </a>{/snippet}
+
 <header class={cn('article-header border-b border-b-line-subtle pb-4', className)}>
     <h1
-        id="title"
         style={titleViewTransitionName ?
             `view-transition-name: ${titleViewTransitionName}`
         :   undefined}
@@ -49,33 +67,11 @@
         {#if titleParts.hasMultiple}
             <span class="mdrs-heading-text inline"
                 >{titleParts.leading}&nbsp;<span class="whitespace-nowrap"
-                    >{titleParts.last}<a
-                        href="#title"
-                        aria-label="Permanent link"
-                        data-tooltip="Permanent link"
-                        class="mdrs-anchor"
-                        onclick={event =>
-                            activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
-                        tabindex="0">
-                        <Pilcrow
-                            class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
-                            aria-hidden="true" />
-                    </a></span
+                    >{titleParts.last}{@render permalink()}</span
                 ></span>
         {:else}
             <span class="mdrs-heading-text inline whitespace-nowrap"
-                >{titleParts.last}<a
-                    href="#title"
-                    aria-label="Permanent link"
-                    data-tooltip="Permanent link"
-                    class="mdrs-anchor"
-                    onclick={event =>
-                        activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
-                    tabindex="0">
-                    <Pilcrow
-                        class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
-                        aria-hidden="true" />
-                </a></span>
+                >{titleParts.last}{@render permalink()}</span>
         {/if}
     </h1>
 
