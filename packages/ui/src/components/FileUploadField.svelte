@@ -116,12 +116,12 @@
         ondragover={handleDragOver}
         ondragleave={handleDragLeave}
         class={cn(
-            'group relative flex min-w-0 flex-1 cursor-pointer dashed-surface transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+            'group relative flex min-w-0 flex-1 cursor-pointer rounded-md border border-dashed border-line bg-transparent transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
             compact ?
                 'flex-row items-center gap-3 px-4 py-3 text-left'
             :   'min-h-40 flex-col items-center justify-center gap-2 p-6 text-center',
             isDragging ? 'border-accent! bg-accent-subtle/40!'
-            : !isDisabled ? 'hover:border-line hover:bg-surface-hover/60'
+            : !isDisabled ? 'hover:border-line-strong hover:bg-surface-hover/60'
             : '',
             error ? 'border-danger! bg-danger-subtle/10!' : '',
             isDisabled ? 'cursor-not-allowed opacity-50' : ''
@@ -160,8 +160,7 @@
                 {/if}
             </span>
         {:else if compact}
-            <CloudUpload
-                class="size-5 shrink-0 text-fg-secondary transition-colors group-hover:text-fg-accent" />
+            <CloudUpload class="size-5 shrink-0 text-fg-accent" />
             <span class="flex min-w-0 flex-col gap-0.5">
                 {#if actions}
                     {@render actions({ trigger: () => fileInputRef?.click() })}
@@ -173,8 +172,7 @@
                 {/if}
             </span>
         {:else}
-            <CloudUpload
-                class="size-8 text-fg-secondary transition-colors group-hover:text-fg-accent" />
+            <CloudUpload class="size-8 text-fg-accent" />
             {#if actions}
                 {@render actions({ trigger: () => fileInputRef?.click() })}
             {:else}
