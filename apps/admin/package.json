@@ -28,7 +28,7 @@
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/editor": "workspace:*",
-        "@sentry/sveltekit": "^11.9.0",
+        "@sentry/sveltekit": "^11.10.0",
         "@supabase/supabase-js": "^2.118.0",
         "blobatar": "^2.7.0",
         "d3-scale": "^4.0.2",
@@ -47,7 +47,7 @@
         "tailwindcss": "^4.3.3",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.5",
-        "wrangler": "^4.154.0"
+        "wrangler": "^4.155.0"
     },
     "sideEffects": [
         "**/*.css"
