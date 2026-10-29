@@ -9,6 +9,7 @@
         icon?: Component<{ class?: string }>;
         external?: boolean;
         current?: boolean;
+        combo?: string;
     }
 
     export interface NavMenuGroup {
@@ -20,13 +21,14 @@
 <script lang="ts">
     import { ChevronDown, SquareArrowOutUpRight } from '@lucide/svelte';
     import { cn } from '../utils/cn';
-    import { MENU_ITEM_TONE_CLASSES } from '../utils/menuItemStyles';
+    import Button from './Button.svelte';
     import Dropdown from './Dropdown.svelte';
 
     interface Props {
         label: string;
         groups: NavMenuGroup[];
         active?: boolean;
+        shortcut?: string;
         placement?: 'bottom-start' | 'bottom-end';
         class?: string;
     }
@@ -35,6 +37,7 @@
         label,
         groups,
         active = false,
+        shortcut,
         placement = 'bottom-start',
         class: className = ''
     }: Props = $props();
@@ -47,14 +50,17 @@
     {placement}
     class={className}>
     {#snippet trigger({ isOpen, toggle })}
-        <button
-            type="button"
+        <Button
+            type="ghost"
+            size="sm"
             onclick={toggle}
             aria-expanded={isOpen}
             aria-haspopup="dialog"
+            keyboardShortcut={shortcut}
+            shortcutLabel="Open the {label} menu"
             class={cn(
-                'inline-flex h-8 cursor-pointer items-center gap-1 rounded-md px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                isOpen || active ? 'text-fg' : 'text-fg-muted hover:text-fg'
+                'gap-1 px-2 text-sm font-medium',
+                isOpen || active ? 'text-fg!' : 'text-fg-muted! hover:text-fg!'
             )}>
             {label}
             <ChevronDown
@@ -62,12 +68,12 @@
                     'size-3 transition-transform duration-200 ease-out',
                     isOpen && 'rotate-180'
                 )} />
-        </button>
+        </Button>
     {/snippet}
     {#snippet children({ close })}
         <nav
             aria-label={label}
-            class="flex max-h-[min(70vh,32rem)] min-w-48 flex-col overflow-y-auto py-1">
+            class="flex min-w-52 scrollbar-none flex-col overflow-y-auto py-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {#each visibleGroups as group, index (group.label)}
                 {#if index > 0}
                     <hr class="my-1 border-line-subtle" />
@@ -77,27 +83,32 @@
                     {group.label}
                 </p>
                 {#each group.items as item (item.href)}
-                    <a
+                    <Button
                         href={item.href}
                         target={item.external ? '_blank' : undefined}
                         rel={item.external ? 'noopener noreferrer' : undefined}
+                        type="ghost"
+                        size="sm"
                         aria-current={item.current ? 'page' : undefined}
                         onclick={close}
+                        keyboardShortcut={item.combo}
+                        shortcutLabel={item.label}
+                        shortcutPlacement="inline"
                         class={cn(
-                            'flex items-center gap-2 px-3 py-2 text-xs font-medium no-underline transition-colors focus-visible:outline-none',
+                            'h-auto! w-full justify-start! gap-2 rounded-none! py-2 ps-3 pe-12 font-medium no-underline focus-visible:-outline-offset-2!',
                             item.current ?
-                                'bg-accent/10 font-semibold text-fg-accent'
-                            :   MENU_ITEM_TONE_CLASSES.default
+                                'bg-accent/10 font-semibold text-fg-accent!'
+                            :   'text-fg! hover:bg-surface-hover hover:text-fg-accent! focus-visible:bg-surface-hover'
                         )}>
                         {#if item.icon}
                             <item.icon class="size-3.5 shrink-0" />
                         {/if}
-                        <span class="min-w-0 flex-1 truncate">{item.label}</span>
+                        <span class="min-w-0 flex-1 truncate text-left">{item.label}</span>
                         {#if item.external}
                             <SquareArrowOutUpRight class="size-3 shrink-0 text-fg-muted" />
                             <span class="sr-only">(opens in new tab)</span>
                         {/if}
-                    </a>
+                    </Button>
                 {/each}
             {/each}
         </nav>

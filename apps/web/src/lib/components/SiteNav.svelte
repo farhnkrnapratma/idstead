@@ -1,6 +1,7 @@
 <script lang="ts">
     import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
     import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
     import IconButton from '@idstead/ui/components/IconButton.svelte';
     import NavMenu from '@idstead/ui/components/NavMenu.svelte';
     import PageContainer from '@idstead/ui/layout/PageContainer.svelte';
@@ -39,6 +40,7 @@
                     label: item.label,
                     href: item.href,
                     icon: item.icon,
+                    combo: item.combo,
                     current: isCurrent(item.href)
                 }))
         }))
@@ -50,6 +52,7 @@
             items: PAGE_LINKS.map(link => ({
                 label: link.label,
                 href: link.href,
+                combo: link.combo,
                 current: isCurrent(link.href)
             }))
         },
@@ -61,35 +64,43 @@
     <PageContainer
         width="full"
         class="flex h-14 items-center gap-2 sm:gap-4">
-        <a
+        <Button
             href="/"
+            type="ghost"
+            size="sm"
             aria-label="Idstead home"
-            class="shrink-0 rounded-md font-mono text-base font-semibold text-fg no-underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
+            class="shrink-0 px-1 font-mono text-base font-semibold text-fg!">
             Idstead
-        </a>
+        </Button>
         <nav
             aria-label="Main"
             class="hidden items-center gap-0.5 md:flex">
             {#each PAGE_LINKS as link (link.href)}
                 {@const current = isCurrent(link.href)}
-                <a
+                <Button
                     href={link.href}
+                    type="ghost"
+                    size="sm"
                     aria-current={current ? 'page' : undefined}
+                    keyboardShortcut={link.combo}
+                    shortcutLabel={link.label}
                     class={cn(
-                        'inline-flex h-8 items-center rounded-md px-2 text-sm font-medium no-underline transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                        current ? 'text-fg' : 'text-fg-muted hover:text-fg'
+                        'px-2 text-sm font-medium',
+                        current ? 'text-fg!' : 'text-fg-muted! hover:text-fg!'
                     )}>
                     {link.label}
-                </a>
+                </Button>
             {/each}
             <NavMenu
                 label="Other"
                 groups={otherGroups}
-                active={otherActive} />
+                active={otherActive}
+                shortcut={buttonKey('navMenu')} />
         </nav>
         <NavMenu
             label="Menu"
             groups={menuGroups}
+            shortcut={buttonKey('navMenu')}
             class="md:hidden" />
         <div class="ml-auto flex items-center gap-1.5 sm:gap-2">
             <SpotlightSearch {projects} />
