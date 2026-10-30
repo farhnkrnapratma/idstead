@@ -1,12 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { readFile } from 'node:fs/promises';
 import { wkdKey } from '../packages/lib/src/server/wkd.ts';
 import { wkdHash } from '../packages/domain/src/openpgpKey.ts';
 
-const armored = await readFile(new URL('./fixtures/openpgp/ada.pub.asc', import.meta.url), 'utf8');
-const binary = new Uint8Array(
-    await readFile(new URL('./fixtures/openpgp/ada.pub.gpg', import.meta.url))
-);
+const armored = await Bun.file(new URL('./fixtures/openpgp/ada.pub.asc', import.meta.url)).text();
+const binary = await Bun.file(new URL('./fixtures/openpgp/ada.pub.gpg', import.meta.url)).bytes();
 const key = {
     fingerprint: '73C032AD78AC6F2E7CE781A27ABA82BF0C80A58C',
     armored,

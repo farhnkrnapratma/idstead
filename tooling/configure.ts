@@ -1,4 +1,3 @@
-import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { format, resolveConfig } from 'prettier';
 import {
@@ -60,7 +59,7 @@ function databases(config: InstanceConfig): Record<string, Value> {
 }
 
 export async function readInstanceConfig(file = path.join(ROOT, 'idstead.jsonc')) {
-    return resolveInstanceConfig(Bun.JSONC.parse(await readFile(file, 'utf8')));
+    return resolveInstanceConfig(Bun.JSONC.parse(await Bun.file(file).text()));
 }
 
 export async function renderWranglerConfigs(config: InstanceConfig) {
@@ -73,7 +72,7 @@ export async function renderWranglerConfigs(config: InstanceConfig) {
     for (const app of APPS) {
         const template = path.join(ROOT, 'apps', app, 'wrangler.template.jsonc');
         const target = path.join(ROOT, 'apps', app, 'wrangler.jsonc');
-        const parsed = Bun.JSONC.parse(await readFile(template, 'utf8')) as Value;
+        const parsed = Bun.JSONC.parse(await Bun.file(template).text()) as Value;
         const output = JSON.stringify(substitute(parsed, variables, template));
         const options = await resolveConfig(target);
         rendered[target] = await format(output, { ...options, filepath: target });
@@ -96,10 +95,12 @@ async function main() {
     const rendered = await renderWranglerConfigs(config);
     const stale: string[] = [];
     for (const [file, content] of Object.entries(rendered)) {
-        const current = await readFile(file, 'utf8').catch(() => '');
+        const current = await Bun.file(file)
+            .text()
+            .catch(() => '');
         if (current === content) continue;
         if (check) stale.push(path.relative(ROOT, file));
-        else await writeFile(file, content);
+        else await Bun.write(file, content);
     }
     if (check && stale.length) {
         console.error(

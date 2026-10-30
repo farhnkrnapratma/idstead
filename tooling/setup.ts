@@ -1,8 +1,8 @@
-import { existsSync } from 'node:fs';
-import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { $ } from 'bun';
 import { format, resolveConfig } from 'prettier';
 import {
     InstanceConfigError,
@@ -53,24 +53,16 @@ function planned(message: string) {
 }
 
 async function run(command: string[], options: { cwd?: string; inherit?: boolean } = {}) {
-    const child = Bun.spawn(command, {
-        cwd: options.cwd ?? ROOT,
-        stdin: 'ignore',
-        stdout: options.inherit ? 'inherit' : 'pipe',
-        stderr: options.inherit ? 'inherit' : 'pipe'
-    });
-    const [code, stdout, stderr] = await Promise.all([
-        child.exited,
-        options.inherit ? '' : new Response(child.stdout).text(),
-        options.inherit ? '' : new Response(child.stderr).text()
-    ]);
-    return { code, output: `${stdout}${stderr}`.trim() };
+    const shell = $`${command} < /dev/null`.cwd(options.cwd ?? ROOT).nothrow();
+    if (options.inherit) return { code: (await shell).exitCode, output: '' };
+    const { exitCode, stdout, stderr } = await shell.quiet();
+    return { code: exitCode, output: `${stdout}${stderr}`.trim() };
 }
 
 async function readAnswers(): Promise<SetupAnswers> {
     if (!answersFile) return {};
     try {
-        return resolveSetupAnswers(Bun.JSONC.parse(await readFile(answersFile, 'utf8')));
+        return resolveSetupAnswers(Bun.JSONC.parse(await Bun.file(answersFile).text()));
     } catch (error) {
         if (error instanceof SetupAnswersError)
             throw new SetupStop(`${answersFile}: ${error.message}`);
@@ -85,7 +77,8 @@ function ask(question: string): string | undefined {
 
 async function instanceConfig(answers: SetupAnswers): Promise<InstanceConfig> {
     step('Instance configuration');
-    const existing = existsSync(CONFIG_FILE) ? await readFile(CONFIG_FILE, 'utf8') : null;
+    const configFile = Bun.file(CONFIG_FILE);
+    const existing = (await configFile.exists()) ? await configFile.text() : null;
     let source = instanceSource(answers);
     if (!source && existing) source = Bun.JSONC.parse(existing) as Record<string, unknown>;
     if (!source) {
@@ -111,14 +104,16 @@ async function instanceConfig(answers: SetupAnswers): Promise<InstanceConfig> {
     if (existing && JSON.stringify(Bun.JSONC.parse(existing)) === JSON.stringify(source))
         note(`idstead.jsonc is up to date (site ${config.domains.site}).`);
     else {
-        if (apply) await writeFile(CONFIG_FILE, content);
+        if (apply) await Bun.write(CONFIG_FILE, content);
         planned(`write idstead.jsonc for ${config.domains.site}`);
     }
     const rendered = await renderWranglerConfigs(config);
     for (const [file, text] of Object.entries(rendered)) {
-        const current = await readFile(file, 'utf8').catch(() => '');
+        const current = await Bun.file(file)
+            .text()
+            .catch(() => '');
         if (current === text) continue;
-        if (apply) await writeFile(file, text);
+        if (apply) await Bun.write(file, text);
         planned(`render ${path.relative(ROOT, file)}`);
     }
     return config;
@@ -135,7 +130,7 @@ async function workerKeys(): Promise<WorkerKeys> {
             continue;
         }
         const template = Bun.JSONC.parse(
-            await readFile(path.join(ROOT, 'apps', app, 'wrangler.template.jsonc'), 'utf8')
+            await Bun.file(path.join(ROOT, 'apps', app, 'wrangler.template.jsonc')).text()
         ) as { secrets?: { required?: string[] } };
         const required = template.secrets?.required ?? [];
         keys[app] = { keys: required, required };
@@ -236,14 +231,14 @@ async function databaseId(name: string): Promise<string | null> {
 }
 
 async function saveDatabaseId(config: InstanceConfig, id: string): Promise<InstanceConfig> {
-    const source = Bun.JSONC.parse(await readFile(CONFIG_FILE, 'utf8')) as {
+    const source = Bun.JSONC.parse(await Bun.file(CONFIG_FILE).text()) as {
         cloudflare?: { database?: Record<string, unknown> } & Record<string, unknown>;
     };
     source.cloudflare = {
         ...source.cloudflare,
         database: { ...source.cloudflare?.database, name: config.cloudflare.database.name, id }
     };
-    await writeFile(
+    await Bun.write(
         CONFIG_FILE,
         await format(JSON.stringify(source), {
             ...(await resolveConfig(CONFIG_FILE)),
@@ -252,7 +247,7 @@ async function saveDatabaseId(config: InstanceConfig, id: string): Promise<Insta
     );
     const updated = resolveInstanceConfig(source);
     for (const [file, text] of Object.entries(await renderWranglerConfigs(updated)))
-        await writeFile(file, text);
+        await Bun.write(file, text);
     return updated;
 }
 
@@ -343,7 +338,7 @@ async function legalPages(config: InstanceConfig) {
             continue;
         }
         const page = legalTemplate(
-            await readFile(path.join(ROOT, 'templates/legal', `${slug}.md`), 'utf8'),
+            await Bun.file(path.join(ROOT, 'templates/legal', `${slug}.md`)).text(),
             slug
         );
         if (apply)
@@ -374,7 +369,7 @@ async function deploy(config: InstanceConfig, secrets: Record<App, Record<string
     try {
         for (const app of APPS) {
             const file = path.join(directory, `${app}.json`);
-            await writeFile(file, JSON.stringify(secrets[app]), { mode: 0o600 });
+            await Bun.write(file, JSON.stringify(secrets[app]), { mode: 0o600 });
             await chmod(file, 0o600);
             await mustRun(['bunx', 'wrangler', 'deploy', '--secrets-file', file], {
                 cwd: path.join(ROOT, 'apps', app),

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dir, '..');
@@ -15,7 +15,7 @@ const consumers = {
 type Consumer = keyof typeof consumers;
 const appNames: Consumer[] = ['web', 'admin', 'api', 'jobs'];
 
-const sourceExtensions = ['.ts', '.js', '.svelte'];
+const sourceFiles = new Bun.Glob('**/*.{ts,js,svelte}');
 const resolveSuffixes = ['', '.ts', '.js', '.svelte', '.svelte.ts', '/index.ts'];
 const specifierPattern =
     /(?:import|export)\s[^'"`;]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|new URL\(\s*['"]([^'"]+)['"]\s*,\s*import\.meta\.url/g;
@@ -27,13 +27,11 @@ interface ImportRef {
 
 function walk(dir: string): string[] {
     if (!existsSync(dir)) return [];
-    return readdirSync(dir).flatMap(name => {
-        if (name === 'node_modules' || name.startsWith('.')) return [];
-        const full = path.join(dir, name);
-        if (statSync(full).isDirectory()) return walk(full);
-        if (name.endsWith('.d.ts')) return [];
-        return sourceExtensions.some(ext => name.endsWith(ext)) ? [full] : [];
-    });
+    return [...sourceFiles.scanSync({ cwd: dir, absolute: true })].filter(
+        file =>
+            !file.endsWith('.d.ts')
+            && !path.relative(dir, file).split(path.sep).includes('node_modules')
+    );
 }
 
 function importedNames(statement: string): string[] | null {

@@ -1,18 +1,14 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 
-const globalCss = readFileSync(
-    new URL('../packages/ui/src/styles/global.css', import.meta.url),
-    'utf8'
-);
-const appLayout = readFileSync(
-    new URL('../apps/web/src/routes/+layout.svelte', import.meta.url),
-    'utf8'
-);
-const tableOfContents = readFileSync(
-    new URL('../apps/web/src/lib/components/TableOfContents.svelte', import.meta.url),
-    'utf8'
-);
+const globalCss = await Bun.file(
+    new URL('../packages/ui/src/styles/global.css', import.meta.url)
+).text();
+const appLayout = await Bun.file(
+    new URL('../apps/web/src/routes/+layout.svelte', import.meta.url)
+).text();
+const tableOfContents = await Bun.file(
+    new URL('../apps/web/src/lib/components/TableOfContents.svelte', import.meta.url)
+).text();
 
 describe('A11y focus highlight', () => {
     test('uses the high-visibility outline for all focused public page elements', () => {
@@ -32,12 +28,11 @@ describe('A11y focus highlight', () => {
         expect(globalCss).toContain('scroll-margin: 0.5rem;');
     });
 
-    test('excludes admin pages, which live in their own app', () => {
-        const adminHtml = readFileSync(
-            new URL('../apps/admin/src/app.html', import.meta.url),
-            'utf8'
-        );
-        const webHtml = readFileSync(new URL('../apps/web/src/app.html', import.meta.url), 'utf8');
+    test('excludes admin pages, which live in their own app', async () => {
+        const adminHtml = await Bun.file(
+            new URL('../apps/admin/src/app.html', import.meta.url)
+        ).text();
+        const webHtml = await Bun.file(new URL('../apps/web/src/app.html', import.meta.url)).text();
         expect(adminHtml).toContain('data-admin-page="true"');
         expect(webHtml).not.toContain('data-admin-page');
         expect(appLayout).not.toContain('dataset.adminPage');

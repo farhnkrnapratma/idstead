@@ -1,4 +1,3 @@
-import { existsSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import {
     avifSources,
@@ -41,13 +40,13 @@ describe('Blog banner URLs on the CDN', () => {
         );
     });
 
-    test('the Worker banner and content routes are gone', () => {
+    test('the Worker banner and content routes are gone', async () => {
         for (const path of [
             '../apps/web/src/routes/blog/banners/[file]/+server.ts',
             '../apps/admin/src/routes/blog/banners/[file]/+server.ts',
             '../apps/web/src/routes/blog/content/[file]/+server.ts'
         ])
-            expect(existsSync(new URL(path, import.meta.url))).toBe(false);
+            expect(await Bun.file(new URL(path, import.meta.url)).exists()).toBe(false);
     });
 });
 

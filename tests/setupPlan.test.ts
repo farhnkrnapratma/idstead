@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 import { resolveInstanceConfig } from '../packages/domain/src/instance.ts';
-import { existsSync } from 'node:fs';
 import { LEGAL_SLUGS as SITE_LEGAL_SLUGS } from '../packages/domain/src/legal.ts';
 import {
     LEGAL_SLUGS,
@@ -131,12 +130,12 @@ describe('content helpers', () => {
         });
     });
 
-    test('seeds every legal page the site serves from a template', () => {
+    test('seeds every legal page the site serves from a template', async () => {
         expect([...LEGAL_SLUGS].sort()).toEqual([...SITE_LEGAL_SLUGS].sort());
         for (const slug of LEGAL_SLUGS)
-            expect(existsSync(new URL(`../templates/legal/${slug}.md`, import.meta.url))).toBe(
-                true
-            );
+            expect(
+                await Bun.file(new URL(`../templates/legal/${slug}.md`, import.meta.url)).exists()
+            ).toBe(true);
     });
 
     test('temporaryPassword meets the admin password policy', () => {

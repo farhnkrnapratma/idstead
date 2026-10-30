@@ -1,11 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import { unsubscribeResultUrl } from '../packages/lib/src/server/unsubscribeUrl';
 
-const unsubscribePageServer = readFileSync(
-    new URL('../apps/web/src/routes/unsubscribe/+page.server.ts', import.meta.url),
-    'utf8'
-);
+const unsubscribePageServer = await Bun.file(
+    new URL('../apps/web/src/routes/unsubscribe/+page.server.ts', import.meta.url)
+).text();
 
 describe('unsubscribe result URL', () => {
     test('removes every bearer token before the result page can load analytics', () => {

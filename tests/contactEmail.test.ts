@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env/private', () => ({}));
@@ -104,11 +103,10 @@ describe('contact form payloads', () => {
 
     test.each(['(site)/contact/+page.svelte', 'feedback/+page.svelte'])(
         '%s sends raw text and the browser time zone, and leaves escaping to the server',
-        page => {
-            const source = readFileSync(
-                new URL(`../apps/web/src/routes/${page}`, import.meta.url),
-                'utf8'
-            );
+        async page => {
+            const source = await Bun.file(
+                new URL(`../apps/web/src/routes/${page}`, import.meta.url)
+            ).text();
             expect(source).toContain("fetch('/api/internal/contact'");
             expect(source).toContain('timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone');
             expect(source).not.toContain('sanitizeInput');
