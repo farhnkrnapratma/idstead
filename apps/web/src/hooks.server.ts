@@ -15,11 +15,6 @@ import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
 
-const LEGACY_PATHS = new Map([
-    ['/home', '/'],
-    ['/cv', '/resume']
-]);
-
 const sentryInitHandle: Handle =
     import.meta.hot?.data.sentryInitHandle
     ?? (Sentry.getClient() ?
@@ -38,30 +33,6 @@ if (import.meta.hot) {
 function getCdnBaseUrl(): string {
     const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '').trim();
     return base.replace(/\/+$/, '');
-}
-
-function getStaticMimeType(pathname: string, defaultType: string | null): string {
-    const ext = pathname.split('.').pop()?.toLowerCase();
-    switch (ext) {
-        case 'otf':
-            return 'font/otf';
-        case 'woff2':
-            return 'font/woff2';
-        case 'webmanifest':
-            return 'application/manifest+json';
-        case 'json':
-            return pathname.endsWith('/manifest.json') ?
-                    'application/manifest+json'
-                :   'application/json; charset=utf-8';
-        case 'ico':
-            return 'image/x-icon';
-        case 'png':
-            return 'image/png';
-        case 'svg':
-            return 'image/svg+xml';
-        default:
-            return defaultType || 'application/octet-stream';
-    }
 }
 
 const PUBLIC_API_EXPOSED_HEADERS =
@@ -97,62 +68,6 @@ export const handle: Handle = sequence(
                 });
             }
         }
-
-        const cdnBaseUrl = getCdnBaseUrl();
-
-        if (
-            event.url.pathname.startsWith('/static/')
-            || event.url.pathname.startsWith('/fonts/')
-            || event.url.pathname.startsWith('/logo/')
-        ) {
-            if (!['GET', 'HEAD'].includes(event.request.method))
-                return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
-            if (!cdnBaseUrl) {
-                return new Response('Configuration Error: PUBLIC_CDN_BASE_URL is not configured.', {
-                    status: 500,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-                });
-            }
-
-            try {
-                let cdnRes = await fetch(`${cdnBaseUrl}${event.url.pathname}`);
-                if (!cdnRes.ok && !event.url.pathname.startsWith('/static/')) {
-                    const fallbackRes = await fetch(`${cdnBaseUrl}/static${event.url.pathname}`);
-                    if (fallbackRes.ok) {
-                        cdnRes = fallbackRes;
-                    }
-                }
-
-                if (cdnRes.ok) {
-                    const mime = getStaticMimeType(
-                        event.url.pathname,
-                        cdnRes.headers.get('content-type')
-                    );
-
-                    return new Response(cdnRes.body, {
-                        status: 200,
-                        headers: {
-                            'Content-Type': mime,
-                            'Access-Control-Allow-Origin': '*',
-                            'Cache-Control': 'public, max-age=31536000, immutable'
-                        }
-                    });
-                }
-
-                return new Response(`Static asset not found on CDN: ${event.url.pathname}`, {
-                    status: cdnRes.status,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-                });
-            } catch {
-                return new Response('CDN Gateway Error: Failed to fetch static asset from CDN.', {
-                    status: 502,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-                });
-            }
-        }
-
-        const legacyTarget = LEGACY_PATHS.get(event.url.pathname.toLowerCase().replace(/\/$/, ''));
-        if (legacyTarget) throw redirect(308, legacyTarget + event.url.search);
 
         const isApiRequest =
             event.url.pathname.startsWith('/api/') || event.url.pathname === '/api';

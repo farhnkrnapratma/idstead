@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { ChevronRight, FolderOpen, Quote, Sprout } from '@lucide/svelte';
     import { page } from '$app/state';
     import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
@@ -8,7 +7,6 @@
     import { argKey, buttonKey } from '@idstead/ui/shortcuts.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { decodeHtmlEntities } from '@mdrs/core';
-    import { goto } from '$app/navigation';
     import {
         avatarSources,
         avatarWebpSource,
@@ -29,7 +27,6 @@
     import ResumeDownloadMenu from '#app/components/ResumeDownloadMenu.svelte';
     import ResumeEntryList from '#app/components/ResumeEntryList.svelte';
     import { homeProjects } from '#app/projectLists.ts';
-    import { legacySectionPath } from '#app/siteSections.ts';
 
     let { data } = $props();
 
@@ -70,11 +67,6 @@
             hasPublishedPosts: Boolean(data.hasPublishedPosts)
         })
     );
-
-    onMount(() => {
-        const legacyPath = legacySectionPath(window.location.hash);
-        if (legacyPath) void goto(legacyPath, { replace: true });
-    });
 
     const jsonLdScript = $derived(
         JSON.stringify({
