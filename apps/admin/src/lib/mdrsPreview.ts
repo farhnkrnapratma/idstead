@@ -4,11 +4,13 @@ import { adminFetch } from './adminClient';
 import * as publicEnv from '$app/env/public';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
+type MdrsScope = 'author' | 'blog' | 'post' | 'analytics';
+
 const ENDPOINT = '/api/internal/admin/mdrs-data';
 const CACHE_MS = 60_000;
 const cache = new Map<string, { at: number; value: Promise<unknown> }>();
 
-async function request(scope: 'author' | 'blog' | 'post', slug?: string): Promise<unknown> {
+async function request(scope: MdrsScope, slug?: string): Promise<unknown> {
     const response = await adminFetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,7 +25,7 @@ async function request(scope: 'author' | 'blog' | 'post', slug?: string): Promis
     return body?.data;
 }
 
-function cached(scope: 'author' | 'blog' | 'post', slug?: string): Promise<unknown> {
+function cached(scope: MdrsScope, slug?: string): Promise<unknown> {
     const key = `${scope}:${slug ?? ''}`;
     const hit = cache.get(key);
     if (hit && Date.now() - hit.at < CACHE_MS) return hit.value;
@@ -39,7 +41,8 @@ export function renderMdrsPreview(markdown: string): Promise<string> {
         createMdrsResolvers({
             author: () => cached('author'),
             blogList: () => cached('blog'),
-            blogPost: slug => cached('post', slug)
+            blogPost: slug => cached('post', slug),
+            analytics: () => cached('analytics')
         }),
         siteRenderOptions(publicEnv.PUBLIC_SITE_URL)
     );
