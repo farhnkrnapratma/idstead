@@ -50,6 +50,7 @@ export function accessConfig(platform?: unknown): AccessConfig | null {
         .split(',')
         .map(email => email.trim().toLowerCase())
         .filter(Boolean);
+    if (!adminEmails.length) return null;
     return { teamDomain, audience, adminEmails };
 }
 
@@ -83,7 +84,7 @@ export async function verifyAccessToken(
         });
         const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
         if (!email || payload.type !== 'app') return null;
-        if (config.adminEmails.length && !config.adminEmails.includes(email)) return null;
+        if (!config.adminEmails.includes(email)) return null;
         return { email, subject: String(payload.sub), authTime: Number(payload.iat) };
     } catch {
         return null;

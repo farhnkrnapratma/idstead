@@ -30,7 +30,7 @@ bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (-
 - **Local database:** the dev servers never touch production data. `bun run db:local` applies `packages/data/d1/migrations/` to a local D1 database in `.wrangler/state/v3` at the repository root, which the web and admin dev servers share (`platformProxy.persist` in their Vite configs). Run it again after pulling a new migration. It starts empty; open the local admin portal to create a profile and posts.
 - **Remote bindings:** the `ASSET_BUCKET` R2 bucket and the `AI` binding are `remote: true`, so uploads in local dev reach the real bucket.
 - At minimum, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` must be set.
-- **Local admin sign-in:** with no `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`, the admin dev server on `localhost` signs you in as `admin@localhost` without Cloudflare Access. A production build never does.
+- **Local admin sign-in:** with no `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `ADMIN_EMAILS`, the admin dev server on `localhost` signs you in as `admin@localhost` without Cloudflare Access. A production build never does.
 - For what each variable does and which app reads it, see [environment.md](../002-configuration/002-environment.md).
 - With a secret manager instead of a `.env` file, start each command through it, for example `phase run --env dev -- bun run dev` with [Phase](https://phase.dev) ([environment.md](../002-configuration/002-environment.md#using-a-secret-manager)).
 

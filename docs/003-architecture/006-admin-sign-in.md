@@ -21,7 +21,7 @@ sequenceDiagram
     end
     B->>CA: GET / (cookie)
     CA->>HK: request + Cf-Access-Jwt-Assertion (RS256 JWT)
-    HK->>HK: accessIdentity(): signature from <team>/cdn-cgi/access/certs,<br/>iss = https://<team>, aud = ACCESS_AUD, exp, type = app,<br/>email in ADMIN_EMAILS when set
+    HK->>HK: accessIdentity(): signature from <team>/cdn-cgi/access/certs,<br/>iss = https://<team>, aud = ACCESS_AUD, exp, type = app,<br/>email in ADMIN_EMAILS
     alt no valid identity
         HK-->>B: 401 text/plain (noindex, no-store)
     else
@@ -41,7 +41,7 @@ sequenceDiagram
 
 ## Rules
 
-- **Fail closed:** without `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` a deployed admin refuses every request. They come from `access` in `idstead.jsonc` through `bun run configure`.
+- **Fail closed:** without `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `ADMIN_EMAILS` a deployed admin refuses every request. The first two come from `access` in `idstead.jsonc` through `bun run configure`; `ADMIN_EMAILS` is a Worker secret that setup sets, so even a loosened Access policy admits only the listed emails.
 - **Local development:** only a `vite dev` build (`import.meta.env.DEV`) on `localhost`, `127.0.0.1` or `[::1]`, with no Access settings, signs in as `admin@localhost`. A production build never does.
 - **MFA:** Access enforces it, not Idstead. Require two-factor authentication in the Access policy or the Zero Trust settings (passkey, security key or authenticator app), or rely on the two-factor authentication of the Cloudflare account when the login method is Cloudflare. The OpenID Connect consent page relies on the same rule.
 - **Fresh sign-in:** `authTime` is the Access token's `iat`. Deleting all site data needs a token issued in the last 10 minutes and the typed confirmation `DELETE`; otherwise it answers `403 ADMIN_REAUTH_REQUIRED`.
