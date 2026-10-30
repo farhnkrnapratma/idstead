@@ -6,10 +6,6 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/block-supabase-admin-in-svelte.sh"
-                    },
-                    {
-                        "type": "command",
                         "command": "bash .claude/hooks/block-sensitive-file-edits.sh"
                     },
                     { "type": "command", "command": "bash .claude/hooks/guard-deploy-config.sh" }
