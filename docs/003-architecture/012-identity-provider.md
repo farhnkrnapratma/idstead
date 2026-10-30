@@ -31,8 +31,8 @@ sequenceDiagram
     AD->>D: client, exact redirect_uri, active grant
     alt unknown client or redirect_uri
         AD-->>B: error page, no redirect
-    else no admin session with MFA
-        AD-->>B: prompt=none: redirect_uri?error=login_required, else /login?redirectTo=…
+    else no admin session (Cloudflare Access normally signs the owner in first)
+        AD-->>B: prompt=none: redirect_uri?error=login_required, else an error page
     else grant covers the scopes (and no prompt=consent)
         AD->>D: issue code (hash, 60 s, single use)
         AD-->>B: redirect_uri?code&state&iss
@@ -72,7 +72,7 @@ sequenceDiagram
 ## Source
 
 - `packages/lib/src/server/oidc/`: `keys.ts`, `enabled.ts`, `config.ts`, `webfinger.ts`, `clients.ts`, `authorize.ts`, `tokens.ts`, `endpoints.ts`, `deps.ts`, `route.ts`, `admin.ts`
-- `packages/lib/src/server/avatarLookup.ts`, `publishedEmail.ts`, `csrf.ts`, `supabaseAuth.ts` (`authTime`)
+- `packages/lib/src/server/avatarLookup.ts`, `publishedEmail.ts`, `csrf.ts`, `accessAuth.ts` (`authTime`)
 - `packages/data/src/oidc.ts`, `packages/data/src/d1/oidc.ts`, `packages/data/d1/migrations/0003_oidc.sql`
 - `apps/web/src/routes/.well-known/{webfinger,openid-configuration,jwks.json}/`, `apps/web/src/routes/oauth/`, `apps/web/src/routes/avatar/[hash]/`
 - `apps/admin/src/routes/(admin)/oauth/authorize/`, `apps/admin/src/routes/api/internal/admin/oidc/`, `apps/admin/src/lib/components/admin/IdentityProviderSettings.svelte`

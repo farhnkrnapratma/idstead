@@ -21,7 +21,8 @@ Only `domains.site` is required. Every other field has a default. `idstead.examp
 | `cloudflare.database.id` | none | The D1 database ID. Every Worker gets the `DB` binding, with migrations from `packages/data/d1/migrations`, only once this is set, so an instance without a D1 database still deploys. |
 | `cloudflare.rateLimitNamespaces.web`, `.api`, `.admin` | `1001`, `1002`, `1003` | `API_RATE_LIMITER` namespace IDs |
 | `jobs.cron` | `17 3 * * *` | Daily cleanup, render refresh and the pending-subscription and activity log prunes |
-| `jobs.hourlyCron` | `37 * * * *` | Hourly prune of expired login failures. Must differ from `jobs.cron`: the jobs Worker tells the two runs apart by schedule (`HOURLY_CRON`). |
+| `jobs.hourlyCron` | `37 * * * *` | Hourly prune of expired lockout counters (failed OpenID Connect client secrets). Must differ from `jobs.cron`: the jobs Worker tells the two runs apart by schedule (`HOURLY_CRON`). |
+| `access.teamDomain`, `access.aud` | none | Cloudflare Access application that guards the admin host: the Zero Trust team domain (`<team>.cloudflareaccess.com`) and the application's audience tag. Rendered into the admin Worker as `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`. `bun run setup` fills them; without them a deployed admin refuses every request. |
 
 Names must be lowercase letters, digits and hyphens. `packages/domain/src/instance.ts` validates the file and fills the defaults.
 

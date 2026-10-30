@@ -1,15 +1,15 @@
 # Architecture
 
-Low-level diagrams of how a request travels from the browser through the Cloudflare Workers to D1, R2, Supabase Auth and the external services. Each file covers one flow. Each file ends with a **Source** list of the code it was verified against. Re-check those files when you edit a diagram.
+Low-level diagrams of how a request travels from the browser through the Cloudflare Workers to D1, R2, Cloudflare Access and the external services. Each file covers one flow. Each file ends with a **Source** list of the code it was verified against. Re-check those files when you edit a diagram.
 
 | # | File | Covers |
 | --- | --- | --- |
-| 1 | [Component map](001-component-map.md) | Workers, bindings, D1, R2, Supabase Auth, external services |
+| 1 | [Component map](001-component-map.md) | Workers, bindings, D1, R2, Cloudflare Access, external services |
 | 2 | [Web request pipeline](002-web-middleware-pipeline.md) | `apps/web/src/hooks.server.ts`, step by step |
 | 3 | [Page render](003-page-render.md) | Data loading for `/`, `/blog`, `/blog/[slug]` |
 | 4 | [Public write endpoints](004-public-write-endpoints.md) | Comments, views, subscribe, contact, feedback |
 | 5 | [Public API worker](005-public-api.md) | Hono middleware and handler flow (endpoint reference lives in [docs/api](../004-api/README.md)) |
-| 6 | [Admin login and auth](006-admin-login-mfa.md) | Password + TOTP, passkey, `verifyAdminToken`, `is_admin()` |
+| 6 | [Admin sign-in](006-admin-sign-in.md) | Cloudflare Access, `accessIdentity`, `verifyAdminRequest` |
 | 7 | [Publish and newsletter](007-publish-post.md) | Idempotent post save, queue, jobs consumer, Resend |
 | 8 | [Image pipeline](008-asset-pipeline.md) | Encode, validate, R2 keys, serving, cleanup |
 | 9 | [Database schema](009-database-schema.md) | Live tables, foreign keys, functions, cron |

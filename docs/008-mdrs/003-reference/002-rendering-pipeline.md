@@ -49,7 +49,7 @@ Pages also call `hljs.highlightElement` on code blocks before enhancing them, an
 
 ## Public functions
 
-The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry point, `@mdrs/core` (`src/index.ts`). Everything else in `packages/mdrs/core/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*`, `#lib` or Supabase.
+The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry point, `@mdrs/core` (`src/index.ts`). Everything else in `packages/mdrs/core/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*` or `#lib`.
 
 | Function | Entry | Purpose |
 | --- | --- | --- |

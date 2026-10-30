@@ -24,7 +24,7 @@ Test only against an instance you run yourself, or with your own data, and do no
 
 In scope are flaws in the code that any instance would inherit, in particular:
 
-- **Authentication and admin access**: the admin portal, `/api/internal/admin/**`, MFA and passkey enforcement, and session handling.
+- **Authentication and admin access**: the admin portal, `/api/internal/admin/**`, and the verification of the Cloudflare Access token on every admin request.
 - **Data access**: Row Level Security policies, database functions, and every code path that uses the service-role client.
 - **The public API** (`/v1/**`) and the agent discovery API (`/api/ard/**`): input validation, filter escaping, rate limiting and CORS. `/v1` is read-only by design, so a mutating handler reachable under it is itself a finding.
 - **The internal interface** (`/api/internal/**`): same-origin enforcement, Turnstile verification, comment moderation, the newsletter and the contact form.
@@ -35,7 +35,7 @@ Out of scope:
 
 - The security of one deployment's configuration, secrets or data; report those to that site's owner.
 - Denial-of-service and volumetric testing, and findings that need physical access or social engineering.
-- Third-party services (Cloudflare, Supabase, Sentry, Resend, Google Analytics, GitHub); report those to their vendors.
+- Third-party services (Cloudflare, Sentry, Resend, Google Analytics, GitHub); report those to their vendors.
 
 ### Known design boundaries
 

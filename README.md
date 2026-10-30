@@ -4,7 +4,7 @@
 
 ---
 
-> **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data lives in Cloudflare D1 and R2; admin sign-in still uses Supabase Auth until a later release. Expect breaking changes until the first release.
+> **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data lives in Cloudflare D1 and R2, and Cloudflare Access guards the admin. Expect breaking changes until the first release.
 
 ## What you get
 
@@ -12,7 +12,7 @@
 - **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
 - **Machine-readable twins**: every post and legal page also exists as `.md` and `.txt`, next to an Atom feed, a sitemap, `llms.txt` and `.well-known` discovery documents.
 - **A public read-only REST API** (`/v1`) for posts, comments, the author profile, resume and search, with an OpenAPI description.
-- **An admin portal** on its own host, behind MFA or a passkey: a post editor with live preview, comment moderation, profile, resume and legal page management, and activity analytics.
+- **An admin portal** on its own host, behind Cloudflare Access with two-factor authentication: a post editor with live preview, comment moderation, profile, resume and legal page management, and activity analytics.
 - **A downloadable resume** with checksums and a detached OpenPGP signature.
 - **An identity home**: WebFinger, your avatar by email hash the way apps use Gravatar, and "Sign in with Idstead", an OpenID Connect provider for the apps you register ([Identity provider](docs/003-architecture/012-identity-provider.md)).
 - **Visitor controls**: light and dark themes, font scale, reduced motion, higher contrast, a dyslexia-friendly font and keyboard-first navigation.
@@ -23,7 +23,7 @@ All personal content (name, bio, resume, skills, links, posts) lives in the data
 
 - [Bun](https://bun.com/), the only package manager and runtime used here.
 - A Cloudflare account with a domain, for Workers, R2, Queues, Workers AI and rate limiting.
-- A [Supabase](https://supabase.com/) project for admin sign-in (Supabase Auth only).
+- [Cloudflare Zero Trust](https://developers.cloudflare.com/cloudflare-one/) (the Free plan is enough) for the Access application in front of the admin.
 - Optional: [Resend](https://resend.com/) for the newsletter and contact form, [Turnstile](https://developers.cloudflare.com/turnstile/) keys, [Sentry](https://sentry.io/) and Google Analytics.
 
 ## Getting started
@@ -35,7 +35,7 @@ bun install
 ```
 
 1. **Describe your instance.** Copy `idstead.example.jsonc` to `idstead.jsonc`, set your domain and, if you like, the Worker, bucket and queue names, then run `bun run configure` to render each app's `wrangler.jsonc`. See [instance configuration](docs/002-configuration/001-instance.md).
-2. **Set environment variables.** `.env.example` lists every one; copy it to `.env` and fill it in. `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required. See [environment](docs/002-configuration/002-environment.md).
+2. **Set environment variables.** `.env.example` lists every one; copy it to `.env` and fill it in. `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required. See [environment](docs/002-configuration/002-environment.md).
 3. **Create the local database:** `bun run db:local` applies the D1 migrations to a local database the dev servers share. For production, `bun run setup` creates the D1 database and applies them.
 4. **Run it locally:**
 

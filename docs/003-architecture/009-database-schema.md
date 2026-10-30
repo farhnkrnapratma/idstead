@@ -2,7 +2,7 @@
 
 The tables of the site, with their relationships. Production runs on Cloudflare D1 since 2026-10-23 (see [D1 schema](#d1-schema)); the diagrams below were drawn from the Postgres schema the D1 schema was converted from, and the relationships are the same. The diagrams list key columns only. Source: the live `information_schema` on 2026-10-15. All tables use the `db_` prefix, introduced in migration `20260810`.
 
-> `supabase/migrations/` is the history of the retired Postgres schema, kept with its data until Stage 8. New schema changes go to `packages/data/d1/migrations/`.
+> The retired Postgres schema and its migrations left the repository in Stage 8; a final dump is archived outside it. Schema changes go to `packages/data/d1/migrations/`. The function names below describe that retired schema; the D1 data stores implement the same operations in TypeScript.
 
 ## Content
 
@@ -199,7 +199,7 @@ erDiagram
 | `db_post_storage_cleanup` | Markdown files queued for deletion from Storage (each removed together with its `.render.json`), with `cleanup_attempts`. |
 | `db_subscribers` | Newsletter subscribers: `email`, `status` (pending, active, unsubscribed), `confirm_token_hash`, `unsubscribe_token`, `ip_hash`. |
 | `db_activity_log` | Admin audit log: `actor`, `action`, `category`, `entity_id`, `summary`, `details`, `ip_hash`. Rows older than 30 days are pruned by the jobs Worker's daily cron. |
-| `db_login_failures` | Shared admin login lockout: `key_hash` (salted SHA-256 of `ip:`, `email-ip:` or `password-change:` keys), `failed_at`. RLS on with no policies; reached only through `service_role` RPCs. Pruned by `pg_cron` `prune-login-failures`. |
+| `db_login_failures` | Shared lockout for failed OpenID Connect client secrets: `key_hash` (salted SHA-256 of the lockout key), `failed_at`. RLS on with no policies; reached only through `service_role` RPCs. Pruned by `pg_cron` `prune-login-failures`. |
 | `db_admin_settings` | Per-user admin settings (`user_id`, `settings jsonb`). |
 | `db_notification_clear_operations` | Idempotent "clear notifications" operations. |
 | `db_legals` | Legal pages (`slug`, `title`, `content`). |
@@ -207,7 +207,7 @@ erDiagram
 
 ## Functions, policies and jobs
 
-- **`public.is_admin()`** is the RLS predicate for admin writes. See [006-admin-login-mfa.md](006-admin-login-mfa.md#mfa-rule).
+- **Admin writes:** the retired schema checked `public.is_admin()` in RLS. On D1 every admin endpoint verifies the Cloudflare Access identity before it writes; see [006-admin-sign-in.md](006-admin-sign-in.md).
 - **Post saves:** `db_prepare_post_operation`, `db_ready_post_operation`, `db_commit_post_operation`. The commit stores `read_time` when the operation data carries one; the admin save route sets it to `countReadingMinutes()` of the final markdown.
 - **Public IDs:** posts and comments carry an immutable 64-hex `public_id` (trigger `db_keep_post_public_id`); page data, the API and the comment and report endpoints use it, never the UUID.
 - **View counts:** `db_posts.view_count` is the public count. The `db_sync_post_view_count` trigger (`SECURITY DEFINER`) adds one for every `db_views` insert and removes one for every delete, and the unique index on `(post_id, ip_hash)` makes a repeated visit a no-op (`ON CONFLICT DO NOTHING`). `db_views` itself, with the salted daily `ip_hash`, is private: `anon` has no grant and no policy, and only the service role and the admin policy read it. A column grant was tried first and reverted (`20261020000000_restore_view_grants`) because PostgREST's embedded `db_views(count)` needs table-level `SELECT`.
@@ -262,4 +262,3 @@ where tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';
 
 - `packages/data/d1/migrations/`
 - `tests/d1Schema.test.ts`, `tests/fixtures/postgresColumns.json`
-- `supabase/migrations/` (retired Postgres schema)

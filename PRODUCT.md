@@ -15,7 +15,7 @@ Secondary audiences, served by the homepage sections without displacing the read
 - People evaluating the author for work or collaboration (Resume, projects, skills, contact).
 - Supporters who back the work through the funding links.
 
-**Admin operator.** Each instance's admin portal (`admin.<domain>`) has exactly one user: the site owner, authenticated with MFA or a passkey, writing and publishing posts, moderating comments, and maintaining profile data.
+**Admin operator.** Each instance's admin portal (`admin.<domain>`) has exactly one user: the site owner, signed in through Cloudflare Access with two-factor authentication, writing and publishing posts, moderating comments, and maintaining profile data.
 
 **Self-hoster.** The person who deploys an instance, usually the same site owner. They configure it through `idstead.jsonc` and environment variables and never edit code to make the site theirs.
 
@@ -47,7 +47,7 @@ A personal site whose content is equally available to humans and machines (publi
 ## Capabilities and Constraints
 
 - SvelteKit 5 + Tailwind CSS 4 on Cloudflare Workers; all UI comes from the `@idstead/ui` design system and the shared `packages/lib` components. Pages reuse them rather than building one-off replacements.
-- **All profile content is data, never hardcoded:** name, bio, headline, resume, skills, funding, contact, and socials come from Supabase. Projects come from the author's GitHub repositories, filtered by pinned/excluded rules stored in Supabase.
+- **All profile content is data, never hardcoded:** name, bio, headline, resume, skills, funding, contact, and socials come from the database. Projects come from the author's GitHub repositories, filtered by pinned/excluded rules stored in the database.
 - Comments are moderated by Llama Guard 3; when moderation is unavailable, the comment is rejected rather than published unchecked.
 - Public output never exposes database IDs; posts are identified by an immutable 64-hex public ID or slug.
 - The public API is read-only and versioned (`/v1`); breaking changes require a new version.
@@ -65,7 +65,7 @@ A personal site whose content is equally available to humans and machines (publi
 ## Evidence on Hand
 
 - Each instance's author profile, resume, skills, funding links, and contact channels via `GET /v1/author` on its API (sourced from the database).
-- Published blog posts and their comments and helpful counts (Supabase, exposed through `/v1/blog`).
+- Published blog posts and their comments and helpful counts (D1, exposed through `/v1/blog`).
 - GitHub repositories surfaced as projects, with real stars and forks.
 - Funding platforms the owner lists (for example Ko-fi, Open Collective, GitHub Sponsors).
 - Public API reference: `apps/api/src/README.md`; OpenAPI at `/v1/openapi.{json,yaml}`.

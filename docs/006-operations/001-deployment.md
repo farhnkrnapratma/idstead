@@ -21,7 +21,7 @@ There is no CI pipeline. Run `bun run test`, `bun run check` and `bun run lint` 
     - Give previews their own variables: Cloudflare's dummy Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
     - `*.workers.dev` hosts and `preview` deployments are served with `noindex` and a disallow-all `robots.txt`.
 
-All Workers share one D1 database (`cloudflare.database` in `idstead.jsonc`) and one R2 bucket; admin sign-in uses one Supabase Auth project.
+All Workers share one D1 database (`cloudflare.database` in `idstead.jsonc`) and one R2 bucket; one Cloudflare Access application guards the admin host.
 
 ## Bindings
 
@@ -38,15 +38,14 @@ R2 is bound as `ASSET_BUCKET` (the `assetBucket` from `idstead.jsonc`) on web, a
 
 ## One-time setup
 
-The [setup script](../001-getting-started/001-setup-script.md) creates the bucket and queues, the admin account and the Worker secrets, and lists the dashboard steps it cannot do under [After setup](../001-getting-started/README.md#after-setup).
+The [setup script](../001-getting-started/001-setup-script.md) creates the bucket, queues, database, the Access application for the admin and the Worker secrets, and lists the dashboard steps it cannot do under [After setup](../001-getting-started/README.md#after-setup).
 
-Keep the zone's **Remove visitor IP headers** Managed Transform (Rules > Settings) turned off. It strips `CF-Connecting-IP` before requests reach the Workers, and `getClientAddress()` reads that header. Without it, the activity log records no IPs, page feedback is rejected, and every visitor shares one rate limit, login lockout and view-count identity.
+Keep the zone's **Remove visitor IP headers** Managed Transform (Rules > Settings) turned off. It strips `CF-Connecting-IP` before requests reach the Workers, and `getClientAddress()` reads that header. Without it, the activity log records no IPs, page feedback is rejected, and every visitor shares one rate limit and view-count identity.
 
 ## Database migrations
 
 - Files live in `packages/data/d1/migrations/`. Apply them with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web` (its `wrangler.jsonc` names the migrations directory); the setup script does this for a new instance.
 - Apply a migration **before** deploying code that depends on it, and keep `tests/d1Schema.test.ts` passing.
-- `supabase/migrations/` is the history of the retired Postgres schema. It stays until Stage 8, together with the Supabase data kept for a rollback.
 
 ## After a deploy
 

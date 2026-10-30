@@ -1,6 +1,6 @@
 # @mdrs/core
 
-The MDRS (Markdown Rich Syntax) engine. It turns MDRS source into sanitized HTML and has no dependency on Svelte, SvelteKit, Supabase or any other workspace package.
+The MDRS (Markdown Rich Syntax) engine. It turns MDRS source into sanitized HTML and has no dependency on Svelte, SvelteKit or any other workspace package.
 
 ```ts
 import { prepareMarkdownPage, renderMarkdown, validateDefineForSave } from '@mdrs/core';

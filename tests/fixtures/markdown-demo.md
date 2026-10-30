@@ -68,7 +68,7 @@ Three asterisks or three dashes draw a thematic break:
 ### Unordered Lists
 
 - **Frontend**: SvelteKit 5 with Svelte Runes, Tailwind CSS 4, Cloudflare Pages
-- **Backend**: Supabase PostgreSQL with Row Level Security, Cloudflare R2 Storage
+- **Backend**: Cloudflare D1 with a generational read cache, Cloudflare R2 Storage
 - **Engine**: Custom directive parser, KaTeX SSR, LayerChart, Mermaid.js
 
 ### Task Lists with Seven Status States
@@ -254,7 +254,7 @@ graph TD
   User((Client Browser)) -->|HTTPS| CF[Cloudflare Pages CDN]
   CF -->|SSR| SK[SvelteKit 5 Engine]
   SK -->|Query| DB[(PostgreSQL + RLS)]
-  SK -->|Auth| Auth[Supabase Auth]
+  SK -->|Auth| Auth[Cloudflare Access]
   SK -->|Assets| R2[(Cloudflare R2)]
   SK -->|AI Moderation| AI[Workers AI]
 ```
@@ -556,7 +556,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 
 ## Live Data Binding
 
-The `api.v1.*` prefix fetches real data from this site's own API at render time, with no manual `curl` and no hardcoded values. The engine resolves paths like `api.v1.author.profile.name` against the live Supabase database during server-side rendering.
+The `api.v1.*` prefix fetches real data from this site's own API at render time, with no manual `curl` and no hardcoded values. The engine resolves paths like `api.v1.author.profile.name` against the live database during server-side rendering.
 
 - Author: **${api.v1.author.profile.name}**
 - Published posts: **${api.v1.blog.length}**
@@ -636,10 +636,10 @@ echo "inside a nested details block"
 
 ## Footnotes
 
-The engine compiles `[^label]` markers into superscript links with numbered back-references[^1]. KaTeX math runs entirely at build time[^math], and the `api.v1.*` resolver demonstrated above fetches data from the same Supabase instance that powers the REST API[^api].
+The engine compiles `[^label]` markers into superscript links with numbered back-references[^1]. KaTeX math runs entirely at build time[^math], and the `api.v1.*` resolver demonstrated above fetches data from the same database that powers the REST API[^api].
 
 :::references
 [^1]: Directives like `:::define`, `:::tabs`, and `:::callout` are parsed in a pre-processing pass over raw markdown before `marked.parse()` runs.
 [^math]: KaTeX renders **server-side during SSR**, so no client JavaScript is required to display formulas. Mermaid diagrams, by contrast, hydrate lazily in the browser.
-[^api]: The `api.v1.*` resolver calls the same Supabase queries as `GET /api/v1/author` and `GET /api/v1/blog`, but at compile time rather than via HTTP.
+[^api]: The `api.v1.*` resolver calls the same data queries as `GET /api/v1/author` and `GET /api/v1/blog`, but at compile time rather than via HTTP.
 :::

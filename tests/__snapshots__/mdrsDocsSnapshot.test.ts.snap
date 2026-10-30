@@ -110,7 +110,7 @@ exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.m
 exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #1 1`] = `
 "<ul class="mdrs-list mdrs-list--unordered">
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">SvelteKit</div></li>
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Supabase</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Cloudflare D1</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Cloudflare Workers</div></li>
 </ul>
 "
@@ -1010,7 +1010,7 @@ exports[`MDRS docs examples render unchanged markdown-demo fixture 1`] = `
 <h3>Unordered Lists</h3>
 <ul class="mdrs-list mdrs-list--unordered">
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Frontend</strong>: SvelteKit 5 with Svelte Runes, Tailwind CSS 4, Cloudflare Pages</div></li>
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Backend</strong>: Supabase PostgreSQL with Row Level Security, Cloudflare R2 Storage</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Backend</strong>: Cloudflare D1 with a generational read cache, Cloudflare R2 Storage</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Engine</strong>: Custom directive parser, KaTeX SSR, LayerChart, Mermaid.js</div></li>
 </ul>
 <h3>Task Lists with Seven Status States</h3>
@@ -1193,7 +1193,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
 <h2>Architecture Diagrams</h2>
 <p>Mermaid.js renders lazily in the browser. The engine injects a loading placeholder at SSR time and hydrates the SVG on scroll.</p>
 <h3>System Architecture</h3>
-<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Client%20Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Pages%20CDN%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%205%20Engine%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(PostgreSQL%20%2B%20RLS)%5D%0A%20%20SK%20--%3E%7CAuth%7C%20Auth%5BSupabase%20Auth%5D%0A%20%20SK%20--%3E%7CAssets%7C%20R2%5B(Cloudflare%20R2)%5D%0A%20%20SK%20--%3E%7CAI%20Moderation%7C%20AI%5BWorkers%20AI%5D"></div></div>
+<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Client%20Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Pages%20CDN%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%205%20Engine%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(PostgreSQL%20%2B%20RLS)%5D%0A%20%20SK%20--%3E%7CAuth%7C%20Auth%5BCloudflare%20Access%5D%0A%20%20SK%20--%3E%7CAssets%7C%20R2%5B(Cloudflare%20R2)%5D%0A%20%20SK%20--%3E%7CAI%20Moderation%7C%20AI%5BWorkers%20AI%5D"></div></div>
 <h3>Git Branching Strategy</h3>
 <div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="gitGraph%0A%20%20commit%20id%3A%20%22Initial%20Commit%22%0A%20%20branch%20develop%0A%20%20checkout%20develop%0A%20%20commit%20id%3A%20%22Setup%20SvelteKit%205%22%0A%20%20branch%20feature%2Fmarkdown-engine%0A%20%20checkout%20feature%2Fmarkdown-engine%0A%20%20commit%20id%3A%20%22Add%20KaTeX%20%2B%20Mermaid%22%0A%20%20commit%20id%3A%20%22Add%20LayerChart%20%2B%20Tabs%22%0A%20%20commit%20id%3A%20%22Add%20%3A%3A%3Adefine%20engine%22%0A%20%20checkout%20develop%0A%20%20merge%20feature%2Fmarkdown-engine%20id%3A%20%22Merge%20Engine%22%0A%20%20checkout%20main%0A%20%20merge%20develop%20id%3A%20%22Release%20v2.1%22%20tag%3A%20%22v2.1.0%22"></div></div>
 <hr>
@@ -1337,7 +1337,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 </ul>
 <hr>
 <h2>Live Data Binding</h2>
-<p>The <code>api.v1.*</code> prefix fetches real data from this site&#39;s own API at render time, with no manual <code>curl</code> and no hardcoded values. The engine resolves paths like <code>api.v1.author.profile.name</code> against the live Supabase database during server-side rendering.</p>
+<p>The <code>api.v1.*</code> prefix fetches real data from this site&#39;s own API at render time, with no manual <code>curl</code> and no hardcoded values. The engine resolves paths like <code>api.v1.author.profile.name</code> against the live database during server-side rendering.</p>
 <ul class="mdrs-list mdrs-list--unordered">
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Author: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Published posts: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
@@ -1469,7 +1469,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
  </div>
 </details><hr>
 <h2>Footnotes</h2>
-<p>The engine compiles <code>[^label]</code> markers into superscript links with numbered back-references<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>. KaTeX math runs entirely at build time<sup><a id="mdrs-fn-ref-math" href="#mdrs-fn-math" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>, and the <code>api.v1.*</code> resolver demonstrated above fetches data from the same Supabase instance that powers the REST API<sup><a id="mdrs-fn-ref-api" href="#mdrs-fn-api" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[3]</a></sup>.</p>
+<p>The engine compiles <code>[^label]</code> markers into superscript links with numbered back-references<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>. KaTeX math runs entirely at build time<sup><a id="mdrs-fn-ref-math" href="#mdrs-fn-math" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>, and the <code>api.v1.*</code> resolver demonstrated above fetches data from the same database that powers the REST API<sup><a id="mdrs-fn-ref-api" href="#mdrs-fn-api" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[3]</a></sup>.</p>
 <section class="mdrs-footnotes mdrs-references" data-mdrs-footnotes="">
 <h2 id="mdrs-fn-label">References</h2>
 <ol>
@@ -1480,7 +1480,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 <p><a href="#mdrs-fn-ref-math" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>KaTeX renders <strong>server-side during SSR</strong>, so no client JavaScript is required to display formulas. Mermaid diagrams, by contrast, hydrate lazily in the browser.</p>
 </li>
 <li id="mdrs-fn-api">
-<p><a href="#mdrs-fn-ref-api" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>The <code>api.v1.*</code> resolver calls the same Supabase queries as <code>GET /api/v1/author</code> and <code>GET /api/v1/blog</code>, but at compile time rather than via HTTP.</p>
+<p><a href="#mdrs-fn-ref-api" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>The <code>api.v1.*</code> resolver calls the same data queries as <code>GET /api/v1/author</code> and <code>GET /api/v1/blog</code>, but at compile time rather than via HTTP.</p>
 </li>
 </ol>
 </section>

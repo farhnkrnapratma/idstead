@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Idstead**: a self-hostable personal site and identity home (profile, blog, projects, resume, funding and contact pages, an admin portal and a public API) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Cloudflare D1 and R2 with Supabase Auth for admin sign-in, deployed as Cloudflare Workers. Anyone can run an instance with their own data; the owner's instance is described under [This instance](#this-instance). Worker names and hosts below are the defaults from `idstead.example.jsonc` for the site `example.com`:
+**Idstead**: a self-hostable personal site and identity home (profile, blog, projects, resume, funding and contact pages, an admin portal and a public API) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Cloudflare D1 and R2 with Cloudflare Access in front of the admin, deployed as Cloudflare Workers. Anyone can run an instance with their own data; the owner's instance is described under [This instance](#this-instance). Worker names and hosts below are the defaults from `idstead.example.jsonc` for the site `example.com`:
 
 | Workspace | Worker | Host | Role |
 | --- | --- | --- | --- |
@@ -65,9 +65,9 @@ Each rule file loads when Claude reads or edits a file under the listed paths. R
 | [`.claude/rules/lib.md`](.claude/rules/lib.md) | `packages/lib/**` | `#lib` imports, shared components, `global.css`, server helpers |
 | [`.claude/rules/api.md`](.claude/rules/api.md) | `apps/api/**`, `packages/lib/src/server/api/**`, `openapi.ts` | API conventions: error envelope and codes, versioning, parameters, representations, OpenAPI sync |
 | [`.claude/rules/web.md`](.claude/rules/web.md) | `apps/web/**` | Site sections and routes, text variants, `.well-known`, `hooks.server.ts` order, page data cache |
-| [`.claude/rules/admin.md`](.claude/rules/admin.md) | `apps/admin/**` | Admin session and MFA, cookies, `noindex`, newsletter queue on publish |
+| [`.claude/rules/admin.md`](.claude/rules/admin.md) | `apps/admin/**` | Cloudflare Access sign-in, `noindex`, newsletter queue on publish |
 | [`.claude/rules/jobs.md`](.claude/rules/jobs.md) | `apps/jobs/**`, render and newsletter queues | Queue consumer, crons, render refresh limits, env aliasing |
-| [`.claude/rules/data-layer.md`](.claude/rules/data-layer.md) | `packages/data/**`, `data.ts`, `repositories.ts`, Supabase auth modules, `tests/contracts/**` | Ports and D1 adapters, `dataStores()`, read cache, contract suites, migrations, moderation |
+| [`.claude/rules/data-layer.md`](.claude/rules/data-layer.md) | `packages/data/**`, `data.ts`, `repositories.ts`, `tests/contracts/**` | Ports and D1 adapters, `dataStores()`, read cache, contract suites, migrations, moderation |
 | [`.claude/rules/deployment.md`](.claude/rules/deployment.md) | `idstead*.jsonc`, `apps/*/wrangler*.jsonc`, env files, `tooling/**` | Tooling layout, every environment variable, Worker secrets, production, build triggers, previews |
 | [`.claude/rules/mdrs.md`](.claude/rules/mdrs.md) | `packages/mdrs/**`, `docs/008-mdrs/**` | Engine boundaries, resolvers, sanitizer and `mdrs-*` namespace, snapshots, `RENDER_VERSION` |
 | [`.claude/rules/components.md`](.claude/rules/components.md) | `**/*.svelte`, `**/*.css`, `packages/ui/**`, `packages/domain/**` | Design system contents, app-only components, layout primitives, color tokens, Svelte MCP workflow |
@@ -107,4 +107,4 @@ This checkout is also the owner's own instance, **fkp.my.id**. Only these places
 - **Environment variables** come from Phase (app `idstead`, environments `development` and `production`; `.claude/rules/phase.md` has the rules). Run commands as `phase run --env dev|prod -- <command>`; Production Worker secrets are synced from the Phase folders `/workers/<app>`, so never edit them in the Cloudflare dashboard.
 - **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).
 - **Deploys:** each Worker is connected to Workers Builds on `main` only; previews are not connected, so `develop` and PRs deploy nothing.
-- **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`); the Supabase Postgres data is kept unchanged until Stage 8 for a rollback, and its migrations were applied partly through the Supabase MCP tool, so their recorded versions differ from the file names.
+- **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`).

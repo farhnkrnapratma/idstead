@@ -131,11 +131,10 @@ This is a decision taken by automated means. If your comment is withheld and you
 
 Personal data described in this policy may be processed by the following recipients, each acting on our behalf or as an independent controller in respect of its own services:
 
-- **Cloudflare, Inc.** — hosting and content delivery, the anti-abuse challenge, request rate limiting, automated comment moderation through Workers AI, and object storage for downloadable documents.
-- **Supabase, Inc.** — the database in which published Content, comments, reports, view counts, helpfulness votes, and email subscriptions are stored, and the authentication service used for the administrator area.
+- **Cloudflare, Inc.** — hosting and content delivery, the database in which published Content, comments, reports, view counts, helpfulness votes, and email subscriptions are stored, object storage for downloadable documents, the anti-abuse challenge, request rate limiting, automated comment moderation through Workers AI, and the authentication service (Cloudflare Access) used for the administrator area.
 - **Google LLC** — tag management and analytics, subject to your consent.
 - **Functional Software, Inc. (Sentry)** — error monitoring, performance tracing, and session replay.
-- **Resend (Plus Five Five, Inc.)** — delivery of contact and feedback messages to our mailbox, of the subscription confirmation and new-article emails described in Section 18, and of security notifications sent to the administrator.
+- **Resend (Plus Five Five, Inc.)** — delivery of contact and feedback messages to our mailbox, and of the subscription confirmation and new-article emails described in Section 18.
 - **GitHub, Inc.** — retrieval of public repository metadata displayed on the Website. This is a server-side request; your data is not sent to GitHub as part of it.
 
 We do not sell personal data, and we do not disclose it to any other party except where required by law or necessary to establish, exercise, or defend a legal claim.
@@ -180,7 +179,7 @@ Because comments are posted without an account, the practical identifier for a r
 
 ## 15. Security Measures
 
-We apply, among others: transport encryption; a content security policy and associated response headers; restriction of the internal interface to same-origin requests; database row-level security; rate limiting of the public interface; a lockout after repeated failed administrator sign-in attempts, applied to both the originating address and the account; optional two-factor authentication and passkeys for the administrator account, enforced on the server and in the database; an email notification to the administrator when a password sign-in succeeds; and the salted hashing of IP addresses described in Section 3.
+We apply, among others: transport encryption; a content security policy and associated response headers; restriction of the internal interface to same-origin requests; verification of the caller before any privileged database access; rate limiting of the public interface; administrator access only through Cloudflare Access with two-factor authentication, verified again by the application on every request; and the salted hashing of IP addresses described in Section 3.
 
 No system is perfectly secure, and we make no assurance that these measures will prevent every incident. Our vulnerability disclosure procedure is published at [Security Policy](/security).
 
