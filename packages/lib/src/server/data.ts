@@ -9,7 +9,7 @@ import {
     type ResumeDocumentStore,
     type IdentityVersionReader,
     type LegalPageWriter,
-    type LoginLockoutStore,
+    type LockoutStore,
     type MaintenanceStore,
     type OidcAuthStore,
     type OidcClientStore,
@@ -35,7 +35,7 @@ import {
     createD1IdentityVersionReader,
     createD1LegalPageRepository,
     createD1LegalPageWriter,
-    createD1LoginLockoutStore,
+    createD1LockoutStore,
     createD1MaintenanceStore,
     createD1NewsletterStore,
     createD1OidcAuthStore,
@@ -66,7 +66,7 @@ export interface ServiceStores extends Repositories {
     writers: Writers;
     identity: IdentityVersionReader;
     ard: ArdIndexStore;
-    lockout: LoginLockoutStore;
+    lockout: LockoutStore;
     maintenance: MaintenanceStore;
     renders: PostRenderStore;
     activityLog: ActivityLog;
@@ -135,7 +135,7 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
         },
         identity: createD1IdentityVersionReader(db),
         ard: createD1ArdIndexStore(db),
-        lockout: createD1LoginLockoutStore(db),
+        lockout: createD1LockoutStore(db),
         maintenance: createD1MaintenanceStore(db),
         renders: createD1RenderStore(db, bucket),
         activityLog: createD1ActivityLog(db),

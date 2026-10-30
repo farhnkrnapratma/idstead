@@ -1,4 +1,4 @@
-import type { LoginLockoutStore } from '@idstead/data';
+import type { LockoutStore } from '@idstead/data';
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
@@ -84,22 +84,22 @@ async function hashKeys(keys: string[], salt: string): Promise<string[]> {
 }
 
 async function sharedCall<T>(
-    store: LoginLockoutStore | null,
+    store: LockoutStore | null,
     keys: string[],
     salt: string,
-    run: (store: LoginLockoutStore, hashed: string[]) => Promise<T>
+    run: (store: LockoutStore, hashed: string[]) => Promise<T>
 ) {
     if (!store || !keys.some(Boolean)) return { ok: false as const };
     try {
         return { ok: true as const, data: await run(store, await hashKeys(keys, salt)) };
     } catch (error) {
-        console.error('Login lockout storage failed; using the in-memory counter:', error);
+        console.error('Lockout storage failed; using the in-memory counter:', error);
         return { ok: false as const };
     }
 }
 
-export async function checkLoginLockout(
-    store: LoginLockoutStore | null,
+export async function checkLockout(
+    store: LockoutStore | null,
     salt: string,
     ...keys: string[]
 ): Promise<LockoutResult> {
@@ -110,8 +110,8 @@ export async function checkLoginLockout(
         :   { allowed: true, retryAfterSeconds: 0 };
 }
 
-export async function recordFailedLogin(
-    store: LoginLockoutStore | null,
+export async function recordLockoutFailure(
+    store: LockoutStore | null,
     salt: string,
     ...keys: string[]
 ) {
@@ -119,11 +119,7 @@ export async function recordFailedLogin(
     if (!shared.ok) memoryRecordFailure(keys);
 }
 
-export async function clearLoginAttempts(
-    store: LoginLockoutStore | null,
-    salt: string,
-    ...keys: string[]
-) {
+export async function clearLockout(store: LockoutStore | null, salt: string, ...keys: string[]) {
     memoryClear(keys);
     await sharedCall(store, keys, salt, (s, hashed) => s.clear(hashed));
 }

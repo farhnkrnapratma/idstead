@@ -47,7 +47,7 @@ export { createD1OidcAuthStore, createD1OidcClientStore } from './d1/oidc';
 export {
     createD1ArdIndexStore,
     createD1IdentityVersionReader,
-    createD1LoginLockoutStore,
+    createD1LockoutStore,
     createD1MaintenanceStore
 } from './d1/support';
 
