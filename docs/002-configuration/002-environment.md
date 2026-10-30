@@ -70,8 +70,7 @@ A secret manager can also own the Worker secrets. With Phase, give each Worker a
 
 - **Svelte apps:** `apps/web/src/env.ts` and `apps/admin/src/env.ts` declare the schema. Code reads values through `$app/env/private` and `$app/env/public`.
 - **Wrangler workers:**
-    - `apps/api` reads `c.env`, and like jobs aliases `$app/env/*` to its `src/appEnv.ts`.
-    - `apps/jobs` aliases `$app/env/*` to `src/appEnv.ts`, which reads the `cloudflare:workers` env, so shared lib code runs unchanged.
+    - `apps/api` reads `c.env`; it and `apps/jobs` alias `$app/env/*` to `packages/lib/src/server/workerAppEnv.ts`, which reads the `cloudflare:workers` env, so shared lib code runs unchanged.
 - **Cloudflare bindings in SvelteKit:** read them through `workerBinding()` (`packages/lib/src/server/workerEnv.ts`), because `event.platform` is undefined with adapter-cloudflare 8.
 
 ## Rules

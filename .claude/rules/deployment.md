@@ -3,7 +3,7 @@ paths:
     - idstead*.jsonc
     - apps/*/wrangler*.jsonc
     - apps/*/vite.config.ts
-    - apps/*/src/appEnv.ts
+    - packages/lib/src/server/workerAppEnv.ts
     - apps/web/src/env.ts
     - .env.example
     - package.json

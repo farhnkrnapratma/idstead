@@ -13,7 +13,10 @@
         "skipLibCheck": true,
         "noUnusedLocals": true,
         "erasableSyntaxOnly": true,
-        "paths": { "$app/env/private": ["./src/appEnv.ts"], "$app/env/public": ["./src/appEnv.ts"] }
+        "paths": {
+            "$app/env/private": ["../../packages/lib/src/server/workerAppEnv.ts"],
+            "$app/env/public": ["../../packages/lib/src/server/workerAppEnv.ts"]
+        }
     },
     "include": ["src"]
 }
