@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "@idstead/ui": "workspace:*",
-        "@lucide/svelte": "^1.64.0",
+        "@lucide/svelte": "^1.65.0",
         "@mdrs/core": "workspace:*",
         "d3-scale": "^4.0.2",
         "d3-shape": "^3.2.0",
