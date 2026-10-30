@@ -1,15 +1,15 @@
 import type { RequestHandler } from './$types';
-import { dataStores } from '#lib/server/data.ts';
+import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    const service = dataStores(platform).service;
-    if (!service) return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
-    const auth = await blogAdmin(request, url, platform);
-    if (auth.status)
-        return apiError(auth.status, auth.code ?? 'BLOG_POSTS_AUTH_REQUIRED', auth.message);
+    const admin = await adminServices(request, url, platform, {
+        code: 'BLOG_POSTS_UNAVAILABLE',
+        message: 'Post storage is not configured.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
     const id = url.searchParams.get('id')?.toLowerCase() ?? '';
     if (!UUID_PATTERN.test(id)) return apiError(400, 'BLOG_POST_INVALID', 'Invalid post id.');
     let post;

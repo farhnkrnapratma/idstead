@@ -1,5 +1,6 @@
 import { countReadingMinutes } from '@idstead/domain/readTime.ts';
 import type { RequestHandler } from './$types';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
@@ -18,9 +19,7 @@ import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const service = dataStores(platform).service;
@@ -149,24 +148,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             input.kind === 'delete' ? 'blog.delete'
             : operation.result?.published ? 'blog.publish'
             : 'blog.update';
-        await logActivity(
+        await logAdminActivity(
+            request,
+            platform,
             {
-                actor: auth.actor,
                 action,
                 category: 'blog',
                 entityId: operation.result?.id ?? input.id,
-                summary: `${action.replace('blog.', '')} post${operation.result?.slug ? ` "${operation.result.slug}"` : ''}.`,
-                ip: (() => {
-                    try {
-                        return getClientAddress();
-                    } catch {
-                        return null;
-                    }
-                })(),
-                ipSalt: ipSalt(platform),
-                userAgent: request.headers.get('user-agent') ?? undefined
+                summary: `${action.replace('blog.', '')} post${operation.result?.slug ? ` "${operation.result.slug}"` : ''}.`
             },
-            service.activityLog
+            getClientAddress
         );
         return Response.json(
             {

@@ -1,7 +1,7 @@
-import { adminActor, verifyAdminRequest } from './adminAuth';
+import { logAdminActivity, requireAdminAuth } from './adminRequest';
 import * as publicEnv from '$app/env/public';
 import { dataStores } from '#lib/server/data.ts';
-import { clientAddress, logActivity, type ActivityCategory } from '#lib/server/activityLog.ts';
+
 import {
     generateResumePdfBuffer,
     type AuthorResumeData,
@@ -43,7 +43,6 @@ import {
     verifyDetachedSignature,
     verifyKeyserver
 } from '#lib/server/openpgp.ts';
-import { ipSalt } from './ipSalt';
 import { apiError } from './apiError';
 import { decodeHtmlEntities } from '@mdrs/core';
 import { deleteObjects, findAssetBucket } from './r2';
@@ -78,29 +77,6 @@ function fail(message: string, status = 500) {
     return apiError(status, 'RESUME_REQUEST_FAILED', message);
 }
 
-export async function logAdminActivity(
-    req: Request,
-    platform: unknown,
-    entry: {
-        action: string;
-        category: ActivityCategory;
-        entityId?: string | null;
-        summary: string;
-    },
-    getClientAddress?: () => string
-) {
-    await logActivity(
-        {
-            actor: await adminActor(req, platform),
-            ...entry,
-            ip: clientAddress(getClientAddress),
-            ipSalt: ipSalt(platform),
-            userAgent: req.headers.get('user-agent') ?? undefined
-        },
-        dataStores(platform).service?.activityLog
-    );
-}
-
 function logResumeActivity(
     req: Request,
     platform: unknown,
@@ -115,17 +91,6 @@ function logResumeActivity(
         { action, category: 'resume', entityId, summary },
         getClientAddress
     );
-}
-
-export async function requireAdminAuth(req: Request, platform?: unknown): Promise<Response | null> {
-    const auth = await verifyAdminRequest(req, platform);
-    if (auth.status)
-        return apiError(
-            auth.status,
-            auth.status === 401 ? 'ADMIN_AUTH_REQUIRED' : 'ADMIN_FORBIDDEN',
-            auth.message
-        );
-    return null;
 }
 
 export function formatAuthorSlug(name?: string): string {

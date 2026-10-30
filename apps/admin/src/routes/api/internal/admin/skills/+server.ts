@@ -1,19 +1,13 @@
 import type { RequestHandler } from './$types';
-import { adminActor } from '#lib/server/adminAuth.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
+import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-    const { service } = dataStores(platform);
-    if (!service) return apiError(503, 'SKILLS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
+    const admin = await adminServices(request, url, platform, {
+        code: 'SKILLS_STORAGE_UNAVAILABLE'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let body: any;
     try {
@@ -35,24 +29,15 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const result = await service.authorWriter.saveSkills(authorId, categories);
     if (result.status === 'rejected') return apiError(400, 'SKILLS_SAVE_FAILED', result.message);
 
-    const actor = await adminActor(request, platform);
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: actor ?? null,
             action: 'skills.update',
             category: 'skills',
-            summary: `Saved ${categories.length} skill categories.`,
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            summary: `Saved ${categories.length} skill categories.`
         },
-        service.activityLog
+        getClientAddress
     );
 
     return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });

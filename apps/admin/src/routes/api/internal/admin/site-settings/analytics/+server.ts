@@ -1,14 +1,13 @@
 import type { RequestHandler } from './$types';
+import { blogAdmin } from '#lib/server/blogPostAuth.ts';
+import { dataStores } from '#lib/server/data.ts';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import {
     ANALYTICS_PROVIDER_INFO,
     AnalyticsSettingsError,
     parseAnalyticsSettings
 } from '@idstead/domain/analytics.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
-import { dataStores } from '#lib/server/data.ts';
-import { clientAddress, logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
 const MAX_BODY_BYTES = 2048;
@@ -61,18 +60,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         console.error('Analytics settings could not be saved:', error);
         return apiError(503, 'SITE_SETTINGS_UNAVAILABLE', 'Site settings could not be saved.');
     }
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: ctx.actor,
             action: 'settings.analytics',
             category: 'settings',
             entityId: settings.provider,
-            summary: `Set analytics to ${ANALYTICS_PROVIDER_INFO[settings.provider].name}.`,
-            ip: clientAddress(getClientAddress),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            summary: `Set analytics to ${ANALYTICS_PROVIDER_INFO[settings.provider].name}.`
         },
-        ctx.service.activityLog
+        getClientAddress
     );
     return Response.json({ analytics: settings }, { headers: NO_STORE });
 };
