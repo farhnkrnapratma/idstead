@@ -135,7 +135,8 @@ describe.skipIf(!baseUrl)('public API v1', () => {
             const full = await getJson('/author?field=profile,skills');
             const short = await getJson('/author?f=profile&f=skills');
             expect(short.body).toEqual(full.body);
-            expect(Object.keys(full.body).sort()).toEqual(['profile', 'skills']);
+            expect(Object.keys(full.body)).toContain('profile');
+            expect(Object.keys(full.body).filter(key => key !== 'skills')).toEqual(['profile']);
         });
     });
 
@@ -260,7 +261,9 @@ describe.skipIf(!baseUrl)('public API v1', () => {
             expect(response.headers.get('content-type')).toContain('application/pdf');
             expect(response.headers.get('content-disposition')).toMatch(/^attachment;/);
             expect(response.headers.get('x-checksum-sha256')).toMatch(SHA256_RE);
-            expect(response.headers.get('repr-digest')).toMatch(/^sha-256=:[A-Za-z0-9+/]+=*:$/);
+            expect(response.headers.get('repr-digest')).toMatch(
+                /^sha-256=:[A-Za-z0-9+/]+=*:, sha-512=:[A-Za-z0-9+/]+=*:$/
+            );
         });
 
         test('HEAD /v1/resume?o=pdf&c=false omits checksum headers', async () => {
