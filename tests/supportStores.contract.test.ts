@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
     createD1ArdIndexStore,
     createD1IdentityVersionReader,
-    createD1LoginLockoutStore,
+    createD1LockoutStore,
     createD1MaintenanceStore
 } from '../packages/data/src/d1/support.ts';
 import { d1Shim, insertRows } from './support/d1.ts';
@@ -48,7 +48,7 @@ describe('D1 support stores', () => {
     test('locks a key after five failures inside the window and clears it', async () => {
         const { db } = d1Shim();
         let clock = Date.parse('2026-10-22T00:00:00.000Z');
-        const lockout = createD1LoginLockoutStore(db, () => clock);
+        const lockout = createD1LockoutStore(db, () => clock);
         for (let attempt = 0; attempt < 4; attempt++) await lockout.recordFailure([key('a')]);
         expect(await lockout.retryAfter([key('a')])).toBe(0);
         await lockout.recordFailure([key('a'), 'not-a-hash']);
@@ -63,7 +63,7 @@ describe('D1 support stores', () => {
 
     test('prunes expired rows and reports how many went', async () => {
         const { db, sqlite } = d1Shim();
-        insertRows(sqlite, 'db_login_failures', [
+        insertRows(sqlite, 'db_lockout_failures', [
             { key_hash: key('a'), failed_at: '2020-01-01T00:00:00.000Z' },
             { key_hash: key('b') }
         ]);
@@ -76,7 +76,7 @@ describe('D1 support stores', () => {
             { email: 'new@example.com', unsubscribe_token: 't2' }
         ]);
         const maintenance = createD1MaintenanceStore(db);
-        expect(await maintenance.pruneLoginFailures()).toBe(1);
+        expect(await maintenance.pruneLockoutFailures()).toBe(1);
         expect(await maintenance.pruneStaleSubscriptions()).toBe(1);
         expect(await maintenance.pruneActivityLog()).toBe(0);
     });
