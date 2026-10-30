@@ -24,7 +24,7 @@
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/avif": "^2.1.1",
-        "@lucide/svelte": "^1.63.0",
+        "@lucide/svelte": "^1.64.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/editor": "workspace:*",
@@ -37,8 +37,8 @@
         "layerchart": "^2.9.1"
     },
     "devDependencies": {
-        "@sveltejs/adapter-cloudflare": "^8.0.1",
-        "@sveltejs/kit": "^3.1.0",
+        "@sveltejs/adapter-cloudflare": "^8.0.2",
+        "@sveltejs/kit": "^3.1.1",
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "@tailwindcss/vite": "^4.3.3",
         "openpgp": "^6.3.2",
@@ -47,7 +47,7 @@
         "tailwindcss": "^4.3.3",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.5",
-        "wrangler": "^4.155.0"
+        "wrangler": "^4.156.0"
     },
     "sideEffects": [
         "**/*.css"
