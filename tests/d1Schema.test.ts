@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { Database } from 'bun:sqlite';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import postgresColumns from './fixtures/postgresColumns.json';
 
 const MIGRATIONS = new URL('../packages/data/d1/migrations/', import.meta.url);
@@ -14,9 +14,7 @@ type Row = Record<string, unknown>;
 function migratedDb() {
     const db = new Database(':memory:');
     db.run('PRAGMA foreign_keys = ON');
-    for (const file of readdirSync(MIGRATIONS)
-        .filter(name => name.endsWith('.sql'))
-        .sort())
+    for (const file of [...new Bun.Glob('*.sql').scanSync(MIGRATIONS.pathname)].sort())
         db.run(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
     return db;
 }

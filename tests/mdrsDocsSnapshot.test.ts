@@ -1,19 +1,13 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const docsRoot = path.resolve(import.meta.dir, '../docs/008-mdrs');
 const demoFixture = path.resolve(import.meta.dir, 'fixtures/markdown-demo.md');
 
-function markdownFiles(dir: string): string[] {
-    return readdirSync(dir)
-        .sort()
-        .flatMap(name => {
-            const full = path.join(dir, name);
-            if (statSync(full).isDirectory()) return markdownFiles(full);
-            return name.endsWith('.md') ? [full] : [];
-        });
-}
+const markdownFiles = [...new Bun.Glob('**/*.md').scanSync(docsRoot)].sort();
+const sources = await Promise.all(
+    markdownFiles.map(file => Bun.file(path.join(docsRoot, file)).text())
+);
 
 function mdrsExamples(source: string): string[] {
     const examples: string[] = [];
@@ -40,9 +34,9 @@ function mdrsExamples(source: string): string[] {
     return examples;
 }
 
-const cases = markdownFiles(docsRoot).flatMap(file =>
-    mdrsExamples(readFileSync(file, 'utf8')).map((markdown, index) => ({
-        name: `${path.relative(docsRoot, file)} #${index + 1}`,
+const cases = markdownFiles.flatMap((file, fileIndex) =>
+    mdrsExamples(sources[fileIndex]).map((markdown, index) => ({
+        name: `${file} #${index + 1}`,
         markdown
     }))
 );
@@ -69,6 +63,6 @@ describe('MDRS docs examples render unchanged', () => {
     }
 
     test('markdown-demo fixture', async () => {
-        expect(await render(readFileSync(demoFixture, 'utf8'))).toMatchSnapshot();
+        expect(await render(await Bun.file(demoFixture).text())).toMatchSnapshot();
     });
 });

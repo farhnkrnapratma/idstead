@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import {
     A11Y_DEFAULTS,
@@ -72,12 +71,17 @@ describe('a11y settings: resolution', () => {
 });
 
 describe('a11y settings: pre-paint script', () => {
-    test.each(['web', 'admin'])('the %s shell reads the same storage keys and queries', app => {
-        const html = readFileSync(new URL(`../apps/${app}/src/app.html`, import.meta.url), 'utf8');
-        expect(html).toContain("read('a11y_overrides')");
-        expect(html).toContain("read('a11y_settings')");
-        for (const query of Object.values(A11Y_SYSTEM_QUERIES)) {
-            expect(html).toContain(`'${query}'`);
+    test.each(['web', 'admin'])(
+        'the %s shell reads the same storage keys and queries',
+        async app => {
+            const html = await Bun.file(
+                new URL(`../apps/${app}/src/app.html`, import.meta.url)
+            ).text();
+            expect(html).toContain("read('a11y_overrides')");
+            expect(html).toContain("read('a11y_settings')");
+            for (const query of Object.values(A11Y_SYSTEM_QUERIES)) {
+                expect(html).toContain(`'${query}'`);
+            }
         }
-    });
+    );
 });

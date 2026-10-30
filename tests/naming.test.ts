@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { $ } from 'bun';
 
+const ROOT = new URL('..', import.meta.url).pathname;
 const LEGACY_NAME = /fkp/i;
 const OWNER_HANDLE = /farhnkrnapratma/i;
 
@@ -17,38 +18,37 @@ const INSTANCE_FILES = new Set([
     'apps/web/wrangler.jsonc'
 ]);
 
-function trackedFiles(): string[] {
-    const result = Bun.spawnSync(['git', 'ls-files'], {
-        cwd: new URL('..', import.meta.url).pathname
-    });
-    return new TextDecoder()
-        .decode(result.stdout)
-        .split('\n')
-        .filter(file => file && file !== 'bun.lock' && !file.startsWith('supabase/migrations/'));
-}
+const trackedFiles = (await $`git ls-files`.cwd(ROOT).quiet().text())
+    .split('\n')
+    .filter(file => file && file !== 'bun.lock' && !file.startsWith('supabase/migrations/'));
 
-function mentions(file: string, pattern: RegExp): boolean {
-    try {
-        return pattern.test(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'));
-    } catch {
-        return false;
-    }
+async function mentioning(files: string[], pattern: RegExp): Promise<string[]> {
+    const matches = await Promise.all(
+        files.map(file =>
+            Bun.file(`${ROOT}${file}`)
+                .text()
+                .then(
+                    text => pattern.test(text),
+                    () => false
+                )
+        )
+    );
+    return files.filter((_, index) => matches[index]);
 }
 
 describe('Idstead naming', () => {
-    test('only the migration and instance files use the old name', () => {
-        const offenders = trackedFiles().filter(
-            file =>
-                !MIGRATION_FILES.has(file)
-                && !INSTANCE_FILES.has(file)
-                && mentions(file, LEGACY_NAME)
+    test('only the migration and instance files use the old name', async () => {
+        const offenders = await mentioning(
+            trackedFiles.filter(file => !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file)),
+            LEGACY_NAME
         );
         expect(offenders).toEqual([]);
     });
 
-    test('application code never falls back to the owner handle', () => {
-        const offenders = trackedFiles().filter(
-            file => /^(apps|packages)\//.test(file) && mentions(file, OWNER_HANDLE)
+    test('application code never falls back to the owner handle', async () => {
+        const offenders = await mentioning(
+            trackedFiles.filter(file => /^(apps|packages)\//.test(file)),
+            OWNER_HANDLE
         );
         expect(offenders).toEqual([]);
     });

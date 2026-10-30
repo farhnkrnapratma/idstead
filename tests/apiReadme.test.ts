@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
 import { renderReadme } from '../packages/lib/src/server/api/root.ts';
 
-const readme = readFileSync(new URL('../apps/api/src/README.md', import.meta.url), 'utf8');
+const readme = await Bun.file(new URL('../apps/api/src/README.md', import.meta.url)).text();
 
 describe('API README template', () => {
     test('fills every placeholder with the instance URLs', () => {

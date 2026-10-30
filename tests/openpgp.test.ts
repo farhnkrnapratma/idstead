@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { readFile } from 'node:fs/promises';
 import { unzipSync, strFromU8 } from 'fflate';
 import {
     parseDetachedSignature,
@@ -18,7 +17,7 @@ import { buildResumeBundle } from '../packages/lib/src/server/resumeBundle.ts';
 import { resumeChecksums } from '../packages/lib/src/server/resumeChecksums.ts';
 
 const fixture = async (name: string) =>
-    new Uint8Array(await readFile(new URL(`./fixtures/openpgp/${name}`, import.meta.url)));
+    await Bun.file(new URL(`./fixtures/openpgp/${name}`, import.meta.url)).bytes();
 const FPR = '73C032AD78AC6F2E7CE781A27ABA82BF0C80A58C';
 const pdf = await fixture('resume.pdf');
 const armoredKey = await fixture('ada.pub.asc');

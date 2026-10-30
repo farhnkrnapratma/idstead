@@ -1,10 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
 import { InstanceConfigError, resolveInstanceConfig } from '../packages/domain/src/instance.ts';
 import { renderWranglerConfigs } from '../tooling/configure.ts';
 
 const example = Bun.JSONC.parse(
-    readFileSync(new URL('../idstead.example.jsonc', import.meta.url), 'utf8')
+    await Bun.file(new URL('../idstead.example.jsonc', import.meta.url)).text()
 ) as Record<string, Record<string, unknown>>;
 
 describe('resolveInstanceConfig', () => {

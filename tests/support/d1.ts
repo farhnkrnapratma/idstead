@@ -1,5 +1,5 @@
 import { Database, type SQLQueryBindings } from 'bun:sqlite';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import type {
     ContentBucket,
     D1Like,
@@ -56,9 +56,7 @@ export interface D1Shim {
 export function d1Shim(): D1Shim {
     const sqlite = new Database(':memory:');
     sqlite.run('PRAGMA foreign_keys = ON');
-    for (const file of readdirSync(MIGRATIONS)
-        .filter(name => name.endsWith('.sql'))
-        .sort())
+    for (const file of [...new Bun.Glob('*.sql').scanSync(MIGRATIONS.pathname)].sort())
         sqlite.run(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
     const db: D1Like = {
         prepare: sql => new ShimStatement(sqlite, sql),

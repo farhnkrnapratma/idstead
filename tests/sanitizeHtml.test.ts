@@ -1,8 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import { sanitizeHtml } from '../packages/mdrs/core/src/sanitize';
 import { renderMarkdown, renderMarkdownUnsafe } from '../packages/mdrs/core/src/markdown';
 import { injectHeadingIds, prefixHashLinks } from '../packages/mdrs/core/src/index';
+
+const markdown = await Bun.file(new URL('./fixtures/markdown-demo.md', import.meta.url)).text();
 
 describe('sanitizeHtml: hostile input', () => {
     test.each([
@@ -87,8 +88,6 @@ describe('sanitizeHtml: hostile input', () => {
 });
 
 describe('sanitizeHtml: engine output', () => {
-    const markdown = readFileSync(new URL('./fixtures/markdown-demo.md', import.meta.url), 'utf8');
-
     const tally = (source: string) => {
         const html = source.replaceAll('&amp;', '&');
         const counts = new Map<string, number>();
@@ -163,10 +162,6 @@ describe('sanitizeHtml: engine output', () => {
 
 describe('sanitizeHtml: page boundary', () => {
     test('leaves the final article HTML untouched, heading ids and hash links included', async () => {
-        const markdown = readFileSync(
-            new URL('./fixtures/markdown-demo.md', import.meta.url),
-            'utf8'
-        );
         const html = prefixHashLinks(injectHeadingIds(await renderMarkdown(markdown)));
         expect(html).toContain(' id="');
         expect(sanitizeHtml(html)).toBe(html);

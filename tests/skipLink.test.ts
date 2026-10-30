@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'bun:test';
@@ -7,9 +7,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string) => readFileSync(path, 'utf8');
 
 function svelteFiles(dir: string): string[] {
-    return readdirSync(join(root, dir), { withFileTypes: true, recursive: true })
-        .filter(entry => entry.isFile() && entry.name.endsWith('.svelte'))
-        .map(entry => join(entry.parentPath, entry.name));
+    return [...new Bun.Glob('**/*.svelte').scanSync({ cwd: join(root, dir), absolute: true })];
 }
 
 const redirectOnlyPages = ['apps/admin/src/routes/(admin)/new/+page.svelte'];

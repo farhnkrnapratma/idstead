@@ -1,7 +1,6 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 
-const appHtml = readFileSync(new URL('../apps/web/src/app.html', import.meta.url), 'utf8');
+const appHtml = await Bun.file(new URL('../apps/web/src/app.html', import.meta.url)).text();
 
 describe('Google Analytics tag', () => {
     test('declares UTF-8 before scripts within the first 1024 bytes', () => {

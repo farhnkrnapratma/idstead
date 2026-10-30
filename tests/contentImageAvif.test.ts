@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { readFile } from 'node:fs/promises';
 import { CONTENT_IMAGE_LIMIT } from '../packages/lib/src/blogContentImage.ts';
 import { validateContentImageAvif } from '../packages/lib/src/server/validateContentImage.ts';
 
-const avif = new Uint8Array(await readFile(new URL('./fixtures/avatar-512.avif', import.meta.url)));
+const avif = await Bun.file(new URL('./fixtures/avatar-512.avif', import.meta.url)).bytes();
 
 describe('validateContentImageAvif', () => {
     test('accepts an AVIF that matches the WebP dimensions', () => {

@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
 import { PDFDict, PDFDocument, PDFName } from 'pdf-lib';
 import {
     formatDateRange,
@@ -10,13 +9,13 @@ import {
     type ResumeFontBytes
 } from '../packages/lib/src/server/pdfGenerator';
 
-const font = (path: string) => new Uint8Array(readFileSync(`node_modules/@fontsource/${path}`));
+const font = (path: string) => Bun.file(`node_modules/@fontsource/${path}`).bytes();
 
 const fonts: ResumeFontBytes = {
-    sans: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff'),
-    sansBold: font('ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff'),
-    sansItalic: font('ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff'),
-    mono: font('lilex/files/lilex-latin-400-normal.woff')
+    sans: await font('ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff'),
+    sansBold: await font('ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff'),
+    sansItalic: await font('ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff'),
+    mono: await font('lilex/files/lilex-latin-400-normal.woff')
 };
 
 const fixture = (): AuthorResumeData => ({
