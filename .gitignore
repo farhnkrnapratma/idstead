@@ -17,7 +17,6 @@ vite.config.ts.timestamp-*
 .env.sentry-build-plugin
 skill-observations/
 skill-updates/
-supabase/.temp/
 .playwright-mcp/
 .local/
 graphify-out/
