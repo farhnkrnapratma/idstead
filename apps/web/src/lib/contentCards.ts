@@ -27,7 +27,7 @@ export interface PostCardSource {
     banner_url?: string | null;
 }
 
-export function isNewPost(createdAt: string, now = Date.now()): boolean {
+function isNewPost(createdAt: string, now = Date.now()): boolean {
     return !!createdAt && now - new Date(createdAt).getTime() < NEW_POST_WINDOW_MS;
 }
 

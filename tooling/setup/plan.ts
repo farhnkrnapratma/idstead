@@ -5,7 +5,7 @@ export type App = (typeof APPS)[number];
 export type Variables = Record<string, string | undefined>;
 export type WorkerKeys = Record<App, { keys: string[]; required: string[] }>;
 
-export const CORE_VARIABLES = ['IP_SALT', 'PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET'];
+const CORE_VARIABLES = ['IP_SALT', 'PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET'];
 
 export interface SetupAnswers {
     domain?: string;
