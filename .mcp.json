@@ -1,9 +1,5 @@
 {
     "mcpServers": {
-        "supabase": {
-            "type": "http",
-            "url": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
-        },
         "svelte": { "type": "stdio", "command": "bunx", "args": ["-y", "@sveltejs/mcp@0.1.27"] },
         "sentry": { "type": "http", "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead" },
         "resend": { "type": "http", "url": "https://mcp.resend.com/mcp" },

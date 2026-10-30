@@ -20,7 +20,7 @@ const INSTANCE_FILES = new Set([
 
 const trackedFiles = (await $`git ls-files`.cwd(ROOT).quiet().text())
     .split('\n')
-    .filter(file => file && file !== 'bun.lock' && !file.startsWith('supabase/migrations/'));
+    .filter(file => file && file !== 'bun.lock');
 
 async function mentioning(files: string[], pattern: RegExp): Promise<string[]> {
     const matches = await Promise.all(
