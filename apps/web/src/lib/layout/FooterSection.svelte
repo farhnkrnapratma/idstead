@@ -57,7 +57,7 @@
             label: group.label,
             items: [
                 ...group.items.filter(item => !isHiddenLegalPath(item.href)),
-                ...(group.label === 'Legal' ? [COOKIES_ACTION] : [])
+                ...(group.label === 'Legal' && page.data.cookieConsent ? [COOKIES_ACTION] : [])
             ]
         }))
     ]);

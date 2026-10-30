@@ -32,14 +32,28 @@ describe('content security policy', () => {
         expect(directive('frame-src')).toContain('https://codepen.io');
     });
 
-    test('Cloudflare Insights is allowed to load its beacon script', () => {
-        expect(directive('script-src')).toContain('https://static.cloudflareinsights.com');
+    test('no analytics host is allowed without an analytics provider', () => {
+        expect(policy).not.toContain('google');
+        expect(policy).not.toContain('cloudflareinsights');
     });
 
-    test('Google Analytics regional image and collection hosts are allowed', () => {
-        expect(directive('img-src')).toContain('https://www.google.co.id');
-        expect(directive('connect-src')).toContain('https://www.google.com');
-        expect(directive('connect-src')).toContain('https://analytics.google.com');
+    test('the active analytics provider adds only its own hosts', () => {
+        const withAnalytics = buildContentSecurityPolicy({
+            analytics: {
+                script: ['https://cloud.umami.is'],
+                connect: ['https://cloud.umami.is'],
+                img: []
+            }
+        });
+        const part = (name: string) =>
+            withAnalytics
+                .split('; ')
+                .find(entry => entry.startsWith(`${name} `))
+                ?.split(' ')
+                .slice(1) ?? [];
+        expect(part('script-src')).toContain('https://cloud.umami.is');
+        expect(part('connect-src')).toContain('https://cloud.umami.is');
+        expect(part('img-src')).not.toContain('https://cloud.umami.is');
     });
 
     test('sentry and cdn origins come from the env', () => {

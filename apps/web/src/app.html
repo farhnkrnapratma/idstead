@@ -62,47 +62,7 @@
                 );
             })();
         </script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-
-            function gtag() {
-                window.dataLayer.push(arguments);
-            }
-
-            let savedConsent = null;
-            try {
-                const stored = localStorage.getItem('idstead_cookie_consent_v2');
-                if (stored) savedConsent = JSON.parse(stored);
-            } catch (e) {}
-
-            const defaultConsent = {
-                analytics_storage: 'denied',
-                ad_storage: 'denied',
-                ad_user_data: 'denied',
-                ad_personalization: 'denied'
-            };
-
-            if (savedConsent) {
-                defaultConsent.analytics_storage = savedConsent.analytics_storage || 'denied';
-                defaultConsent.ad_storage = savedConsent.ad_storage || 'denied';
-                defaultConsent.ad_user_data = savedConsent.ad_user_data || 'denied';
-                defaultConsent.ad_personalization = savedConsent.ad_personalization || 'denied';
-            } else {
-                defaultConsent.wait_for_update = 500;
-            }
-
-            gtag('consent', 'default', defaultConsent);
-
-            const measurementId = '%sveltekit.env.PUBLIC_GA_MEASUREMENT_ID%';
-            if (/^G-[A-Z0-9]+$/.test(measurementId)) {
-                gtag('js', new Date());
-                gtag('config', measurementId);
-                const tag = document.createElement('script');
-                tag.async = true;
-                tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
-                document.head.appendChild(tag);
-            }
-        </script>
+        %idstead.analytics%
         <meta
             name="viewport"
             content="width=device-width, initial-scale=1" />
