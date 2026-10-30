@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { readFile } from 'node:fs/promises';
 import { createArdIndexCache, loadArdIndex } from '../packages/lib/src/server/ardIndex';
 import { crawlArdSources } from '../packages/lib/src/server/ardIngestion';
 import type { ArdEntry } from '../packages/lib/src/server/ard';
@@ -217,29 +216,5 @@ describe('ARD persistent index', () => {
         expect(fromPersistentStorage).toEqual(first);
         expect(reads).toBe(2);
         expect(writes).toBe(1);
-    });
-});
-
-const migration = await readFile(
-    new URL('../supabase/migrations/20261007220802_ard_resource_index.sql', import.meta.url),
-    'utf8'
-);
-
-describe('ARD index migration', () => {
-    test('keeps registry snapshots private to the service role', () => {
-        expect(migration).toContain('alter table public.db_ard_index enable row level security');
-        expect(migration).toContain(
-            'revoke all on public.db_ard_index from public, anon, authenticated'
-        );
-        expect(migration).toContain(
-            'grant select, insert, update on public.db_ard_index to service_role'
-        );
-    });
-
-    test('bounds the stored manifest and discovery source list', () => {
-        expect(migration).toContain("jsonb_typeof(entries) = 'array'");
-        expect(migration).toContain('jsonb_array_length(entries) <= 1000');
-        expect(migration).toContain('pg_column_size(entries) <= 4194304');
-        expect(migration).toContain('cardinality(sources) <= 32');
     });
 });

@@ -217,7 +217,7 @@ erDiagram
 - **Login lockout** (`service_role` only): `db_login_lockout`, `db_login_record_failure`, `db_login_clear`, `db_prune_login_failures`.
 - **Admin dashboard:** `db_admin_*`, `db_views_timeseries`, `db_activity_log_list`, `db_activity_log_export`, `db_clear_all_data`, `db_subscriber_stats()` (a **function**, not a table).
 - **Profile identity save:** `db_save_profile_identity(p_profile, p_identity)` (`service_role` only). `p_identity` is `{version, assets}` for one `kind = 'identity'` row whose assets must match `db_identity_asset_names()` exactly. It points `avatar_version` and `banner_version` at that row and retires the previous rows. The `db_profile_identity_kind` trigger rejects a profile whose two columns differ while either references an `identity` row.
-- **`safeupdate`:** PostgREST runs with `safeupdate`, so every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause. `tests/safeupdate.test.ts` checks this.
+- **`safeupdate`:** PostgREST runs with `safeupdate`, so every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause.
 - **Prunes** (`service_role` only): `db_prune_stale_subscriptions`, `db_prune_activity_log` and `db_prune_login_failures`, called by the jobs Worker's cron through `MaintenanceStore`.
 
 ## D1 schema
@@ -262,4 +262,4 @@ where tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';
 
 - `packages/data/d1/migrations/`
 - `tests/d1Schema.test.ts`, `tests/fixtures/postgresColumns.json`
-- `supabase/migrations/` and `tests/safeupdate.test.ts` (retired Postgres schema)
+- `supabase/migrations/` (retired Postgres schema)
