@@ -1,6 +1,7 @@
 import type { AdminNotifier, FeedbackRecorder } from './activity';
 import type { AdminPostStore, PostCleanupStore, PostOperationStore } from './adminPosts';
 import type { LegalPageRepository } from './legal';
+import type { SiteSettingsRepository } from './siteSettings';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import type { NewsletterStore, SubscriberRepository } from './subscribers';
@@ -15,6 +16,7 @@ export type * from './maintenance';
 export type * from './adminPosts';
 export type * from './resumeDocuments';
 export type * from './legal';
+export type * from './siteSettings';
 export type * from './siteData';
 export type * from './author';
 export type * from './blog';
@@ -43,6 +45,7 @@ export {
     createD1PostOperationStore
 } from './d1/adminPosts';
 export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
+export { createD1SiteSettingsRepository, createD1SiteSettingsWriter } from './d1/siteSettings';
 export { createD1OidcAuthStore, createD1OidcClientStore } from './d1/oidc';
 export {
     createD1ArdIndexStore,
@@ -56,6 +59,7 @@ export interface Repositories {
     blog: BlogRepository;
     comments: CommentRepository;
     legal: LegalPageRepository;
+    site: SiteSettingsRepository;
 }
 
 export interface Writers {

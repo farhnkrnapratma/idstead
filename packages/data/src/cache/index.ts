@@ -2,6 +2,7 @@ import type { AuthorRepository } from '../author';
 import type { BlogRepository, CommentRepository, PostSource } from '../blog';
 import type { Repositories } from '../index';
 import type { LegalPageRepository } from '../legal';
+import type { SiteSettingsRepository } from '../siteSettings';
 import { postRenderPath } from '../paths';
 import { createPostSource, isPostSource, sourceRecord } from '../source';
 import type { D1Like } from '../d1/client';
@@ -250,5 +251,11 @@ export function cachedRepositories(
             )
     };
 
-    return { author, blog, comments, legal };
+    const site: SiteSettingsRepository = {
+        analytics: () =>
+            remember(domain('site'), 'site.analytics', [], CACHE_TTL_SECONDS, () =>
+                repos.site.analytics()
+            )
+    };
+    return { author, blog, comments, legal, site };
 }
