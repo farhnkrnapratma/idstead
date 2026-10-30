@@ -292,6 +292,10 @@ export async function buildDataExport(
         undefined
     );
     putJson('administration/logs.json', logs);
+    putJson(
+        'site/settings.json',
+        Object.fromEntries(tables.siteSettings.map(row => [String(row.key), row.value]))
+    );
     const settings = parseAdminSettings(settingsRows[0]?.settings);
     putJson('administration/settings.json', {
         display: { ...DEFAULT_ADMIN_DISPLAY, ...settings.display },

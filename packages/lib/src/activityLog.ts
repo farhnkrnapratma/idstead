@@ -4,8 +4,8 @@ export const activityCategories = [
     { value: 'skills', label: 'Skills' },
     { value: 'links', label: 'Links' },
     { value: 'blog', label: 'Blog' },
-    { value: 'auth', label: 'Auth' },
-    { value: 'security', label: 'Security' }
+    { value: 'security', label: 'Security' },
+    { value: 'settings', label: 'Settings' }
 ] as const;
 
 export const activityLogSortFields = [

@@ -280,7 +280,7 @@
             {#if key === 'category'}
                 <Badge
                     variant={row.category === 'security' ? 'warning'
-                    : row.category === 'auth' ? 'default'
+                    : row.category === 'settings' ? 'default'
                     : 'accent'}
                     >{activityCategories.find(item => item.value === row.category)?.label
                         ?? row.category}</Badge>

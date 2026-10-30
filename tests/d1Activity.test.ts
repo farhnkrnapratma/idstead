@@ -116,7 +116,7 @@ describe('D1 activity log and settings', () => {
     test('filters, searches, sorts and pages the log', async () => {
         const { db } = d1Shim();
         const log = createD1ActivityLog(db);
-        const entry = (action: string, actor: string | null, category = 'auth') => ({
+        const entry = (action: string, actor: string | null, category = 'security') => ({
             actor,
             action,
             category,
@@ -127,8 +127,8 @@ describe('D1 activity log and settings', () => {
             ipHash: null,
             userAgent: null
         });
-        await log.append(entry('auth.login', 'ada@example.com'));
-        await log.append(entry('auth.logout', 'bob@example.com'));
+        await log.append(entry('oidc.consent', 'ada@example.com'));
+        await log.append(entry('oidc.revoke', 'bob@example.com'));
         await log.append(entry('resume.save', null, 'resume'));
         const filter = {
             category: null,
@@ -144,9 +144,9 @@ describe('D1 activity log and settings', () => {
             'ada@example.com',
             'bob@example.com'
         ]);
-        expect((page.data[0] as { details: unknown }).details).toEqual({ action: 'auth.login' });
+        expect((page.data[0] as { details: unknown }).details).toEqual({ action: 'oidc.consent' });
         expect((await log.export({ ...filter, category: 'resume' })).total).toBe(1);
-        expect((await log.export({ ...filter, query: 'LOGOUT' })).total).toBe(1);
+        expect((await log.export({ ...filter, query: 'REVOKE' })).total).toBe(1);
         await expect(log.list({ ...filter, sort: 'nope', limit: 10, offset: 0 })).rejects.toThrow(
             DataError
         );

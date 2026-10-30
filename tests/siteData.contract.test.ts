@@ -74,6 +74,9 @@ describe('D1 site data adapter', () => {
             { filename: 'old.pdf', file_url: 'u', hash: 'o', is_active: false, author_id: PROFILE }
         ]);
         insertRows(sqlite, 'db_admin_settings', [{ user_id: 'u', settings: '{"theme":"dark"}' }]);
+        insertRows(sqlite, 'db_site_settings', [
+            { key: 'analytics', value: '{"provider":"ga4","measurementId":"G-ABC123"}' }
+        ]);
         insertRows(sqlite, 'db_subscribers', [{ email: 'a@example.com', unsubscribe_token: 't' }]);
         return { sqlite, store: createD1SiteDataStore(db, bucket) };
     }
@@ -88,6 +91,9 @@ describe('D1 site data adapter', () => {
         expect(data.comments[0]).toMatchObject({ is_admin: false, is_approved: false });
         expect(data.activeDocuments.map(doc => doc.filename)).toEqual(['resume.pdf']);
         expect(data.settings).toEqual([{ settings: { theme: 'dark' } }]);
+        expect(data.siteSettings).toEqual([
+            { key: 'analytics', value: { provider: 'ga4', measurementId: 'G-ABC123' } }
+        ]);
         expect(data.subscribers).toEqual([
             {
                 email: 'a@example.com',

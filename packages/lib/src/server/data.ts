@@ -9,6 +9,7 @@ import {
     type ResumeDocumentStore,
     type IdentityVersionReader,
     type LegalPageWriter,
+    type SiteSettingsWriter,
     type LockoutStore,
     type MaintenanceStore,
     type OidcAuthStore,
@@ -35,6 +36,8 @@ import {
     createD1IdentityVersionReader,
     createD1LegalPageRepository,
     createD1LegalPageWriter,
+    createD1SiteSettingsRepository,
+    createD1SiteSettingsWriter,
     createD1LockoutStore,
     createD1MaintenanceStore,
     createD1NewsletterStore,
@@ -79,6 +82,7 @@ export interface ServiceStores extends Repositories {
     siteData: SiteDataStore;
     authorWriter: AuthorWriter;
     legalWriter: LegalPageWriter;
+    siteSettingsWriter: SiteSettingsWriter;
     oidcClients: OidcClientStore;
     oidcAuth: OidcAuthStore;
 }
@@ -117,7 +121,8 @@ function d1Repositories({ db, bucket }: D1Backend, options: DataStoreOptions = {
             ...(options.bannerUrls === false ? {} : { cdnBase: cdnBaseUrl() })
         }),
         comments: createD1CommentRepository(db),
-        legal: createD1LegalPageRepository(db)
+        legal: createD1LegalPageRepository(db),
+        site: createD1SiteSettingsRepository(db)
     };
 }
 
@@ -152,6 +157,7 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
         siteData: createD1SiteDataStore(db, bucket),
         authorWriter: createD1AuthorWriter(db),
         legalWriter: createD1LegalPageWriter(db),
+        siteSettingsWriter: createD1SiteSettingsWriter(db),
         oidcClients: createD1OidcClientStore(db),
         oidcAuth: createD1OidcAuthStore(db)
     };
