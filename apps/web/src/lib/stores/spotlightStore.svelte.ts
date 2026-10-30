@@ -4,7 +4,7 @@ import { COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
 import { isHiddenCommand } from '#app/commandVisibility.ts';
 import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
 
-export interface SpotlightDialogApi {
+interface SpotlightDialogApi {
     open(initialQuery?: string): void;
     toggle(): void;
     focusOrOpen(initialQuery: string): void;
@@ -19,11 +19,12 @@ let hosts = $state<symbol[]>([]);
 let api: SpotlightDialogApi | null = null;
 let pending: ((dialog: SpotlightDialogApi) => void)[] = [];
 let loading: Promise<void> | null = null;
+let loader: (() => Promise<{ default: unknown }>) | null = null;
 let commandDisposers: (() => void)[] = [];
 
 function load(): Promise<void> {
-    if (!loading) {
-        loading = import('../components/SpotlightDialog.svelte').then(
+    if (!loading && loader) {
+        loading = loader().then(
             module => {
                 dialogComponent = module.default as Component;
             },
@@ -34,7 +35,7 @@ function load(): Promise<void> {
             }
         );
     }
-    return loading;
+    return loading ?? Promise.resolve();
 }
 
 function withDialog(run: (dialog: SpotlightDialogApi) => void) {
@@ -68,7 +69,8 @@ export const spotlightStore = {
     isHost(id: symbol) {
         return hosts[0] === id;
     },
-    join(id: symbol, initialProjects: Project[]) {
+    join(id: symbol, initialProjects: Project[], loadDialog: () => Promise<{ default: unknown }>) {
+        loader ??= loadDialog;
         if (initialProjects.length > 0) projects = initialProjects;
         if (hosts.length === 0) registerCommands();
         hosts = [...hosts, id];
