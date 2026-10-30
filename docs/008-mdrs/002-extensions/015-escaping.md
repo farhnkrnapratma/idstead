@@ -31,7 +31,7 @@ To show a fenced block that itself contains a fence, make the outer fence longer
 `:::ignore-render` outputs its body as escaped, preformatted text, after variables, math and directives have been protected. Unlike a code block it has no language, header bar or copy button.
 
 ```mdrs
-:::ignore-render
+:::verbatim
 ${not_a_variable} $$not math$$ <b>not bold</b>
 :::
 ```
@@ -43,7 +43,7 @@ ${not_a_variable} $$not math$$ <b>not bold</b>
 The block ends at the first line made of the same number of colons as its opening. To show a complete directive, closing line included, open it with four (or more) colons:
 
 ```mdrs
-::::ignore-render
+::::verbatim
 :::note
 A callout shown as source.
 :::
@@ -66,10 +66,10 @@ In a document with a `:::define` block, a backslash keeps interpolation and cond
 name: "MDRS"
 :::
 
-Write \${name} to get ${name}, and [shown].\${flag} stays as written.
+Write \${name} to get ${name}, and \${if flag} stays as written.
 ```
 
-Renders "Write ${name} to get MDRS, and [shown].${flag} stays as written."
+Renders "Write ${name} to get MDRS, and ${if flag} stays as written."
 
 In a document without `:::define`, nothing needs escaping: `${…}` is already plain text there.
 

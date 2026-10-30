@@ -19,7 +19,7 @@ stats: { directives: 14, stable: true }
 
 - First locale: ${locales[0]} of ${locales.length}
 - Directives: ${stats.directives}
-- [You are viewing the production build.].${is_production}
+- ${if is_production}You are viewing the production build.${endif}
 ```
 
 Renders "**Welcome to my-site.example.** Engine v2.1, © 2026.", then "First locale: en of 2", "Directives: 14" and "You are viewing the production build."
@@ -98,7 +98,7 @@ Square brackets followed immediately by `.${…}` show the text only when the ex
 stable: false
 :::
 
-[**Stable release.**].${stable}[This is a preview build.].${!stable}
+${if stable}**Stable release.**${else}This is a preview build.${endif}
 ```
 
 The expression must evaluate to a boolean, or the error "Expected a boolean expression inside [...].${...}" appears.
@@ -111,7 +111,7 @@ n: 3
 ok: true
 :::
 
-[Value ${n} is ready.].${ok}
+${if ok}Value ${n} is ready.${endif}
 ```
 
 Renders "Value 3 is ready."

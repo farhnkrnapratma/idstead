@@ -399,7 +399,7 @@ describe('hardening', () => {
 
     test('self-referencing placeholder text cannot blow up output', async () => {
         const hostile = Array(8).fill('@@IGNORE_RENDER_0@@').join(' ');
-        const html = await render(`:::ignore-render\n${hostile}\n:::`);
+        const html = await render(`:::verbatim\n${hostile}\n:::`);
         expect(html.length).toBeLessThan(100_000);
         const inline = await render(Array(8).fill('`@@INLINE_CODE_0@@`').join(' '));
         expect(inline.length).toBeLessThan(100_000);
@@ -612,8 +612,8 @@ describe('containers inside lists and blockquotes', () => {
 
 describe('drop-in compatibility', () => {
     test('interpolation stays literal without a :::define block', async () => {
-        const html = await render('Template: ${name} and [a].${b}');
-        expect(html).toContain('Template: ${name} and [a].${b}');
+        const html = await render('Template: ${name} and ${if b}a${endif}');
+        expect(html).toContain('Template: ${name} and ${if b}a${endif}');
         expect(html).not.toContain('mdrs-define-error');
     });
 
@@ -633,8 +633,8 @@ describe('drop-in compatibility', () => {
         expect(html).toContain('${n} is 3');
     });
 
-    test('interpolation inside conditional text is evaluated', async () => {
-        const html = await render(':::define\nn: 3\nok: true\n:::\n\n[Value ${n}].${ok}');
+    test('interpolation inside an inline conditional is evaluated', async () => {
+        const html = await render(':::define\nn: 3\nok: true\n:::\n\n${if ok}Value ${n}${endif}');
         expect(html).toContain('Value 3');
         expect(html).not.toContain('${n}');
     });
@@ -691,8 +691,8 @@ describe('drop-in compatibility', () => {
         expect(html).toContain('href="#mdrs-setup"');
     });
 
-    test('a longer ignore-render fence can hold a ::: line', async () => {
-        const html = await render('::::ignore-render\n:::note\nx\n:::\n::::');
+    test('a longer verbatim fence can hold a ::: line', async () => {
+        const html = await render('::::verbatim\n:::note\nx\n:::\n::::');
         expect(html).toContain('<pre>:::note\nx\n:::</pre>');
     });
 });
@@ -717,7 +717,7 @@ describe('scanner robustness', () => {
         await render('$$ ' + 'a '.repeat(100_000));
         await render(':::define\nn: 1\n:::\n' + '['.repeat(100_000));
         await render(':::define\nn: 1\n:::\n' + '${'.repeat(50_000));
-        await render(':::math\n:::ignore-render\nx\n'.repeat(10_000));
+        await render(':::math\n:::verbatim\nx\n'.repeat(10_000));
         expect(performance.now() - started).toBeLessThan(5000);
     });
 });

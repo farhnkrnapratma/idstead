@@ -15,15 +15,25 @@ import {
 
 export type ApiResolver = (path: PathSegment[]) => Promise<DefineValue>;
 
-export interface ApiRegistry {
-    author: ApiResolver;
-    blog: ApiResolver;
-}
+export type ApiRegistry = Readonly<Record<string, ApiResolver>>;
 
 export interface EvalContext {
     scope: Map<string, DefineValue>;
     allowThis: boolean;
     apiRegistry: ApiRegistry;
+}
+
+function scopeValue(name: string, ctx: EvalContext): DefineValue {
+    const value = ctx.scope.get(name);
+    if (value === undefined) {
+        throw new DefineError(
+            ctx.allowThis ?
+                `'${name}' is undefined, or referenced before it was defined`
+            :   `'${name}' is undefined`,
+            name
+        );
+    }
+    return value;
 }
 
 async function evaluateReference(node: Reference, ctx: EvalContext): Promise<DefineValue> {
@@ -45,12 +55,6 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
         return walkPath(base, node.path.slice(1));
     }
 
-    if (node.root === 'db') {
-        throw new DefineError(
-            "'db.*' is no longer supported — use 'api.v1.*' instead (e.g. api.v1.author)"
-        );
-    }
-
     if (node.root === 'api') {
         if (node.path.length === 0 || node.path[0].kind !== 'prop') {
             throw new DefineError('api must be followed by a version, e.g. api.v1.author');
@@ -63,10 +67,11 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
             throw new DefineError('api.v1 must be followed by a resource name, e.g. api.v1.author');
         }
         const resource = node.path[1].name as string;
-        const resolver = ctx.apiRegistry[resource as keyof ApiRegistry];
+        const resolver =
+            Object.hasOwn(ctx.apiRegistry, resource) ? ctx.apiRegistry[resource] : null;
         if (!resolver) {
             throw new DefineError(
-                `Unknown api.v1 resource '${resource}' (supported: author, blog)`
+                `Unknown api.v1 resource '${resource}' (supported: ${Object.keys(ctx.apiRegistry).join(', ')})`
             );
         }
         return resolver(node.path.slice(2));
@@ -159,6 +164,23 @@ export async function evaluateExpr(node: Expr, ctx: EvalContext): Promise<Define
             return numberVal(node.value);
         case 'string':
             return stringVal(node.value);
+        case 'template': {
+            let text = '';
+            for (const part of node.parts) {
+                if (part.kind === 'text') text += part.value;
+                else if (part.kind === 'variable')
+                    text += toDisplayString(scopeValue(part.name, ctx));
+                else text += toDisplayString(await evaluateExpr(part.expr, ctx));
+            }
+            return stringVal(text);
+        }
+        case 'ternary': {
+            const test = await evaluateExpr(node.test, ctx);
+            if (test.type !== 'boolean') {
+                throw new DefineError(`'? :' requires a boolean condition`);
+            }
+            return evaluateExpr(test.value ? node.consequent : node.alternate, ctx);
+        }
         case 'boolean':
             return boolVal(node.value);
         case 'array': {
@@ -200,5 +222,14 @@ export function unavailableResolvers(): ApiRegistry {
     const unavailable: ApiResolver = async () => {
         throw new DefineError('Database access is unavailable in this context.');
     };
-    return { author: unavailable, blog: unavailable };
+    return new Proxy({} as Record<string, ApiResolver>, {
+        get: () => unavailable,
+        has: () => true,
+        ownKeys: () => [],
+        getOwnPropertyDescriptor: () => ({
+            configurable: true,
+            enumerable: false,
+            value: unavailable
+        })
+    });
 }
