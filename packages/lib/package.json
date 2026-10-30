@@ -27,7 +27,7 @@
         "@idstead/domain": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/webp": "1.5.0",
-        "@lucide/svelte": "^1.63.0",
+        "@lucide/svelte": "^1.64.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@noble/hashes": "^2.4.0",
@@ -37,7 +37,7 @@
         "@supabase/ssr": "^0.12.7",
         "@supabase/supabase-js": "^2.118.0",
         "fflate": "^0.8.3",
-        "jose": "^6.2.13",
+        "jose": "^6.2.14",
         "openpgp": "^6.3.2",
         "pako": "^3.0.3",
         "pdf-lib": "^1.17.1",
@@ -47,7 +47,7 @@
         "@types/upng-js": "^2.1.5"
     },
     "peerDependencies": {
-        "@sveltejs/kit": "^3.1.0",
+        "@sveltejs/kit": "^3.1.1",
         "svelte": "^5.57.3"
     }
 }
