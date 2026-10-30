@@ -2,10 +2,7 @@ import { describe, expect, mock, test } from 'bun:test';
 import type { AdminPostStore, PostCleanupStore } from '../packages/data/src/adminPosts.ts';
 
 mock.module('$app/env/private', () => ({}));
-mock.module('$app/env/public', () => ({
-    PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
-    PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'test-key'
-}));
+mock.module('$app/env/public', () => ({}));
 
 const { cleanupBlogAssets } = await import('../packages/lib/src/server/blogBannerStorage');
 

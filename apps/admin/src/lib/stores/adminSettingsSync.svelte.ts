@@ -1,5 +1,5 @@
 import { readJson } from '../readJson.ts';
-import { supabase } from '#lib/supabase.ts';
+import { adminFetch } from '../adminClient.ts';
 import { parseAdminSettings } from '#lib/adminSettings.ts';
 import { adminDisplayStore } from './adminDisplayStore.svelte';
 import { adminChartRangeStore } from './adminChartRangeStore.svelte';
@@ -18,14 +18,8 @@ export function startAdminSettingsSync() {
             chartRange: adminChartRangeStore.current
         });
 
-    async function request(init?: RequestInit) {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        if (!token) return null;
-        return fetch(ENDPOINT, {
-            ...init,
-            headers: { ...init?.headers, Authorization: `Bearer ${token}` }
-        });
+    function request(init?: RequestInit) {
+        return adminFetch(ENDPOINT, init);
     }
 
     async function hydrate() {

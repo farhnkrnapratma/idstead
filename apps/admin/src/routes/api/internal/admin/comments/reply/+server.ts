@@ -1,6 +1,5 @@
 import type { RequestHandler } from './$types';
 import { logAdminActivity, requireAdminAuth } from '#lib/server/adminResume.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -59,11 +58,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'content must be 2000 characters or fewer.'
         );
     }
-
-    const adminClient = getSupabaseAdminClient(platform);
-
     const service = dataStores(platform).service;
-    if (!adminClient || !service) {
+    if (!service) {
         return apiError(500, 'DATABASE_UNAVAILABLE', 'Database client unavailable.');
     }
 

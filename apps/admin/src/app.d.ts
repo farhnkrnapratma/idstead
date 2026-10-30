@@ -14,10 +14,7 @@ declare global {
             adminScroll?: number;
         }
         interface Locals {
-            supabase: import('#lib/server/supabaseAuth.ts').AuthClient;
-            getAdminSession: () => Promise<
-                import('#lib/server/supabaseAuth.ts').AdminSession | null
-            >;
+            getAdmin: () => Promise<import('#lib/server/accessAuth.ts').AccessIdentity | null>;
         }
         interface Platform {
             env: { API_RATE_LIMITER?: RateLimit; [key: string]: unknown };

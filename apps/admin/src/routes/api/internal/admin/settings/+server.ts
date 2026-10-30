@@ -1,9 +1,8 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { verifyAdminToken } from '#lib/server/adminAuth.ts';
+import { verifyAdminRequest } from '#lib/server/adminAuth.ts';
 import { parseAdminSettings } from '#lib/adminSettings.ts';
 
 const MAX_BODY_BYTES = 2048;
@@ -11,13 +10,12 @@ const MAX_BODY_BYTES = 2048;
 async function authorize(request: Request, url: URL, platform: unknown) {
     if (!isSameOriginRequest(request, url))
         return { error: apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.') };
-    const db = getSupabaseAdminClient(platform as App.Platform | undefined);
     const service = dataStores(platform as App.Platform | undefined).service;
-    if (!db || !service)
+    if (!service)
         return {
             error: apiError(503, 'ADMIN_SETTINGS_UNAVAILABLE', 'Settings storage is unavailable.')
         };
-    const auth = await verifyAdminToken(request, db);
+    const auth = await verifyAdminRequest(request, platform);
     if (auth.status)
         return { error: apiError(auth.status, auth.code ?? 'ADMIN_AUTH_REQUIRED', auth.message) };
     return { store: service.adminSettings, actor: auth.actor };

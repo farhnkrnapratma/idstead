@@ -1,6 +1,5 @@
 import { countReadingMinutes } from '@idstead/domain/readTime.ts';
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
@@ -24,11 +23,9 @@ import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
-        return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
-    const auth = await blogAdmin(request, url, db);
+    if (!service) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
     let input;
@@ -200,11 +197,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 };
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
-        return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
-    const auth = await blogAdmin(request, url, db);
+    if (!service) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
     const id = url.searchParams.get('operationId') || '';

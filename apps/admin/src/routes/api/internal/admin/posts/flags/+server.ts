@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
@@ -10,11 +9,9 @@ import { ipSalt } from '#lib/server/ipSalt.ts';
 import { movePostBanner } from '#lib/server/blogPostAssets.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
-        return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
-    const auth = await blogAdmin(request, url, db);
+    if (!service) return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_POSTS_AUTH_REQUIRED', auth.message);
     let body: { id?: unknown; published?: unknown; pinned?: unknown };

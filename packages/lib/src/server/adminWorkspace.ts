@@ -1,5 +1,4 @@
 import { dataStores } from './data';
-import { getSupabaseAdminClient } from './supabaseAdmin';
 import { apiError } from './apiError';
 import { blogAdmin } from './blogPostAuth';
 import { clientAddress, logActivity } from './activityLog';
@@ -152,16 +151,15 @@ export async function adminWorkspace({
     platform: unknown;
     getClientAddress?: () => string;
 }) {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(
             503,
             'ADMIN_WORKSPACE_UNAVAILABLE',
             'Dashboard is temporarily unavailable.'
         );
     try {
-        const auth = await blogAdmin(request, url, db);
+        const auth = await blogAdmin(request, url, platform);
         if (auth.status)
             return apiError(
                 auth.status,

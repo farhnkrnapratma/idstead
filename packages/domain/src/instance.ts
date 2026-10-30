@@ -8,6 +8,7 @@ export interface InstanceConfig {
         rateLimitNamespaces: { web: number; admin: number; api: number };
     };
     jobs: { cron: string; hourlyCron: string };
+    access: { teamDomain: string; aud: string } | null;
 }
 
 export class InstanceConfigError extends Error {}
@@ -15,6 +16,7 @@ export class InstanceConfigError extends Error {}
 const HOSTNAME = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 const RESOURCE_NAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 const CRON = /^(?:\S+\s+){4}\S+$/;
+const ACCESS_AUD = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 type Raw = Record<string, unknown>;
@@ -98,8 +100,18 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
                 admin: namespace(namespaces.admin, 'cloudflare.rateLimitNamespaces.admin', 1003)
             }
         },
-        jobs: jobSchedules(jobs)
+        jobs: jobSchedules(jobs),
+        access: accessSettings(root.access)
     };
+}
+
+function accessSettings(value: unknown): InstanceConfig['access'] {
+    if (value === undefined || value === null) return null;
+    const access = record(value, 'access');
+    const teamDomain = text(access.teamDomain, 'access.teamDomain', HOSTNAME);
+    if (!teamDomain.endsWith('.cloudflareaccess.com'))
+        throw new InstanceConfigError('access.teamDomain must end with .cloudflareaccess.com.');
+    return { teamDomain, aud: text(access.aud, 'access.aud', ACCESS_AUD) };
 }
 
 function jobSchedules(jobs: Raw): InstanceConfig['jobs'] {
@@ -126,6 +138,8 @@ export function instanceVariables(config: InstanceConfig): Record<string, string
         'rateLimitNamespaces.admin': String(config.cloudflare.rateLimitNamespaces.admin),
         'rateLimitNamespaces.api': String(config.cloudflare.rateLimitNamespaces.api),
         'jobs.cron': config.jobs.cron,
-        'jobs.hourlyCron': config.jobs.hourlyCron
+        'jobs.hourlyCron': config.jobs.hourlyCron,
+        'access.teamDomain': config.access?.teamDomain ?? '',
+        'access.aud': config.access?.aud ?? ''
     };
 }

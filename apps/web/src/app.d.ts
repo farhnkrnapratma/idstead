@@ -14,12 +14,6 @@ declare global {
             adminScroll?: number;
             permalink?: string;
         }
-        interface Locals {
-            supabase: import('#lib/server/supabaseAuth.ts').AuthClient;
-            getAdminSession: () => Promise<
-                import('#lib/server/supabaseAuth.ts').AdminSession | null
-            >;
-        }
         interface Platform {
             env: { AI?: unknown; API_RATE_LIMITER?: RateLimit; [key: string]: unknown };
         }

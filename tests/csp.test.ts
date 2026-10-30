@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 import { buildContentSecurityPolicy } from '../packages/lib/src/server/csp';
 
 const policy = buildContentSecurityPolicy({
-    supabaseUrl: 'https://abc.supabase.co/rest/v1',
     sentryDsn: 'https://key@o1.ingest.de.sentry.io/42',
     cdnBaseUrl: 'https://cdn.example.test/',
     apiBaseUrl: 'https://api.example.test/v1'
@@ -41,11 +40,6 @@ describe('content security policy', () => {
         expect(directive('img-src')).toContain('https://www.google.co.id');
         expect(directive('connect-src')).toContain('https://www.google.com');
         expect(directive('connect-src')).toContain('https://analytics.google.com');
-    });
-
-    test('supabase is allowed over https only, derived from the env', () => {
-        expect(directive('connect-src')).toContain('https://abc.supabase.co');
-        expect(directive('connect-src')).not.toContain('wss://abc.supabase.co');
     });
 
     test('sentry and cdn origins come from the env', () => {

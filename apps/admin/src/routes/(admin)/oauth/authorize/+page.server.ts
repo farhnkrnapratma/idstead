@@ -7,8 +7,7 @@ import { resolveAuthorization } from '#lib/server/oidc/authorize.ts';
 
 export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }) => {
     setHeaders({ 'cache-control': 'no-store' });
-    const session = await locals.getAdminSession();
-    const signedIn = session?.role === 'admin' && session.mfaSatisfied;
+    const admin = await locals.getAdmin();
 
     const { service } = dataStores(platform);
     if (!service || !oidcEnabled(platform))
@@ -24,7 +23,7 @@ export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }
         outcome = await resolveAuthorization(
             { clients: service.oidcClients, auth: service.oidcAuth },
             url.searchParams,
-            { issuer: oidcEndpoints(platform).issuer, authTime: signedIn ? session.authTime : null }
+            { issuer: oidcEndpoints(platform).issuer, authTime: admin ? admin.authTime : null }
         );
     } catch (error) {
         console.error('OIDC authorize failed:', error);
@@ -37,7 +36,13 @@ export const load: PageServerLoad = async ({ url, platform, locals, setHeaders }
         };
     }
     if (outcome.kind === 'login')
-        redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
-    if (outcome.kind === 'redirect' && !signedIn) redirect(303, outcome.url);
+        return {
+            outcome: {
+                kind: 'fatal' as const,
+                message: 'Sign in through Cloudflare Access, then retry.'
+            },
+            query: ''
+        };
+    if (outcome.kind === 'redirect' && !admin) redirect(303, outcome.url);
     return { outcome, query: url.search };
 };

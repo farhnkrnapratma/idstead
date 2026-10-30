@@ -7,14 +7,7 @@ export type WorkerKeys = Record<App, { keys: string[]; required: string[] }>;
 
 export const LEGAL_SLUGS = ['privacy', 'terms', 'security', 'ai-disclosure'] as const;
 
-export const CORE_VARIABLES = [
-    'PUBLIC_SUPABASE_URL',
-    'PUBLIC_SUPABASE_PUBLISHABLE_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'IP_SALT',
-    'PUBLIC_TURNSTILE_SITE_KEY',
-    'TURNSTILE_SECRET'
-];
+export const CORE_VARIABLES = ['IP_SALT', 'PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET'];
 
 export interface SetupAnswers {
     domain?: string;
@@ -107,28 +100,43 @@ export function legalTemplate(markdown: string, slug: string): { title: string; 
     return { title, content };
 }
 
-const PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_.!';
+export const ACCESS_APP_NAME = 'Idstead admin';
+export const ACCESS_POLICY_NAME = 'Idstead owner';
 
-export function temporaryPassword(length = 24): string {
-    const bytes = crypto.getRandomValues(new Uint8Array(length * 2));
-    const limit = 256 - (256 % PASSWORD_ALPHABET.length);
-    let password = '';
-    for (const byte of bytes) {
-        if (byte >= limit) continue;
-        password += PASSWORD_ALPHABET[byte % PASSWORD_ALPHABET.length];
-        if (password.length === length) return password;
-    }
-    return password + temporaryPassword(length - password.length);
+export function accessPolicyBody(adminEmail: string) {
+    return {
+        name: ACCESS_POLICY_NAME,
+        decision: 'allow',
+        include: [{ email: { email: adminEmail.toLowerCase() } }],
+        session_duration: '24h'
+    };
+}
+
+export function accessApplicationBody(config: InstanceConfig, policyId: string) {
+    return {
+        name: ACCESS_APP_NAME,
+        domain: config.domains.admin,
+        type: 'self_hosted',
+        session_duration: '24h',
+        app_launcher_visible: false,
+        policies: [{ id: policyId, precedence: 1 }]
+    };
+}
+
+export function withAccess(
+    source: Record<string, unknown>,
+    access: { teamDomain: string; aud: string }
+): Record<string, unknown> {
+    return { ...source, access };
 }
 
 export function nextSteps(config: InstanceConfig): string[] {
     const { site, admin, api } = config.domains;
     return [
-        `Supabase Auth > URL Configuration: add https://${admin} to the redirect URLs, and to the passkey relying party origins if you sign in with passkeys.`,
-        `Supabase Auth > Attack Protection: turn on CAPTCHA with Turnstile and paste the same secret as TURNSTILE_SECRET.`,
-        `Turnstile: allow the hostnames ${site} and ${admin} on the widget whose site key is PUBLIC_TURNSTILE_SITE_KEY.`,
+        `Cloudflare Zero Trust > Access settings: require two-factor authentication (passkey, security key or authenticator app) for the ${admin} application, or turn on two-factor authentication for your Cloudflare account if you sign in with Cloudflare.`,
+        `Turnstile: allow the hostname ${site} on the widget whose site key is PUBLIC_TURNSTILE_SITE_KEY.`,
         `Resend: verify the domain of SUBSCRIBER_FROM_EMAIL before the newsletter or contact form sends mail.`,
-        `Sign in at https://${admin}/login, change the temporary password, and enrol an authenticator or passkey under Account settings.`,
-        `Fill in your profile in the admin portal, review the legal pages, then check https://${site} and https://${api}/v1.`
+        `Open https://${admin}, sign in through Cloudflare Access with the admin email, then fill in your profile and review the legal pages.`,
+        `Check https://${site} and https://${api}/v1.`
     ];
 }

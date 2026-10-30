@@ -3,8 +3,7 @@
     import { FieldValidation, requiredText } from '@idstead/domain/fieldValidation.ts';
     import { mdrsContent } from '../../mdrsValidation.ts';
     import { renderMdrsPreview } from '../../mdrsPreview.ts';
-    import { supabase } from '#lib/supabase.ts';
-    import { adminRequest } from '../../adminClient.ts';
+    import { adminFetch, adminRequest } from '../../adminClient.ts';
     import type { AdminPostDraft } from '@idstead/data';
     import { slugifyTitle } from '@idstead/domain/slug.ts';
     import { processContentImage } from '../../processContentImage.ts';
@@ -218,17 +217,13 @@
         const controller = new AbortController();
         try {
             const { webp, avif } = await processContentImage(file, controller.signal);
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             const form = new FormData();
             form.append('file', webp, 'image.webp');
             form.append('fileAvif', avif, 'image.avif');
             form.append('postId', assetPostId);
             form.append('name', file.name);
-            const response = await fetch('/api/internal/admin/blog/content-image', {
+            const response = await adminFetch('/api/internal/admin/blog/content-image', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${accessToken}` },
                 body: form
             });
             const result = await readJson(response);
@@ -254,16 +249,12 @@
         isSubmitting = true;
         errorMessage = null;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             const form = new FormData();
             form.append('file', file, file.name);
             form.append('postId', assetPostId);
             form.append('name', file.name);
-            const response = await fetch('/api/internal/admin/blog/content-video', {
+            const response = await adminFetch('/api/internal/admin/blog/content-video', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${accessToken}` },
                 body: form
             });
             const result = await readJson(response);
@@ -424,15 +415,9 @@
         if (isNotifying || !editId) return;
         isNotifying = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) throw new Error('Your session has expired. Please log in again.');
-            const response = await fetch('/api/internal/admin/posts/notify', {
+            const response = await adminFetch('/api/internal/admin/posts/notify', {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ postId: editId, force: true })
             });
             const result = await readJson(response);
@@ -467,9 +452,6 @@
         submittingAction = toBePublished ? 'publish' : 'draft';
         errorMessage = null;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             if (!pendingSave) {
                 const metadata = {
                     operationId: crypto.randomUUID(),
@@ -499,7 +481,7 @@
             const form = pendingSave;
             const submitted = JSON.parse(String(form.get('post')));
             submittingAction = submitted.published ? 'publish' : 'draft';
-            const result = await submitPost(form, accessToken);
+            const result = await submitPost(form);
             editId = result.post.id;
             postRevision = result.post.post_revision;
             if (savedBannerUrl?.startsWith('blob:')) URL.revokeObjectURL(savedBannerUrl);

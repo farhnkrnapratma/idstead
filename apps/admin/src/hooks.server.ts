@@ -1,12 +1,11 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
-import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit/hooks';
 import { writeFreezeHandle } from '#lib/server/writeFreeze.ts';
 import * as publicEnv from '$app/env/public';
 import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
-import { createAuthClient, safeGetSession } from '#lib/server/supabaseAuth.ts';
+import { accessIdentity, type AccessIdentity } from '#lib/server/accessAuth.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
 import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
@@ -26,15 +25,15 @@ if (import.meta.hot) {
     import.meta.hot.data.sentryInitHandle = sentryInitHandle;
 }
 
-const PUBLIC_PATHS = new Set(['/login', '/robots.txt', '/oauth/authorize']);
+const PUBLIC_PATHS = new Set(['/robots.txt']);
 
 function isIdentityAsset(pathname: string) {
     return assetNames.includes(pathname.slice(1)) || pathname === '/hero.png';
 }
 
 const authHandle: Handle = async ({ event, resolve }) => {
-    event.locals.supabase = createAuthClient(event);
-    event.locals.getAdminSession = safeGetSession(event.locals.supabase);
+    let identity: Promise<AccessIdentity | null> | null = null;
+    event.locals.getAdmin = () => (identity ??= accessIdentity(event.request, event.platform));
 
     const path = event.url.pathname;
     const guarded =
@@ -42,16 +41,17 @@ const authHandle: Handle = async ({ event, resolve }) => {
         && !path.startsWith('/api/')
         && !path.startsWith('/_app/')
         && !isIdentityAsset(path);
-    if (guarded) {
-        const session = await event.locals.getAdminSession();
-        if (session?.role !== 'admin' || !session.mfaSatisfied)
-            redirect(303, `/login?redirectTo=${encodeURIComponent(path + event.url.search)}`);
-    }
+    if (guarded && !(await event.locals.getAdmin()))
+        return new Response('Sign in through Cloudflare Access to open the admin.', {
+            status: 401,
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Cache-Control': 'no-store',
+                'X-Robots-Tag': 'noindex, nofollow'
+            }
+        });
 
-    return resolve(event, {
-        filterSerializedResponseHeaders: name =>
-            name === 'content-range' || name === 'x-supabase-api-version'
-    });
+    return resolve(event, { filterSerializedResponseHeaders: name => name === 'content-range' });
 };
 
 const responseHandle: Handle = async ({ event, resolve }) => {
@@ -96,7 +96,6 @@ const responseHandle: Handle = async ({ event, resolve }) => {
         response.headers.set(
             'Content-Security-Policy',
             buildContentSecurityPolicy({
-                supabaseUrl: publicEnv.PUBLIC_SUPABASE_URL,
                 sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
                 cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
                 dev

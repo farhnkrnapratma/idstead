@@ -1,8 +1,6 @@
-import { verifyAdminToken, bearerToken } from './adminAuth';
+import { adminActor, verifyAdminRequest } from './adminAuth';
 import * as publicEnv from '$app/env/public';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { supabase as publicSupabase } from '#lib/supabase.ts';
 import { clientAddress, logActivity, type ActivityCategory } from '#lib/server/activityLog.ts';
 import {
     generateResumePdfBuffer,
@@ -52,18 +50,10 @@ import { deleteObjects, findAssetBucket } from './r2';
 
 const RESUME_PROJECT_LIMIT = 4;
 
-function getAdminDb(platform?: unknown) {
-    return getSupabaseAdminClient(platform) || publicSupabase;
-}
-
 function resumeStores(platform?: unknown) {
     const service = dataStores(platform).service;
     if (!service) throw new Error('Resume storage is unavailable.');
-    return {
-        db: getAdminDb(platform),
-        documents: service.resumeDocuments,
-        keys: service.openPgpKeys
-    };
+    return { documents: service.resumeDocuments, keys: service.openPgpKeys };
 }
 
 async function resumeStorage(platform?: any) {
@@ -88,16 +78,6 @@ function fail(message: string, status = 500) {
     return apiError(status, 'RESUME_REQUEST_FAILED', message);
 }
 
-async function resolveActor(
-    req: Request,
-    db: ReturnType<typeof getAdminDb>
-): Promise<string | null> {
-    const token = bearerToken(req);
-    if (!token) return null;
-    const { data } = await db.auth.getUser(token);
-    return data.user?.email ?? data.user?.id ?? null;
-}
-
 export async function logAdminActivity(
     req: Request,
     platform: unknown,
@@ -111,7 +91,7 @@ export async function logAdminActivity(
 ) {
     await logActivity(
         {
-            actor: await resolveActor(req, getAdminDb(platform)),
+            actor: await adminActor(req, platform),
             ...entry,
             ip: clientAddress(getClientAddress),
             ipSalt: ipSalt(platform),
@@ -138,7 +118,7 @@ function logResumeActivity(
 }
 
 export async function requireAdminAuth(req: Request, platform?: unknown): Promise<Response | null> {
-    const auth = await verifyAdminToken(req, getAdminDb(platform));
+    const auth = await verifyAdminRequest(req, platform);
     if (auth.status)
         return apiError(
             auth.status,

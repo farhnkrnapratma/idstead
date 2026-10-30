@@ -36,6 +36,29 @@ describe('resolveInstanceConfig', () => {
         ).toThrow('cloudflare.database.id');
     });
 
+    test('reads optional Cloudflare Access settings for the admin', () => {
+        expect(resolveInstanceConfig({ domains: { site: 'example.org' } }).access).toBeNull();
+        const aud = 'b'.repeat(64);
+        expect(
+            resolveInstanceConfig({
+                domains: { site: 'example.org' },
+                access: { teamDomain: 'example.cloudflareaccess.com', aud }
+            }).access
+        ).toEqual({ teamDomain: 'example.cloudflareaccess.com', aud });
+        expect(() =>
+            resolveInstanceConfig({
+                domains: { site: 'example.org' },
+                access: { teamDomain: 'login.example.org', aud }
+            })
+        ).toThrow('access.teamDomain');
+        expect(() =>
+            resolveInstanceConfig({
+                domains: { site: 'example.org' },
+                access: { teamDomain: 'example.cloudflareaccess.com', aud: 'nope' }
+            })
+        ).toThrow('access.aud');
+    });
+
     test('rejects an hourly schedule equal to the daily one', () => {
         expect(() =>
             resolveInstanceConfig({

@@ -1,5 +1,4 @@
 import { dataStores } from './data';
-import { getSupabaseAdminClient } from './supabaseAdmin';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { apiError } from './apiError';
@@ -23,16 +22,15 @@ export async function adminActivity(
 ) {
     const { request, url, platform } = input;
     const fail = apiError;
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return fail(
             503,
             'ADMIN_ACTIVITY_UNAVAILABLE',
             'Admin activity is temporarily unavailable.'
         );
     try {
-        const auth = await blogAdmin(request, url, db);
+        const auth = await blogAdmin(request, url, platform);
         if (auth.status)
             return fail(auth.status, auth.code ?? 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
         const store = service.adminActivity;

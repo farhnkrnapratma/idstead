@@ -1,11 +1,10 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { isSameOriginRequest } from './sameOrigin';
-import { verifyAdminToken, type AdminAuth } from './adminAuth';
+import { verifyAdminRequest, type AdminAuth } from './adminAuth';
 
 export async function blogAdmin(
     request: Request,
     url: URL,
-    db: SupabaseClient
+    platform?: unknown
 ): Promise<AdminAuth> {
     if (!isSameOriginRequest(request, url))
         return {
@@ -13,5 +12,5 @@ export async function blogAdmin(
             code: 'FORBIDDEN_ORIGIN',
             message: 'Cross-origin requests are not allowed.'
         };
-    return verifyAdminToken(request, db);
+    return verifyAdminRequest(request, platform);
 }
