@@ -56,7 +56,6 @@ const BLOCK_CONTAINERS = new Set([
     'callout',
     'details',
     'steps',
-    'step',
     ...TAB_CONTAINERS,
     ...Object.keys(NOTE_CALLOUTS)
 ]);
@@ -189,7 +188,7 @@ function renderContainer(frame: ContainerFrame, icons: Map<string, string>): str
         return `<details>\n<summary>${escapeAttr(summary)}</summary>\n\n${content}\n\n</details>`;
     }
 
-    if (frame.name === 'steps' || frame.name === 'step') {
+    if (frame.name === 'steps') {
         return `<div class="mdrs-steps">\n\n${content}\n\n</div>`;
     }
 

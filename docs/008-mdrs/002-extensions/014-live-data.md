@@ -12,7 +12,7 @@ post_count: api.v1.blog.length
 
 Written by **${author}**. ${post_count} posts published so far.
 
-[Latest post: [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug})].${post_count > 0}
+${if post_count > 0}Latest post: [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug})${endif}
 ```
 
 The last line is conditional text: the link only renders, and `api.v1.blog[0]` is only read, when at least one post is published.

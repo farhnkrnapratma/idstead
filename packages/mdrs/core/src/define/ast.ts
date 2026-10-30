@@ -41,6 +41,23 @@ interface UnaryExpr {
     operand: Expr;
 }
 
+export type TemplatePart =
+    | { kind: 'text'; value: string }
+    | { kind: 'variable'; name: string }
+    | { kind: 'expression'; expr: Expr };
+
+export interface TemplateLit {
+    kind: 'template';
+    parts: TemplatePart[];
+}
+
+export interface TernaryExpr {
+    kind: 'ternary';
+    test: Expr;
+    consequent: Expr;
+    alternate: Expr;
+}
+
 export interface BinaryExpr {
     kind: 'binary';
     op: string;
@@ -49,7 +66,16 @@ export interface BinaryExpr {
 }
 
 export type Expr =
-    NumberLit | StringLit | BoolLit | ArrayLit | ObjectLit | Reference | UnaryExpr | BinaryExpr;
+    | NumberLit
+    | StringLit
+    | TemplateLit
+    | BoolLit
+    | ArrayLit
+    | ObjectLit
+    | Reference
+    | UnaryExpr
+    | BinaryExpr
+    | TernaryExpr;
 
 export interface Assignment {
     key: string;

@@ -35,7 +35,7 @@ Plain **Markdown** works as usual, with [links](https://commonmark.org) and `cod
 Directives open with `:::name` and close with a bare `:::`.
 :::
 
-[This build is a preview.].${!stable}
+${if !stable}This build is a preview.${endif}
 
 Inline math: $$ e^{i\pi} + 1 = 0 $$
 ```

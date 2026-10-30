@@ -29,12 +29,20 @@ export type TokenType =
     | 'STAR'
     | 'SLASH'
     | 'PERCENT'
+    | 'QUESTION'
+    | 'TEMPLATE'
     | 'EOF';
+
+export type RawTemplatePart =
+    | { kind: 'text'; value: string }
+    | { kind: 'variable'; name: string }
+    | { kind: 'expression'; source: string; pos: number };
 
 export interface Token {
     type: TokenType;
     value: string;
     pos: number;
+    parts?: RawTemplatePart[];
 }
 
 function isIdentStart(c: string): boolean {
@@ -75,8 +83,110 @@ const ONE_CHAR_OPS: Record<string, TokenType> = {
     '-': 'MINUS',
     '*': 'STAR',
     '/': 'SLASH',
-    '%': 'PERCENT'
+    '%': 'PERCENT',
+    '?': 'QUESTION'
 };
+
+const DOUBLE_QUOTE_ESCAPES: Record<string, string> = {
+    n: '\n',
+    t: '\t',
+    '"': '"',
+    '\\': '\\',
+    $: '$'
+};
+
+export function skipQuoted(source: string, start: number): number {
+    const quote = source[start];
+    let j = start + 1;
+    while (j < source.length && source[j] !== quote) j += source[j] === '\\' ? 2 : 1;
+    return j;
+}
+
+export function findExpressionEnd(
+    source: string,
+    openBrace: number,
+    limit = source.length
+): number {
+    let depth = 0;
+    let j = openBrace;
+    const end = Math.min(source.length, limit);
+    while (j < end) {
+        const c = source[j];
+        if (c === '"' || c === "'") {
+            j = skipQuoted(source, j) + 1;
+            continue;
+        }
+        if (c === '{') depth++;
+        else if (c === '}') {
+            depth--;
+            if (depth === 0) return j;
+        }
+        j++;
+    }
+    return -1;
+}
+
+function readSingleQuoted(source: string, start: number): { value: string; end: number } {
+    let value = '';
+    let j = start + 1;
+    while (j < source.length && source[j] !== "'") {
+        if (source[j] === '\\' && (source[j + 1] === "'" || source[j + 1] === '\\')) {
+            value += source[j + 1];
+            j += 2;
+        } else {
+            value += source[j];
+            j++;
+        }
+    }
+    if (j >= source.length)
+        throw new DefineError(`Unterminated string literal at position ${start}`);
+    return { value, end: j + 1 };
+}
+
+function readDoubleQuoted(
+    source: string,
+    start: number
+): { parts: RawTemplatePart[]; end: number } {
+    const parts: RawTemplatePart[] = [];
+    let text = '';
+    const flush = () => {
+        if (text) parts.push({ kind: 'text', value: text });
+        text = '';
+    };
+    let j = start + 1;
+    while (j < source.length && source[j] !== '"') {
+        const c = source[j];
+        if (c === '\\' && j + 1 < source.length) {
+            const next = source[j + 1];
+            text += DOUBLE_QUOTE_ESCAPES[next] ?? next;
+            j += 2;
+            continue;
+        }
+        if (c === '$' && source[j + 1] === '{') {
+            const close = findExpressionEnd(source, j + 1);
+            if (close === -1)
+                throw new DefineError(`Unterminated \${...} in string at position ${j}`);
+            flush();
+            parts.push({ kind: 'expression', source: source.slice(j + 2, close), pos: j + 2 });
+            j = close + 1;
+            continue;
+        }
+        if (c === '$' && j + 1 < source.length && isIdentStart(source[j + 1])) {
+            let k = j + 1;
+            while (k < source.length && isIdentPart(source[k])) k++;
+            flush();
+            parts.push({ kind: 'variable', name: source.slice(j + 1, k) });
+            j = k;
+            continue;
+        }
+        text += c;
+        j++;
+    }
+    if (j >= source.length)
+        throw new DefineError(`Unterminated string literal at position ${start}`);
+    flush();
+    return { parts, end: j + 1 };
+}
 
 export function tokenize(source: string): Token[] {
     const tokens: Token[] = [];
@@ -100,28 +210,22 @@ export function tokenize(source: string): Token[] {
             while (i < n && source[i] !== '\n') i++;
             continue;
         }
-        if (c === '"') {
-            let j = i + 1;
-            let value = '';
-            while (j < n && source[j] !== '"') {
-                if (source[j] === '\\' && j + 1 < n) {
-                    const next = source[j + 1];
-                    if (next === 'n') value += '\n';
-                    else if (next === 't') value += '\t';
-                    else if (next === '"') value += '"';
-                    else if (next === '\\') value += '\\';
-                    else value += next;
-                    j += 2;
-                } else {
-                    value += source[j];
-                    j++;
-                }
-            }
-            if (j >= n) {
-                throw new DefineError(`Unterminated string literal at position ${i}`);
-            }
+        if (c === "'") {
+            const { value, end } = readSingleQuoted(source, i);
             tokens.push({ type: 'STRING', value, pos: i });
-            i = j + 1;
+            i = end;
+            continue;
+        }
+        if (c === '"') {
+            const { parts, end } = readDoubleQuoted(source, i);
+            if (parts.every(part => part.kind === 'text'))
+                tokens.push({
+                    type: 'STRING',
+                    value: parts.map(part => (part as { value: string }).value).join(''),
+                    pos: i
+                });
+            else tokens.push({ type: 'TEMPLATE', value: source.slice(i, end), pos: i, parts });
+            i = end;
             continue;
         }
         if (isDigit(c)) {

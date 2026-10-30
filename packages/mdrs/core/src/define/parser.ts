@@ -4,10 +4,11 @@ import {
     type Expr,
     type ObjectLit,
     type PathSegment,
-    type Reference
+    type Reference,
+    type TemplateLit
 } from './ast';
 import { DefineError } from './errors';
-import { type Token, type TokenType } from './lexer';
+import { type Token, type TokenType, tokenize } from './lexer';
 
 const RELATIONAL_MAP: Record<string, string> = { GT: '>', LT: '<', GTE: '>=', LTE: '<=' };
 
@@ -59,7 +60,28 @@ export class Parser {
     }
 
     parseExpression(): Expr {
-        return this.parseLogicalOr();
+        return this.parseTernary();
+    }
+
+    parseCompleteExpression(): Expr {
+        const expr = this.parseExpression();
+        if (!this.check('EOF')) {
+            const tok = this.peek();
+            throw new DefineError(
+                `Unexpected token '${tok.value || tok.type}' at position ${tok.pos}`
+            );
+        }
+        return expr;
+    }
+
+    private parseTernary(): Expr {
+        const test = this.parseLogicalOr();
+        if (!this.check('QUESTION')) return test;
+        this.advance();
+        const consequent = this.parseTernary();
+        this.expect('COLON', "Expected ':' in a ternary expression");
+        const alternate = this.parseTernary();
+        return { kind: 'ternary', test, consequent, alternate };
     }
 
     private parseLogicalOr(): Expr {
@@ -144,6 +166,10 @@ export class Parser {
             this.advance();
             return { kind: 'string', value: tok.value };
         }
+        if (tok.type === 'TEMPLATE') {
+            this.advance();
+            return this.templateLiteral(tok);
+        }
         if (tok.type === 'BOOLEAN') {
             this.advance();
             return { kind: 'boolean', value: tok.value === 'true' };
@@ -158,6 +184,20 @@ export class Parser {
         }
         if (tok.type === 'IDENT') return this.parseReferenceChain();
         throw new DefineError(`Unexpected token '${tok.value || tok.type}' at position ${tok.pos}`);
+    }
+
+    private templateLiteral(tok: Token): TemplateLit {
+        return {
+            kind: 'template',
+            parts: (tok.parts ?? []).map(part =>
+                part.kind === 'expression' ?
+                    {
+                        kind: 'expression',
+                        expr: new Parser(tokenize(part.source)).parseCompleteExpression()
+                    }
+                :   part
+            )
+        };
     }
 
     private parseArrayLiteral(): ArrayLit {

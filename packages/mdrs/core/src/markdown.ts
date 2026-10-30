@@ -6,6 +6,7 @@ import {
     evaluateDefineBlock,
     hasDefineEntries,
     protectInterpolationTokens,
+    resolveConditionals,
     resolveProtectedInterpolationTokens,
     unavailableResolvers,
     type ApiRegistry
@@ -28,7 +29,7 @@ import {
     injectHeadingIds,
     prefixHashLinks
 } from './render/headings';
-import { extractIgnoreRenderBlocks, protectIgnoreRenderBlocks } from './render/ignoreRender';
+import { extractVerbatimBlocks, protectVerbatimBlocks } from './render/verbatim';
 import { type MathSource, extractMath, renderMathSources } from './render/math';
 import { parseWithOptions, type RenderOptions } from './render/parser';
 import { parseSteps } from './render/steps';
@@ -43,14 +44,22 @@ export async function resolveDefines(
     const { body } = extractFrontmatter(source);
     const frontmatter = source.slice(0, source.length - body.length);
     const { raw: defineRaw, body: withDefineGap } = extractDefineBlock(body);
-    if (defineRaw === null) return source;
-    const bodyAfterDefine = withDefineGap.replace(/^(?:[ \t]*\r?\n)+/, '');
-    if (!hasDefineEntries(defineRaw)) return frontmatter + bodyAfterDefine;
-    const { scope } = await evaluateDefineBlock(defineRaw, resolvers);
-    const ignoreRenderBlocks = new Map<string, string>();
+    const bodyAfterDefine =
+        defineRaw === null ? body : withDefineGap.replace(/^(?:[ \t]*\r?\n)+/, '');
+    const interpolate = hasDefineEntries(defineRaw);
+    const { scope } =
+        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
+    const verbatimBlocks = new Map<string, string>();
+    const { output: withConditionals } = await resolveConditionals(
+        protectVerbatimBlocks(bodyAfterDefine, verbatimBlocks),
+        scope,
+        resolvers,
+        { inline: interpolate }
+    );
+    if (!interpolate) return frontmatter + restoreAllPlaceholders(withConditionals, verbatimBlocks);
     const interpolationPlaceholders = new Map<string, string>();
     const withTokensProtected = protectInterpolationTokens(
-        protectIgnoreRenderBlocks(bodyAfterDefine, ignoreRenderBlocks),
+        withConditionals,
         interpolationPlaceholders
     );
     const { output } = await resolveProtectedInterpolationTokens(
@@ -59,7 +68,7 @@ export async function resolveDefines(
         scope,
         resolvers
     );
-    return frontmatter + restoreAllPlaceholders(output, ignoreRenderBlocks);
+    return frontmatter + restoreAllPlaceholders(output, verbatimBlocks);
 }
 
 export async function renderMarkdownUnsafe(
@@ -75,16 +84,18 @@ export async function renderMarkdownUnsafe(
     const interpolate = hasDefineEntries(defineRaw);
     const { scope } =
         interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
-    const ignoreRenderPlaceholders = new Map<string, string>();
-    const withRawBlocksExtracted = extractIgnoreRenderBlocks(
-        bodyAfterDefine,
-        ignoreRenderPlaceholders
+    const verbatimPlaceholders = new Map<string, string>();
+    const { output: withConditionals } = await resolveConditionals(
+        extractVerbatimBlocks(bodyAfterDefine, verbatimPlaceholders),
+        scope,
+        resolvers,
+        { inline: interpolate }
     );
     const interpolationPlaceholders = new Map<string, string>();
     const withInterpolationProtected =
         interpolate ?
-            protectInterpolationTokens(withRawBlocksExtracted, interpolationPlaceholders)
-        :   withRawBlocksExtracted;
+            protectInterpolationTokens(withConditionals, interpolationPlaceholders)
+        :   withConditionals;
     const mathSources = new Map<string, MathSource>();
     const withMathExtracted = extractMath(withInterpolationProtected, mathSources);
     const { output: withInterpolated } = await resolveProtectedInterpolationTokens(
@@ -115,8 +126,8 @@ export async function renderMarkdownUnsafe(
     const withMathRestored = restoreAllPlaceholders(withFootnotes, mathPlaceholders);
     const withUnwrappedBlocks = withMathRestored
         .replace(/<p>\s*(<div class="mdrs-math mdrs-math--block[\s\S]*?<\/div>)\s*<\/p>/gi, '$1')
-        .replace(new RegExp(`<p>\\s*(${placeholderPattern('IGNORE_RENDER')})\\s*</p>`, 'gi'), '$1');
-    return restoreAllPlaceholders(withUnwrappedBlocks, ignoreRenderPlaceholders);
+        .replace(new RegExp(`<p>\\s*(${placeholderPattern('VERBATIM')})\\s*</p>`, 'gi'), '$1');
+    return restoreAllPlaceholders(withUnwrappedBlocks, verbatimPlaceholders);
 }
 
 export async function renderMarkdown(

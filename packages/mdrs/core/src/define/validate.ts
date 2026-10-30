@@ -3,6 +3,7 @@ import { extractReferences } from '../references';
 import { evaluateDefineBlock, extractDefineBlock, hasDefineEntries } from './block';
 import { type DefineErrorInfo } from './errors';
 import { type ApiRegistry } from './evaluate';
+import { resolveConditionals } from './conditionals';
 import { interpolateBody } from './interpolation';
 import { MAX_DOCUMENT_LENGTH } from '../limits';
 
@@ -22,10 +23,15 @@ export async function validateDefineForSave(
         errors: placementErrors
     } = extractDefineBlock(frontmatter.body);
     const { scope, errors: defineErrors } = await evaluateDefineBlock(defineRaw, apiRegistry);
+    const interpolate = hasDefineEntries(defineRaw);
+    const { output: allBranches, errors: conditionalErrors } = await resolveConditionals(
+        bodyAfterDefine,
+        scope,
+        apiRegistry,
+        { inline: interpolate, mode: 'validate' }
+    );
     const { errors: interpolationErrors } =
-        hasDefineEntries(defineRaw) ?
-            await interpolateBody(bodyAfterDefine, scope, apiRegistry)
-        :   { errors: [] };
+        interpolate ? await interpolateBody(allBranches, scope, apiRegistry) : { errors: [] };
     const structureErrors: DefineErrorInfo[] = [];
     try {
         extractReferences(bodyAfterDefine);
@@ -37,6 +43,7 @@ export async function validateDefineForSave(
         ...frontmatterErrors,
         ...placementErrors,
         ...defineErrors,
+        ...conditionalErrors,
         ...interpolationErrors,
         ...structureErrors
     ];

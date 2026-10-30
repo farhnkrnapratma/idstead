@@ -55,7 +55,7 @@ const JS_RESERVED = new Set([
     'of'
 ]);
 
-const LANGUAGE_RESERVED = new Set(['this', 'api', 'db']);
+const LANGUAGE_RESERVED = new Set(['this', 'api', 'elif', 'endif']);
 
 const EXTRA_RESERVED = new Set(['null', 'undefined', 'NaN', 'Infinity']);
 
