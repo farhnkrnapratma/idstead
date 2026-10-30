@@ -1,12 +1,11 @@
 import type { RequestHandler } from './$types';
+import type { MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
+import { requireSameOriginAdmin } from '#lib/server/adminRequest.ts';
 import { DefineError } from '@mdrs/core';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { mdrsLoaders } from '#lib/server/mdrsData.ts';
-import type { MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
 
 const SCOPES = {
     author: loaders => loaders.author(),
@@ -20,15 +19,8 @@ function isScope(value: unknown): value is keyof typeof SCOPES {
 }
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(
-            403,
-            'FORBIDDEN_ORIGIN',
-            'Cross-origin requests are not allowed on this endpoint.'
-        );
-
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
+    const denied = await requireSameOriginAdmin(request, url, platform);
+    if (denied) return denied;
 
     const body = (await request.json().catch(() => null)) as {
         scope?: unknown;

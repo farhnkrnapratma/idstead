@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/sveltekit';
 import type { RequestHandler } from './$types';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
+import { logAdminActivity, requireAdminAuth } from '#lib/server/adminRequest.ts';
 import { verifyAdminRequest } from '#lib/server/adminAuth.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -20,9 +20,7 @@ import {
 } from '#lib/server/profileAssets.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/siteIdentity.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 import type { AdminAuthorStore } from '@idstead/data';
 
 const attempts = new Map<string, number>();
@@ -304,9 +302,10 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     }
     const cleanupPending = await cleanupAfterSave(platform, version);
     const changedFields = Object.keys(payload).filter(key => !['id', 'revision'].includes(key));
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: auth.actor,
             action: version ? 'profile.avatar_update' : 'profile.update',
             category: 'profile',
             summary:
@@ -317,18 +316,9 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 fields: changedFields,
                 avatarUpdated: Boolean(files),
                 bannerUpdated: Boolean(bannerFiles)
-            },
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            }
         },
-        service.activityLog
+        getClientAddress
     );
     return Response.json(
         { success: true, profile: saved.profile, cleanupPending },

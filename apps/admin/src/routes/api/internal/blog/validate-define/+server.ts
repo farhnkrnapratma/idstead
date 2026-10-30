@@ -1,22 +1,13 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
+import { requireSameOriginAdmin } from '#lib/server/adminRequest.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { validateDefineForSave } from '@mdrs/core';
 import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
-    if (!isSameOriginRequest(request, url)) {
-        return apiError(
-            403,
-            'FORBIDDEN_ORIGIN',
-            'Cross-origin requests are not allowed on this endpoint.'
-        );
-    }
-
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
+    const denied = await requireSameOriginAdmin(request, url, platform);
+    if (denied) return denied;
 
     let body: unknown;
     try {

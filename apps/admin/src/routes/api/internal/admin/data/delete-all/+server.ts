@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -7,8 +8,6 @@ import { verifyAdminRequest } from '#lib/server/adminAuth.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const REAUTH_SECONDS = 600;
 
@@ -19,7 +18,6 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (auth.status) return apiError(auth.status, 'ADMIN_AUTH_REQUIRED', auth.message);
     const service = dataStores(platform).service;
     if (!service) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
-    const actorEmail = auth.actor;
 
     let confirmation = '';
     try {
@@ -50,23 +48,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     }
 
     const audit = (summary: string) =>
-        logActivity(
-            {
-                actor: actorEmail,
-                action: 'data.delete_all',
-                category: 'security',
-                summary,
-                ip: (() => {
-                    try {
-                        return getClientAddress();
-                    } catch {
-                        return null;
-                    }
-                })(),
-                ipSalt: ipSalt(platform),
-                userAgent: request.headers.get('user-agent') ?? undefined
-            },
-            service.activityLog
+        logAdminActivity(
+            request,
+            platform,
+            { action: 'data.delete_all', category: 'security', summary },
+            getClientAddress
         );
 
     let cleanupFailed = false;
