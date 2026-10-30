@@ -91,8 +91,8 @@ export function workerSecrets(
     ) as Record<App, Record<string, string>>;
 }
 
-export const ACCESS_APP_NAME = 'Idstead admin';
-export const ACCESS_POLICY_NAME = 'Idstead owner';
+const ACCESS_APP_NAME = 'Idstead admin';
+const ACCESS_POLICY_NAME = 'Idstead owner';
 
 export function accessPolicyBody(adminEmail: string) {
     return {
