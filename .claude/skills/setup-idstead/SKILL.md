@@ -10,7 +10,7 @@ description: Set up a new Idstead instance (personal site, admin portal, public 
 ## Rules
 
 - **Never handle secret values.** Do not ask for API keys, tokens or passwords in chat, do not write them into files, and do not print the environment. Tell the user which variable names are missing and let them put the values in `.env` (repository root) or their secret manager themselves.
-- **Dry run first.** `apply` creates Cloudflare resources (the R2 bucket, queues and the D1 database with its migrations), a Cloudflare Access application and policy for the admin host, the starter legal pages, and deploys four Workers. Run it only after the user has seen a clean dry run and said yes.
+- **Dry run first.** `apply` creates Cloudflare resources (the R2 bucket, queues and the D1 database with its migrations), a Cloudflare Access application and policy for the admin host, and deploys four Workers. Run it only after the user has seen a clean dry run and said yes.
 - **Use bun only** (`bun`, `bunx`), never npm, npx, yarn or pnpm.
 - If the repository has a secret manager rule (for example `.claude/rules/phase.md`), run the commands through it, such as `phase run --env prod -- bun run setup`.
 

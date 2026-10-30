@@ -64,6 +64,5 @@ There is no CI pipeline. These local runs are the only gate before Workers Build
 | `tests/` | – | Bun tests ([testing.md](002-testing.md)) |
 | `tooling/` | – | [scripts-and-tooling.md](003-scripts-and-tooling.md) |
 | `packages/data/d1/` | – | D1 migrations |
-| `templates/` | – | starter content for a new site |
 
 Lib code must type-check in both web and admin, so don't use app-specific typed routes inside `packages/lib`.

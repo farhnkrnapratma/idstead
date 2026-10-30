@@ -39,5 +39,5 @@ These steps happen in other dashboards, so the setup script cannot do them:
 - **Turnstile:** allow the site hostname on the widget.
 - **Resend:** verify the domain of `SUBSCRIBER_FROM_EMAIL`.
 - **Admin portal:** open `https://admin.<domain>` and sign in through Cloudflare Access with the admin email.
-- **Content:** fill in your profile, review the legal pages (their [README](../../templates/legal/README.md) lists what to check), and publish your first post.
+- **Content:** fill in your profile, write the legal pages (`/privacy`, `/terms`, `/security`, `/ai-disclosure`) in the legal page editor, and publish your first post.
 - **Continuous deployment (optional):** connect each Worker to your repository in Workers Builds, as described in [Deployment](../006-operations/001-deployment.md).
