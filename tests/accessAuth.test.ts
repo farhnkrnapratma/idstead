@@ -11,7 +11,7 @@ const { verifyAdminRequest } = await import('../packages/lib/src/server/adminAut
 const TEAM = 'team.cloudflareaccess.com';
 const AUD = 'a'.repeat(64);
 const NOW = 1_800_000_000;
-const env = { ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: AUD };
+const env = { ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: AUD, ADMIN_EMAILS: 'owner@example.com' };
 
 const { privateKey, publicKey } = await generateKeyPair('RS256');
 const publicJwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256' };
@@ -37,8 +37,14 @@ function request(value?: string, url = 'https://admin.example.com/') {
 }
 
 describe('Cloudflare Access configuration', () => {
-    test('needs a team domain and a 64-hex audience', () => {
-        expect(accessConfig({ env })).toEqual({ teamDomain: TEAM, audience: AUD, adminEmails: [] });
+    test('needs a team domain, a 64-hex audience and at least one admin email', () => {
+        expect(accessConfig({ env })).toEqual({
+            teamDomain: TEAM,
+            audience: AUD,
+            adminEmails: ['owner@example.com']
+        });
+        expect(accessConfig({ env: { ...env, ADMIN_EMAILS: ' , ' } })).toBeNull();
+        expect(accessConfig({ env: { ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: AUD } })).toBeNull();
         expect(accessConfig({ env: { ...env, ACCESS_AUD: 'short' } })).toBeNull();
         expect(accessConfig({ env: { ACCESS_AUD: AUD } })).toBeNull();
     });
@@ -54,7 +60,7 @@ describe('Cloudflare Access configuration', () => {
 });
 
 describe('Cloudflare Access token', () => {
-    const config = { teamDomain: TEAM, audience: AUD, adminEmails: [] };
+    const config = { teamDomain: TEAM, audience: AUD, adminEmails: ['owner@example.com'] };
 
     test('a valid application token yields the owner identity', async () => {
         expect(await verifyAccessToken(await token(), config, { keys, now: NOW })).toEqual({
@@ -82,10 +88,9 @@ describe('Cloudflare Access token', () => {
         expect(await verify(await token({ email: undefined }))).toBeNull();
     });
 
-    test('enforces ADMIN_EMAILS when it is set', async () => {
-        const listed = { ...config, adminEmails: ['owner@example.com'] };
+    test('admits only emails listed in ADMIN_EMAILS', async () => {
         const other = { ...config, adminEmails: ['someone@example.com'] };
-        expect(await verifyAccessToken(await token(), listed, { keys, now: NOW })).not.toBeNull();
+        expect(await verifyAccessToken(await token(), config, { keys, now: NOW })).not.toBeNull();
         expect(await verifyAccessToken(await token(), other, { keys, now: NOW })).toBeNull();
     });
 });
