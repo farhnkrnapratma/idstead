@@ -35,7 +35,7 @@ export interface Reference {
     path: PathSegment[];
 }
 
-interface UnaryExpr {
+export interface UnaryExpr {
     kind: 'unary';
     op: '!' | '-';
     operand: Expr;

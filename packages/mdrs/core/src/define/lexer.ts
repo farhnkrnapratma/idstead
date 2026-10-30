@@ -95,7 +95,7 @@ const DOUBLE_QUOTE_ESCAPES: Record<string, string> = {
     $: '$'
 };
 
-export function skipQuoted(source: string, start: number): number {
+function skipQuoted(source: string, start: number): number {
     const quote = source[start];
     let j = start + 1;
     while (j < source.length && source[j] !== quote) j += source[j] === '\\' ? 2 : 1;
@@ -143,48 +143,49 @@ function readSingleQuoted(source: string, start: number): { value: string; end: 
     return { value, end: j + 1 };
 }
 
+type Expansion = { part: RawTemplatePart; end: number } | null;
+
+function readExpansion(source: string, at: number): Expansion {
+    if (source[at + 1] === '{') {
+        const close = findExpressionEnd(source, at + 1);
+        if (close === -1) throw new DefineError(`Unterminated \${...} in string at position ${at}`);
+        return {
+            part: { kind: 'expression', source: source.slice(at + 2, close), pos: at + 2 },
+            end: close + 1
+        };
+    }
+    if (at + 1 >= source.length || !isIdentStart(source[at + 1])) return null;
+    let end = at + 1;
+    while (end < source.length && isIdentPart(source[end])) end++;
+    return { part: { kind: 'variable', name: source.slice(at + 1, end) }, end };
+}
+
 function readDoubleQuoted(
     source: string,
     start: number
 ): { parts: RawTemplatePart[]; end: number } {
     const parts: RawTemplatePart[] = [];
     let text = '';
-    const flush = () => {
-        if (text) parts.push({ kind: 'text', value: text });
-        text = '';
-    };
     let j = start + 1;
     while (j < source.length && source[j] !== '"') {
-        const c = source[j];
-        if (c === '\\' && j + 1 < source.length) {
-            const next = source[j + 1];
-            text += DOUBLE_QUOTE_ESCAPES[next] ?? next;
+        if (source[j] === '\\' && j + 1 < source.length) {
+            text += DOUBLE_QUOTE_ESCAPES[source[j + 1]] ?? source[j + 1];
             j += 2;
             continue;
         }
-        if (c === '$' && source[j + 1] === '{') {
-            const close = findExpressionEnd(source, j + 1);
-            if (close === -1)
-                throw new DefineError(`Unterminated \${...} in string at position ${j}`);
-            flush();
-            parts.push({ kind: 'expression', source: source.slice(j + 2, close), pos: j + 2 });
-            j = close + 1;
+        const expansion = source[j] === '$' ? readExpansion(source, j) : null;
+        if (!expansion) {
+            text += source[j++];
             continue;
         }
-        if (c === '$' && j + 1 < source.length && isIdentStart(source[j + 1])) {
-            let k = j + 1;
-            while (k < source.length && isIdentPart(source[k])) k++;
-            flush();
-            parts.push({ kind: 'variable', name: source.slice(j + 1, k) });
-            j = k;
-            continue;
-        }
-        text += c;
-        j++;
+        if (text) parts.push({ kind: 'text', value: text });
+        text = '';
+        parts.push(expansion.part);
+        j = expansion.end;
     }
     if (j >= source.length)
         throw new DefineError(`Unterminated string literal at position ${start}`);
-    flush();
+    if (text) parts.push({ kind: 'text', value: text });
     return { parts, end: j + 1 };
 }
 

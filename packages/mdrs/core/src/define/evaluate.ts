@@ -1,4 +1,14 @@
-import { type BinaryExpr, type Expr, type PathSegment, type Reference } from './ast';
+import {
+    type ArrayLit,
+    type BinaryExpr,
+    type Expr,
+    type ObjectLit,
+    type PathSegment,
+    type Reference,
+    type TemplateLit,
+    type TernaryExpr,
+    type UnaryExpr
+} from './ast';
 import { DefineError } from './errors';
 import { isValidIdentifierName } from './identifiers';
 import {
@@ -158,61 +168,68 @@ async function evaluateBinary(node: BinaryExpr, ctx: EvalContext): Promise<Defin
     }
 }
 
+async function evaluateTemplate(node: TemplateLit, ctx: EvalContext): Promise<DefineValue> {
+    let text = '';
+    for (const part of node.parts) {
+        if (part.kind === 'text') text += part.value;
+        else if (part.kind === 'variable') text += toDisplayString(scopeValue(part.name, ctx));
+        else text += toDisplayString(await evaluateExpr(part.expr, ctx));
+    }
+    return stringVal(text);
+}
+
+async function evaluateTernary(node: TernaryExpr, ctx: EvalContext): Promise<DefineValue> {
+    const test = await evaluateExpr(node.test, ctx);
+    if (test.type !== 'boolean') throw new DefineError(`'? :' requires a boolean condition`);
+    return evaluateExpr(test.value ? node.consequent : node.alternate, ctx);
+}
+
+async function evaluateArray(node: ArrayLit, ctx: EvalContext): Promise<DefineValue> {
+    const items: DefineValue[] = [];
+    for (const item of node.items) items.push(await evaluateExpr(item, ctx));
+    return arrayVal(items);
+}
+
+async function evaluateObject(node: ObjectLit, ctx: EvalContext): Promise<DefineValue> {
+    const entries: Record<string, DefineValue> = {};
+    for (const entry of node.entries) {
+        if (!isValidIdentifierName(entry.key))
+            throw new DefineError(`'${entry.key}' is not a valid object key`, entry.key);
+        entries[entry.key] = await evaluateExpr(entry.value, ctx);
+    }
+    return objectVal(entries);
+}
+
+async function evaluateUnary(node: UnaryExpr, ctx: EvalContext): Promise<DefineValue> {
+    const value = await evaluateExpr(node.operand, ctx);
+    if (node.op === '!') {
+        if (value.type !== 'boolean') throw new DefineError(`'!' requires a boolean operand`);
+        return boolVal(!(value.value as boolean));
+    }
+    if (value.type !== 'number') throw new DefineError(`unary '-' requires a number operand`);
+    return numberVal(-(value.value as number));
+}
+
 export async function evaluateExpr(node: Expr, ctx: EvalContext): Promise<DefineValue> {
     switch (node.kind) {
         case 'number':
             return numberVal(node.value);
         case 'string':
             return stringVal(node.value);
-        case 'template': {
-            let text = '';
-            for (const part of node.parts) {
-                if (part.kind === 'text') text += part.value;
-                else if (part.kind === 'variable')
-                    text += toDisplayString(scopeValue(part.name, ctx));
-                else text += toDisplayString(await evaluateExpr(part.expr, ctx));
-            }
-            return stringVal(text);
-        }
-        case 'ternary': {
-            const test = await evaluateExpr(node.test, ctx);
-            if (test.type !== 'boolean') {
-                throw new DefineError(`'? :' requires a boolean condition`);
-            }
-            return evaluateExpr(test.value ? node.consequent : node.alternate, ctx);
-        }
         case 'boolean':
             return boolVal(node.value);
-        case 'array': {
-            const items: DefineValue[] = [];
-            for (const item of node.items) items.push(await evaluateExpr(item, ctx));
-            return arrayVal(items);
-        }
-        case 'object': {
-            const entries: Record<string, DefineValue> = {};
-            for (const entry of node.entries) {
-                if (!isValidIdentifierName(entry.key)) {
-                    throw new DefineError(`'${entry.key}' is not a valid object key`, entry.key);
-                }
-                entries[entry.key] = await evaluateExpr(entry.value, ctx);
-            }
-            return objectVal(entries);
-        }
+        case 'template':
+            return evaluateTemplate(node, ctx);
+        case 'ternary':
+            return evaluateTernary(node, ctx);
+        case 'array':
+            return evaluateArray(node, ctx);
+        case 'object':
+            return evaluateObject(node, ctx);
         case 'reference':
             return evaluateReference(node, ctx);
-        case 'unary': {
-            const v = await evaluateExpr(node.operand, ctx);
-            if (node.op === '!') {
-                if (v.type !== 'boolean') {
-                    throw new DefineError(`'!' requires a boolean operand`);
-                }
-                return boolVal(!(v.value as boolean));
-            }
-            if (v.type !== 'number') {
-                throw new DefineError(`unary '-' requires a number operand`);
-            }
-            return numberVal(-(v.value as number));
-        }
+        case 'unary':
+            return evaluateUnary(node, ctx);
         case 'binary':
             return evaluateBinary(node, ctx);
     }
