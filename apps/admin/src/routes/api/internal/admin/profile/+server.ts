@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { verifyAdminRequest } from '#lib/server/adminAuth.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -70,9 +70,8 @@ async function discardVersion(
 export const GET: RequestHandler = async ({ request, platform }) => {
     const authFailure = await requireAdminAuth(request, platform);
     if (authFailure) return authFailure;
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
     let manifestSettings: unknown;
     try {
@@ -86,31 +85,21 @@ export const GET: RequestHandler = async ({ request, platform }) => {
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authFailure = await requireAdminAuth(request, platform);
-    if (authFailure) return authFailure;
-    const db = getSupabaseAdminClient(platform);
+    const auth = await verifyAdminRequest(request, platform);
+    if (auth.status) return apiError(auth.status, 'ADMIN_AUTH_REQUIRED', auth.message);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
     const store = service.adminAuthor;
-    const {
-        data: { user }
-    } = await db.auth.getUser(
-        request.headers
-            .get('authorization')!
-            .replace(/^Bearer\s+/i, '')
-            .trim()
-    );
-    if (!user) return apiError(401, 'PROFILE_SESSION_EXPIRED', 'Please sign in again.');
     const now = Date.now();
     for (const [key, expiry] of attempts) if (expiry < now) attempts.delete(key);
     const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
     if (
-        (limiter && !(await limiter.limit({ key: `profile-upload:${user.id}` })).success)
-        || (attempts.get(user.id) ?? 0) > now
+        (limiter && !(await limiter.limit({ key: `profile-upload:${auth.actor}` })).success)
+        || (attempts.get(auth.actor) ?? 0) > now
     )
         return apiError(429, 'PROFILE_UPLOAD_RATE_LIMITED', 'Please wait before saving again.');
-    attempts.set(user.id, now + 3000);
+    attempts.set(auth.actor, now + 3000);
     let form: FormData;
     let payload: Record<string, unknown>;
     let files: Record<string, ArrayBuffer> | null;
@@ -317,7 +306,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     const changedFields = Object.keys(payload).filter(key => !['id', 'revision'].includes(key));
     await logActivity(
         {
-            actor: user.email ?? user.id,
+            actor: auth.actor,
             action: version ? 'profile.avatar_update' : 'profile.update',
             category: 'profile',
             summary:
@@ -351,9 +340,8 @@ async function cleanupAfterSave(platform: App.Platform | undefined, version: str
     let pending = false;
     if (version) {
         try {
-            const db = getSupabaseAdminClient(platform);
             const service = dataStores(platform).service;
-            if (!db || !service) throw new Error('Database is not configured.');
+            if (!service) throw new Error('Database is not configured.');
             if (await service.adminAuthor.profileWithAvatarVersion(version))
                 await promoteIdentity(platform, version);
         } catch (error) {

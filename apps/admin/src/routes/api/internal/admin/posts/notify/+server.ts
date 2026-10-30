@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
@@ -10,16 +9,15 @@ import { ipSalt } from '#lib/server/ipSalt.ts';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(
             503,
             'BLOG_NOTIFY_UNAVAILABLE',
             'Subscriber notifications are not configured.'
         );
 
-    const auth = await blogAdmin(request, url, db);
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_NOTIFY_AUTH_REQUIRED', auth.message);
 

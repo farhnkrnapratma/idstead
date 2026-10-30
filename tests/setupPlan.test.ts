@@ -10,20 +10,22 @@ import {
     requiredVariables,
     resolveSetupAnswers,
     setupVariables,
-    temporaryPassword,
+    accessApplicationBody,
+    accessPolicyBody,
+    nextSteps,
+    withAccess,
     workerSecrets,
     type WorkerKeys
 } from '../tooling/setup/plan.ts';
-import { passwordPolicyError } from '../packages/domain/src/passwordPolicy.ts';
 
 const workers: WorkerKeys = {
-    api: { keys: ['PUBLIC_SUPABASE_URL'], required: ['PUBLIC_SUPABASE_URL'] },
+    api: { keys: ['PUBLIC_SENTRY_DSN'], required: ['PUBLIC_SENTRY_DSN'] },
     jobs: {
         keys: ['PUBLIC_SITE_URL', 'RESEND_API_KEY'],
         required: ['PUBLIC_SITE_URL', 'RESEND_API_KEY']
     },
     web: { keys: ['PUBLIC_API_BASE_URL', 'PUBLIC_GA_MEASUREMENT_ID', 'IP_SALT'], required: [] },
-    admin: { keys: ['PUBLIC_SITE_URL', 'SUPABASE_SERVICE_ROLE_KEY'], required: [] }
+    admin: { keys: ['PUBLIC_SITE_URL', 'ADMIN_EMAILS'], required: [] }
 };
 
 const config = resolveInstanceConfig({ domains: { site: 'example.org' } });
@@ -94,10 +96,13 @@ describe('variables', () => {
 
     test('require the core keys and every key a wrangler worker declares', () => {
         expect(requiredVariables(workers)).toEqual(
-            expect.arrayContaining(['PUBLIC_SUPABASE_URL', 'RESEND_API_KEY', 'TURNSTILE_SECRET'])
+            expect.arrayContaining(['PUBLIC_SENTRY_DSN', 'RESEND_API_KEY', 'TURNSTILE_SECRET'])
         );
         expect(requiredVariables(workers)).not.toContain('PUBLIC_GA_MEASUREMENT_ID');
-        const values = setupVariables({ PUBLIC_SUPABASE_URL: 'https://db.example' }, config);
+        const values = setupVariables(
+            { PUBLIC_SENTRY_DSN: 'https://key@sentry.example/1' },
+            config
+        );
         expect(missingVariables(workers, values)).toContain('RESEND_API_KEY');
         expect(missingVariables(workers, values)).not.toContain('PUBLIC_SITE_URL');
     });
@@ -105,7 +110,7 @@ describe('variables', () => {
     test('give each worker only its own keys that have values', () => {
         const secrets = workerSecrets(
             workers,
-            setupVariables({ IP_SALT: 'salt', SUPABASE_SERVICE_ROLE_KEY: 'service' }, config)
+            setupVariables({ IP_SALT: 'salt', ADMIN_EMAILS: 'ada@example.org' }, config)
         );
         expect(secrets.web).toEqual({
             IP_SALT: 'salt',
@@ -113,7 +118,7 @@ describe('variables', () => {
         });
         expect(secrets.admin).toEqual({
             PUBLIC_SITE_URL: 'https://example.org',
-            SUPABASE_SERVICE_ROLE_KEY: 'service'
+            ADMIN_EMAILS: 'ada@example.org'
         });
         expect(secrets.api).toEqual({});
     });
@@ -137,13 +142,30 @@ describe('content helpers', () => {
                 await Bun.file(new URL(`../templates/legal/${slug}.md`, import.meta.url)).exists()
             ).toBe(true);
     });
+});
 
-    test('temporaryPassword meets the admin password policy', () => {
-        const passwords = Array.from({ length: 20 }, () => temporaryPassword());
-        for (const password of passwords) {
-            expect(password).toHaveLength(24);
-            expect(passwordPolicyError(password)).toBe('');
-        }
-        expect(new Set(passwords).size).toBe(passwords.length);
+describe('Cloudflare Access setup', () => {
+    test('admits only the admin email on the admin host', () => {
+        expect(accessPolicyBody('Ada@Example.org')).toMatchObject({
+            decision: 'allow',
+            include: [{ email: { email: 'ada@example.org' } }]
+        });
+        expect(accessApplicationBody(config, 'policy-1')).toMatchObject({
+            domain: 'admin.example.org',
+            type: 'self_hosted',
+            policies: [{ id: 'policy-1', precedence: 1 }]
+        });
+    });
+
+    test('stores the team domain and audience in a valid instance config', () => {
+        const access = { teamDomain: 'ada.cloudflareaccess.com', aud: 'c'.repeat(64) };
+        const source = withAccess({ domains: { site: 'example.org' } }, access);
+        expect(resolveInstanceConfig(source).access).toEqual(access);
+    });
+
+    test('next steps no longer mention a password sign-in', () => {
+        const text = nextSteps(config).join(' ');
+        expect(text).toContain('Cloudflare Access');
+        expect(text).not.toMatch(/password|\/login/i);
     });
 });

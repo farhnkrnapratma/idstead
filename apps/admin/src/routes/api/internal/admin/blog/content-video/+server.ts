@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
@@ -12,15 +11,14 @@ import { uniqueAssetName } from '#lib/server/blogPostAssets.ts';
 import { putContentAsset } from '#lib/server/blogContentStorage.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(
             503,
             'BLOG_CONTENT_VIDEO_UNAVAILABLE',
             'Content video storage is not configured.'
         );
-    const auth = await blogAdmin(request, url, db);
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_CONTENT_VIDEO_AUTH_REQUIRED', auth.message);
 

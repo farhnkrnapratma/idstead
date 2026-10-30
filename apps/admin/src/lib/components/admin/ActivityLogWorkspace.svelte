@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import { Download, FileText, Search, Logs } from '@lucide/svelte';
     import { SvelteURLSearchParams } from 'svelte/reactivity';
-    import { supabase } from '#lib/supabase.ts';
+    import { adminFetch } from '#app/adminClient.ts';
     import { toastStore } from '@idstead/ui';
     import {
         activityCategories,
@@ -52,13 +52,6 @@
     const filtered = $derived(Boolean(category || search.trim()));
     const showDataControls = $derived(shouldShowDataControls(total, filtered));
 
-    async function authHeaders(): Promise<Record<string, string>> {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        if (!token) throw new Error('Your session has expired. Log in again.');
-        return { Authorization: `Bearer ${token}` };
-    }
-
     function buildParams(extra: Record<string, string> = {}) {
         const params = new SvelteURLSearchParams({ ...extra, sort, direction });
         if (category) params.set('category', category);
@@ -79,10 +72,7 @@
         loading = true;
         error = '';
         try {
-            const headers = await authHeaders();
-            if (currentController.signal.aborted) return;
-            const res = await fetch(`/api/internal/admin/activity-log?${params}`, {
-                headers,
+            const res = await adminFetch(`/api/internal/admin/activity-log?${params}`, {
                 cache: 'no-store',
                 signal: currentController.signal
             });
@@ -127,8 +117,7 @@
         const params = buildParams({ format });
         exporting = format;
         try {
-            const res = await fetch(`/api/internal/admin/activity-log/export?${params}`, {
-                headers: await authHeaders(),
+            const res = await adminFetch(`/api/internal/admin/activity-log/export?${params}`, {
                 cache: 'no-store'
             });
             if (!res.ok) {

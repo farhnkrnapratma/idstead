@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminResume.ts';
 
@@ -10,9 +9,8 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service) return apiError(503, 'AUTHOR_UNAVAILABLE', 'Database is unavailable.');
+    if (!service) return apiError(503, 'AUTHOR_UNAVAILABLE', 'Database is unavailable.');
     const part = url.searchParams.get('part') ?? 'all';
     if (part !== 'all' && part !== 'profile')
         return apiError(400, 'AUTHOR_INVALID_PART', 'part must be all or profile.');

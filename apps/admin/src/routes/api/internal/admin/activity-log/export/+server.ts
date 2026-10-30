@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -12,15 +11,14 @@ import {
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    const db = getSupabaseAdminClient(platform);
     const service = dataStores(platform).service;
-    if (!db || !service)
+    if (!service)
         return apiError(
             503,
             'ACTIVITY_LOG_UNAVAILABLE',
             'Activity log is temporarily unavailable.'
         );
-    const auth = await blogAdmin(request, url, db);
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'ACTIVITY_LOG_AUTH_REQUIRED', auth.message);
 

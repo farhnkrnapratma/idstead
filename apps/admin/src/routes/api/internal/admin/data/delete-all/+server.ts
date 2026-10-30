@@ -1,71 +1,41 @@
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth, deleteResumeFile } from '#lib/server/adminResume.ts';
+import { deleteResumeFile } from '#lib/server/adminResume.ts';
+import { verifyAdminRequest } from '#lib/server/adminAuth.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
-import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
-import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
-import {
-    checkLoginLockout,
-    clearLoginAttempts,
-    recordFailedLogin
-} from '#lib/server/loginRateLimit.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
+
+const REAUTH_SECONDS = 600;
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-
-    const db = getSupabaseAdminClient(platform);
-
+    const auth = await verifyAdminRequest(request, platform);
+    if (auth.status) return apiError(auth.status, 'ADMIN_AUTH_REQUIRED', auth.message);
     const service = dataStores(platform).service;
-    if (!db || !service)
-        return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
-    const lockoutStore = service.lockout;
+    if (!service) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
+    const actorEmail = auth.actor;
 
-    const token = bearerToken(request);
-    const actorEmail = token ? (await db.auth.getUser(token)).data.user?.email : null;
-    if (!actorEmail) return apiError(401, 'DATA_DELETE_AUTH_REQUIRED', 'Admin session is invalid.');
-
-    const lockoutKey = `delete-all:${actorEmail}`;
-    if (!(await checkLoginLockout(lockoutStore, '', lockoutKey)).allowed)
-        return apiError(
-            429,
-            'DATA_DELETE_RATE_LIMITED',
-            'Too many attempts. Try again in 15 minutes.'
-        );
-
-    let password = '';
-    let captchaToken = '';
+    let confirmation = '';
     try {
         const body = await request.json();
-        if (typeof body?.password === 'string') password = body.password;
-        if (typeof body?.captchaToken === 'string') captchaToken = body.captchaToken;
+        if (typeof body?.confirm === 'string') confirmation = body.confirm;
     } catch {
-        password = '';
+        confirmation = '';
     }
-    if (!password)
-        return apiError(400, 'DATA_DELETE_PASSWORD_REQUIRED', 'Enter your password to confirm.');
-
-    const verifier = getSupabaseUserClient(request, platform);
-    if (!verifier) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
-    await recordFailedLogin(lockoutStore, '', lockoutKey);
-    const { error: passwordError } = await verifier.auth.signInWithPassword({
-        email: actorEmail,
-        password,
-        options: { captchaToken: captchaToken || undefined }
-    });
-    if (passwordError?.code === 'captcha_failed')
-        return apiError(403, 'DATA_DELETE_TURNSTILE_FAILED', 'Verification challenge failed.');
-    if (passwordError) return apiError(401, 'DATA_DELETE_PASSWORD_INVALID', 'Incorrect password.');
-    await clearLoginAttempts(lockoutStore, '', lockoutKey);
+    if (confirmation !== 'DELETE')
+        return apiError(400, 'DATA_DELETE_CONFIRMATION_REQUIRED', 'Type DELETE to confirm.');
+    if (Math.floor(Date.now() / 1000) - auth.authTime > REAUTH_SECONDS)
+        return apiError(
+            403,
+            'ADMIN_REAUTH_REQUIRED',
+            'Sign out and sign in again within the last 10 minutes to delete all data.'
+        );
 
     const siteData = service.siteData;
     let plan;

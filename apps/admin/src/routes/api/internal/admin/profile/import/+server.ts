@@ -1,10 +1,9 @@
 import type { RequestHandler } from './$types';
+import { adminActor } from '#lib/server/adminAuth.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { bearerToken } from '#lib/server/adminAuth.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -64,11 +63,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
-
-    const db = getSupabaseAdminClient(platform);
-
     const { service } = dataStores(platform);
-    if (!db || !service)
+    if (!service)
         return apiError(503, 'PROFILE_IMPORT_UNAVAILABLE', 'Profile storage is unavailable.');
 
     let body: any;
@@ -187,8 +183,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'No recognized sections (profile, resume, skills, funding, contact, socials) found in the file.'
         );
 
-    const token = bearerToken(request);
-    const actor = token ? (await db.auth.getUser(token)).data.user?.email : null;
+    const actor = await adminActor(request, platform);
     await logActivity(
         {
             actor: actor ?? null,

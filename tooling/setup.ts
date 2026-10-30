@@ -1,7 +1,6 @@
 import { chmod, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { $ } from 'bun';
 import { format, resolveConfig } from 'prettier';
 import {
@@ -21,7 +20,9 @@ import {
     nextSteps,
     resolveSetupAnswers,
     setupVariables,
-    temporaryPassword,
+    accessApplicationBody,
+    accessPolicyBody,
+    withAccess,
     workerSecrets,
     type App,
     type SetupAnswers,
@@ -30,6 +31,7 @@ import {
 
 const ROOT = path.resolve(import.meta.dir, '..');
 const CONFIG_FILE = path.join(ROOT, 'idstead.jsonc');
+const CLOUDFLARE_API = 'https://api.cloudflare.com/client/v4';
 const USAGE = 'Usage: bun run setup [dry-run|apply] [--answers=FILE] [--skip-deploy]';
 
 const argv = Bun.argv.slice(2);
@@ -193,12 +195,6 @@ async function mustRun(command: string[], options: { cwd?: string; inherit?: boo
     return result;
 }
 
-function serviceClient(values: Record<string, string>) {
-    return createClient(values.PUBLIC_SUPABASE_URL, values.SUPABASE_SERVICE_ROLE_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false }
-    });
-}
-
 function sqlText(value: string) {
     return `'${value.replaceAll("'", "''")}'`;
 }
@@ -230,14 +226,12 @@ async function databaseId(name: string): Promise<string | null> {
     return databases.find(item => item.name === name)?.uuid ?? null;
 }
 
-async function saveDatabaseId(config: InstanceConfig, id: string): Promise<InstanceConfig> {
-    const source = Bun.JSONC.parse(await Bun.file(CONFIG_FILE).text()) as {
-        cloudflare?: { database?: Record<string, unknown> } & Record<string, unknown>;
-    };
-    source.cloudflare = {
-        ...source.cloudflare,
-        database: { ...source.cloudflare?.database, name: config.cloudflare.database.name, id }
-    };
+async function saveInstance(
+    update: (source: Record<string, unknown>) => Record<string, unknown>
+): Promise<InstanceConfig> {
+    const source = update(
+        Bun.JSONC.parse(await Bun.file(CONFIG_FILE).text()) as Record<string, unknown>
+    );
     await Bun.write(
         CONFIG_FILE,
         await format(JSON.stringify(source), {
@@ -249,6 +243,20 @@ async function saveDatabaseId(config: InstanceConfig, id: string): Promise<Insta
     for (const [file, text] of Object.entries(await renderWranglerConfigs(updated)))
         await Bun.write(file, text);
     return updated;
+}
+
+function saveDatabaseId(config: InstanceConfig, id: string): Promise<InstanceConfig> {
+    return saveInstance(source => {
+        const cloudflare = (source.cloudflare ?? {}) as Record<string, unknown>;
+        const database = (cloudflare.database ?? {}) as Record<string, unknown>;
+        return {
+            ...source,
+            cloudflare: {
+                ...cloudflare,
+                database: { ...database, name: config.cloudflare.database.name, id }
+            }
+        };
+    });
 }
 
 async function database(config: InstanceConfig): Promise<InstanceConfig> {
@@ -280,48 +288,98 @@ async function database(config: InstanceConfig): Promise<InstanceConfig> {
     return current;
 }
 
-async function findUser(db: SupabaseClient, email: string) {
-    for (let page = 1; ; page++) {
-        const { data, error } = await db.auth.admin.listUsers({ page, perPage: 200 });
-        if (error) throw new SetupStop(`Listing Supabase users failed: ${error.message}`);
-        const user = data.users.find(item => item.email?.toLowerCase() === email.toLowerCase());
-        if (user || data.users.length < 200) return user ?? null;
-    }
+async function cloudflareApi<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const response = await fetch(`${CLOUDFLARE_API}${path}`, {
+        ...init,
+        headers: {
+            Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    const body = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        result?: T;
+        errors?: { message?: string }[];
+    } | null;
+    if (!response.ok || !body?.success || body.result === undefined)
+        throw new SetupStop(
+            `Cloudflare API ${init.method ?? 'GET'} ${path} failed: ${
+                body?.errors?.map(error => error.message).join('; ') || `HTTP ${response.status}`
+            }`
+        );
+    return body.result;
 }
 
-async function adminUser(db: SupabaseClient, answers: SetupAnswers) {
-    step('Admin account');
-    const email = answers.adminEmail ?? ask('Email address for the admin account:');
+async function adminAccess(
+    config: InstanceConfig,
+    answers: SetupAnswers,
+    values: Record<string, string>
+): Promise<InstanceConfig> {
+    step('Admin sign-in (Cloudflare Access)');
+    const admin = config.domains.admin;
+    const email =
+        answers.adminEmail
+        ?? values.ADMIN_EMAILS?.split(',')[0]?.trim()
+        ?? ask('Email address that may sign in to the admin:');
+    if (!email && !apply && !config.access) {
+        planned(`create the Access application for ${admin} once the admin email is known`);
+        return config;
+    }
     if (!email) throw new SetupStop('No admin email. Pass --answers with "adminEmail".');
-    const user = await findUser(db, email);
-    if (user?.app_metadata?.role === 'admin') {
-        note(`${email} is already an admin.`);
-        return;
+    values.ADMIN_EMAILS ||= email.toLowerCase();
+    if (config.access) {
+        note(`idstead.jsonc uses the Access application on ${config.access.teamDomain}.`);
+        return config;
     }
-    if (user) {
-        if (apply) {
-            const { error } = await db.auth.admin.updateUserById(user.id, {
-                app_metadata: { ...user.app_metadata, role: 'admin' }
-            });
-            if (error) throw new SetupStop(`Granting the admin role failed: ${error.message}`);
+    const account = process.env.CLOUDFLARE_ACCOUNT_ID;
+    if (!process.env.CLOUDFLARE_API_TOKEN || !account) {
+        if (!apply) {
+            planned(`create the Access application for ${admin} that admits ${email}`);
+            return config;
         }
-        planned(`grant the admin role to the existing user ${email}`);
-        return;
+        throw new SetupStop(
+            `Set CLOUDFLARE_API_TOKEN (Access: Apps and Policies Write, Access: Organizations, Identity Providers, and Groups Read) and CLOUDFLARE_ACCOUNT_ID, or add a self-hosted Access application for ${admin} in Cloudflare Zero Trust and write "access": { "teamDomain", "aud" } to idstead.jsonc.`
+        );
     }
+    const organization = await cloudflareApi<{ auth_domain?: string }>(
+        `/accounts/${account}/access/organizations`
+    ).catch(() => null);
+    const teamDomain = organization?.auth_domain?.toLowerCase();
+    if (!teamDomain)
+        throw new SetupStop(
+            'This Cloudflare account has no Zero Trust organization. Open Cloudflare Zero Trust once, pick a team name and the Free plan, then run setup again.'
+        );
+    note(`Zero Trust team domain: ${teamDomain}.`);
+    const apps = await cloudflareApi<{ domain?: string; aud?: string }[]>(
+        `/accounts/${account}/access/apps`
+    );
+    let app = apps.find(item => item.domain?.toLowerCase() === admin);
+    if (app) note(`An Access application already covers ${admin}.`);
+    else {
+        if (!apply) {
+            planned(`create the Access application for ${admin} that admits ${email}`);
+            planned('write the Access team domain and audience to idstead.jsonc');
+            return config;
+        }
+        const policy = await cloudflareApi<{ id: string }>(`/accounts/${account}/access/policies`, {
+            method: 'POST',
+            body: JSON.stringify(accessPolicyBody(email))
+        });
+        app = await cloudflareApi<{ domain?: string; aud?: string }>(
+            `/accounts/${account}/access/apps`,
+            { method: 'POST', body: JSON.stringify(accessApplicationBody(config, policy.id)) }
+        );
+        planned(`create the Access application for ${admin} that admits ${email}`);
+    }
+    if (!app.aud) throw new SetupStop(`The Access application for ${admin} has no audience tag.`);
     if (!apply) {
-        planned(`create the admin user ${email} with a temporary password`);
-        return;
+        planned('write the Access team domain and audience to idstead.jsonc');
+        return config;
     }
-    const password = temporaryPassword();
-    const { error } = await db.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        app_metadata: { role: 'admin' }
-    });
-    if (error) throw new SetupStop(`Creating the admin user failed: ${error.message}`);
-    planned(`create the admin user ${email}`);
-    note(`Temporary password (shown once): ${password}`);
+    const aud = app.aud;
+    const updated = await saveInstance(source => withAccess(source, { teamDomain, aud }));
+    planned('write the Access team domain and audience to idstead.jsonc');
+    return updated;
 }
 
 async function legalPages(config: InstanceConfig) {
@@ -394,8 +452,8 @@ async function main() {
     const keys = await workerKeys();
     const values = await variables(config, keys);
     await cloudflare(config);
-    const ready = await database(config);
-    await adminUser(serviceClient(values), answers);
+    const withDatabase = await database(config);
+    const ready = await adminAccess(withDatabase, answers, values);
     await legalPages(ready);
     await deploy(ready, workerSecrets(keys, values));
     step('Next steps');

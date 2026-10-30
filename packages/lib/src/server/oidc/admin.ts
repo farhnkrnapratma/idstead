@@ -1,19 +1,13 @@
 import { apiError } from '../apiError';
 import { blogAdmin } from '../blogPostAuth';
-import { getSupabaseAdminClient } from '../supabaseAdmin';
 import { dataStores, type ServiceStores } from '../data';
 
 export type OidcAdmin =
-    { ok: true; actor: string; service: ServiceStores } | { ok: false; response: Response };
+    | { ok: true; actor: string; authTime: number; service: ServiceStores }
+    | { ok: false; response: Response };
 
 export async function oidcAdmin(request: Request, url: URL, platform: unknown): Promise<OidcAdmin> {
-    const db = getSupabaseAdminClient(platform);
-    if (!db)
-        return {
-            ok: false,
-            response: apiError(503, 'OIDC_UNAVAILABLE', 'Admin auth is unavailable.')
-        };
-    const auth = await blogAdmin(request, url, db);
+    const auth = await blogAdmin(request, url, platform);
     if (auth.status)
         return {
             ok: false,
@@ -29,5 +23,5 @@ export async function oidcAdmin(request: Request, url: URL, platform: unknown): 
             ok: false,
             response: apiError(503, 'OIDC_UNAVAILABLE', 'Database is unavailable.')
         };
-    return { ok: true, actor: auth.actor, service };
+    return { ok: true, actor: auth.actor, authTime: auth.authTime, service };
 }

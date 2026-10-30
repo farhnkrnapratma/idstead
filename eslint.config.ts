@@ -58,27 +58,6 @@ export default defineConfig(
         }
     },
     {
-        files: [
-            'apps/admin/src/**/*.svelte',
-            'apps/admin/src/**/*.svelte.ts',
-            'apps/admin/src/lib/**/*.ts',
-            'packages/lib/src/**/*.svelte',
-            'packages/lib/src/stores/**',
-            'packages/lib/src/utils/**'
-        ],
-        ignores: ['**/server/**'],
-        rules: {
-            'no-restricted-syntax': [
-                'error',
-                {
-                    selector: "MemberExpression[object.name='supabase'][property.name!='auth']",
-                    message:
-                        'Browser code uses the Supabase client for auth only; read and write data through a first-party endpoint backed by @idstead/data.'
-                }
-            ]
-        }
-    },
-    {
         files: ['packages/mdrs/core/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
@@ -86,7 +65,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(@supabase/|#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
                                 '@mdrs/core is a standalone engine: no app, lib, Svelte or data-access imports; inject resolvers instead.'
@@ -104,7 +83,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/(lib|mdrs|ui)($|/))',
+                            regex: '(^|/)server/|^(#lib|@idstead/(lib|mdrs|ui)($|/))',
                             allowTypeImports: true,
                             message:
                                 '@idstead/ui is the design system: browser-safe, and it may only depend on @idstead/domain.'
@@ -122,7 +101,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/(lib|editor)($|/))',
+                            regex: '(^|/)server/|^(#lib|@idstead/(lib|editor)($|/))',
                             allowTypeImports: true,
                             message:
                                 '@mdrs/dom is the browser side of MDRS: it may depend on @idstead/ui, @idstead/domain and @mdrs/core only.'
@@ -140,10 +119,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/lib($|/))',
+                            regex: '(^|/)server/|^(#lib|@idstead/lib($|/))',
                             allowTypeImports: true,
                             message:
-                                '@mdrs/editor takes data access through props: no lib, Supabase or server imports.'
+                                '@mdrs/editor takes data access through props: no lib or server imports.'
                         }
                     ]
                 }
@@ -176,21 +155,7 @@ export default defineConfig(
         }
     },
     {
-        files: [
-            'apps/**/*.ts',
-            'apps/**/*.svelte',
-            'packages/lib/**/*.ts',
-            'packages/lib/**/*.svelte'
-        ],
-        ignores: [
-            'packages/lib/src/supabase.ts',
-            'packages/lib/src/server/supabaseAuth.ts',
-            'packages/lib/src/server/supabaseAdmin.ts',
-            'packages/lib/src/server/supabaseUser.ts',
-            'packages/lib/src/server/adminAuth.ts',
-            'packages/lib/src/server/blogPostAuth.ts',
-            'apps/admin/src/lib/components/admin/AccountSettings.svelte'
-        ],
+        files: ['apps/**', 'packages/**', 'tooling/**', 'tests/**'],
         rules: {
             'no-restricted-imports': [
                 'error',
@@ -199,7 +164,7 @@ export default defineConfig(
                         {
                             group: ['@supabase/*'],
                             message:
-                                'Supabase is only the auth provider: import it in the auth modules (supabase.ts, supabaseAuth.ts, supabaseAdmin.ts, supabaseUser.ts, adminAuth.ts, blogPostAuth.ts). Data goes through dataStores().'
+                                'Idstead does not use Supabase: admin sign-in goes through Cloudflare Access and data through dataStores().'
                         }
                     ]
                 }
@@ -214,7 +179,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(#lib|@idstead/(?!domain($|/))|@supabase/|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(#lib|@idstead/(?!domain($|/))|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
                                 '@idstead/data is the server-only data layer: it may depend on @idstead/domain only.'
@@ -232,10 +197,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(@supabase/|#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                '@idstead/domain holds pure, framework-free code: no workspace, Svelte, SvelteKit or Supabase imports.'
+                                '@idstead/domain holds pure, framework-free code: no workspace, Svelte or SvelteKit imports.'
                         }
                     ]
                 }

@@ -9,13 +9,7 @@ import { resolveAuthorization } from '#lib/server/oidc/authorize.ts';
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
-export const POST: RequestHandler = async ({
-    request,
-    url,
-    platform,
-    locals,
-    getClientAddress
-}) => {
+export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const auth = await oidcAdmin(request, url, platform);
     if (!auth.ok) return auth.response;
     const { service } = auth;
@@ -35,16 +29,13 @@ export const POST: RequestHandler = async ({
     )
         return apiError(400, 'OIDC_AUTHORIZE_INVALID_INPUT', 'Invalid authorization decision.');
 
-    const session = await locals.getAdminSession();
-    if (!session || session.role !== 'admin' || !session.mfaSatisfied)
-        return apiError(401, 'ADMIN_AUTH_REQUIRED', 'Your session has expired. Log in again.');
     try {
         const outcome = await resolveAuthorization(
             { clients: service.oidcClients, auth: service.oidcAuth },
             new URLSearchParams(body.query),
             {
                 issuer: oidcEndpoints(platform).issuer,
-                authTime: session.authTime,
+                authTime: auth.authTime,
                 decision: body.decision
             }
         );

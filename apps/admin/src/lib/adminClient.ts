@@ -1,5 +1,3 @@
-import { supabase } from '#lib/supabase.ts';
-
 export interface AdminRequestOptions {
     params?: Record<string, string>;
     body?: unknown;
@@ -7,19 +5,36 @@ export interface AdminRequestOptions {
     fallbackMessage?: string;
 }
 
+export const ACCESS_LOGOUT_URL = '/cdn-cgi/access/logout';
+
+export const SESSION_EXPIRED_MESSAGE =
+    'Your admin session has expired. Open the admin in a new tab to sign in again, then retry.';
+
+export class AdminSessionExpiredError extends Error {
+    constructor() {
+        super(SESSION_EXPIRED_MESSAGE);
+    }
+}
+
+export async function adminFetch(input: string, init: RequestInit = {}): Promise<Response> {
+    const response = await fetch(input, {
+        ...init,
+        credentials: 'same-origin',
+        redirect: 'manual'
+    });
+    if (response.type === 'opaqueredirect' || response.status === 401)
+        throw new AdminSessionExpiredError();
+    return response;
+}
+
 export async function adminRequest<T>(
     path: string,
     { params = {}, body, signal, fallbackMessage }: AdminRequestOptions = {}
 ): Promise<T> {
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data.session) throw new Error('Your session has expired. Log in again.');
     const query = new URLSearchParams(params).toString();
-    const response = await fetch(`/api/internal/admin/${path}${query ? `?${query}` : ''}`, {
+    const response = await adminFetch(`/api/internal/admin/${path}${query ? `?${query}` : ''}`, {
         method: body === undefined ? 'GET' : 'POST',
-        headers: {
-            Authorization: `Bearer ${data.session.access_token}`,
-            ...(body === undefined ? {} : { 'Content-Type': 'application/json' })
-        },
+        headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
         body: body === undefined ? undefined : JSON.stringify(body),
         cache: 'no-store',
         signal: signal ?? AbortSignal.timeout(15000)

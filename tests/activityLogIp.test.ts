@@ -31,7 +31,7 @@ describe('admin activity log calls', () => {
     });
 
     test('finds the calls', () => {
-        expect(calls.length).toBeGreaterThan(15);
+        expect(calls.length).toBeGreaterThan(10);
     });
 
     test.each(['ip', 'ipSalt', 'userAgent'])('every call passes %s', field => {

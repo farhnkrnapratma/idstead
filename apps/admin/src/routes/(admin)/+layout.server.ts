@@ -1,21 +1,11 @@
-import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals, url }) => {
-    const session = await locals.getAdminSession();
-
-    if (url.pathname === '/login') {
-        if (session?.role === 'admin' && session.mfaSatisfied) redirect(303, '/');
-        return { session: null };
-    }
-
-    if (url.pathname === '/oauth/authorize')
-        return { session: session?.role === 'admin' && session.mfaSatisfied ? session : null };
-
-    if (!session || !session.mfaSatisfied)
-        redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname + url.search)}`);
-
-    if (session.role !== 'admin') redirect(303, '/login');
-
-    return { session };
+export const load: LayoutServerLoad = async ({ locals }) => {
+    const admin = await locals.getAdmin();
+    return {
+        admin:
+            admin ?
+                { email: admin.email, signedInAt: new Date(admin.authTime * 1000).toISOString() }
+            :   null
+    };
 };

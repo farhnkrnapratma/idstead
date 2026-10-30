@@ -1,4 +1,4 @@
-import { supabase } from '#lib/supabase.ts';
+import { adminFetch } from './adminClient';
 import { requiredText } from '@idstead/domain/fieldValidation.ts';
 
 const VALIDATE_ENDPOINT = '/api/internal/blog/validate-define';
@@ -18,14 +18,11 @@ function readMessages(body: unknown): string[] {
 
 async function validateMdrsRemote(markdown: string): Promise<string> {
     if (!markdown.trim()) return '';
-    const { data } = await supabase.auth.getSession();
-    const accessToken = data.session?.access_token;
-    if (!accessToken) return '';
     let response: Response;
     try {
-        response = await fetch(VALIDATE_ENDPOINT, {
+        response = await adminFetch(VALIDATE_ENDPOINT, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ markdown })
         });
     } catch {

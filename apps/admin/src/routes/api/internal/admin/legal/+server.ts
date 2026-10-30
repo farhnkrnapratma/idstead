@@ -1,10 +1,9 @@
 import type { RequestHandler } from './$types';
+import { adminActor } from '#lib/server/adminAuth.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 import { isLegalSlug } from '@idstead/domain/legal.ts';
@@ -33,9 +32,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
-    const db = getSupabaseAdminClient(platform);
     const { service } = dataStores(platform);
-    if (!db || !service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    if (!service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
 
     let body: { slug?: unknown; title?: unknown; content?: unknown };
     try {
@@ -60,8 +58,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const result = await service.legalWriter.save({ slug, title, content });
     if (result.status === 'rejected') return apiError(400, 'LEGAL_SAVE_FAILED', result.message);
 
-    const token = bearerToken(request);
-    const actor = token ? (await db.auth.getUser(token)).data.user?.email : null;
+    const actor = await adminActor(request, platform);
     await logActivity(
         {
             actor: actor ?? null,

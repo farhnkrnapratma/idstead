@@ -200,35 +200,6 @@ ${excerpt ? `<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3d4
     };
 }
 
-export function loginAlertEmail(
-    siteName: string,
-    details: { when: string; userAgent: string; ipHash: string; mfa: boolean }
-): Pick<OutgoingEmail, 'subject' | 'html' | 'text'> {
-    const rows = [
-        ['When', details.when],
-        ['Device', details.userAgent || 'Unknown'],
-        ['IP fingerprint', details.ipHash],
-        ['Second factor', details.mfa ? 'Required after this step' : 'Not configured']
-    ];
-    return {
-        subject: `New sign-in to ${siteName} admin`,
-        html: shell(
-            `<h1 style="margin:0 0 12px;font-size:20px">A password sign-in just succeeded</h1>
-<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3d443f">If this was you, nothing to do. If it was not, change the admin password immediately and enable two-factor authentication.</p>
-<table style="width:100%;border-collapse:collapse;font-size:13px">${rows
-                .map(
-                    ([label, value]) =>
-                        `<tr><td style="padding:6px 0;color:#6b736d;width:40%">${escapeHtml(label)}</td><td style="padding:6px 0;color:#101411">${escapeHtml(value)}</td></tr>`
-                )
-                .join('')}</table>`,
-            'The IP fingerprint is a salted hash, not the address itself.'
-        ),
-        text: `A password sign-in to the ${siteName} admin just succeeded.\n\n${rows
-            .map(([label, value]) => `${label}: ${value}`)
-            .join('\n')}\n\nIf this was not you, change the admin password immediately.`
-    };
-}
-
 export type ContactKind = 'message' | 'feedback';
 
 export interface ContactMessage {

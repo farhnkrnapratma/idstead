@@ -34,13 +34,6 @@
     import { page } from '$app/state';
     import { publicSiteUrl as siteUrlFor } from '#app/publicSite.ts';
     import { refreshAll } from '$app/navigation';
-    import { supabase } from '#lib/supabase.ts';
-    import {
-        turnstileWidget,
-        executeTurnstile,
-        resetTurnstile,
-        turnstileSiteKey
-    } from '#lib/utils/turnstile.ts';
     import {
         PanelLeftClose,
         PanelLeftOpen,
@@ -106,7 +99,7 @@
     import { adminDisplayStore } from '#app/stores/adminDisplayStore.svelte.ts';
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
-    import { adminRequest } from '#app/adminClient.ts';
+    import { ACCESS_LOGOUT_URL, adminFetch, adminRequest } from '#app/adminClient.ts';
     import type { AdminAuthorSnapshot, IdentityVersionMeta, LegalPage } from '@idstead/data';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
@@ -237,7 +230,6 @@
     let postsLoadError = $state('');
     let posts = $state<AdminPost[]>([]);
     let isLoggingOut = $state(false);
-    let adminUserName = $state('');
     let adminUserEmail = $state('');
 
     const filterStore = createFilterSortStore({ defaultSortField: 'date', defaultSortDir: 'desc' });
@@ -247,8 +239,6 @@
     let showDeleteCommentDialog = $state(false);
     let commentIdToDelete = $state<string | null>(null);
     let showDeleteAllDialog = $state(false);
-    let deleteAllPassword = $state('');
-    let deleteAllTurnstileEl = $state<HTMLDivElement | null>(null);
     let hasExportedAllData = $state(false);
     let isExportingAllData = $state(false);
     let showDeleteResumeDocDialog = $state(false);
@@ -694,6 +684,7 @@
         siteUrl: '',
         skills: []
     });
+    const adminUserName = $derived(authorState.name);
 
     let legalPagesData = $state<Record<string, { title: string; content: string }>>({
         privacy: { title: 'Privacy Policy', content: '' },
@@ -1157,10 +1148,6 @@
     }
 
     async function submitProfile(profile: Record<string, unknown>, plan: IdentityPlan) {
-        const {
-            data: { session }
-        } = await supabase.auth.getSession();
-        if (!session) throw new Error('Please sign in again.');
         const form = new FormData();
         form.set(
             'profile',
@@ -1185,9 +1172,8 @@
                 'identity',
                 JSON.stringify({ avatar: plan.avatar?.meta, banner: plan.banner?.meta })
             );
-        const response = await fetch('/api/internal/admin/profile', {
+        const response = await adminFetch('/api/internal/admin/profile', {
             method: 'POST',
-            headers: { Authorization: `Bearer ${session.access_token}` },
             body: form
         });
         return { response, result: await readJson(response) };
@@ -1464,13 +1450,6 @@
         customKeyserver = key?.keyservers.find(server => !presetUrls.has(server.url))?.url ?? '';
     }
 
-    async function adminToken() {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-        if (!accessToken) throw new Error('Your admin session has expired. Please log in again.');
-        return accessToken;
-    }
-
     async function responseMessage(response: Response, fallback: string) {
         const res = await response.json().catch(() => ({}));
         if (response.ok && res.success) return { res, error: '' };
@@ -1486,12 +1465,9 @@
         }
         isSavingSignature = true;
         try {
-            const response = await fetch('/api/internal/admin/resume/signature', {
+            const response = await adminFetch('/api/internal/admin/resume/signature', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/octet-stream',
-                    Authorization: `Bearer ${await adminToken()}`
-                },
+                headers: { 'Content-Type': 'application/octet-stream' },
                 body: await file.arrayBuffer()
             });
             const { res, error } = await responseMessage(response, 'Upload failed.');
@@ -1514,9 +1490,8 @@
         isSavingSignature = true;
         signatureError = '';
         try {
-            const response = await fetch('/api/internal/admin/resume/signature', {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${await adminToken()}` }
+            const response = await adminFetch('/api/internal/admin/resume/signature', {
+                method: 'DELETE'
             });
             const { error } = await responseMessage(response, 'Removal failed.');
             if (error) throw new Error(error);
@@ -1570,12 +1545,9 @@
             } catch {
                 throw new Error('The custom keyserver must be a full https:// URL.');
             }
-            const response = await fetch('/api/internal/admin/openpgp-key', {
+            const response = await adminFetch('/api/internal/admin/openpgp-key', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${await adminToken()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     key,
                     keyservers: file ? (openPgpKey?.keyservers ?? []) : keyservers
@@ -1603,9 +1575,8 @@
         isSavingKey = true;
         keyError = '';
         try {
-            const response = await fetch('/api/internal/admin/openpgp-key', {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${await adminToken()}` }
+            const response = await adminFetch('/api/internal/admin/openpgp-key', {
+                method: 'DELETE'
             });
             const { error } = await responseMessage(response, 'Could not delete the key.');
             if (error) throw new Error(error);
@@ -2057,16 +2028,9 @@
 
         isSubmitting = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            if (!token) {
-                toastStore.error('Admin session expired. Please log in again.');
-                return;
-            }
-
-            const res = await fetch('/api/internal/admin/comments/reply', {
+            const res = await adminFetch('/api/internal/admin/comments/reply', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     postId,
                     parentId,
@@ -2134,11 +2098,6 @@
         );
         showSessionTimeoutDialog = false;
         clearTimeout(signOutTimer);
-        try {
-            await supabase.auth.refreshSession();
-        } catch (err) {
-            console.error('Failed to refresh session:', err);
-        }
         startIdleTimer();
     }
 
@@ -2179,18 +2138,8 @@
         }
 
         (async () => {
-            const { data: sessionData } = await supabase.auth.getSession();
             if (!active) return;
-            if (!sessionData.session) {
-                const target = window.location.pathname + window.location.search;
-                window.location.href = `/login?redirectTo=${encodeURIComponent(target)}`;
-                return;
-            }
-
-            const sessionUser = sessionData.session.user;
-            const displayName = sessionUser?.user_metadata?.display_name;
-            if (typeof displayName === 'string') adminUserName = displayName;
-            if (sessionUser?.email) adminUserEmail = sessionUser.email;
+            adminUserEmail = page.data.admin?.email ?? '';
 
             const pendingToast = sessionStorage.getItem('admin_toast');
             if (pendingToast) {
@@ -2421,16 +2370,8 @@
     async function handleLogout() {
         isLoggingOut = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            if (token)
-                await fetch('/api/internal/admin/logout', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` }
-                }).catch(() => {});
-            await supabase.auth.signOut();
             adminNotificationsStore.unsubscribe();
-            window.location.href = '/login';
+            window.location.href = ACCESS_LOGOUT_URL;
         } catch (err) {
             console.error('Error signing out:', err);
             isLoggingOut = false;
@@ -2497,9 +2438,6 @@
         const post = postToDelete;
         const key = `post-delete:${post.id}`;
         try {
-            const { data } = await supabase.auth.getSession();
-            const token = data.session?.access_token;
-            if (!token) throw new Error('Your session has expired. Log in again.');
             let form = await recallPostSave(key);
             if (!form) {
                 form = new FormData();
@@ -2514,7 +2452,7 @@
                 );
                 await rememberPostSave(key, form);
             }
-            await submitPost(form, token);
+            await submitPost(form);
             await rememberPostSave(key, null);
             posts = posts.filter(p => p.id !== post.id);
             toastStore.success('Post deleted.');
@@ -2561,13 +2499,9 @@
 
     async function dismissCommentReports(commentId: string) {
         try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const res = await fetch('/api/internal/admin/comments/dismiss-reports', {
+            const res = await adminFetch('/api/internal/admin/comments/dismiss-reports', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${session?.access_token || ''}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ commentId })
             });
             if (!res.ok) throw new Error('Failed to dismiss reports');
@@ -2701,12 +2635,9 @@
             } catch {
                 throw new Error('That file is not valid JSON.');
             }
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            if (!token) throw new Error('Your admin session has expired. Please log in again.');
-            const res = await fetch('/api/internal/admin/profile/import', {
+            const res = await adminFetch('/api/internal/admin/profile/import', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(parsed)
             });
             const body = await res.json().catch(() => ({}));
@@ -2741,16 +2672,10 @@
         if (isExportingAllData) return;
         isExportingAllData = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            if (!token) throw new Error('Your admin session has expired. Please log in again.');
-
             const now = new Date();
             const pad = (value: number) => String(value).padStart(2, '0');
             const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-            const res = await fetch(`/api/internal/admin/data/export?stamp=${stamp}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await adminFetch(`/api/internal/admin/data/export?stamp=${stamp}`);
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body?.error?.message || 'Export failed.');
@@ -2777,35 +2702,18 @@
 
     async function executeDeleteAllData() {
         if (isDeletingAllData) return;
-        if (!deleteAllPassword) {
-            toastStore.error('Enter your password to confirm.');
-            return;
-        }
-        let captchaToken = '';
-        if (turnstileSiteKey) {
-            captchaToken = await executeTurnstile(deleteAllTurnstileEl);
-            if (!captchaToken) {
-                toastStore.error('Please complete the verification challenge before deleting.');
-                return;
-            }
-        }
         isDeletingAllData = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            if (!token) throw new Error('Your admin session has expired. Please log in again.');
-
-            const res = await fetch('/api/internal/admin/data/delete-all', {
+            const res = await adminFetch('/api/internal/admin/data/delete-all', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: deleteAllPassword, captchaToken })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirm: 'DELETE' })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body?.error?.message || 'Failed to delete site data.');
             }
 
-            deleteAllPassword = '';
             supplementaryLoaded = false;
             await loadAdminData();
             showDeleteAllDialog = false;
@@ -2815,7 +2723,6 @@
             toastStore.error(err?.message || 'Failed to delete all data.');
         } finally {
             isDeletingAllData = false;
-            resetTurnstile(deleteAllTurnstileEl);
         }
     }
 
@@ -2860,13 +2767,9 @@
                 sort_order: idx + 1
             }));
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/resume', {
+            const res = await adminFetch('/api/internal/admin/resume', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${sessionData?.session?.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ experiences, education })
             });
             if (!res.ok) {
@@ -2908,13 +2811,9 @@
                     :   []
             }));
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/skills', {
+            const res = await adminFetch('/api/internal/admin/skills', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${sessionData?.session?.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ categories })
             });
             if (!res.ok) {
@@ -2989,13 +2888,9 @@
                 sort_order: idx + 1
             }));
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/links', {
+            const res = await adminFetch('/api/internal/admin/links', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${sessionData?.session?.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: 'social', items })
             });
             if (!res.ok) {
@@ -3037,13 +2932,9 @@
                 sort_order: idx + 1
             }));
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/links', {
+            const res = await adminFetch('/api/internal/admin/links', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${sessionData?.session?.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: 'funding', items })
             });
             if (!res.ok) {
@@ -3084,13 +2975,9 @@
                 sort_order: idx + 1
             }));
 
-            const { data: sessionData } = await supabase.auth.getSession();
-            const res = await fetch('/api/internal/admin/links', {
+            const res = await adminFetch('/api/internal/admin/links', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${sessionData?.session?.access_token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category: 'contact', items })
             });
             if (!res.ok) {
@@ -3119,26 +3006,9 @@
         pdfDeleteSuccess = false;
 
         try {
-            const {
-                data: { user },
-                error: userError
-            } = await supabase.auth.getUser();
-            if (userError || !user) {
-                throw new Error('Your admin session has expired. Please log in again.');
-            }
-
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) {
-                throw new Error('Your admin session has expired. Please log in again.');
-            }
-
-            const response = await fetch('/api/internal/admin/resume/generate', {
+            const response = await adminFetch('/api/internal/admin/resume/generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ force: options.force === true })
             });
 
@@ -3194,25 +3064,9 @@
     async function executeDeleteResumeDoc() {
         showDeleteResumeDocDialog = false;
         try {
-            const {
-                data: { user },
-                error: userError
-            } = await supabase.auth.getUser();
-            if (userError || !user) {
-                throw new Error('Your admin session has expired. Please log in again.');
-            }
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken) {
-                throw new Error('Your admin session has expired. Please log in again.');
-            }
-
-            const response = await fetch('/api/internal/admin/resume/delete', {
+            const response = await adminFetch('/api/internal/admin/resume/delete', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ filename: resumeDocState.filename })
             });
 
@@ -7194,33 +7048,11 @@
     requiredKeyword="DELETE"
     isDestructive
     isLoading={isDeletingAllData}
-    onConfirm={executeDeleteAllData}
-    onCancel={() => (deleteAllPassword = '')}>
-    <div class="mt-3 flex flex-col gap-1.5 font-sans">
-        <label
-            for="delete-all-password"
-            class="text-xs font-semibold text-fg">Password</label>
-        <Input
-            id="delete-all-password"
-            type="password"
-            autocomplete="current-password"
-            bind:value={deleteAllPassword}
-            disabled={isDeletingAllData} />
-    </div>
-    {#if turnstileSiteKey}
-        <div
-            bind:this={deleteAllTurnstileEl}
-            class="turnstile-widget select-none"
-            use:turnstileWidget={{
-                sitekey: turnstileSiteKey,
-                action: 'admin-delete-all',
-                size: 'flexible',
-                theme: 'auto',
-                appearance: 'interaction-only',
-                execution: 'execute'
-            }}>
-        </div>
-    {/if}
+    onConfirm={executeDeleteAllData}>
+    <p class="mt-3 font-sans text-xs text-fg-muted">
+        For safety, this needs a sign-in from the last 10 minutes. If it is older, sign out and sign
+        in again first.
+    </p>
 </ConfirmationDialog>
 
 <ConfirmationDialog

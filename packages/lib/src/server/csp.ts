@@ -1,5 +1,4 @@
 interface CspEnv {
-    supabaseUrl?: string;
     sentryDsn?: string;
     cdnBaseUrl?: string;
     apiBaseUrl?: string;
@@ -55,7 +54,6 @@ function originOf(value: string | undefined): string {
 }
 
 export function buildContentSecurityPolicy(env: CspEnv = {}): string {
-    const supabase = originOf(env.supabaseUrl);
     const sentry = originOf(env.sentryDsn);
     const cdn = originOf(env.cdnBaseUrl);
     const api = originOf(env.apiBaseUrl);
@@ -70,7 +68,6 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
         'frame-src': FRAME_SOURCES,
         'connect-src': [
             "'self'",
-            supabase,
             sentry,
             cdn,
             api,

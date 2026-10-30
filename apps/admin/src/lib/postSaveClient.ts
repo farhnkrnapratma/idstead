@@ -1,4 +1,5 @@
 import { readJson } from './readJson.ts';
+import { AdminSessionExpiredError, adminFetch } from './adminClient.ts';
 type SavedPost = {
     id: string;
     post_revision: number;
@@ -28,12 +29,11 @@ export function postSaveButtonLabel(
     return action === 'publish' ? 'Publishing…' : 'Saving draft…';
 }
 
-export async function submitPost(form: FormData, token: string): Promise<SaveResult> {
+export async function submitPost(form: FormData): Promise<SaveResult> {
     const metadata = JSON.parse(String(form.get('post')));
     try {
-        const response = await fetch('/api/internal/admin/posts', {
+        const response = await adminFetch('/api/internal/admin/posts', {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
             body: form,
             signal: AbortSignal.timeout(120_000)
         });
@@ -46,11 +46,12 @@ export async function submitPost(form: FormData, token: string): Promise<SaveRes
             );
     } catch (error) {
         if (error instanceof PostSaveError) throw error;
+        if (error instanceof AdminSessionExpiredError) throw new PostSaveError(error.message);
     }
-    const status = await fetch(`/api/internal/admin/posts?operationId=${metadata.operationId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(15_000)
-    });
+    const status = await adminFetch(
+        `/api/internal/admin/posts?operationId=${metadata.operationId}`,
+        { signal: AbortSignal.timeout(15_000) }
+    );
     if (status.ok) {
         const result = await readJson(status);
         if (result.state === 'committed' && result.post) return { ...result, cleanupPending: true };

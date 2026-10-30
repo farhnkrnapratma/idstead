@@ -1,6 +1,6 @@
 import { DefineError, renderMarkdown } from '@mdrs/core';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
-import { supabase } from '#lib/supabase.ts';
+import { adminFetch } from './adminClient';
 import * as publicEnv from '$app/env/public';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
@@ -9,12 +9,9 @@ const CACHE_MS = 60_000;
 const cache = new Map<string, { at: number; value: Promise<unknown> }>();
 
 async function request(scope: 'author' | 'blog' | 'post', slug?: string): Promise<unknown> {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (!token) throw new DefineError('Sign in again to preview live data.');
-    const response = await fetch(ENDPOINT, {
+    const response = await adminFetch(ENDPOINT, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scope, slug })
     }).catch(() => null);
     const body = (await response?.json().catch(() => null)) as {
