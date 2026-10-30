@@ -6,7 +6,7 @@ Start each item with `-`, `*` or `+` followed by a space.
 
 ```mdrs
 - SvelteKit
-- Supabase
+- Cloudflare D1
 - Cloudflare Workers
 ```
 

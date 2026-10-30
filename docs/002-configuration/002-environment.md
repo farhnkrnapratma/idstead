@@ -6,18 +6,18 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 
 | Variable | Kind | web | admin | api | jobs | Purpose |
 | --- | --- | :-: | :-: | :-: | :-: | --- |
-| `PUBLIC_SUPABASE_URL` | public | ✓ | ✓ | – | – | Supabase project URL, for admin sign-in (Supabase Auth). The web app only type-checks the shared auth modules. |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | ✓ | ✓ | – | – | publishable key for Supabase Auth in the admin browser code |
-| `SUPABASE_SERVICE_ROLE_KEY` | **secret** | – | ✓ | – | – | Supabase Auth admin client: verifies admin tokens and manages the admin user. Server-only; it never reads site data. |
-| `DATA_CACHE` | var, optional | ✓ | ✓ | ✓ | ✓ | `1` or `true` caches the public reads (author, posts, comments per post, legal pages) in the Workers Cache API for a day, keyed by the Worker version and the `db_cache_generations` generation of each domain, so a write invalidates them at once. Post lists with view and comment counts are kept for 60 seconds and post renders for 5 minutes; errors are never cached. No effect on `supabase` or where the Cache API is missing (local dev). |
+| `ACCESS_TEAM_DOMAIN` | var | – | ✓ | – | – | Cloudflare Zero Trust team domain (`<team>.cloudflareaccess.com`) whose keys sign the Access token on every admin request. Rendered from `access.teamDomain` in `idstead.jsonc`; never set it by hand. |
+| `ACCESS_AUD` | var | – | ✓ | – | – | audience tag of the admin's Access application. Rendered from `access.aud`. Without both values a deployed admin answers `401` to everything; only `vite dev` on `localhost` signs in as `admin@localhost`. |
+| `ADMIN_EMAILS` | var, optional | – | ✓ | – | – | comma-separated emails the admin accepts in the Access token, checked on top of the Access policy. Setup sets it to the admin email. |
+| `DATA_CACHE` | var, optional | ✓ | ✓ | ✓ | ✓ | `1` or `true` caches the public reads (author, posts, comments per post, legal pages) in the Workers Cache API for a day, keyed by the Worker version and the `db_cache_generations` generation of each domain, so a write invalidates them at once. Post lists with view and comment counts are kept for 60 seconds and post renders for 5 minutes; errors are never cached. No effect where the Cache API is missing (local dev). |
 | `WRITES_FROZEN` | var, optional | ✓ | ✓ | – | ✓ | `1` or `true` pauses writes for maintenance: `POST`, `PUT`, `PATCH` and `DELETE` requests under `/api/internal/**` answer `503 MAINTENANCE` with `Retry-After: 60`, `/oauth/token` and `/oauth/revoke` answer `503 temporarily_unavailable`, the jobs Worker retries queue messages after 5 minutes and skips its cron run. Reads keep working. |
 | `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror. Required: `apiBaseUrl()` throws without it. |
 | `PUBLIC_SITE_URL` | public | ✓ | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for `robots.txt`, the sitemap, the feed, `llms.txt` and the `.well-known` discovery files while no profile exists (`readSite()` in `server/publicMetadata.ts`, which answers 503 only when the database fails), for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, which throws without it), for the site links in the resume verification bundle (`adminResume.ts`), and for the generated website banner in admin |
 | `PUBLIC_ADMIN_URL` | public, optional | ✓ | – | – | – | admin origin, used as the OpenID Connect `authorization_endpoint` host (`configuredAdminUrl` in `server/siteUrl.ts`). Setup derives it from `domains.admin`; without it the site falls back to `https://admin.<site host>` |
 | `PUBLIC_CDN_BASE_URL` | public | ✓ | ✓ | – | ✓ | public R2/CDN origin for `/static`, `/fonts`, `/logo`, resume URLs and the identity fallback |
 | `PUBLIC_TURNSTILE_SITE_KEY` | public | ✓ | ✓ | – | – | Turnstile widget key |
-| `TURNSTILE_SECRET` | **secret** | ✓ | ✓ | – | – | server-side `siteverify`. The production value is also the Supabase Auth CAPTCHA secret. |
-| `RESEND_API_KEY` | **secret** | ✓ | ✓ | – | ✓ | email: confirm, contact, login alert, newsletter |
+| `TURNSTILE_SECRET` | **secret** | ✓ | ✓ | – | – | server-side `siteverify` for the public forms |
+| `RESEND_API_KEY` | **secret** | ✓ | ✓ | – | ✓ | email: confirm, contact, newsletter |
 | `SUBSCRIBER_FROM_EMAIL` | var | ✓ | ✓ | – | ✓ | sender address for those emails |
 | `IP_SALT` | **secret** | ✓ | ✓ | – | – | salt for SHA-256 IP hashing |
 | `OIDC_SIGNING_KEY` | **secret**, optional | ✓ | – | – | – | private ES256 JWK (`{"kty":"EC","crv":"P-256","x":…,"y":…,"d":…}`) that signs the OpenID Connect tokens; `bun tooling/oidc-key.ts` prints a new one. Without it "Sign in with Idstead" is off: `/.well-known/openid-configuration` and `/.well-known/jwks.json` answer 404 and WebFinger has no issuer link. It never enters the database or the data export |
@@ -28,7 +28,8 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `PUBLIC_GA_MEASUREMENT_ID` | public, optional | ✓ | – | – | – | Google Analytics 4 property for `app.html`. Without it no analytics script loads. |
 | `PUBLIC_STATUS_PAGE_HOST`, `PUBLIC_STATUS_PAGE_CODE` | public, optional | ✓ | – | – | – | Instatus page for the footer status badge, hidden without them |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | **secret**, build | – | – | – | – | source-map upload during `vite build` |
-| `CLOUDFLARE_API_TOKEN` | **secret**, local | – | – | – | – | wrangler auth, needed for the remote `AI` binding in local dev |
+| `CLOUDFLARE_API_TOKEN` | **secret**, local | – | – | – | – | wrangler auth, needed for the remote `AI` binding in local dev. Setup also uses it to create the admin's Access application (permissions `Access: Apps and Policies Write` and `Access: Organizations, Identity Providers, and Groups Read`). |
+| `CLOUDFLARE_ACCOUNT_ID` | local | – | – | – | – | account that setup creates the Access application in |
 
 ## Bindings (not variables)
 
@@ -52,7 +53,7 @@ In production each Worker gets its variables as Worker secrets and reads them at
 
 `wrangler deploy` fails for `api` and `jobs` while a key in their `secrets.required` is missing on the Worker. The [setup script](../001-getting-started/001-setup-script.md) uploads each Worker's secrets with its deploy; afterwards, change one with `bunx wrangler secret put <KEY> --name <worker>`.
 
-Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), and `CLOUDFLARE_API_TOKEN` (wrangler).
+Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), and `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` (wrangler and setup). `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` are plain Worker variables rendered into `apps/admin/wrangler.jsonc`, not secrets.
 
 ## Using a secret manager
 
@@ -76,5 +77,5 @@ A secret manager can also own the Worker secrets. With Phase, give each Worker a
 ## Rules
 
 - Never commit secrets. The pre-commit hook runs TruffleHog on staged files.
-- Never import `server/supabaseAdmin.ts` or other server-only modules from a `.svelte` file or from browser code.
+- Never import server-only modules (`server/**`, `@idstead/data`) from a `.svelte` file or from browser code.
 - When a secret manager syncs the Worker secrets, create or rotate them there only.

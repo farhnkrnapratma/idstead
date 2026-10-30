@@ -21,12 +21,12 @@ The one-off migration and archive scripts (`migrate-markdown-syntax.ts`, `regene
 `eslint.config.ts` enforces these import boundaries with `@typescript-eslint/no-restricted-imports` (type-only imports stay allowed):
 
 - **Browser code never imports server modules.** `.svelte` and `.svelte.ts` files, plus `packages/lib/src/{components,layout,article,stores,utils}`, fail lint when they import a path containing `server/` (`#lib/server/*`, `$lib/server/*`, `../server/*`).
-- **The MDRS engine is standalone.** Files under `packages/mdrs/core/` fail lint when they import `@supabase/*`, `#lib`, `@idstead/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`mdrsResolvers` in `packages/lib/src/server/mdrsData.ts` on the server, `createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts` for the admin preview).
-- **The design system depends only on the domain.** Files under `packages/ui/` fail lint when they import `#lib`, `@idstead/lib`, `@mdrs/core`, `@supabase/*` or a `server/` path.
-- **The MDRS browser layer and the editor stay out of lib.** Files under `packages/mdrs/dom/` may import only `@idstead/ui`, `@idstead/domain` and `@mdrs/core`; files under `packages/mdrs/editor/` must not import `#lib`, `@idstead/lib`, `@supabase/*` or a `server/` path.
-- **The domain is pure.** Files under `packages/domain/` fail lint when they import `#lib`, any `@idstead/*` package, `$app/*`, `$lib`, `svelte` or `@supabase/*`.
+- **The MDRS engine is standalone.** Files under `packages/mdrs/core/` fail lint when they import `#lib`, `@idstead/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`mdrsResolvers` in `packages/lib/src/server/mdrsData.ts` on the server, `createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts` for the admin preview).
+- **The design system depends only on the domain.** Files under `packages/ui/` fail lint when they import `#lib`, `@idstead/lib`, `@mdrs/core` or a `server/` path.
+- **The MDRS browser layer and the editor stay out of lib.** Files under `packages/mdrs/dom/` may import only `@idstead/ui`, `@idstead/domain` and `@mdrs/core`; files under `packages/mdrs/editor/` must not import `#lib`, `@idstead/lib` or a `server/` path.
+- **The domain is pure.** Files under `packages/domain/` fail lint when they import `#lib`, any `@idstead/*` package, `$app/*`, `$lib` or `svelte`.
 - **The data layer is D1 only.** Files under `packages/data/` may import only `@idstead/domain`, and only `packages/lib/src/server/data.ts` may import its adapter factories (`createD1*`); everything else builds stores with `dataStores()`.
-- **Supabase is the auth provider only.** `@supabase/*` may be imported only by the auth modules: `packages/lib/src/supabase.ts`, `packages/lib/src/server/{supabaseAuth,supabaseAdmin,supabaseUser,adminAuth,blogPostAuth}.ts` and the admin account settings (core `no-restricted-imports`, so type imports count too).
+- **No Supabase.** `@supabase/*` imports fail lint everywhere: admin sign-in goes through Cloudflare Access.
 
 ## Claude Code hooks (`.claude/`)
 

@@ -42,10 +42,9 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `csp.test.ts` | Content-Security-Policy builder |
 | `robots.test.ts` | `robots.txt` directives and preview blocking |
 | `moderation.test.ts`, `inferenceQueue.test.ts` | Llama Guard moderation parsing; Workers AI concurrency limit |
-| `adminAuthState.test.ts` | MFA/passkey session rules (`requiresAdminMfa`) |
-| `authCaptcha.test.ts`, `loginRateLimit.test.ts` | Admin login Turnstile (one token forwarded to Supabase Auth as `captchaToken`); login lockout (salted hashes, shared counter, in-memory fallback) |
+| `accessAuth.test.ts` | Cloudflare Access token checks (signature, `iss`, `aud`, expiry, `type`, `ADMIN_EMAILS`) and the loopback-only dev identity |
+| `loginRateLimit.test.ts` | Lockout counter for failed client secrets (salted hashes, shared counter, in-memory fallback) |
 | `ipSalt.test.ts` | `ipSalt` prefers the Worker binding and never falls back to a hard-coded salt |
-| `safeRedirect.test.ts` | Admin login `redirectTo` safety |
 | `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |
 | `newsletterQueue.test.ts`, `newsletterBroadcast.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation; broadcast claims, idempotency keys and the `PUBLIC_SITE_URL` link fallback; unsubscribe URL; contact email rendering |
 | `blogBannerRoute.test.ts` | Banner object keys and CDN URLs, reserved slugs, and that the old Worker banner and content routes no longer exist |

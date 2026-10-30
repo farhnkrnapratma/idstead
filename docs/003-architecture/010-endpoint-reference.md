@@ -85,22 +85,19 @@ Details: [004-public-write-endpoints.md](004-public-write-endpoints.md).
 
 ## idstead-admin: `admin.example.com`
 
-Pages: `/` (dashboard), `/new`, `/login`, `/oauth/authorize` (OpenID Connect authorize and consent; its load also checks the session and MFA itself). All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
+Pages: `/` (dashboard), `/new`, `/oauth/authorize` (OpenID Connect authorize and consent). Cloudflare Access covers the whole host, and the hook answers `401` to any page request without a valid Access token. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
 
 API routes authenticate themselves:
 
-- **`blogAdmin`** checks same-origin, then calls `verifyAdminToken`.
-- **`requireAdminAuth`** calls `verifyAdminToken` and is used together with a separate `isSameOriginRequest` check.
+- **`blogAdmin`** checks same-origin, then calls `verifyAdminRequest`.
+- **`requireAdminAuth`** calls `verifyAdminRequest` and is used together with a separate `isSameOriginRequest` check.
 
-`verifyAdminToken` requires a Bearer token, `role ∈ {admin, service_role}`, and a satisfied MFA. It returns 401 or 403 otherwise.
+`verifyAdminRequest` requires a valid Cloudflare Access token (`Cf-Access-Jwt-Assertion`) and returns `401 ADMIN_AUTH_REQUIRED` otherwise. See [006-admin-sign-in.md](006-admin-sign-in.md).
 
 | Route | Methods | Guard |
 | --- | --- | --- |
-| `/api/internal/admin/login` | POST | same-origin, lockout, Turnstile (Supabase Auth `captchaToken`) |
-| `/api/internal/admin/logout` | POST | same-origin |
 | `/api/internal/admin/oidc/clients` | GET, POST | `blogAdmin`; POST `action` is `create`, `update`, `rotate` or `delete` |
-| `/api/internal/admin/oidc/authorize` | POST | `blogAdmin` plus the cookie session with MFA; records consent and returns the redirect URL |
-| `/api/internal/admin/password` | POST | `blogAdmin` + lockout |
+| `/api/internal/admin/oidc/authorize` | POST | `blogAdmin`; records consent and returns the redirect URL |
 | `/api/internal/admin/posts` | GET, POST | `blogAdmin` |
 | `/api/internal/admin/posts/notify` | POST | `blogAdmin` |
 | `/api/internal/admin/posts/list` | GET | `blogAdmin`; every post with read time, view and comment counts |
@@ -113,7 +110,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/activity` | GET | `blogAdmin`, called inside `adminActivity()`; `section` is `stats`, `subscribers`, `feedback`, `feedback_history`, `reports` or `report_history` |
 | `/api/internal/admin/notifications` | GET, POST | `blogAdmin`, called inside `adminActivity()` |
 | `/api/internal/admin/workspace` | GET, POST | `blogAdmin`, called inside `adminWorkspace()` |
-| `/api/internal/admin/settings` | GET, PUT | same-origin + `verifyAdminToken` |
+| `/api/internal/admin/settings` | GET, PUT | same-origin + `verifyAdminRequest` |
 | `/api/internal/admin/profile` | GET, POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/profile/import` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/resume` | POST | same-origin + `requireAdminAuth` |
@@ -130,7 +127,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/dismiss-reports` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/export` | GET | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/data/delete-all` | POST | same-origin + `requireAdminAuth`, password + Turnstile (`captchaToken`), lockout |
+| `/api/internal/admin/data/delete-all` | POST | same-origin + `verifyAdminRequest`, sign-in within 10 minutes, body `{"confirm":"DELETE"}` |
 | `/api/internal/blog/validate-define` | POST | same-origin + `requireAdminAuth`; called by every admin MDRS editor |
 
 ## Source

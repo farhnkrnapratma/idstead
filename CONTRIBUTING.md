@@ -43,7 +43,7 @@ bun run lint
 - **No comments in code.** Prefer clear names.
 - **Prefer Tailwind utilities** over hand-written CSS.
 - **Reuse the shared components** in `packages/lib`.
-- Never hardcode content (name, bio, links, resume, …). It comes from Supabase.
+- Never hardcode content (name, bio, links, resume, …). It comes from the database.
 - **API changes:**
     - Breaking changes go under a new version (`/v2`).
     - Update `packages/lib/src/openapi.ts`, `apps/api/src/README.md` and `docs/004-api/001-v1/` together.

@@ -16,7 +16,7 @@ sequenceDiagram
 
     B->>WW: source file (≤ 10 MB, ≤ 40 MP)
     WW-->>B: encoded set (60 s timeout)
-    B->>A: upload (Bearer token)
+    B->>A: upload (Cloudflare Access cookie)
     A->>A: validate (sizes, magic bytes, WASM WebP decode)
     A->>R2: PUT objects (IfNoneMatch *, then read back + SHA-256 check)
     A->>DB: commit the new version in one batch (versions table + pointer row)

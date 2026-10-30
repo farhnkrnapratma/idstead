@@ -20,6 +20,6 @@ Scope the review with `git diff --name-only develop...HEAD -- apps/api packages/
 6. **No database IDs**: posts are exposed by `public_id` only, comments by their `public_id`. Flag any UUID or `*_id` column in a response, feed or URL.
 7. **Docs sync**: every new or changed path, parameter, output or schema is reflected in the README, in `packages/lib/src/openapi.ts` (paths written `/v1/...`; web mirrors it at `/.well-known/openapi.{json,yaml}`), in `docs/004-api/001-v1/`, and in `tests/apiV1.test.ts`, `tests/apiV1Handlers.test.ts` or `tests/apiParams.test.ts`.
 8. **Versioning**: breaking changes (a removed or renamed field, a changed type, default or status code, a removed endpoint or parameter, a changed error code) never land in place under `/v1`; they ship under `/v2`.
-9. **Data layer boundary**: the worker reads through `dataStores({ env }, { bannerUrls: false }).public` only; flag any use of `.service` or of `@supabase/*` from API code.
+9. **Data layer boundary**: the worker reads through `dataStores({ env }, { bannerUrls: false }).public` only; flag any use of `.service` from API code.
 
 Report findings as a list: `file:line` — what is wrong — the specific fix, referencing the rule above. If a route is fully compliant, say so explicitly rather than inventing findings. Do not modify any files — this is a read-only review; report back to the main thread so it can apply fixes.

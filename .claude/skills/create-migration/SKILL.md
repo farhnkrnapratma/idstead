@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Create migration
 
-The data layer runs on Cloudflare D1. Every schema change is a new, never-edited SQL file in `packages/data/d1/migrations/`, numbered in order (`0001_init.sql`, `0002_admin_views.sql`, `0003_oidc.sql`, …). D1 has **no row-level security**: tables are reached only through the ports in `packages/data/src/` and their D1 adapters in `packages/data/src/d1/` (the only place SQL is written), and every caller of `dataStores().service` must check its caller first. `supabase/migrations/` is the history of the retired Postgres schema; never add to it.
+The data layer runs on Cloudflare D1. Every schema change is a new, never-edited SQL file in `packages/data/d1/migrations/`, numbered in order (`0001_init.sql`, `0002_admin_views.sql`, `0003_oidc.sql`, …). D1 has **no row-level security**: tables are reached only through the ports in `packages/data/src/` and their D1 adapters in `packages/data/src/d1/` (the only place SQL is written), and every caller of `dataStores().service` must check its caller first.
 
 ## Steps
 

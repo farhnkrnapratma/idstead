@@ -4,7 +4,7 @@ import { RENDER_VERSION } from '../packages/mdrs/core/src/version.ts';
 
 const pinned = {
     renderVersion: 3,
-    snapshotSha256: 'f1cf3d34f030dc79ac047222d1ec6fcab371af72c388507701a293dedd291d7b'
+    snapshotSha256: '806dccff3cf8119e2258085d46dfcf1e0a5196d22af256ded6813224da0d65ac'
 };
 
 test('RENDER_VERSION changes whenever MDRS output changes', async () => {

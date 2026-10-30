@@ -16,7 +16,7 @@ sequenceDiagram
 
     B->>B: processBanner() in a Web Worker: WebP + AVIF, 1280×640
     B->>P: multipart: post fields, markdown, banner files, operationId
-    P->>P: blogAdmin(): same-origin + verifyAdminToken
+    P->>P: blogAdmin(): same-origin + verifyAdminRequest (Access token)
     P->>P: parsePostInput() (banner WASM validation), validateDefineForSave()
     P->>P: buildPostRender(): render MDRS once (failure is logged, the save continues)
     P->>DB: prepare the post operation (keyed by operationId)

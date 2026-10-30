@@ -9,25 +9,20 @@ This page describes how the system protects itself. To report a vulnerability, s
 | `api.example.com/v1` | anyone | read-only (`GET`/`HEAD`/`OPTIONS`), public repositories only, rate limit |
 | `example.com` pages, `/.well-known`, `/api/ard` | anyone | anon client for reads; ARD index read with service-role; rate limit on `/api/*` |
 | `example.com/api/internal/**` | the site's own pages | same-origin, Turnstile on anything that sends mail or stores text, rate limit |
-| `admin.example.com` pages | the admin | Supabase session cookie + role `admin` + MFA, checked in the hooks |
-| `admin.example.com/api/internal/**` | the admin UI | same-origin + `verifyAdminToken()` (Bearer token, role, MFA) |
+| `admin.example.com` pages | the admin | Cloudflare Access in front of the host, then the Access token checked in the hooks |
+| `admin.example.com/api/internal/**` | the admin UI | same-origin + `verifyAdminRequest()` (Access token) |
 | `idstead-jobs` | Queues and cron only | no HTTP surface (`fetch` returns 404, `workers_dev: false`) |
 
 ## Authentication and MFA (admin)
 
-- **Sign-in:** either email + password (Turnstile, lockout, then TOTP when the account has a verified factor), or a passkey.
-- **Direct Supabase Auth calls:** anyone can call Supabase Auth's password endpoint directly and skip the login route. Every sign-in (password, passkey, the `data/delete-all` password check) forwards a Turnstile token as `captchaToken`, so turning on **CAPTCHA protection** in the Supabase dashboard (provider Turnstile, the production secret) closes that path. Until it is on, the direct endpoint has only Supabase's own per-IP rate limits, and TOTP or a passkey is still needed for an admin session.
-- **MFA rule:** a session is MFA-satisfied when one of these holds:
-    - it is a passkey session (`amr` method `passkey`, `webauthn` or `mfa/webauthn`);
-    - its `aal` is `aal2`;
-    - no `aal2` step is pending.
+- **Sign-in:** a Cloudflare Access self-hosted application covers `admin.example.com`. Its policy admits only the owner's email; the login method is the owner's Cloudflare account or another Access login method. Idstead stores no passwords, authenticator secrets or passkeys.
+- **MFA:** enforced by Access. Require two-factor authentication in the Access policy or the Zero Trust settings, or turn it on for the Cloudflare account used to sign in.
+- **Token check:** Access adds `Cf-Access-Jwt-Assertion` to every request. `accessIdentity()` (`packages/lib/src/server/accessAuth.ts`) verifies the RS256 signature against the team's certs, `iss`, `aud` (`ACCESS_AUD`), `exp` and `type = app`, and, when `ADMIN_EMAILS` is set, the email. A deployed admin without `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` refuses every request; only a `vite dev` build on a loopback host uses the `admin@localhost` identity.
+- **Destructive actions:** deleting all site data needs a sign-in from the last 10 minutes (token `iat`) and the typed confirmation `DELETE`.
+- **Lockout:** failed OpenID Connect client secrets are counted in `db_login_failures` (salted SHA-256 key hashes), shared across isolates, with an in-memory fallback.
+- **Session cookie:** `CF_Authorization`, set by Access on `admin.example.com`. Sign-out is `/cdn-cgi/access/logout`.
 
-    The retired Postgres schema mirrored the rule in `public.is_admin()`. D1 has no such check, so every admin endpoint verifies the session with this rule (`requireAdminAuth`/`blogAdmin`) before it touches the service stores.
-
-- **Login lockout:** 5 failures per 15 minutes per IP and per email + IP pair. The email is always paired with the IP, so nobody can lock the admin out from elsewhere just by knowing the address. The counter is shared across isolates in `db_login_failures`, which stores only salted SHA-256 hashes of the `ip:`/`email-ip:` keys and is reachable only through `service_role` RPCs (`db_login_lockout`, `db_login_record_failure`, `db_login_clear`). If the database is unreachable, the isolate's in-memory counter takes over. The password-change and `data/delete-all` routes use the same counter (`password-change:…`, `delete-all:…`). Successful and failed logins go to `db_activity_log`, and every successful login sends an email alert.
-- **Session cookie:** host-only on `admin.example.com`, `sameSite=lax`, `secure`.
-
-Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-mfa.md).
+Details and the flow diagram: [architecture/6](003-architecture/006-admin-sign-in.md).
 
 ## Request integrity
 
@@ -36,7 +31,7 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-
     - Without `Origin`, `GET`/`HEAD` pass, and other methods need `Sec-Fetch-Site: same-origin`.
     - Every internal endpoint calls this check.
     - The web hook additionally answers cross-origin `OPTIONS` to `/api/internal/*` with 403.
-- **Turnstile:** `verifyTurnstileToken()` calls Cloudflare `siteverify` with `TURNSTILE_SECRET`. It is used by comments, comment reports, subscribe, unsubscribe-request, contact and admin login.
+- **Turnstile:** `verifyTurnstileToken()` calls Cloudflare `siteverify` with `TURNSTILE_SECRET`. It is used by comments, comment reports, subscribe, unsubscribe-request and contact.
 - **Rate limiting:** 60 requests per 60 s per IP on `example.com/api/*` and on `api.example.com`, through the Workers Rate Limiting binding `API_RATE_LIMITER`, with an in-memory fallback.
 - **Comment moderation:**
     - Every comment is checked by Llama Guard 3 through the Workers AI `AI` binding.
@@ -48,15 +43,14 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-
 
 - **D1 has no row-level security**, so every read and write goes through the server-only data layer (`dataStores()` in `packages/lib/src/server/data.ts`):
     - `public` stores return only published posts, approved comments and the public profile fields; the API worker uses nothing else.
-    - `service` stores (writers, admin, newsletter, resume, activity) are used only in server code after the endpoint has checked its caller: same-origin and Turnstile checks for public writes, `requireAdminAuth`/`blogAdmin` with MFA for admin endpoints.
+    - `service` stores (writers, admin, newsletter, resume, activity) are used only in server code after the endpoint has checked its caller: same-origin and Turnstile checks for public writes, `requireAdminAuth`/`blogAdmin` (the Cloudflare Access identity) for admin endpoints.
     - ESLint forbids `@idstead/data` and `server/` imports in browser code.
-- **Supabase is the auth provider only.** The service-role client (`packages/lib/src/server/supabaseAdmin.ts`) verifies admin tokens and manages the admin user; it never reads site data, and it is never imported from `.svelte` files or browser bundles.
 - **No database IDs in public output:** posts are exposed by their 64-hex `public_id`, and comments by no identifier at all.
 - **Error scrubbing:** API error messages that mention database internals are replaced with a generic message (`apiEnvelope.ts`).
 - **IP privacy:**
     - Public endpoints store IPs only as SHA-256 hashes salted with `IP_SALT`. This covers views, reports, feedback and subscribers.
-    - The admin activity log (`packages/lib/src/server/activityLog.ts`) stores the raw `ip` **and** `ip_hash` for admin actions and login attempts. Those rows are pruned after 30 days by the jobs Worker's daily cron.
-    - Every admin action that changes data is logged with the client IP from `clientAddress()`, including password changes, comment replies, deletions and report dismissals, and manual newsletter sends. An unknown IP is stored as empty, never as a placeholder address.
+    - The admin activity log (`packages/lib/src/server/activityLog.ts`) stores the raw `ip` **and** `ip_hash` for admin actions. Those rows are pruned after 30 days by the jobs Worker's daily cron.
+    - Every admin action that changes data is logged with the client IP from `clientAddress()`, including comment replies, deletions and report dismissals, and manual newsletter sends. An unknown IP is stored as empty, never as a placeholder address.
         - Sentry request data is filtered by `privateRequestIntegrations()` (`packages/lib/src/server/sentryPrivacy.ts`).
 
 ## Content rendering
@@ -70,7 +64,7 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-
 - **CSP** (`buildContentSecurityPolicy`, `packages/lib/src/server/csp.ts`) is set on every HTML response from web and admin:
     - `default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`;
     - `script-src` allows `'unsafe-inline'` plus Turnstile, Google Tag Manager, Instatus and Cloudflare Insights;
-    - `connect-src` adds the Sentry, CDN and API origins, and on admin also the Supabase Auth origin.
+    - `connect-src` adds the Sentry, CDN and API origins.
 - **`apps/web/_headers`** declares `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection` and `Referrer-Policy: strict-origin-when-cross-origin`. Cloudflare applies `_headers` to static asset responses, not to responses generated by the Worker. Images served by the Worker set `nosniff` themselves.
 - **Admin and internal endpoints:** `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`.
 
