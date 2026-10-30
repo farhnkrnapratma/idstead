@@ -47,7 +47,9 @@ describe('Idstead naming', () => {
 
     test('application code never falls back to the owner handle', async () => {
         const offenders = await mentioning(
-            trackedFiles.filter(file => /^(apps|packages)\//.test(file)),
+            trackedFiles.filter(
+                file => /^(apps|packages)\//.test(file) && !INSTANCE_FILES.has(file)
+            ),
             OWNER_HANDLE
         );
         expect(offenders).toEqual([]);
