@@ -4,16 +4,19 @@ import { avatarSource } from '#lib/siteIdentity.ts';
 import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projectsCache.ts';
 import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
 import { resendApiKey, senderAddress } from '#lib/server/subscribers.ts';
+import { siteAnalytics } from '#lib/server/analytics.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
-    const { author: authorRepository, legal } = publicRepositories(fetch);
-    const [profile, socialLinks, legalPages] = await Promise.all([
+    const repos = publicRepositories(fetch);
+    const { author: authorRepository, legal } = repos;
+    const [profile, socialLinks, legalPages, analytics] = await Promise.all([
         authorRepository.profile().catch(() => null),
         authorRepository.socialLinks().catch(() => []),
         legal
             .pages()
             .then(publishedLegalSlugs)
-            .catch(() => [])
+            .catch(() => []),
+        siteAnalytics(repos)
     ]);
     const author = profile ? { ...profile, socialLinks } : null;
 
@@ -30,6 +33,7 @@ export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) =>
         projects: withoutExcludedProjects(projects, repoRules.excluded),
         pinnedRepoNames: repoRules.pinned,
         legalPages,
-        newsletterEnabled: Boolean(resendApiKey(platform) && senderAddress(platform))
+        newsletterEnabled: Boolean(resendApiKey(platform) && senderAddress(platform)),
+        cookieConsent: analytics.consent
     };
 };

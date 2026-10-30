@@ -160,9 +160,10 @@
     show={isPageWithFeedback && !readingModeStore.active}
     class={isArticleLikePage ? 'lg:hidden' : ''} />
 
-{#if !page.error}
+{#if !page.error && page.data.cookieConsent}
     <ConsentBanner />
 {/if}
 <Toast />
-<ShortcutCatalogDialog hiddenCommands={hiddenLegalPaths()} />
+<ShortcutCatalogDialog
+    hiddenCommands={[...hiddenLegalPaths(), ...(page.data.cookieConsent ? [] : ['/cookies'])]} />
 <ShortcutModeIndicator />

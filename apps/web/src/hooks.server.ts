@@ -14,6 +14,8 @@ import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
+import { analyticsHead, analyticsSources, siteAnalytics } from '#lib/server/analytics.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 
 const sentryInitHandle: Handle =
     import.meta.hot?.data.sentryInitHandle
@@ -138,10 +140,14 @@ export const handle: Handle = sequence(
                 );
         }
 
+        const analytics =
+            isApiRequest ? null : await siteAnalytics(publicRepositories(event.fetch));
+        const head = analytics ? analyticsHead(analytics.settings, event.url.hostname) : '';
         let response = await resolve(event, {
             transformPageChunk: ({ html }) => {
                 const cdn = getCdnBaseUrl();
-                return cdn ? html.replaceAll(`${cdn}//`, `${cdn}/`) : html;
+                const withAnalytics = html.replace('%idstead.analytics%', () => head);
+                return cdn ? withAnalytics.replaceAll(`${cdn}//`, `${cdn}/`) : withAnalytics;
             }
         });
         const contentType = response.headers.get('content-type') ?? '';
@@ -156,6 +162,7 @@ export const handle: Handle = sequence(
                     sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
                     cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
                     apiBaseUrl: apiBaseUrl(publicEnv.PUBLIC_API_BASE_URL),
+                    analytics: analytics ? analyticsSources(analytics.settings) : undefined,
                     dev
                 })
             );
