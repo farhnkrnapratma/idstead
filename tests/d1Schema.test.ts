@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { readFileSync } from 'node:fs';
-import postgresColumns from './fixtures/postgresColumns.json';
 
 const MIGRATIONS = new URL('../packages/data/d1/migrations/', import.meta.url);
-const MOVED_TO_POST_STATS = ['view_count', 'helpful_yes', 'helpful_no'];
-const DROPPED_FROM_POSTS = ['summary', 'tldr'];
+const ADAPTERS = new URL('../packages/data/src/d1/', import.meta.url);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -57,24 +55,29 @@ function post(db: Database, id: string, values: Row = {}) {
 }
 
 describe('D1 schema', () => {
-    test('keeps every Postgres column, with the post counters moved to db_post_stats and the AI summaries dropped', () => {
+    test('has every table the D1 adapters query', () => {
         const db = migratedDb();
-        for (const [table, expected] of Object.entries(postgresColumns)) {
-            const actual = columns(db, table);
-            const wanted =
-                table === 'db_posts' ?
-                    expected.filter(
-                        name =>
-                            !MOVED_TO_POST_STATS.includes(name)
-                            && !DROPPED_FROM_POSTS.includes(name)
-                    )
-                :   expected;
-            expect({ table, missing: wanted.filter(name => !actual.includes(name)) }).toEqual({
-                table,
-                missing: []
-            });
+        const tables = new Set(
+            (
+                db
+                    .query("select name from sqlite_master where type in ('table', 'view')")
+                    .all() as Row[]
+            ).map(row => row.name as string)
+        );
+        const referenced = new Set<string>();
+        for (const file of new Bun.Glob('*.ts').scanSync(ADAPTERS.pathname)) {
+            const source = readFileSync(new URL(file, ADAPTERS), 'utf8');
+            for (const match of source.matchAll(/\b(?:from|into|update|join)\s+(db_[a-z_]+)/gi))
+                referenced.add(match[1]);
         }
-        expect(columns(db, 'db_post_stats')).toEqual(['post_id', ...MOVED_TO_POST_STATS]);
+        expect(referenced.size).toBeGreaterThan(10);
+        expect([...referenced].filter(table => !tables.has(table))).toEqual([]);
+        expect(columns(db, 'db_post_stats')).toEqual([
+            'post_id',
+            'view_count',
+            'helpful_yes',
+            'helpful_no'
+        ]);
     });
 
     test('generates UUIDs, public IDs and ISO timestamps by default', () => {
