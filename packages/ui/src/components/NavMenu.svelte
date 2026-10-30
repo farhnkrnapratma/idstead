@@ -1,9 +1,12 @@
 <script
     lang="ts"
     module>
+    import type { Component } from 'svelte';
+
     export interface NavMenuItem {
         label: string;
         href: string;
+        icon?: Component<{ class?: string }>;
         external?: boolean;
         current?: boolean;
         combo?: string;
@@ -70,7 +73,7 @@
     {#snippet children({ close })}
         <nav
             aria-label={label}
-            class="flex min-w-52 scrollbar-none flex-col overflow-y-auto pt-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            class="flex min-w-44 scrollbar-none flex-col overflow-y-auto pt-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {#each visibleGroups as group, index (group.label)}
                 {#if index > 0}
                     <hr class="my-1 border-line-subtle" />
@@ -92,11 +95,14 @@
                         shortcutLabel={item.label}
                         shortcutPlacement="inline"
                         class={cn(
-                            'h-auto! w-full justify-start! gap-2 rounded-none! py-2 ps-3 pe-12 text-sm font-medium no-underline focus-visible:-outline-offset-2!',
+                            'h-auto! w-full justify-start! gap-2 rounded-none! py-2 ps-3 pe-8 font-medium no-underline focus-visible:-outline-offset-2!',
                             item.current ?
                                 'bg-accent/10 font-semibold text-fg-accent!'
-                            :   'text-fg-muted! hover:bg-surface-hover hover:text-fg! focus-visible:bg-surface-hover focus-visible:text-fg!'
+                            :   'text-fg! hover:bg-surface-hover hover:text-fg-accent! focus-visible:bg-surface-hover'
                         )}>
+                        {#if item.icon}
+                            <item.icon class="size-3.5 shrink-0" />
+                        {/if}
                         <span class="min-w-0 flex-1 truncate text-left">{item.label}</span>
                         {#if item.external}
                             <SquareArrowOutUpRight class="size-3 shrink-0 text-fg-muted" />

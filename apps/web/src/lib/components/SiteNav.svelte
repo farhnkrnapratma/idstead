@@ -39,6 +39,7 @@
                 .map(item => ({
                     label: item.label,
                     href: item.href,
+                    icon: item.icon,
                     combo: item.combo,
                     current: isCurrent(item.href)
                 }))
