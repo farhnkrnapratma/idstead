@@ -3,6 +3,7 @@ import type { AuthorRepository, BlogRepository, Repositories } from '@idstead/da
 import { publicPostFields } from '@idstead/domain/blog.ts';
 import { sanitizePublicApiData } from '#lib/authorApi.ts';
 import { createMdrsResolvers, type MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
+import { analyticsData } from './api/analytics';
 
 async function authorData(author: AuthorRepository) {
     const [profile, resume, funding, contact, skills, socials] = await Promise.all([
@@ -40,13 +41,14 @@ async function blogPostData(slug: string, blog: BlogRepository) {
     return { ...publicPostFields(post), content };
 }
 
-export type MdrsRepositories = Pick<Repositories, 'author' | 'blog'>;
+export type MdrsRepositories = Pick<Repositories, 'author' | 'blog' | 'site'>;
 
-export function mdrsLoaders({ author, blog }: MdrsRepositories): MdrsDataLoaders {
+export function mdrsLoaders({ author, blog, site }: MdrsRepositories): MdrsDataLoaders {
     return {
         author: () => authorData(author),
         blogList: () => blogListData(blog),
-        blogPost: slug => blogPostData(slug, blog)
+        blogPost: slug => blogPostData(slug, blog),
+        analytics: () => analyticsData({ site })
     };
 }
 

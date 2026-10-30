@@ -4,11 +4,13 @@ export interface MdrsDataLoaders {
     author(): Promise<unknown>;
     blogList(): Promise<unknown>;
     blogPost(slug: string): Promise<unknown>;
+    analytics(): Promise<unknown>;
 }
 
 export function createMdrsResolvers(loaders: MdrsDataLoaders): ApiRegistry {
     let author: Promise<DefineValue> | null = null;
     let blogList: Promise<DefineValue> | null = null;
+    let analytics: Promise<DefineValue> | null = null;
     const blogPosts = new Map<string, Promise<DefineValue>>();
     return {
         author: async path => {
@@ -25,6 +27,10 @@ export function createMdrsResolvers(loaders: MdrsDataLoaders): ApiRegistry {
             }
             blogList ??= loaders.blogList().then(jsToDefineValue);
             return walkPath(await blogList, path);
+        },
+        analytics: async path => {
+            analytics ??= loaders.analytics().then(jsToDefineValue);
+            return walkPath(await analytics, path);
         }
     };
 }

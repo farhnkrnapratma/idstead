@@ -78,6 +78,7 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 | `RESUME_BUNDLE_NOT_FOUND` | 404 | `output=zip` was requested before the verification bundle was built. |
 | `RESUME_FETCH_FAILED` | 502 | A resume file could not be read from storage. |
 | `SEARCH_FETCH_FAILED` | 500 | Search could not be read. |
+| `ANALYTICS_FETCH_FAILED` | 500 | The analytics settings could not be read. |
 | `RATE_LIMITED` | 429 | Over the rate limit — see below. |
 | `NOT_FOUND` | 404 | No endpoint exists at that path. |
 | `METHOD_NOT_ALLOWED` | 405 | Any method other than `GET`, `HEAD` or `OPTIONS`. The `Allow` header lists the accepted methods. |
@@ -156,6 +157,16 @@ curl -OJ "{{API_BASE_URL}}/v1/resume?o=sig" && gpg --verify resume-*.pdf.sig
 | `/v1/search` | `query` (min 2 chars), `page`, `limit` (default 6, max 20) | `{query, data, pagination: {page, limit, returned, hasMore}}` |
 
 Each result is `{type: "post", id, title, subtitle, url}`. A query under two characters returns an empty result, not an error. Page until `hasMore` is `false`.
+
+### Analytics
+
+| Path | Parameters | Returns |
+| --- | --- | --- |
+| `/v1/analytics` | none | `{enabled, provider, name, cookies}`: the analytics the site loads. `provider` is one of `none`, `ga4`, `gtm`, `umami`, `plausible`, `cloudflare`; `cookies` is `true` when it sets cookies, which the site asks consent for first. |
+
+```sh
+curl "{{API_BASE_URL}}/v1/analytics"
+```
 
 ### Discovery
 
