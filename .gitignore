@@ -21,5 +21,3 @@ supabase/.temp/
 .playwright-mcp/
 .local/
 graphify-out/
-.impeccable/*
-!.impeccable/config.json
