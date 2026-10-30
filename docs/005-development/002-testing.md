@@ -30,7 +30,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `postSlug.test.ts` | Post slugs and the slug regeneration plan |
 | `publicPost.test.ts` | `publicPostFields` keeps only public columns and swaps the UUID for the public ID |
 | `sanitizePublicApiData.test.ts` | `sanitizePublicApiData` drops row IDs and the avatar and banner asset versions from `/v1/author` |
-| `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and migration privacy |
+| `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and persistence |
 | `markdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
 | `mdrsDocsSnapshot.test.ts` | Snapshot of the rendered HTML for every ` ```mdrs ` example in `docs/008-mdrs/` and for `fixtures/markdown-demo.md`. After an intended engine change, review the diff and refresh it with `bun test tests/mdrsDocsSnapshot.test.ts --update-snapshots` |
 | `mdrsRenderVersion.test.ts`, `postRender.test.ts`, `blogPostSave.test.ts` | `RENDER_VERSION` is bumped whenever the MDRS snapshot changes; render file paths, live-data detection and render file validation; the save stores the render next to the markdown and survives a failed render upload |
@@ -47,8 +47,6 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `ipSalt.test.ts` | `ipSalt` prefers the Worker binding and never falls back to a hard-coded salt |
 | `safeRedirect.test.ts` | Admin login `redirectTo` safety |
 | `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |
-| `safeupdate.test.ts` | Every `UPDATE`/`DELETE` in migrations has a `WHERE` (PostgREST `safeupdate`) |
-| `pageFeedbackDeleteMigration.test.ts` | Specific migrations |
 | `newsletterQueue.test.ts`, `newsletterBroadcast.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation; broadcast claims, idempotency keys and the `PUBLIC_SITE_URL` link fallback; unsubscribe URL; contact email rendering |
 | `blogBannerRoute.test.ts` | Banner object keys and CDN URLs, reserved slugs, and that the old Worker banner and content routes no longer exist |
 | `blogStorageCleanup.test.ts`, `blogPostInput.test.ts`, `postSaveClient.test.ts` | Markdown cleanup queue, post input validation, save button label |

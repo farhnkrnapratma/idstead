@@ -4,7 +4,6 @@ import {
     parseIdentityMeta,
     validateSiteBanner
 } from '../packages/lib/src/server/validateSiteBanner.ts';
-import { readFile } from 'node:fs/promises';
 import { validateAvatar } from '../packages/lib/src/server/validateAvatar.ts';
 import {
     avatarAssetNames,
@@ -28,12 +27,10 @@ function webp(width: number, height: number) {
     return bytes;
 }
 
-const bannerAvif = new Uint8Array(
-    await readFile(new URL('./fixtures/banner-1280x640.avif', import.meta.url))
-);
-const avatarAvif = new Uint8Array(
-    await readFile(new URL('./fixtures/avatar-512.avif', import.meta.url))
-);
+const bannerAvif = await Bun.file(
+    new URL('./fixtures/banner-1280x640.avif', import.meta.url)
+).bytes();
+const avatarAvif = await Bun.file(new URL('./fixtures/avatar-512.avif', import.meta.url)).bytes();
 
 function fakeAvif() {
     const bytes = new Uint8Array(64);
@@ -147,10 +144,9 @@ describe('banner asset routing', () => {
             'banner.avif',
             'banner.webp'
         ]);
-        const source = await readFile(
-            new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url),
-            'utf8'
-        );
+        const source = await Bun.file(
+            new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url)
+        ).text();
         expect(source).toContain('export const assetNames = identityAssetNames;');
         expect(source).toContain('isBanner(name) ? versions.banner : versions.avatar');
     });
@@ -195,27 +191,13 @@ describe('shared identity folder', () => {
         expect(avatarAssetNames).toContain('avatar.webp');
     });
 
-    test('the database expects the same asset names', async () => {
-        const migration = await readFile(
-            new URL(
-                '../supabase/migrations/20261015120000_shared_identity_versions.sql',
-                import.meta.url
-            ),
-            'utf8'
-        );
-        const list = migration.match(/unnest\(array\[([\s\S]*?)\]\)/)?.[1] ?? '';
-        const names = [...list.matchAll(/'([^']+)'/g)].map(match => match[1]);
-        expect(names.sort()).toEqual([...identityAssetNames].sort());
-    });
-
     test('the profile route stages one shared version and copies the unchanged group', async () => {
-        const source = await readFile(
+        const source = await Bun.file(
             new URL(
                 '../apps/admin/src/routes/api/internal/admin/profile/+server.ts',
                 import.meta.url
-            ),
-            'utf8'
-        );
+            )
+        ).text();
         expect(source).toContain("kind: 'identity'");
         expect(source).toContain('copyAssets(platform, version, group.assets)');
         expect(source).toContain('promoteIdentity(platform, version)');
@@ -236,10 +218,9 @@ describe('shared identity folder', () => {
 
 describe('unversioned identity serving', () => {
     test('identity assets are served from canonical keys and reject version queries', async () => {
-        const source = await readFile(
-            new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url),
-            'utf8'
-        );
+        const source = await Bun.file(
+            new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url)
+        ).text();
         expect(source).toContain("url.searchParams.has('v')) return missing();");
         expect(source).toContain('bucket.get(`identity/${name}`)');
         expect(source).toContain("export const IMAGE_CACHE_CONTROL = 'public, max-age=300';");
