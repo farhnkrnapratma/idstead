@@ -46,7 +46,7 @@ bun install
     bun run --filter @idstead/jobs dev   # jobs worker, http://localhost:8788
     ```
 
-5. **Add your content** in the admin portal. Starter texts for the legal pages are in [`templates/legal/`](templates/legal/README.md).
+5. **Add your content** in the admin portal.
 6. **Deploy** each app as a Worker; see [deployment](docs/006-operations/001-deployment.md).
 
 `bun run setup` does steps 1, 5 and 6 for you, along with the Cloudflare resources and the admin account, and an AI coding agent can drive it through the `setup-idstead` skill. See [setting up an instance](docs/001-getting-started/README.md).
@@ -66,7 +66,6 @@ bun install
 | `packages/mdrs/core` |  | The MDRS engine (`@mdrs/core`). |
 | `packages/mdrs/dom` |  | The browser side of MDRS (`@mdrs/dom`) and `mdrs.css`. |
 | `packages/mdrs/editor` |  | The Markdown editor (`@mdrs/editor`). |
-| `templates/` |  | Starter content for a new site. |
 | `tooling/`, `scripts/` |  | Build tooling, Git hooks and one-off migration commands. |
 
 ## Development

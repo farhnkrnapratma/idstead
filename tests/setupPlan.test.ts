@@ -1,11 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { resolveInstanceConfig } from '../packages/domain/src/instance.ts';
-import { LEGAL_SLUGS as SITE_LEGAL_SLUGS } from '../packages/domain/src/legal.ts';
 import {
-    LEGAL_SLUGS,
     SetupAnswersError,
     instanceSource,
-    legalTemplate,
     missingVariables,
     requiredVariables,
     resolveSetupAnswers,
@@ -121,26 +118,6 @@ describe('variables', () => {
             ADMIN_EMAILS: 'ada@example.org'
         });
         expect(secrets.api).toEqual({});
-    });
-});
-
-describe('content helpers', () => {
-    test('legalTemplate takes the title from the first heading and removes it', () => {
-        expect(
-            legalTemplate(':::define\na: 1\n:::\n\n# Privacy Policy\n\nText', 'privacy')
-        ).toEqual({ title: 'Privacy Policy', content: ':::define\na: 1\n:::\n\nText' });
-        expect(legalTemplate('No heading', 'terms')).toEqual({
-            title: 'Terms',
-            content: 'No heading'
-        });
-    });
-
-    test('seeds every legal page the site serves from a template', async () => {
-        expect([...LEGAL_SLUGS].sort()).toEqual([...SITE_LEGAL_SLUGS].sort());
-        for (const slug of LEGAL_SLUGS)
-            expect(
-                await Bun.file(new URL(`../templates/legal/${slug}.md`, import.meta.url)).exists()
-            ).toBe(true);
     });
 });
 

@@ -12,10 +12,8 @@ import { renderWranglerConfigs } from './configure.ts';
 import { isSigningKey } from './oidc-key.ts';
 import {
     APPS,
-    LEGAL_SLUGS,
     SetupAnswersError,
     instanceSource,
-    legalTemplate,
     missingVariables,
     nextSteps,
     resolveSetupAnswers,
@@ -195,28 +193,6 @@ async function mustRun(command: string[], options: { cwd?: string; inherit?: boo
     return result;
 }
 
-function sqlText(value: string) {
-    return `'${value.replaceAll("'", "''")}'`;
-}
-
-async function d1Query(config: InstanceConfig, sql: string) {
-    const result = await mustRun([
-        'bunx',
-        'wrangler',
-        'd1',
-        'execute',
-        config.cloudflare.database.name,
-        '--remote',
-        '--json',
-        '--command',
-        sql
-    ]);
-    const parsed = JSON.parse(result.output.slice(result.output.indexOf('['))) as {
-        results?: Record<string, unknown>[];
-    }[];
-    return parsed.flatMap(item => item.results ?? []);
-}
-
 async function databaseId(name: string): Promise<string | null> {
     const listed = await mustRun(['bunx', 'wrangler', 'd1', 'list', '--json']);
     const databases = JSON.parse(listed.output.slice(listed.output.indexOf('['))) as {
@@ -382,33 +358,6 @@ async function adminAccess(
     return updated;
 }
 
-async function legalPages(config: InstanceConfig) {
-    step('Legal pages');
-    if (!config.cloudflare.database.id) {
-        planned('add the legal pages from templates/legal/ once the database exists');
-        return;
-    }
-    const rows = await d1Query(config, "SELECT slug FROM db_legals WHERE trim(content) <> ''");
-    const present = new Set(rows.map(row => String(row.slug)));
-    for (const slug of LEGAL_SLUGS) {
-        if (present.has(slug)) {
-            note(`/${slug} already has content; left as is.`);
-            continue;
-        }
-        const page = legalTemplate(
-            await Bun.file(path.join(ROOT, 'templates/legal', `${slug}.md`)).text(),
-            slug
-        );
-        if (apply)
-            await d1Query(
-                config,
-                `INSERT INTO db_legals (slug, title, content) VALUES (${sqlText(slug)}, ${sqlText(page.title)}, ${sqlText(page.content)})
-                 ON CONFLICT (slug) DO UPDATE SET title = excluded.title, content = excluded.content`
-            );
-        planned(`add /${slug} from templates/legal/${slug}.md`);
-    }
-}
-
 async function deploy(config: InstanceConfig, secrets: Record<App, Record<string, string>>) {
     step('Build and deploy');
     if (skipDeploy) {
@@ -454,7 +403,6 @@ async function main() {
     await cloudflare(config);
     const withDatabase = await database(config);
     const ready = await adminAccess(withDatabase, answers, values);
-    await legalPages(ready);
     await deploy(ready, workerSecrets(keys, values));
     step('Next steps');
     for (const [index, line] of nextSteps(config).entries()) note(`${index + 1}. ${line}`);

@@ -5,8 +5,6 @@ export type App = (typeof APPS)[number];
 export type Variables = Record<string, string | undefined>;
 export type WorkerKeys = Record<App, { keys: string[]; required: string[] }>;
 
-export const LEGAL_SLUGS = ['privacy', 'terms', 'security', 'ai-disclosure'] as const;
-
 export const CORE_VARIABLES = ['IP_SALT', 'PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET'];
 
 export interface SetupAnswers {
@@ -93,13 +91,6 @@ export function workerSecrets(
     ) as Record<App, Record<string, string>>;
 }
 
-export function legalTemplate(markdown: string, slug: string): { title: string; content: string } {
-    const heading = markdown.match(/^# (.+)\n+/m);
-    const title = heading?.[1]?.trim() || slug.charAt(0).toUpperCase() + slug.slice(1);
-    const content = heading ? markdown.replace(heading[0], '') : markdown;
-    return { title, content };
-}
-
 export const ACCESS_APP_NAME = 'Idstead admin';
 export const ACCESS_POLICY_NAME = 'Idstead owner';
 
@@ -136,7 +127,7 @@ export function nextSteps(config: InstanceConfig): string[] {
         `Cloudflare Zero Trust > Access settings: require two-factor authentication (passkey, security key or authenticator app) for the ${admin} application, or turn on two-factor authentication for your Cloudflare account if you sign in with Cloudflare.`,
         `Turnstile: allow the hostname ${site} on the widget whose site key is PUBLIC_TURNSTILE_SITE_KEY.`,
         `Resend: verify the domain of SUBSCRIBER_FROM_EMAIL before the newsletter or contact form sends mail.`,
-        `Open https://${admin}, sign in through Cloudflare Access with the admin email, then fill in your profile and review the legal pages.`,
+        `Open https://${admin}, sign in through Cloudflare Access with the admin email, then fill in your profile and write the legal pages.`,
         `Check https://${site} and https://${api}/v1.`
     ];
 }

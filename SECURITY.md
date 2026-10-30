@@ -2,7 +2,7 @@
 
 This policy covers the Idstead code in this repository: the web, admin, API and jobs Workers, the shared packages and the MDRS engine.
 
-A site running Idstead publishes its own security policy at `/security` (the starter text is in [`templates/legal/security.md`](templates/legal/security.md)). To report a problem with one specific site, such as a misconfiguration or exposed data, contact that site's owner through that page.
+A site running Idstead publishes its own security policy at `/security`. To report a problem with one specific site, such as a misconfiguration or exposed data, contact that site's owner through that page.
 
 ## Supported versions
 
