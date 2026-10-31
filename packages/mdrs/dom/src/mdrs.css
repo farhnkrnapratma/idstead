@@ -533,7 +533,7 @@
     }
 
     .mdrs-spinner {
-        @apply mr-2 size-3.5 animate-spin rounded-md border-2 border-accent border-t-transparent;
+        @apply mr-2 inline-block size-4 shrink-0 animate-loading-morph bg-accent;
     }
 
     .mdrs-mermaid {
