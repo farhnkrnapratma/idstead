@@ -251,7 +251,7 @@
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
-        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
+        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
@@ -301,7 +301,7 @@
                 {@attach syncCodeBlockPrefs} />
 
             {#if !readingModeStore.active}
-                <div class="mt-8 lg:hidden">
+                <div class="mt-8 pb-6 sm:pb-8 lg:hidden">
                     <HelpfulBlock
                         title="Help improve this page"
                         subtitle="Was this page helpful to you?"
@@ -355,7 +355,7 @@
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
     progress={articleScrollProgress}
-    class="hidden lg:fixed lg:right-[calc(18rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+    class="hidden lg:fixed lg:right-[calc(22rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />
 

@@ -22,6 +22,7 @@
     import { ChevronDown, SquareArrowOutUpRight } from '@lucide/svelte';
     import { cn } from '../utils/cn';
     import Button from './Button.svelte';
+    import IconButton from './IconButton.svelte';
     import Dropdown from './Dropdown.svelte';
 
     interface Props {
@@ -30,6 +31,7 @@
         active?: boolean;
         shortcut?: string;
         placement?: 'bottom-start' | 'bottom-end';
+        triggerIcon?: Component<{ class?: string }>;
         class?: string;
     }
 
@@ -39,6 +41,7 @@
         active = false,
         shortcut,
         placement = 'bottom-start',
+        triggerIcon,
         class: className = ''
     }: Props = $props();
 
@@ -50,25 +53,41 @@
     {placement}
     class={className}>
     {#snippet trigger({ isOpen, toggle })}
-        <Button
-            type="ghost"
-            size="sm"
-            onclick={toggle}
-            aria-expanded={isOpen}
-            aria-haspopup="dialog"
-            keyboardShortcut={shortcut}
-            shortcutLabel="Open the {label} menu"
-            class={cn(
-                'gap-1 px-2 text-sm font-medium',
-                isOpen || active ? 'text-fg!' : 'text-fg-muted! hover:text-fg!'
-            )}>
-            {label}
-            <ChevronDown
+        {#if triggerIcon}
+            {@const TriggerIcon = triggerIcon}
+            <IconButton
+                ariaLabel={label}
+                size="sm"
+                variant="ghost"
+                onclick={toggle}
+                aria-expanded={isOpen}
+                aria-haspopup="dialog"
+                keyboardShortcut={shortcut}
+                shortcutLabel="Open the {label} menu"
+                class={cn(isOpen || active ? 'text-fg!' : 'text-fg-muted! hover:text-fg!')}>
+                <TriggerIcon class="size-4" />
+            </IconButton>
+        {:else}
+            <Button
+                type="ghost"
+                size="sm"
+                onclick={toggle}
+                aria-expanded={isOpen}
+                aria-haspopup="dialog"
+                keyboardShortcut={shortcut}
+                shortcutLabel="Open the {label} menu"
                 class={cn(
-                    'size-3 transition-transform duration-200 ease-out',
-                    isOpen && 'rotate-180'
-                )} />
-        </Button>
+                    'gap-1 px-2 text-sm font-medium',
+                    isOpen || active ? 'text-fg!' : 'text-fg-muted! hover:text-fg!'
+                )}>
+                {label}
+                <ChevronDown
+                    class={cn(
+                        'size-3 transition-transform duration-200 ease-out',
+                        isOpen && 'rotate-180'
+                    )} />
+            </Button>
+        {/if}
     {/snippet}
     {#snippet children({ close })}
         <nav

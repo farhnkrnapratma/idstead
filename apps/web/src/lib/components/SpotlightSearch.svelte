@@ -85,10 +85,10 @@
                 variant === 'expanded' ?
                     'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-fg-secondary hover:border-accent/50 hover:text-fg-accent sm:h-9 sm:px-3'
                 : variant === 'icon' ?
-                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9'
+                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md glass-button p-0 text-xs font-semibold text-fg-secondary transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9'
                 : variant === 'responsive' ?
-                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-auto sm:justify-between sm:gap-2 sm:px-3'
-                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-line-subtle bg-surface p-0 text-xs font-semibold text-fg-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
+                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md glass-button p-0 text-xs font-semibold text-fg-secondary transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-auto sm:justify-between sm:gap-2 sm:px-3'
+                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md glass-button p-0 text-xs font-semibold text-fg-secondary transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
                 className
             )}
             aria-label={variant === 'icon' ? 'Search' : undefined}
