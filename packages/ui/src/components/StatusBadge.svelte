@@ -25,10 +25,10 @@
     };
 
     const tones = {
-        success: { dot: 'bg-success', icon: 'text-fg-success' },
-        danger: { dot: 'bg-danger', icon: 'text-fg-danger' },
-        warning: { dot: 'bg-warning', icon: 'text-fg-warning' },
-        muted: { dot: 'bg-fg-muted', icon: 'text-fg-muted' }
+        success: 'text-fg-success',
+        danger: 'text-fg-danger',
+        warning: 'text-fg-warning',
+        muted: 'text-fg-muted'
     };
 
     let status = $state<ServiceStatus | null>(null);
@@ -69,18 +69,12 @@
         rel="noopener noreferrer"
         title={current.label}
         class={cn(
-            'inline-flex max-w-full items-center rounded-full border border-line-subtle bg-surface p-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:gap-1.5 sm:px-2.5 sm:py-1',
+            'inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
             className
         )}>
         <StatusIcon
             aria-hidden="true"
-            class={cn('size-3.5 shrink-0 sm:hidden', tones[current.tone].icon)} />
-        <span
-            aria-hidden="true"
-            class={cn(
-                'hidden size-2 shrink-0 rounded-full motion-safe:animate-pulse sm:inline-block',
-                tones[current.tone].dot
-            )}></span>
-        <span class="sr-only sm:not-sr-only sm:truncate">{current.label}</span>
+            class={cn('size-3.5 shrink-0', tones[current.tone])} />
+        <span class="truncate">{current.label}</span>
     </a>
 {/if}
