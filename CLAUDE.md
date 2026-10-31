@@ -50,6 +50,7 @@ Where the instance runs (domains, Worker, bucket and queue names, cron) lives in
 - **No database IDs in public output.** Never return UUIDs or `*_id` columns from the API, page data, feeds or banner URLs; posts and comments are identified by their `public_id`.
 - **Writes stay first-party.** The API worker is read-only (`GET`/`HEAD`/`OPTIONS`); anything that writes lives under `/api/internal/**` on web or admin. D1 has no row-level security, so check the caller before using `dataStores().service`: public writes are same-origin and Turnstile-gated, admin endpoints verify the admin first.
 - **Naming.** Nothing in the repository names a particular person, domain or deployment outside the instance files: packages are `@idstead/*` and `@mdrs/*`, browser storage keys `idstead_*`, and docs and tests use `example.com` (MDRS examples `my-site.example`) and the default resource names. `tests/naming.test.ts` fails when the old personal prefix appears outside its allowlists.
+- **No legacy.** When something is replaced, remove the old version in the same change: no aliases, fallbacks, compatibility shims, old-URL redirects or deprecated paths ([`.claude/rules/no-legacy.md`](.claude/rules/no-legacy.md)).
 - **No comments in code.** Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it, and reuse the shared components and layout primitives instead of page-local one-offs; run the `ui-consistency-check` skill after touching a page or component.
 - **Always write security-aware code.** Validate/sanitize untrusted input at every boundary, avoid injection/XSS/auth-bypass-shaped patterns, and default to the same scrutiny the `security-audit` skill and `security-reviewer` agent apply.
@@ -108,3 +109,8 @@ This checkout is also the owner's own instance, **fkp.my.id**. Only these places
 - **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).
 - **Deploys:** each Worker is connected to Workers Builds on `main` only; previews are not connected, so `develop` and PRs deploy nothing.
 - **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`).
+
+<!-- fallow:agent-install v1 claude-import:start -->
+
+@AGENTS.md
+<!-- fallow:agent-install v1 claude-import:end -->

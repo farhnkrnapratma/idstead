@@ -29,7 +29,7 @@ The setup script reads every value from the process environment. Bun loads a `.e
 | `PUBLIC_CDN_BASE_URL` | The public origin that serves the asset bucket's files, such as an R2 custom domain. The site proxies static files and images from it. |
 | `PUBLIC_SITE_URL`, `PUBLIC_API_BASE_URL` | Optional: they default to `https://<site domain>` and `https://<api domain>` from `idstead.jsonc`. |
 
-Optional values are passed on when they are set: `GITHUB_PAT` (projects: the public repositories of the token's owner), `PUBLIC_GA_MEASUREMENT_ID`, and `PUBLIC_STATUS_PAGE_HOST` with `PUBLIC_STATUS_PAGE_CODE`.
+Optional values are passed on when they are set: `GITHUB_PAT` (projects: the public repositories of the token's owner) and `PUBLIC_STATUS_PAGE_HOST` with `PUBLIC_STATUS_PAGE_CODE`. Analytics are chosen later in the admin.
 
 ## After setup
 

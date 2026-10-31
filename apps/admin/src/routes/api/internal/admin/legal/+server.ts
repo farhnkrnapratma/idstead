@@ -1,23 +1,15 @@
 import type { RequestHandler } from './$types';
-import { adminActor } from '#lib/server/adminAuth.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
+import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 import { isLegalSlug } from '@idstead/domain/legal.ts';
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 200_000;
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-    const service = dataStores(platform).service;
-    if (!service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    const admin = await adminServices(request, url, platform, { code: 'LEGAL_UNAVAILABLE' });
+    if (admin.response) return admin.response;
+    const { service } = admin;
     try {
         const pages = await service.legal.pages();
         return Response.json({ pages }, { headers: { 'Cache-Control': 'no-store' } });
@@ -28,12 +20,9 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
 };
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-    const { service } = dataStores(platform);
-    if (!service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    const admin = await adminServices(request, url, platform, { code: 'LEGAL_UNAVAILABLE' });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let body: { slug?: unknown; title?: unknown; content?: unknown };
     try {
@@ -58,25 +47,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const result = await service.legalWriter.save({ slug, title, content });
     if (result.status === 'rejected') return apiError(400, 'LEGAL_SAVE_FAILED', result.message);
 
-    const actor = await adminActor(request, platform);
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: actor ?? null,
             action: 'legal.update',
             category: 'profile',
             entityId: slug,
-            summary: `Saved the ${slug} page.`,
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            summary: `Saved the ${slug} page.`
         },
-        service.activityLog
+        getClientAddress
     );
     return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 };

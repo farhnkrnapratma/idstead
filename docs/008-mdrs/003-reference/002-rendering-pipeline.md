@@ -11,8 +11,9 @@ flowchart TD
     A[Source] --> A1["Strip U+E000/U+E001,<br/>remove YAML frontmatter<br/>(frontmatter.ts)"]
     A1 --> B["Extract :::define block<br/>(define/block.ts)"]
     B --> C["Evaluate define entries<br/>(define/evaluate.ts, only if the block has entries)"]
-    C --> D["Extract :::ignore-render blocks<br/>as escaped pre (render/ignoreRender.ts)"]
-    D --> E["Protect ${…} and [text].${…}<br/>(define/interpolation.ts; only with :::define;<br/>code and \${ skipped)"]
+    C --> D["Extract :::verbatim blocks<br/>as escaped pre (render/verbatim.ts)"]
+    D --> D1[":::if blocks, then ${if} with :::define<br/>(define/conditionals.ts; code skipped)"]
+    D1 --> E["Protect ${…}<br/>(define/interpolation.ts; only with :::define;<br/>code and \${ skipped)"]
     E --> F["Extract math<br/>$$ … $$ and :::math (render/math.ts)"]
     F --> G[Resolve interpolation]
     G --> H["Render math with KaTeX<br/>(interpolation inside formulas resolved first)"]
@@ -24,7 +25,7 @@ flowchart TD
     L --> M["Style details blocks (render/details.ts)"]
     M --> N["Build steps (render/steps.ts)"]
     N --> O["Format footnote back-links, place References<br/>(render/footnotes.ts, references.ts)"]
-    O --> P[Restore math and ignore-render placeholders]
+    O --> P[Restore math and verbatim placeholders]
     P --> Q["sanitizeHtml allowlist (sanitize.ts)"]
     Q --> R["injectHeadingIds (mdrs- IDs), prefixHashLinks,<br/>extractHeadings (render/headings.ts)"]
 ```
@@ -33,7 +34,7 @@ flowchart TD
 
 Internal placeholders are wrapped in the private-use characters U+E000 and U+E001 (`placeholders.ts`). Those characters are removed from the source first, so no input can forge or collide with a placeholder.
 
-Code spans and fenced code blocks are swapped for placeholders before the define, math and directive passes run, and restored afterwards. That's why MDRS syntax inside code stays literal.
+Code spans and fenced code blocks are swapped for placeholders before the conditional, define, math and directive passes run, and restored afterwards. That's why MDRS syntax inside code stays literal.
 
 ## Browser pass
 
@@ -60,11 +61,11 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `replaceMathBlocks`, `MATH_INLINE_RE` | `@mdrs/core` | Math helpers for the editor's syntax highlighting |
 | `extractFrontmatter(markdown)`, `importPostDocument(text)` | `@mdrs/core` | YAML frontmatter and the admin file import |
 | `sanitizeHtml(html)`, `sanitizeUrl(href)` | `@mdrs/core` | The allowlist sanitizer and URL check |
-| `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation and the size limit |
+| `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation (including conditionals) and the size limit |
 | `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@mdrs/core` | Building blocks for live-data resolvers |
-| `resolveDefines(markdown, resolvers?)` | `@mdrs/core` | Markdown source with the `:::define` block removed and its variables filled in; code, escaped variables and `:::ignore-render` stay literal |
+| `resolveDefines(markdown, resolvers?)` | `@mdrs/core` | Markdown source with the `:::define` block removed and its conditionals resolved and its variables filled in; code, escaped variables and `:::verbatim` stay literal |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
-| `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
+| `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author`, `api.v1.blog` and `api.v1.analytics` resolvers on the server |
 | `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
 | `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
@@ -92,7 +93,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 
 Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/mdrs/core/src/version.ts`). Pages ignore a stored render with another version and render the post again, so bump `RENDER_VERSION` whenever the engine's output changes. `tests/mdrsRenderVersion.test.ts` enforces this: it pins the hash of the MDRS snapshot file to the current version and fails until both are updated together.
 
-`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define`. Pages still serve the stored render of such a post; the jobs worker re-renders it after every publish and once a day, together with any stored render from an older `RENDER_VERSION`.
+`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define` or in a `:::if` condition. Pages still serve the stored render of such a post; the jobs worker re-renders it after every publish and once a day, together with any stored render from an older `RENDER_VERSION`.
 
 ## Limits
 
@@ -102,7 +103,8 @@ Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/m
 | Directive nesting | 16 levels | Deeper opening lines are plain text |
 | Placeholder expansion | 5,000 per document | Further placeholders are left unexpanded |
 | `api.v1.blog` list | 20 newest published posts |  |
-| Conditional text nesting | 8 levels | Deeper `${…}` inside `[…].${…}` is left as written |
+| `:::if` nesting | 16 levels | Deeper `:::if` lines are plain text |
+| `${if}` nesting | 8 levels | Deeper `${if}` renders a `[define error]` marker |
 | Frontmatter nesting | 16 levels | Deeper YAML is a parse error |
 
 Source: `packages/mdrs/core/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/core/src/frontmatter.ts`, `packages/mdrs/core/src/placeholders.ts`, `packages/mdrs/dom/src/enhance.ts`.

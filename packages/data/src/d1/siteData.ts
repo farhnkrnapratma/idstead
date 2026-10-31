@@ -44,6 +44,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 repoRules,
                 activeDocuments,
                 settings,
+                siteSettings,
                 subscribers,
                 profiles
             ] = await Promise.all([
@@ -96,6 +97,11 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                     settings: parseJson(row.settings)
                 })),
                 rows(
+                    'site settings',
+                    'SELECT key, value FROM db_site_settings ORDER BY key',
+                    row => ({ key: row.key, value: parseJson(row.value) })
+                ),
+                rows(
                     'subscribers',
                     'SELECT email, status, confirmed_at, unsubscribed_at, created_at FROM db_subscribers ORDER BY created_at'
                 ),
@@ -110,6 +116,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 repoRules,
                 activeDocuments,
                 settings,
+                siteSettings,
                 subscribers,
                 avatarVersion: (profiles[0]?.avatar_version as string | null | undefined) ?? null
             };
@@ -167,7 +174,6 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                         'DELETE FROM db_comment_reports',
                         'DELETE FROM db_comments',
                         'DELETE FROM db_views',
-                        'DELETE FROM db_post_feedback',
                         'DELETE FROM db_blog_banner_references',
                         `INSERT INTO db_post_storage_cleanup (storage_path, post_id)
                          SELECT storage_path, id FROM db_posts WHERE storage_path IS NOT NULL ON CONFLICT DO NOTHING`,
@@ -176,6 +182,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                         'DELETE FROM db_blog_banner_versions',
                         'DELETE FROM db_project_repo_rules',
                         'DELETE FROM db_legals',
+                        'DELETE FROM db_site_settings',
                         'DELETE FROM db_activity_log',
                         'DELETE FROM db_experiences',
                         'DELETE FROM db_educations',

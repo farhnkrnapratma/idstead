@@ -1,7 +1,7 @@
 <script lang="ts">
+    import AuthorOgImage from '#app/components/AuthorOgImage.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
-    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
@@ -40,11 +40,6 @@
     let authorName = $derived(pageAuthor?.name || '');
     let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
     let siteUrl = $derived(((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, ''));
-    let ogBanner = $derived(publicBannerOgUrl(pageAuthor));
-    let ogImage = $derived(ogBanner || publicAvatarUrl(pageAuthor));
-    let ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
-    let ogImageWidth = $derived(ogBanner ? '1200' : '512');
-    let ogImageHeight = $derived(ogBanner ? '630' : '512');
     let contactEmail = $derived((page?.data as any)?.contactEmail || pageAuthor?.email || '');
 
     let formName = $state('');
@@ -270,21 +265,6 @@
         property="og:url"
         content="{siteUrl}/feedback" />
     <meta
-        property="og:image"
-        content={ogImage} />
-    <meta
-        property="og:image:secure_url"
-        content={ogImage} />
-    <meta
-        property="og:image:type"
-        content={ogImageType} />
-    <meta
-        property="og:image:width"
-        content={ogImageWidth} />
-    <meta
-        property="og:image:height"
-        content={ogImageHeight} />
-    <meta
         name="twitter:card"
         content="summary_large_image" />
     <meta
@@ -295,10 +275,8 @@
         content="Send feedback, suggestions, or comments{authorName ?
             ` directly to ${authorName}.`
         :   '.'}" />
-    <meta
-        name="twitter:image"
-        content={ogImage} />
 </svelte:head>
+<AuthorOgImage author={pageAuthor} />
 
 <PageMain variant="site">
     <Section

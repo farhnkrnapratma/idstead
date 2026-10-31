@@ -27,7 +27,7 @@
         "@idstead/domain": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/webp": "1.5.0",
-        "@lucide/svelte": "^1.64.0",
+        "@lucide/svelte": "^1.65.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@noble/hashes": "^2.4.0",

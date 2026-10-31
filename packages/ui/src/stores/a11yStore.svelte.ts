@@ -1,9 +1,7 @@
 import { browser } from '$app/env';
 import {
-    A11Y_LEGACY_STORAGE_KEY,
     A11Y_STORAGE_KEY,
     A11Y_SYSTEM_QUERIES,
-    migrateLegacySettings,
     parseOverrides,
     resolveSettings,
     type A11ySettings,
@@ -48,15 +46,7 @@ function createA11yStore() {
     function readOverrides(): Partial<A11ySettings> {
         try {
             const stored = localStorage.getItem(A11Y_STORAGE_KEY);
-            if (stored !== null) return parseOverrides(stored);
-            const legacy = localStorage.getItem(A11Y_LEGACY_STORAGE_KEY);
-            if (legacy === null) return {};
-            const migrated = migrateLegacySettings(legacy);
-            localStorage.removeItem(A11Y_LEGACY_STORAGE_KEY);
-            if (Object.keys(migrated).length > 0) {
-                localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify(migrated));
-            }
-            return migrated;
+            return stored === null ? {} : parseOverrides(stored);
         } catch {
             return {};
         }

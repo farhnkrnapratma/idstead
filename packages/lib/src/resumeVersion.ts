@@ -177,7 +177,7 @@ export function resumeVersionBump(
 }
 
 export function parseResumeVersion(filename?: string | null): ResumeVersion | null {
-    const match = filename?.match(/-v(\d+)\.(\d+)(?:\.\d+)?\.pdf$/i);
+    const match = filename?.match(/-v(\d+)\.(\d+)\.pdf$/i);
     return match ? { major: Number(match[1]), minor: Number(match[2]) } : null;
 }
 

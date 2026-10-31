@@ -1,4 +1,4 @@
-import { rasterContentImage } from '../contentImageRaster';
+import { rasterContentImage } from '../rasterImage';
 
 self.onmessage = async (event: MessageEvent<{ file: Blob }>) => {
     try {

@@ -24,6 +24,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/v1/author`                           | `getAuthor`                                   |
 | `/v1/resume`                           | `getAuthor(ctx, ['resume'])`                  |
 | `/v1/search`                           | `getSearch`                                   |
+| `/v1/analytics`                        | `getAnalytics`                                |
 | `/v1/openapi.json`, `/v1/openapi.yaml` | `openapiSpec`                                 |
 
 ## idstead-web: `example.com`
@@ -123,7 +124,8 @@ API routes authenticate themselves:
 | `/api/internal/admin/projects` | POST | same-origin + `requireAdminAuth`; `{pinned, excluded}` repository names for the projects section |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/mdrs-data` | POST | same-origin + `requireAdminAuth`; returns the `author`, `blog` or one `post` live-data tree for the editor preview |
+| `/api/internal/admin/mdrs-data` | POST | same-origin + `requireAdminAuth`; returns the `author`, `blog`, `analytics` or one `post` live-data tree for the editor preview |
+| `/api/internal/admin/site-settings/analytics` | GET, POST | `blogAdmin`; reads or saves the analytics provider, logs `settings.analytics` ([Analytics and consent](013-analytics-and-consent.md)) |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/dismiss-reports` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/export` | GET | same-origin + `requireAdminAuth` |

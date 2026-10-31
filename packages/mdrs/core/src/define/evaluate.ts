@@ -1,4 +1,14 @@
-import { type BinaryExpr, type Expr, type PathSegment, type Reference } from './ast';
+import {
+    type ArrayLit,
+    type BinaryExpr,
+    type Expr,
+    type ObjectLit,
+    type PathSegment,
+    type Reference,
+    type TemplateLit,
+    type TernaryExpr,
+    type UnaryExpr
+} from './ast';
 import { DefineError } from './errors';
 import { isValidIdentifierName } from './identifiers';
 import {
@@ -15,15 +25,25 @@ import {
 
 export type ApiResolver = (path: PathSegment[]) => Promise<DefineValue>;
 
-export interface ApiRegistry {
-    author: ApiResolver;
-    blog: ApiResolver;
-}
+export type ApiRegistry = Readonly<Record<string, ApiResolver>>;
 
 export interface EvalContext {
     scope: Map<string, DefineValue>;
     allowThis: boolean;
     apiRegistry: ApiRegistry;
+}
+
+function scopeValue(name: string, ctx: EvalContext): DefineValue {
+    const value = ctx.scope.get(name);
+    if (value === undefined) {
+        throw new DefineError(
+            ctx.allowThis ?
+                `'${name}' is undefined, or referenced before it was defined`
+            :   `'${name}' is undefined`,
+            name
+        );
+    }
+    return value;
 }
 
 async function evaluateReference(node: Reference, ctx: EvalContext): Promise<DefineValue> {
@@ -45,12 +65,6 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
         return walkPath(base, node.path.slice(1));
     }
 
-    if (node.root === 'db') {
-        throw new DefineError(
-            "'db.*' is no longer supported — use 'api.v1.*' instead (e.g. api.v1.author)"
-        );
-    }
-
     if (node.root === 'api') {
         if (node.path.length === 0 || node.path[0].kind !== 'prop') {
             throw new DefineError('api must be followed by a version, e.g. api.v1.author');
@@ -63,10 +77,11 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
             throw new DefineError('api.v1 must be followed by a resource name, e.g. api.v1.author');
         }
         const resource = node.path[1].name as string;
-        const resolver = ctx.apiRegistry[resource as keyof ApiRegistry];
+        const resolver =
+            Object.hasOwn(ctx.apiRegistry, resource) ? ctx.apiRegistry[resource] : null;
         if (!resolver) {
             throw new DefineError(
-                `Unknown api.v1 resource '${resource}' (supported: author, blog)`
+                `Unknown api.v1 resource '${resource}' (supported: ${Object.keys(ctx.apiRegistry).join(', ')})`
             );
         }
         return resolver(node.path.slice(2));
@@ -153,6 +168,48 @@ async function evaluateBinary(node: BinaryExpr, ctx: EvalContext): Promise<Defin
     }
 }
 
+async function evaluateTemplate(node: TemplateLit, ctx: EvalContext): Promise<DefineValue> {
+    let text = '';
+    for (const part of node.parts) {
+        if (part.kind === 'text') text += part.value;
+        else if (part.kind === 'variable') text += toDisplayString(scopeValue(part.name, ctx));
+        else text += toDisplayString(await evaluateExpr(part.expr, ctx));
+    }
+    return stringVal(text);
+}
+
+async function evaluateTernary(node: TernaryExpr, ctx: EvalContext): Promise<DefineValue> {
+    const test = await evaluateExpr(node.test, ctx);
+    if (test.type !== 'boolean') throw new DefineError(`'? :' requires a boolean condition`);
+    return evaluateExpr(test.value ? node.consequent : node.alternate, ctx);
+}
+
+async function evaluateArray(node: ArrayLit, ctx: EvalContext): Promise<DefineValue> {
+    const items: DefineValue[] = [];
+    for (const item of node.items) items.push(await evaluateExpr(item, ctx));
+    return arrayVal(items);
+}
+
+async function evaluateObject(node: ObjectLit, ctx: EvalContext): Promise<DefineValue> {
+    const entries: Record<string, DefineValue> = {};
+    for (const entry of node.entries) {
+        if (!isValidIdentifierName(entry.key))
+            throw new DefineError(`'${entry.key}' is not a valid object key`, entry.key);
+        entries[entry.key] = await evaluateExpr(entry.value, ctx);
+    }
+    return objectVal(entries);
+}
+
+async function evaluateUnary(node: UnaryExpr, ctx: EvalContext): Promise<DefineValue> {
+    const value = await evaluateExpr(node.operand, ctx);
+    if (node.op === '!') {
+        if (value.type !== 'boolean') throw new DefineError(`'!' requires a boolean operand`);
+        return boolVal(!(value.value as boolean));
+    }
+    if (value.type !== 'number') throw new DefineError(`unary '-' requires a number operand`);
+    return numberVal(-(value.value as number));
+}
+
 export async function evaluateExpr(node: Expr, ctx: EvalContext): Promise<DefineValue> {
     switch (node.kind) {
         case 'number':
@@ -161,36 +218,18 @@ export async function evaluateExpr(node: Expr, ctx: EvalContext): Promise<Define
             return stringVal(node.value);
         case 'boolean':
             return boolVal(node.value);
-        case 'array': {
-            const items: DefineValue[] = [];
-            for (const item of node.items) items.push(await evaluateExpr(item, ctx));
-            return arrayVal(items);
-        }
-        case 'object': {
-            const entries: Record<string, DefineValue> = {};
-            for (const entry of node.entries) {
-                if (!isValidIdentifierName(entry.key)) {
-                    throw new DefineError(`'${entry.key}' is not a valid object key`, entry.key);
-                }
-                entries[entry.key] = await evaluateExpr(entry.value, ctx);
-            }
-            return objectVal(entries);
-        }
+        case 'template':
+            return evaluateTemplate(node, ctx);
+        case 'ternary':
+            return evaluateTernary(node, ctx);
+        case 'array':
+            return evaluateArray(node, ctx);
+        case 'object':
+            return evaluateObject(node, ctx);
         case 'reference':
             return evaluateReference(node, ctx);
-        case 'unary': {
-            const v = await evaluateExpr(node.operand, ctx);
-            if (node.op === '!') {
-                if (v.type !== 'boolean') {
-                    throw new DefineError(`'!' requires a boolean operand`);
-                }
-                return boolVal(!(v.value as boolean));
-            }
-            if (v.type !== 'number') {
-                throw new DefineError(`unary '-' requires a number operand`);
-            }
-            return numberVal(-(v.value as number));
-        }
+        case 'unary':
+            return evaluateUnary(node, ctx);
         case 'binary':
             return evaluateBinary(node, ctx);
     }
@@ -200,5 +239,14 @@ export function unavailableResolvers(): ApiRegistry {
     const unavailable: ApiResolver = async () => {
         throw new DefineError('Database access is unavailable in this context.');
     };
-    return { author: unavailable, blog: unavailable };
+    return new Proxy({} as Record<string, ApiResolver>, {
+        get: () => unavailable,
+        has: () => true,
+        ownKeys: () => [],
+        getOwnPropertyDescriptor: () => ({
+            configurable: true,
+            enumerable: false,
+            value: unavailable
+        })
+    });
 }

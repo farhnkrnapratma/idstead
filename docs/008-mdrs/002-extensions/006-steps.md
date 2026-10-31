@@ -1,6 +1,6 @@
 # Steps
 
-`:::steps` turns a list, or a series of headings, into a numbered timeline with connecting lines. `:::step` is an alias.
+`:::steps` turns a list, or a series of headings, into a numbered timeline with connecting lines.
 
 ## List form
 

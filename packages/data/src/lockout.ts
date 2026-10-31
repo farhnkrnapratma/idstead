@@ -1,4 +1,4 @@
-export interface LoginLockoutStore {
+export interface LockoutStore {
     retryAfter(keys: string[]): Promise<number>;
     recordFailure(keys: string[]): Promise<void>;
     clear(keys: string[]): Promise<void>;

@@ -1,20 +1,15 @@
 import type { RequestHandler } from './$types';
-import { dataStores } from '#lib/server/data.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
+import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    const service = dataStores(platform).service;
-    if (!service)
-        return apiError(
-            503,
-            'ACTIVITY_LOG_UNAVAILABLE',
-            'Activity log is temporarily unavailable.'
-        );
-    const auth = await blogAdmin(request, url, platform);
-    if (auth.status)
-        return apiError(auth.status, auth.code ?? 'ACTIVITY_LOG_AUTH_REQUIRED', auth.message);
+    const admin = await adminServices(request, url, platform, {
+        code: 'ACTIVITY_LOG_UNAVAILABLE',
+        message: 'Activity log is temporarily unavailable.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let query;
     try {

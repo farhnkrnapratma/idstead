@@ -31,7 +31,7 @@ describe('resolveDefines', () => {
         expect(text).not.toContain('api.v1');
     });
 
-    test('keeps code, escaped variables and ignore-render blocks literal', async () => {
+    test('keeps code, escaped variables and verbatim blocks literal', async () => {
         const source = [
             ':::define',
             'name: api.v1.author.profile.name',
@@ -43,7 +43,7 @@ describe('resolveDefines', () => {
             'const x = `${name}`;',
             '```',
             '',
-            ':::ignore-render',
+            ':::verbatim',
             '${name}',
             ':::'
         ].join('\n');
@@ -55,7 +55,7 @@ describe('resolveDefines', () => {
                 'const x = `${name}`;',
                 '```',
                 '',
-                ':::ignore-render',
+                ':::verbatim',
                 '${name}',
                 ':::'
             ].join('\n')

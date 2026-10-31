@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
-import { dataStores } from '#lib/server/data.ts';
+import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { UUID_PATTERN, stagingAssetHome } from '#lib/blogBanner.ts';
 import { CONTENT_IMAGE_LIMIT } from '#lib/blogContentImage.ts';
@@ -15,16 +14,12 @@ import {
 import { putContentAsset } from '#lib/server/blogContentStorage.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
-    const service = dataStores(platform).service;
-    if (!service)
-        return apiError(
-            503,
-            'BLOG_CONTENT_IMAGE_UNAVAILABLE',
-            'Content image storage is not configured.'
-        );
-    const auth = await blogAdmin(request, url, platform);
-    if (auth.status)
-        return apiError(auth.status, auth.code ?? 'BLOG_CONTENT_IMAGE_AUTH_REQUIRED', auth.message);
+    const admin = await adminServices(request, url, platform, {
+        code: 'BLOG_CONTENT_IMAGE_UNAVAILABLE',
+        message: 'Content image storage is not configured.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let bytes: Uint8Array<ArrayBuffer>;
     let avifBytes: Uint8Array<ArrayBuffer>;

@@ -31,6 +31,7 @@
         Video
     } from '@lucide/svelte';
     import { assetAltText } from '@idstead/domain/assetNaming.ts';
+    import type { Component } from 'svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import { assetMarkdown } from './textEdits';
 
@@ -76,7 +77,58 @@
     const handleFileSelected = (event: Event) => uploadAsset(event, onImageUpload, 'Image', '');
     const handleVideoFileSelected = (event: Event) =>
         uploadAsset(event, onVideoUpload, 'Video', '\n');
+
+    interface Tool {
+        label: string;
+        icon: Component;
+        action: () => void;
+    }
+
+    const headingTools: Tool[] = [
+        { label: 'H1 heading', icon: Heading1, action: () => insert('# ') },
+        { label: 'H2 heading', icon: Heading2, action: () => insert('## ') },
+        { label: 'H3 heading', icon: Heading3, action: () => insert('### ') }
+    ];
+
+    const inlineTools: Tool[] = [
+        { label: 'Bold', icon: Bold, action: () => insert('**', '**') },
+        { label: 'Italic', icon: Italic, action: () => insert('*', '*') },
+        { label: 'Underline', icon: Underline, action: () => insert('<u>', '</u>') },
+        { label: 'Strikethrough', icon: Strikethrough, action: () => insert('~~', '~~') },
+        { label: 'Inline code', icon: Code, action: () => insert('`', '`') }
+    ];
+
+    const blockTools: Tool[] = [
+        { label: 'Insert link', icon: LinkIcon, action: () => insert('[', '](url)') },
+        { label: 'Numbered list', icon: ListOrdered, action: () => insert('1. ') },
+        { label: 'Bulleted list', icon: List, action: () => insert('- ') },
+        { label: 'Task list', icon: ListTodo, action: () => insert('- [ ] ') },
+        { label: 'Blockquote', icon: Quote, action: () => insert('> ') }
+    ];
+
+    const codeBlockTool: Tool = {
+        label: 'Code block',
+        icon: SquareCode,
+        action: () => insert('```\n', '\n```')
+    };
 </script>
+
+{#snippet toolButton(tool: Tool)}
+    <button
+        type="button"
+        onclick={tool.action}
+        aria-label={tool.label}
+        class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
+        <tool.icon class="size-4" />
+    </button>
+{/snippet}
+
+{#snippet separator()}
+    <div
+        class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
+        aria-hidden="true">
+    </div>
+{/snippet}
 
 <div
     class="editor-chrome editor-toolbar flex min-h-10 items-stretch border-b p-0 text-xs select-none">
@@ -84,14 +136,8 @@
         class="editor-toolbar-scroll flex min-w-0 flex-1 scrollbar-none items-center gap-1 overflow-x-auto px-2 py-1.5 sm:px-3"
         role="toolbar"
         aria-label="Formatting tools">
-        {#each [{ action: () => insert('# '), icon: Heading1, label: 'H1 heading' }, { action: () => insert('## '), icon: Heading2, label: 'H2 heading' }, { action: () => insert('### '), icon: Heading3, label: 'H3 heading' }] as const as item (item.label)}
-            <button
-                type="button"
-                onclick={item.action}
-                aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-                <item.icon class="size-4" />
-            </button>
+        {#each headingTools as tool (tool.label)}
+            {@render toolButton(tool)}
         {/each}
 
         <Dropdown
@@ -118,33 +164,15 @@
             {/snippet}
         </Dropdown>
 
-        <div
-            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
-            aria-hidden="true">
-        </div>
+        {@render separator()}
 
-        {#each [{ action: () => insert('**', '**'), icon: Bold, label: 'Bold' }, { action: () => insert('*', '*'), icon: Italic, label: 'Italic' }, { action: () => insert('<u>', '</u>'), icon: Underline, label: 'Underline' }, { action: () => insert('~~', '~~'), icon: Strikethrough, label: 'Strikethrough' }, { action: () => insert('`', '`'), icon: Code, label: 'Inline code' }] as const as item (item.label)}
-            <button
-                type="button"
-                onclick={item.action}
-                aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-                <item.icon class="size-4" />
-            </button>
+        {#each inlineTools as tool (tool.label)}
+            {@render toolButton(tool)}
         {/each}
 
-        <div
-            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
-            aria-hidden="true">
-        </div>
+        {@render separator()}
 
-        <button
-            type="button"
-            onclick={handleImageClick}
-            aria-label="Insert image"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-            <ImageIcon class="size-4" />
-        </button>
+        {@render toolButton({ label: 'Insert image', icon: ImageIcon, action: handleImageClick })}
         <input
             type="file"
             bind:this={imageFileInput}
@@ -153,13 +181,7 @@
             onchange={handleFileSelected}
             class="hidden"
             aria-label="Upload image file" />
-        <button
-            type="button"
-            onclick={handleVideoClick}
-            aria-label="Insert video"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-            <Video class="size-4" />
-        </button>
+        {@render toolButton({ label: 'Insert video', icon: Video, action: handleVideoClick })}
         <input
             type="file"
             bind:this={videoFileInput}
@@ -168,33 +190,15 @@
             onchange={handleVideoFileSelected}
             class="hidden"
             aria-label="Upload video file" />
-        {#each [{ action: () => insert('[', '](url)'), icon: LinkIcon, label: 'Insert link' }, { action: () => insert('1. '), icon: ListOrdered, label: 'Numbered list' }, { action: () => insert('- '), icon: List, label: 'Bulleted list' }, { action: () => insert('- [ ] '), icon: ListTodo, label: 'Task list' }, { action: () => insert('> '), icon: Quote, label: 'Blockquote' }] as const as item (item.label)}
-            <button
-                type="button"
-                onclick={item.action}
-                aria-label={item.label}
-                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-                <item.icon class="size-4" />
-            </button>
+        {#each blockTools as tool (tool.label)}
+            {@render toolButton(tool)}
         {/each}
 
-        <div
-            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
-            aria-hidden="true">
-        </div>
+        {@render separator()}
 
-        <button
-            type="button"
-            onclick={() => insert('```\n', '\n```')}
-            aria-label="Code block"
-            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-            <SquareCode class="size-4" />
-        </button>
+        {@render toolButton(codeBlockTool)}
 
-        <div
-            class="mx-1 h-4 w-px shrink-0 bg-line-subtle"
-            aria-hidden="true">
-        </div>
+        {@render separator()}
 
         <Dropdown
             ariaLabel="More formatting options"

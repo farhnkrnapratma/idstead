@@ -1,7 +1,7 @@
 import { dataStores } from '../data';
 import { publicRepositories } from '../repositories';
 import { ipSalt } from '../ipSalt';
-import { checkLoginLockout, recordFailedLogin } from '../loginRateLimit';
+import { checkLockout, recordLockoutFailure } from '../secretLockout';
 import { clientIp } from '../rateLimit';
 import { oidcSigningKey } from './keys';
 import { oidcEndpoints } from './config';
@@ -37,8 +37,8 @@ export async function oidcEndpointDeps(
         },
         lockout: {
             retryAfter: async keys =>
-                (await checkLoginLockout(service.lockout, salt, ...keys)).retryAfterSeconds,
-            fail: keys => recordFailedLogin(service.lockout, salt, ...keys)
+                (await checkLockout(service.lockout, salt, ...keys)).retryAfterSeconds,
+            fail: keys => recordLockoutFailure(service.lockout, salt, ...keys)
         }
     };
 }

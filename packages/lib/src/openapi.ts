@@ -537,6 +537,34 @@ export const openapiSpec = {
                     '500': errorResponse('SEARCH_FETCH_FAILED.')
                 }
             }
+        },
+        '/v1/analytics': {
+            get: {
+                summary: 'Analytics used by the site',
+                description:
+                    'The analytics provider the site loads and whether it sets cookies. No IDs or script URLs.',
+                parameters: [],
+                responses: {
+                    '200': {
+                        description: 'OK',
+                        content: jsonContent({
+                            type: 'object',
+                            properties: {
+                                enabled: { type: 'boolean' },
+                                provider: {
+                                    type: 'string',
+                                    enum: ['none', 'ga4', 'gtm', 'umami', 'plausible', 'cloudflare']
+                                },
+                                name: { type: 'string' },
+                                cookies: { type: 'boolean' }
+                            },
+                            required: ['enabled', 'provider', 'name', 'cookies']
+                        })
+                    },
+                    ...commonErrors,
+                    '500': errorResponse('ANALYTICS_FETCH_FAILED.')
+                }
+            }
         }
     }
 };

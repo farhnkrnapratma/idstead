@@ -1,9 +1,8 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import type { RequestHandler } from './$types';
+import { readPublicWrite } from '#lib/server/publicWrite.ts';
 import type { AdminNotificationKind } from '@idstead/data';
 import { apiError } from '#lib/server/apiError.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import {
     contactMessageEmail,
     resendApiKey,
@@ -65,21 +64,11 @@ async function resolveContactEmail(): Promise<string> {
         :   (authorProfile?.email || '').trim();
 }
 
-export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    if (!isSameOriginRequest(request, url)) {
-        return apiError(
-            403,
-            'FORBIDDEN_ORIGIN',
-            'Cross-origin requests are not allowed on this endpoint.'
-        );
-    }
-
-    let body: any;
-    try {
-        body = await request.json();
-    } catch {
-        return apiError(400, 'INVALID_JSON_BODY', 'Invalid JSON body.');
-    }
+export const POST: RequestHandler = async event => {
+    const { request, url, platform } = event;
+    const parsed = await readPublicWrite(event, 'CONTACT_TURNSTILE_FAILED');
+    if (parsed.response) return parsed.response;
+    const { body } = parsed;
 
     const kind: ContactKind =
         body?.kind === 'feedback' ? 'feedback'
@@ -88,12 +77,6 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     if (!kind) {
         return apiError(400, 'CONTACT_KIND_INVALID', 'kind must be "message" or "feedback".');
-    }
-
-    const turnstileToken = typeof body?.turnstileToken === 'string' ? body.turnstileToken : '';
-    const turnstileOk = await verifyTurnstileToken(turnstileToken, getClientAddress(), platform);
-    if (!turnstileOk) {
-        return apiError(403, 'CONTACT_TURNSTILE_FAILED', 'Turnstile verification failed.');
     }
 
     const name = typeof body?.name === 'string' ? body.name.trim().slice(0, MAX_NAME) : '';

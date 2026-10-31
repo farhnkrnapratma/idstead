@@ -63,6 +63,7 @@ How it is built:
 | `AUTHOR_FETCH_FAILED` | 500 | An author section failed to load. |
 | `RESUME_METADATA_FETCH_FAILED` | 500 | Reading the active resume document, or the OpenPGP key a signature or bundle needs, failed. |
 | `SEARCH_FETCH_FAILED` | 500 | The search query failed. |
+| `ANALYTICS_FETCH_FAILED` | 500 | The analytics settings could not be read. |
 | `BLOG_CONTENT_FETCH_FAILED` | 502 | The post body could not be read from storage. |
 | `RESUME_FETCH_FAILED` | 502 | A resume file could not be fetched from storage. |
 | `BAD_REQUEST` | 400 | Fallback for a `400` without a specific code. It should not occur. |

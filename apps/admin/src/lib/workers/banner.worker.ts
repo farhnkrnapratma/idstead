@@ -1,8 +1,8 @@
-import { rasterBanner } from '../bannerRaster';
+import { rasterBanner } from '../rasterImage';
 
-self.onmessage = async (event: MessageEvent<{ file: Blob; allowUpscale: boolean }>) => {
+self.onmessage = async (event: MessageEvent<{ file: Blob }>) => {
     try {
-        self.postMessage(await rasterBanner(event.data.file, event.data.allowUpscale));
+        self.postMessage(await rasterBanner(event.data.file));
     } catch (error) {
         self.postMessage({
             error: error instanceof Error ? error.message : 'Image processing failed.'

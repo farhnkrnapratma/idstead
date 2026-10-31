@@ -12,7 +12,6 @@ export interface A11ySettings {
 export type A11yToggleKey = Exclude<keyof A11ySettings, 'fontScale'>;
 
 export const A11Y_STORAGE_KEY = 'a11y_overrides';
-export const A11Y_LEGACY_STORAGE_KEY = 'a11y_settings';
 
 export const A11Y_DEFAULTS: A11ySettings = {
     reduceMotion: false,
@@ -54,17 +53,6 @@ export function parseOverrides(raw: string | null): Partial<A11ySettings> {
         if (typeof source[key] === 'boolean') overrides[key] = source[key];
     }
     if (isFontScale(source.fontScale)) overrides.fontScale = source.fontScale;
-    return overrides;
-}
-
-export function migrateLegacySettings(raw: string | null): Partial<A11ySettings> {
-    const legacy = parseOverrides(raw);
-    const overrides: Partial<A11ySettings> = {};
-    for (const key of Object.keys(legacy) as (keyof A11ySettings)[]) {
-        if (legacy[key] !== A11Y_DEFAULTS[key]) {
-            Object.assign(overrides, { [key]: legacy[key] });
-        }
-    }
     return overrides;
 }
 

@@ -65,8 +65,10 @@ describe('save validation', () => {
         expect((await validate('Template ${missing}')).ok).toBe(true);
     });
 
-    test('nested interpolation in conditional text is checked', async () => {
-        const { ok, errors } = await validate(':::define\nok: true\n:::\n\n[Value ${nope}].${ok}');
+    test('interpolation inside an inline conditional is checked', async () => {
+        const { ok, errors } = await validate(
+            ':::define\nok: true\n:::\n\n${if ok}Value ${nope}${endif}'
+        );
         expect(ok).toBe(false);
         expect(errors[0].message).toBe("'nope' is undefined");
     });

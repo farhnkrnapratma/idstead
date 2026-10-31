@@ -97,8 +97,8 @@ describe('data export helpers', () => {
     });
 
     test('errorMessage reads plain error objects', () => {
-        expect(errorMessage({ message: 'relation does not exist' })).toBe(
-            'relation does not exist'
+        expect(errorMessage({ message: 'no such table: db_posts' })).toBe(
+            'no such table: db_posts'
         );
         expect(errorMessage(new Error('boom'))).toBe('boom');
     });

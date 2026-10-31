@@ -295,13 +295,25 @@ This post's `:::define` block mixes literals, expressions and live data. ${autho
 - The engine's file extension is `${engine.extension}`, and it ships ${engine.directives} directives.
 - Is this build stable? ${stable}.
 
-Conditional text only shows when its condition is true, and can hold its own expressions:
+Inline conditionals choose text inside a sentence, and can hold their own expressions:
 
-[This is a stable build of ${engine.language} ${version}.].${stable}[This is a preview build.].${!stable}
+${if stable}This is a stable build of ${engine.language} ${version}.${else}This is a preview build.${endif}
 
-[The newest post is [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug}).].${posts > 0}[No posts are published yet, so this sentence is the fallback.].${posts == 0}
+${if posts > 0}The newest post is [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug}).${else}No posts are published yet.${endif}
 
-A backslash keeps the syntax literal: \${site} and [text].\${stable} stay as written.
+Short values fit a ternary: this build is ${stable ? "stable" : "a preview"}.
+
+Block conditionals choose whole paragraphs, lists or callouts:
+
+:::if posts > 2
+:::tip
+There are enough posts here for a reading list.
+:::
+:::else
+Only a few posts are published so far.
+:::endif
+
+A backslash keeps the syntax literal: \${site} and \${if stable} stay as written.
 
 ## Footnotes and references
 
@@ -317,9 +329,9 @@ MDRS renders math on the server[^katex] and diagrams in the browser[^mermaid]. C
 
 ## Showing MDRS source
 
-Code spans and code blocks never render MDRS: `:::note`, `${site}` and `$$x$$` stay literal. For whole examples, `:::ignore-render` prints the source as-is, and a longer fence can hold a complete directive:
+Code spans and code blocks never render MDRS: `:::note`, `${site}` and `$$x$$` stay literal. For whole examples, `:::verbatim` prints the source as-is, and a longer fence can hold a complete directive:
 
-::::ignore-render
+::::verbatim
 :::tip
 Directives open with `:::name` and close with `:::`.
 :::

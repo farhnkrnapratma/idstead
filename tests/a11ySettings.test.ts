@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 import {
     A11Y_DEFAULTS,
     A11Y_SYSTEM_QUERIES,
-    migrateLegacySettings,
     parseOverrides,
     resolveSettings
 } from '../packages/ui/src/a11ySettings';
@@ -33,17 +32,6 @@ describe('a11y settings: stored overrides', () => {
     test('keeps explicit values that equal the defaults', () => {
         const raw = JSON.stringify({ reduceMotion: false, fontScale: 100 });
         expect(parseOverrides(raw)).toEqual({ reduceMotion: false, fontScale: 100 });
-    });
-});
-
-describe('a11y settings: legacy migration', () => {
-    test('drops values equal to the defaults so they follow the device again', () => {
-        const legacy = JSON.stringify({ ...A11Y_DEFAULTS, dyslexicFont: true, fontScale: 120 });
-        expect(migrateLegacySettings(legacy)).toEqual({ dyslexicFont: true, fontScale: 120 });
-    });
-
-    test('returns nothing for an untouched legacy object', () => {
-        expect(migrateLegacySettings(JSON.stringify(A11Y_DEFAULTS))).toEqual({});
     });
 });
 
@@ -78,7 +66,7 @@ describe('a11y settings: pre-paint script', () => {
                 new URL(`../apps/${app}/src/app.html`, import.meta.url)
             ).text();
             expect(html).toContain("read('a11y_overrides')");
-            expect(html).toContain("read('a11y_settings')");
+            expect(html).not.toContain('a11y_settings');
             for (const query of Object.values(A11Y_SYSTEM_QUERIES)) {
                 expect(html).toContain(`'${query}'`);
             }

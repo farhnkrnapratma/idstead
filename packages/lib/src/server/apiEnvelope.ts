@@ -26,7 +26,7 @@ const DEFAULT_MESSAGES: Record<number, string> = {
 };
 
 const SENSITIVE =
-    /row-level security|violates|postgres|sqlite|D1_ERROR|column|relation|syntax error|duplicate key|permission denied/i;
+    /sqlite|D1_ERROR|constraint failed|no such (?:table|column|function)|syntax error|column|permission denied/i;
 
 export interface ApiEnvelopeOptions {
     requestId: string;

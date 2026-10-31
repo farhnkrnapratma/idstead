@@ -56,7 +56,7 @@ Documentation for Idstead, a self-hostable personal site and identity home. The 
 | Part | Covers |
 | --- | --- |
 | [001-markdown/](008-mdrs/README.md#part-1-standard-markdown) | Standard CommonMark + GFM: headings, emphasis, links, lists, tables, code, footnotes, raw HTML |
-| [002-extensions/](008-mdrs/README.md#part-2-mdrs-extensions) | Frontmatter, directives, callouts, details, tabs, steps, code block options, task states, media, math, diagrams, charts, references, variables, live data, escaping |
+| [002-extensions/](008-mdrs/README.md#part-2-mdrs-extensions) | Frontmatter, directives, callouts, details, tabs, steps, code block options, task states, media, math, diagrams, charts, references, variables, live data, conditionals, escaping |
 | [003-reference/](008-mdrs/README.md#part-3-reference) | [Compatibility](008-mdrs/003-reference/001-compatibility.md), [rendering pipeline](008-mdrs/003-reference/002-rendering-pipeline.md), [styling](008-mdrs/003-reference/003-styling.md), [roadmap](008-mdrs/003-reference/004-roadmap.md) |
 
 ## Related

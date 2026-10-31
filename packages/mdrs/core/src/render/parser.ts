@@ -81,7 +81,7 @@ markdownParser.use({
                 return `<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="${encoded}"></div></div>\n`;
             }
 
-            if (lang === 'chart' || lang === 'layerchart') {
+            if (lang === 'chart') {
                 const encoded = encodeURIComponent(token.text);
                 return `<div class="mdrs-chart" data-mdrs-chart="${encoded}"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>\n`;
             }

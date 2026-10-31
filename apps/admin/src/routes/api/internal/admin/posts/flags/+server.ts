@@ -1,19 +1,17 @@
 import type { RequestHandler } from './$types';
-import { dataStores } from '#lib/server/data.ts';
+import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 import { movePostBanner } from '#lib/server/blogPostAssets.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    const service = dataStores(platform).service;
-    if (!service) return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
-    const auth = await blogAdmin(request, url, platform);
-    if (auth.status)
-        return apiError(auth.status, auth.code ?? 'BLOG_POSTS_AUTH_REQUIRED', auth.message);
+    const admin = await adminServices(request, url, platform, {
+        code: 'BLOG_POSTS_UNAVAILABLE',
+        message: 'Post storage is not configured.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
     let body: { id?: unknown; published?: unknown; pinned?: unknown };
     try {
         body = await request.json();
@@ -75,24 +73,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             :   'blog.unpublish'
         : value ? 'blog.pin'
         : 'blog.unpin';
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: auth.actor,
             action,
             category: 'blog',
             entityId: post.id,
-            summary: `${action.replace('blog.', '')} post "${post.slug}".`,
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            summary: `${action.replace('blog.', '')} post "${post.slug}".`
         },
-        service.activityLog
+        getClientAddress
     );
     return Response.json(
         { post_revision: post.post_revision, published: post.published, pinned: post.pinned },

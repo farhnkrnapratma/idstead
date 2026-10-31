@@ -8,7 +8,10 @@
     "version_metadata": { "binding": "CF_VERSION_METADATA" },
     "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "{{assetBucket}}", "remote": true }],
     "d1_databases": "{{d1Databases}}",
-    "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
+    "alias": {
+        "$app/env/private": "../../packages/lib/src/server/workerAppEnv.ts",
+        "$app/env/public": "../../packages/lib/src/server/workerAppEnv.ts"
+    },
     "secrets": { "required": ["PUBLIC_SENTRY_DSN", "PUBLIC_SENTRY_ENVIRONMENT"] },
     "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
     "ratelimits": [

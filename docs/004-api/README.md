@@ -12,7 +12,6 @@ The public REST API is read-only and needs no authentication. It is served by th
 
 - A **breaking change** ships under a new version path (`/v2`) and never in place under `/v1`. Breaking changes include removing or renaming a field, changing a type, removing an endpoint or parameter, and changing an error code or a default.
 - **Additive changes** may land in the current version: a new optional field, endpoint, parameter or error code.
-- The October 2026 reshape of v1 and its move from `example.com/api/v1` to `api.example.com/v1` were one-time exceptions, not a precedent.
 - The OpenAPI document version (`info.version`, currently `1.0.0`) tracks the v1 contract.
 
 To start a new version:

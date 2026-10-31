@@ -7,7 +7,7 @@ export interface AdminRequestOptions {
 
 export const ACCESS_LOGOUT_URL = '/cdn-cgi/access/logout';
 
-export const SESSION_EXPIRED_MESSAGE =
+const SESSION_EXPIRED_MESSAGE =
     'Your admin session has expired. Open the admin in a new tab to sign in again, then retry.';
 
 export class AdminSessionExpiredError extends Error {

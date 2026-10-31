@@ -5,6 +5,7 @@ import {
     SITE_BANNER_OG_HEIGHT,
     bannerCrop
 } from '#lib/blogBanner.ts';
+import { drawToCanvas, encodeAvif } from '../rasterImage';
 
 interface MessageData {
     buffer: ArrayBuffer;
@@ -26,14 +27,6 @@ async function encodeWebpBanner(canvas: OffscreenCanvas): Promise<Blob> {
     return blob;
 }
 
-async function encodeAvifBanner(canvas: OffscreenCanvas): Promise<Blob> {
-    const { encode } = await import('@jsquash/avif');
-    const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
-    const avif = await encode(imageData);
-    if (avif.byteLength > 512_000) throw new Error('AVIF banner exceeds 500 KiB.');
-    return new Blob([avif], { type: 'image/avif' });
-}
-
 async function rasterAndEncode(
     bitmap: ImageBitmap,
     targetWidth: number,
@@ -41,11 +34,11 @@ async function rasterAndEncode(
     allowUpscale: boolean
 ): Promise<{ webp: Blob; avif: Blob }> {
     const crop = bannerCrop(bitmap.width, bitmap.height, allowUpscale);
-    const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(bitmap, crop.x, crop.y, crop.width, crop.height, 0, 0, targetWidth, targetHeight);
-
-    const [webp, avif] = await Promise.all([encodeWebpBanner(canvas), encodeAvifBanner(canvas)]);
+    const canvas = drawToCanvas(bitmap, targetWidth, targetHeight, crop);
+    const [webp, avif] = await Promise.all([
+        encodeWebpBanner(canvas),
+        encodeAvif(canvas, 512_000, 'AVIF banner exceeds 500 KiB.')
+    ]);
 
     return { webp, avif };
 }
@@ -69,9 +62,12 @@ async function rasterOgOnly(
     const x = (bitmap.width - cropWidth) / 2;
     const y = (bitmap.height - cropHeight) / 2;
 
-    const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(bitmap, x, y, cropWidth, cropHeight, 0, 0, targetWidth, targetHeight);
+    const canvas = drawToCanvas(bitmap, targetWidth, targetHeight, {
+        x,
+        y,
+        width: cropWidth,
+        height: cropHeight
+    });
 
     const webp = await encodeWebpBanner(canvas);
     return { webp };

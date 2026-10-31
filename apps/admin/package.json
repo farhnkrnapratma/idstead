@@ -23,7 +23,7 @@
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/avif": "^2.1.1",
-        "@lucide/svelte": "^1.64.0",
+        "@lucide/svelte": "^1.65.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/editor": "workspace:*",
@@ -42,7 +42,6 @@
         "openpgp": "^6.3.2",
         "svelte": "^5.57.3",
         "svelte-check": "^4.7.7",
-        "tailwindcss": "^4.3.3",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.5",
         "wrangler": "^4.156.0"

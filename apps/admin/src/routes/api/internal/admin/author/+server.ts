@@ -1,16 +1,11 @@
 import type { RequestHandler } from './$types';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
+import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-    const service = dataStores(platform).service;
-    if (!service) return apiError(503, 'AUTHOR_UNAVAILABLE', 'Database is unavailable.');
+    const admin = await adminServices(request, url, platform, { code: 'AUTHOR_UNAVAILABLE' });
+    if (admin.response) return admin.response;
+    const { service } = admin;
     const part = url.searchParams.get('part') ?? 'all';
     if (part !== 'all' && part !== 'profile')
         return apiError(400, 'AUTHOR_INVALID_PART', 'part must be all or profile.');

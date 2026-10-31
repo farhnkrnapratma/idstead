@@ -27,7 +27,7 @@ export interface BlogComment {
     created_at: string;
 }
 
-export interface RelatedPost {
+interface RelatedPost {
     id: string;
     title: string;
     slug: string;
