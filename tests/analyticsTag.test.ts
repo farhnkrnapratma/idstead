@@ -31,6 +31,23 @@ describe('analytics tag', () => {
         });
     });
 
+    test('Umami Cloud may send events to its gateway, self-hosted Umami to its own host', () => {
+        expect(
+            analyticsSources({
+                provider: 'umami',
+                websiteId: '0f8fad5b-d9cb-469f-a165-70867728950e',
+                scriptUrl: 'https://cloud.umami.is/script.js'
+            }).connect
+        ).toEqual(['https://cloud.umami.is', 'https://gateway.umami.is']);
+        expect(
+            analyticsSources({
+                provider: 'umami',
+                websiteId: '0f8fad5b-d9cb-469f-a165-70867728950e',
+                scriptUrl: 'https://stats.example.com/script.js'
+            }).connect
+        ).toEqual(['https://stats.example.com']);
+    });
+
     test('GA4 sets denied consent defaults before loading the tag', () => {
         const head = analyticsHead({ provider: 'ga4', measurementId: 'G-ABC123' }, 'example.com');
         const defaults = head.indexOf("gtag('consent', 'default', consent)");

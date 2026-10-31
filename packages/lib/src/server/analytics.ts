@@ -37,6 +37,10 @@ const GOOGLE_SOURCES: AnalyticsSources = {
 
 const NO_SOURCES: AnalyticsSources = { script: [], connect: [], img: [] };
 
+const HOSTED_COLLECTORS: Record<string, string[]> = {
+    'https://cloud.umami.is': ['https://gateway.umami.is']
+};
+
 function escapeAttr(value: string): string {
     return value
         .replace(/&/g, '&amp;')
@@ -94,7 +98,7 @@ export function analyticsSources(settings: AnalyticsSettings): AnalyticsSources 
         case 'umami':
         case 'plausible': {
             const host = origin(settings.scriptUrl);
-            return { script: [host], connect: [host], img: [] };
+            return { script: [host], connect: [host, ...(HOSTED_COLLECTORS[host] ?? [])], img: [] };
         }
         case 'cloudflare':
             return {
