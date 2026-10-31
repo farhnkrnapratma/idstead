@@ -16,7 +16,7 @@
     import Button from '@idstead/ui/components/Button.svelte';
     import LoadingIndicator from '@idstead/ui/components/LoadingIndicator.svelte';
     import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import RefineImage from '@idstead/ui/components/RefineImage.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
 
     let {
@@ -198,7 +198,7 @@
                     aspect === 'square' ? 'aspect-square w-40' : 'aspect-2/1 w-80 max-w-full'
                 )}>
                 {#if source}
-                    <ImageWithSkeleton
+                    <RefineImage
                         src={source}
                         {alt}
                         loading="eager"

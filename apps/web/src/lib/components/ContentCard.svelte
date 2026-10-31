@@ -3,7 +3,7 @@
     import { navigating } from '$app/state';
     import { ArrowUpRight, Pin, Sparkles } from '@lucide/svelte';
     import LoadingIndicator from '@idstead/ui/components/LoadingIndicator.svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import RefineImage from '@idstead/ui/components/RefineImage.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import type { ContentCardImage } from '../contentCards';
@@ -73,7 +73,7 @@
 <div
     class="relative flex h-full flex-col overflow-hidden rounded-md glass-card text-left transition-colors hover:border-accent">
     {#if image}
-        <ImageWithSkeleton
+        <RefineImage
             src={image.src}
             sources={image.sources}
             alt={image.alt}

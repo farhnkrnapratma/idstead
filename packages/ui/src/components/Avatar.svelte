@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Blobatar } from '@blobatar/svelte';
     import { cn } from '../utils/cn';
+    import RefineImage from './RefineImage.svelte';
 
     let {
         name,
@@ -15,10 +16,11 @@
 
 <span class={cn('inline-flex size-7 shrink-0 items-center justify-center', className)}>
     {#if src && src !== failedSource}
-        <img
+        <RefineImage
             {src}
             alt={description}
-            class="size-full rounded-md object-cover"
+            variant="avatar"
+            class="size-full"
             onerror={() => (failedSource = src ?? null)} />
     {:else}
         <Blobatar

@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 items-start gap-4">
+        <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             {#each Array.from({ length: count }, (_, i) => i) as itemIndex (itemIndex)}
                 <div
                     class="flex animate-pulse flex-col overflow-hidden rounded-md glass-card shadow-sm">

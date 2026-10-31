@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { stableHeight } from '@idstead/ui/utils/stableHeight.ts';
     import { readJson } from '../../readJson.ts';
     import { onMount } from 'svelte';
     import { Download, FileText, Search, Logs } from '@lucide/svelte';
@@ -294,22 +295,24 @@
 </Section>
 
 {#snippet tableState()}
-    {#if loading}
-        <LoadingState
-            variant="skeleton"
-            label="Loading activity log…" />
-    {:else if error}
-        <ErrorState
-            description={error}
-            onRetry={load} />
-    {:else}
-        <EmptyState
-            icon={filtered ? Search : Logs}
-            title={filtered ? 'No matching activities' : 'No activity yet'}
-            description={filtered ?
-                'Try another search or category.'
-            :   'Admin actions will appear here.'} />
-    {/if}
+    <div {@attach stableHeight}>
+        {#if loading}
+            <LoadingState
+                variant="skeleton"
+                label="Loading activity log…" />
+        {:else if error}
+            <ErrorState
+                description={error}
+                onRetry={load} />
+        {:else}
+            <EmptyState
+                icon={filtered ? Search : Logs}
+                title={filtered ? 'No matching activities' : 'No activity yet'}
+                description={filtered ?
+                    'Try another search or category.'
+                :   'Admin actions will appear here.'} />
+        {/if}
+    </div>
 {/snippet}
 
 {#snippet pagination()}
