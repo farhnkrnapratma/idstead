@@ -2,7 +2,7 @@
     import { Mail, Paperclip, MailCheck } from '@lucide/svelte';
     import Card from '@idstead/ui/components/Card.svelte';
     import MailingForm from './MailingForm.svelte';
-    import { ShinyText } from '@idstead/ui';
+    import { GradientText } from '@idstead/ui';
 
     let {
         title = 'Subscribe to Stay Updated',
@@ -39,11 +39,7 @@
                 <h4
                     id="{fieldId}-title"
                     class="type-card-title text-balance">
-                    <ShinyText
-                        text={title}
-                        color="var(--color-accent)"
-                        shineColor="var(--color-on-accent)"
-                        speed={3} />
+                    <GradientText>{title}</GradientText>
                 </h4>
                 <p class="col-span-2 type-body text-pretty text-fg-secondary">
                     {description}

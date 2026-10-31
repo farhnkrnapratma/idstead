@@ -462,7 +462,7 @@
 
 <div
     bind:this={threadElement}
-    class={cn('comment-thread-root flex scroll-mt-28 flex-col gap-4.5 sm:gap-5.5', className)}>
+    class={cn('comment-thread-root flex scroll-mt-28 flex-col', className)}>
     {#if controls && comments.length > 0}
         <FilterToolbar
             title="Comment filters"
@@ -503,11 +503,15 @@
             {/snippet}
         </FilterToolbar>
         {#if commentTree.length === 0}
-            <p class="text-xs text-fg-muted">No comments match your search or filter.</p>
+            <p class="mt-4 text-xs text-fg-muted">No comments match your search or filter.</p>
         {/if}
     {/if}
     {#if visibleTree.length > 0}
-        <div class="flex flex-col gap-4.5 rounded-md glass-card p-3 sm:gap-5.5 sm:p-4">
+        <div
+            class={cn(
+                'flex flex-col gap-4.5 rounded-md glass-card p-3 sm:gap-5.5 sm:p-4',
+                controls && comments.length > 0 && '-mt-px'
+            )}>
             {#each visibleTree as rootNode (rootNode.comment.id)}
                 {@const rootReplyContainerId = `reply-container-${rootNode.comment.id}`}
                 {@const rootExpanded = repliesOpen(rootNode)}

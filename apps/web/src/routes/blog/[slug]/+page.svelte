@@ -1120,11 +1120,13 @@
                 </section>
 
                 {#if !readingModeStore.active}
-                    <FooterSection
-                        width="full"
-                        readingMode={readingModeStore.active}
-                        onToggleReadingMode={readingModeStore.toggle}
-                        class="mt-8 w-full lg:pb-20" />
+                    <div class="mt-8 w-full">
+                        <FooterSection
+                            width="full"
+                            readingMode={readingModeStore.active}
+                            onToggleReadingMode={readingModeStore.toggle}
+                            class="w-full lg:pb-20" />
+                    </div>
                 {/if}
             {/if}
         </article>

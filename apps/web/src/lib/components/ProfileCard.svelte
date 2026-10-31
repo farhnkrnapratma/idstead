@@ -6,7 +6,7 @@
 
     import BrandIcon from '#lib/components/BrandIcon.svelte';
     import IconButton from '@idstead/ui/components/IconButton.svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import RefineImage from '@idstead/ui/components/RefineImage.svelte';
 
     interface SocialLink {
         url: string;
@@ -60,7 +60,7 @@
     )}>
     <div class="aspect-3/1 w-full bg-accent-subtle sm:aspect-40/9">
         {#if bannerUrl && !bannerFailed}
-            <ImageWithSkeleton
+            <RefineImage
                 src={bannerUrl}
                 sources={bannerSources}
                 alt=""
@@ -76,7 +76,7 @@
         <div class="flex items-end justify-between gap-3">
             <div class="profile-avatar -mt-12 w-fit rounded-md sm:-mt-14">
                 {#if avatarUrl}
-                    <ImageWithSkeleton
+                    <RefineImage
                         src={avatarUrl}
                         sources={avatarSources}
                         alt={`Profile picture of ${name}`}
