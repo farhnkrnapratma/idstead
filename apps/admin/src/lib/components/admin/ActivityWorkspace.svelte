@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { stableHeight } from '@idstead/ui/utils/stableHeight.ts';
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { onMount, tick } from 'svelte';
     import {
@@ -1315,19 +1316,21 @@
 {/snippet}
 
 {#snippet listStateView()}
-    {#if list.loading && !list.data}
-        <LoadingState label="Loading results…" />
-    {:else}
-        <EmptyState
-            icon={listFiltersActive ? Search
-            : area === 'reports' ? Flag
-            : area === 'feedback' ? Users
-            : Bell}
-            title={listFiltersActive ? 'No matching activity' : `No ${area} yet`}
-            description={listFiltersActive ?
-                'Try another period or filter.'
-            :   'Activity will appear here when it becomes available.'} />
-    {/if}
+    <div {@attach stableHeight}>
+        {#if list.loading && !list.data}
+            <LoadingState label="Loading results…" />
+        {:else}
+            <EmptyState
+                icon={listFiltersActive ? Search
+                : area === 'reports' ? Flag
+                : area === 'feedback' ? Users
+                : Bell}
+                title={listFiltersActive ? 'No matching activity' : `No ${area} yet`}
+                description={listFiltersActive ?
+                    'Try another period or filter.'
+                :   'Activity will appear here when it becomes available.'} />
+        {/if}
+    </div>
 {/snippet}
 
 {#snippet historyEmpty()}

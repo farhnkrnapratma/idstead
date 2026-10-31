@@ -265,10 +265,13 @@
             state={data.clients.length ? undefined : emptyClients}
             {columns}
             data={data.clients as unknown as Record<string, unknown>[]}>
-            {#snippet toolbar()}
+            {#snippet actions()}
                 <Button
-                    type="secondary"
+                    type="primary"
                     size="sm"
+                    responsiveIconOnly
+                    aria-label="Register app"
+                    title="Register app"
                     onclick={openCreate}>
                     {#snippet leading()}<Plus class="size-3.5" />{/snippet}
                     Register app

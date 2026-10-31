@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { stableHeight } from '@idstead/ui/utils/stableHeight.ts';
     import { readJson } from '#app/readJson.ts';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
@@ -137,7 +138,7 @@
         EmptyState,
         SkeletonBlock,
         ErrorState,
-        ImageWithSkeleton,
+        RefineImage,
         SkipLink,
         FilterToolbar,
         Dropdown,
@@ -1985,7 +1986,7 @@
         return result;
     });
 
-    const POSTS_PAGE_SIZE = 10;
+    const POSTS_PAGE_SIZE = 4;
 
     let postsPage = $state(1);
 
@@ -3379,7 +3380,7 @@
                     title="Close sidebar">
                     <X class="size-4" />
                 </Button>
-                <ImageWithSkeleton
+                <RefineImage
                     src={adminAvatarUrl}
                     alt={`Profile picture of ${adminUserName || 'the account owner'}`}
                     variant="avatar"
@@ -3672,410 +3673,441 @@
                         class="mb-6" />
                 {/if}
 
-                {#if postsLoading}
-                    <LoadingState
-                        variant="post-card"
-                        label="Loading posts..."
-                        count={3} />
-                {:else if postsLoadError}
-                    <ErrorState
-                        title="Unable to load posts"
-                        description={postsLoadError}
-                        onRetry={() => fetchPosts()} />
-                {:else if filteredPosts.length === 0}
-                    {#if posts.length > 0 && filterStore.isFiltered}
-                        <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
+                <div {@attach stableHeight}>
+                    {#if postsLoading}
+                        <LoadingState
+                            variant="post-card"
+                            label="Loading posts..."
+                            count={4} />
+                    {:else if postsLoadError}
+                        <ErrorState
+                            title="Unable to load posts"
+                            description={postsLoadError}
+                            onRetry={() => fetchPosts()} />
+                    {:else if filteredPosts.length === 0}
+                        {#if posts.length > 0 && filterStore.isFiltered}
+                            <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
+                        {:else}
+                            <EmptyState
+                                icon={Quote}
+                                title="No posts yet"
+                                description="Create a post to get started." />
+                        {/if}
                     {:else}
-                        <EmptyState
-                            icon={Quote}
-                            title="No posts yet"
-                            description="Create a post to get started." />
-                    {/if}
-                {:else}
-                    <div class="grid auto-rows-[1fr_auto] grid-cols-1">
-                        {#each paginatedPosts as post (post.id)}
-                            <Card
-                                id="post-{post.id}"
-                                density="none"
-                                class="relative flex flex-col text-left {(
-                                    expandedPostIds.has(post.id)
-                                ) ?
-                                    'rounded-b-none'
-                                :   ''}">
-                                <div
-                                    class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-line-subtle">
-                                    {#if post.banner_version && !failedBanners.has(post.id)}
-                                        <ImageWithSkeleton
-                                            src={bannerUrl(post, cdnBaseUrl())}
-                                            alt={blogBannerAlt(post.title, post.excerpt)}
-                                            rounded=""
-                                            onerror={() => markBannerFailed(post.id)}
-                                            class="h-full w-full object-cover" />
-                                    {:else}
+                        <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                            {#each paginatedPosts as post (post.id)}
+                                <div class="flex min-w-0 flex-col">
+                                    <Card
+                                        id="post-{post.id}"
+                                        density="none"
+                                        class="relative flex flex-col text-left {(
+                                            expandedPostIds.has(post.id)
+                                        ) ?
+                                            'rounded-b-none'
+                                        :   ''}">
                                         <div
-                                            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                                            <ImageIcon class="size-10 text-fg-muted" />
-                                        </div>
-                                    {/if}
-                                </div>
-
-                                <div
-                                    class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
-                                    <div class="flex flex-col gap-1">
-                                        <div>
-                                            <h3
-                                                class="type-card-title transition-colors hover:text-fg-accent">
-                                                <a
-                                                    href="{publicSiteUrl}/blog/{post.slug}"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
-                                                    {post.title}
-                                                </a>
-                                                <span
-                                                    class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
-                                                    {#if post.published}
-                                                        <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-discovery-subtle text-discovery"
-                                                            title="Published"
-                                                            aria-label="Published"
-                                                            role="img">
-                                                            <CircleCheckBig
-                                                                class="size-3 shrink-0" />
-                                                        </span>
-                                                    {:else}
-                                                        <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-warning-subtle text-fg-warning"
-                                                            title="Draft"
-                                                            aria-label="Draft"
-                                                            role="img">
-                                                            <CircleDotDashed
-                                                                class="size-3 shrink-0" />
-                                                        </span>
-                                                    {/if}
-                                                    {#if post.pinned}
-                                                        <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-success-subtle text-fg-success"
-                                                            title="Pinned post"
-                                                            aria-label="Pinned post"
-                                                            role="img">
-                                                            <Pin class="size-3 shrink-0" />
-                                                        </span>
-                                                    {/if}
-                                                    {#if isPostNew(post)}
-                                                        <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-info-subtle text-info"
-                                                            title="New post"
-                                                            aria-label="New post"
-                                                            role="img">
-                                                            <Sparkles class="size-3 shrink-0" />
-                                                        </span>
-                                                    {/if}
-                                                </span>
-                                            </h3>
+                                            class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-line-subtle">
+                                            {#if post.banner_version && !failedBanners.has(post.id)}
+                                                <RefineImage
+                                                    src={bannerUrl(post, cdnBaseUrl())}
+                                                    alt={blogBannerAlt(post.title, post.excerpt)}
+                                                    rounded=""
+                                                    onerror={() => markBannerFailed(post.id)}
+                                                    class="h-full w-full object-cover" />
+                                            {:else}
+                                                <div
+                                                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                                                    <ImageIcon class="size-10 text-fg-muted" />
+                                                </div>
+                                            {/if}
                                         </div>
 
-                                        <ArticleMeta
-                                            status={null}
-                                            size="xs"
-                                            layout="single"
-                                            class="min-h-4.5"
-                                            date={post.created_at}
-                                            updatedAt={post.updated_at}
-                                            readingTime={formatReadTime(post.read_minutes)}
-                                            commentsCount={postCommentCounts.get(post.id)
-                                                ?? post.comment_count}
-                                            views={post.views_count} />
+                                        <div
+                                            class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
+                                            <div class="flex flex-col gap-1">
+                                                <div>
+                                                    <h3
+                                                        class="type-card-title transition-colors hover:text-fg-accent">
+                                                        <a
+                                                            href="{publicSiteUrl}/blog/{post.slug}"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
+                                                            {post.title}
+                                                        </a>
+                                                        <span
+                                                            class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                                                            {#if post.published}
+                                                                <span
+                                                                    class="inline-flex size-4.5 items-center justify-center rounded-md bg-discovery-subtle text-discovery"
+                                                                    title="Published"
+                                                                    aria-label="Published"
+                                                                    role="img">
+                                                                    <CircleCheckBig
+                                                                        class="size-3 shrink-0" />
+                                                                </span>
+                                                            {:else}
+                                                                <span
+                                                                    class="inline-flex size-4.5 items-center justify-center rounded-md bg-warning-subtle text-fg-warning"
+                                                                    title="Draft"
+                                                                    aria-label="Draft"
+                                                                    role="img">
+                                                                    <CircleDotDashed
+                                                                        class="size-3 shrink-0" />
+                                                                </span>
+                                                            {/if}
+                                                            {#if post.pinned}
+                                                                <span
+                                                                    class="inline-flex size-4.5 items-center justify-center rounded-md bg-success-subtle text-fg-success"
+                                                                    title="Pinned post"
+                                                                    aria-label="Pinned post"
+                                                                    role="img">
+                                                                    <Pin class="size-3 shrink-0" />
+                                                                </span>
+                                                            {/if}
+                                                            {#if isPostNew(post)}
+                                                                <span
+                                                                    class="inline-flex size-4.5 items-center justify-center rounded-md bg-info-subtle text-info"
+                                                                    title="New post"
+                                                                    aria-label="New post"
+                                                                    role="img">
+                                                                    <Sparkles
+                                                                        class="size-3 shrink-0" />
+                                                                </span>
+                                                            {/if}
+                                                        </span>
+                                                    </h3>
+                                                </div>
 
-                                        {#if post.excerpt}
-                                            <p class="type-body text-fg-secondary">
-                                                {post.excerpt}
-                                            </p>
-                                        {/if}
+                                                <ArticleMeta
+                                                    status={null}
+                                                    size="xs"
+                                                    layout="single"
+                                                    class="min-h-4.5"
+                                                    date={post.created_at}
+                                                    updatedAt={post.updated_at}
+                                                    readingTime={formatReadTime(post.read_minutes)}
+                                                    commentsCount={postCommentCounts.get(post.id)
+                                                        ?? post.comment_count}
+                                                    views={post.views_count} />
 
-                                        {#if post.tags && post.tags.length > 0}
-                                            <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                                                {#each post.tags as tag (tag)}
-                                                    {@const cleanTag = decodeHtmlEntities(tag)}
-                                                    {@const isSelected =
-                                                        filterStore.filters['tag']?.includes(tag)
-                                                        ?? false}
-                                                    <Tag
-                                                        variant={isSelected ? 'accent-active' : (
-                                                            'accent'
+                                                {#if post.excerpt}
+                                                    <p class="type-body text-fg-secondary">
+                                                        {post.excerpt}
+                                                    </p>
+                                                {/if}
+
+                                                {#if post.tags && post.tags.length > 0}
+                                                    <div
+                                                        class="flex flex-wrap items-center gap-1.5 pt-1">
+                                                        {#each post.tags as tag (tag)}
+                                                            {@const cleanTag =
+                                                                decodeHtmlEntities(tag)}
+                                                            {@const isSelected =
+                                                                filterStore.filters[
+                                                                    'tag'
+                                                                ]?.includes(tag) ?? false}
+                                                            <Tag
+                                                                variant={isSelected ?
+                                                                    'accent-active'
+                                                                :   'accent'}
+                                                                onclick={() =>
+                                                                    filterStore.toggleMultiFilter(
+                                                                        'tag',
+                                                                        tag
+                                                                    )}
+                                                                aria-pressed={isSelected}
+                                                                class={isSelected ? 'font-mono' : (
+                                                                    'font-mono hover:bg-accent/15'
+                                                                )}>
+                                                                {cleanTag}
+                                                            </Tag>
+                                                        {/each}
+                                                    </div>
+                                                {/if}
+                                            </div>
+
+                                            <div
+                                                class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-line-subtle pt-3 sm:gap-2">
+                                                <Button
+                                                    onclick={() => openPostEditor(post.id)}
+                                                    type="primary"
+                                                    size="sm"
+                                                    class="order-1 w-full px-2.5 sm:px-3 md:w-auto"
+                                                    aria-label="Edit post"
+                                                    title="Edit Post">
+                                                    {#snippet leading()}
+                                                        <PenLine class="size-3.5" />
+                                                    {/snippet}
+                                                    Edit post
+                                                </Button>
+
+                                                <div
+                                                    class="order-2 flex items-center gap-1.5 sm:gap-2">
+                                                    <Button
+                                                        htmlType="button"
+                                                        type="secondary"
+                                                        size="sm"
+                                                        responsiveIconOnly
+                                                        aria-label={post.published ?
+                                                            'Unpublish post'
+                                                        :   'Publish post'}
+                                                        title={post.published ? 'Unpublish post' : (
+                                                            'Publish post'
                                                         )}
-                                                        onclick={() =>
-                                                            filterStore.toggleMultiFilter(
-                                                                'tag',
-                                                                tag
-                                                            )}
-                                                        aria-pressed={isSelected}
-                                                        class={isSelected ? 'font-mono' : (
-                                                            'font-mono hover:bg-accent/15'
-                                                        )}>
-                                                        {cleanTag}
-                                                    </Tag>
-                                                {/each}
+                                                        onclick={() => handleTogglePublished(post)}>
+                                                        {#snippet leading()}
+                                                            {#if post.published}
+                                                                <EyeOff class="size-3.5" />
+                                                            {:else}
+                                                                <Send class="size-3.5" />
+                                                            {/if}
+                                                        {/snippet}
+                                                        {post.published ? 'Unpublish' : 'Publish'}
+                                                    </Button>
+
+                                                    <Button
+                                                        htmlType="button"
+                                                        type="secondary"
+                                                        size="sm"
+                                                        responsiveIconOnly
+                                                        aria-label={post.pinned ? 'Unpin post' : (
+                                                            'Pin post'
+                                                        )}
+                                                        title={post.pinned ? 'Unpin post' : (
+                                                            'Pin post'
+                                                        )}
+                                                        onclick={() => handleTogglePinned(post)}>
+                                                        {#snippet leading()}
+                                                            {#if post.pinned}
+                                                                <PinOff class="size-3.5" />
+                                                            {:else}
+                                                                <Pin class="size-3.5" />
+                                                            {/if}
+                                                        {/snippet}
+                                                        {post.pinned ? 'Unpin' : 'Pin'}
+                                                    </Button>
+
+                                                    <Button
+                                                        htmlType="button"
+                                                        type="secondary"
+                                                        size="sm"
+                                                        responsiveIconOnly
+                                                        aria-label="{expandedPostIds.has(post.id) ?
+                                                            'Hide'
+                                                        :   'Show'} comments"
+                                                        title="{expandedPostIds.has(post.id) ?
+                                                            'Hide'
+                                                        :   'Show'} comments"
+                                                        aria-expanded={expandedPostIds.has(post.id)}
+                                                        aria-controls="comments-{post.id}"
+                                                        onclick={() => toggleComments(post.id)}>
+                                                        {#snippet leading()}
+                                                            <MessageCircle class="size-3.5" />
+                                                        {/snippet}
+                                                        Comments
+                                                    </Button>
+                                                </div>
+
+                                                <Button
+                                                    htmlType="button"
+                                                    type="danger"
+                                                    size="sm"
+                                                    responsiveIconOnly
+                                                    aria-label="Delete post"
+                                                    title="Delete post"
+                                                    class="order-3 md:ml-auto"
+                                                    onclick={() => confirmDeletePost(post)}>
+                                                    {#snippet leading()}
+                                                        <Trash class="size-3.5" />
+                                                    {/snippet}
+                                                    Delete post
+                                                </Button>
+                                            </div>
+                                        </div></Card>
+                                    <div>
+                                        {#if expandedPostIds.has(post.id)}
+                                            <div
+                                                id="comments-{post.id}"
+                                                class="rounded-b-md glass-card border-t border-line-subtle p-4 text-left">
+                                                <div
+                                                    class="mb-3 flex items-center justify-between gap-2">
+                                                    <h4 class="type-card-title">
+                                                        Comments ({postCommentCounts.get(post.id)
+                                                            ?? post.comment_count})
+                                                    </h4>
+                                                </div>
+                                                {#if commentsError[post.id]}<ErrorState
+                                                        title="Unable to load comments"
+                                                        description={commentsError[post.id]}
+                                                        onRetry={() =>
+                                                            fetchComments(post.id)} />{/if}
+                                                <div {@attach stableHeight}>
+                                                    {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
+                                                            label="Loading comments…" />
+                                                    {:else if getPostComments(post.id).length === 0}
+                                                        <EmptyState
+                                                            icon={MessageCircle}
+                                                            class="p-5"
+                                                            title="No comments yet"
+                                                            description="Comments on this post will appear here." />
+                                                    {:else}
+                                                        <CommentThread
+                                                            comments={getPostComments(post.id)}
+                                                            authorName={authorState.name
+                                                                || siteAuthorName}
+                                                            isAdmin={true}
+                                                            controls
+                                                            pageSize={COMMENTS_PAGE_SIZE}
+                                                            focusCommentId={focusedCommentId}
+                                                            onDelete={c =>
+                                                                confirmDeleteComment(c.id)}
+                                                            {replyTo}>
+                                                            {#snippet statusBadge(comment)}
+                                                                {#if comment.reports}<Button
+                                                                        type="ghost"
+                                                                        size="xs"
+                                                                        onclick={() =>
+                                                                            openWorkspace(
+                                                                                'reports',
+                                                                                comment.id
+                                                                            )}
+                                                                        >Reported ({comment.reports})</Button
+                                                                    >{/if}
+                                                            {/snippet}
+
+                                                            {#snippet actions(comment)}
+                                                                <ActivityTimestamp
+                                                                    date={comment.created_at} />
+                                                                <button
+                                                                    type="button"
+                                                                    onclick={() => {
+                                                                        replyTo = comment;
+                                                                        commentContent = '';
+                                                                    }}
+                                                                    class="cursor-pointer font-bold text-fg-muted transition-colors hover:text-fg-accent">
+                                                                    Reply
+                                                                </button>
+                                                                {#if comment.reports}
+                                                                    <button
+                                                                        type="button"
+                                                                        onclick={() =>
+                                                                            dismissCommentReports(
+                                                                                comment.id
+                                                                            )}
+                                                                        class="cursor-pointer font-bold text-fg-accent transition-colors hover:underline">
+                                                                        Dismiss Reports
+                                                                    </button>
+                                                                {/if}
+                                                            {/snippet}
+
+                                                            {#snippet replyForm(comment)}
+                                                                <form
+                                                                    novalidate
+                                                                    onsubmit={e =>
+                                                                        handleAdminSubmit(
+                                                                            e,
+                                                                            comment.id,
+                                                                            comment.post_id
+                                                                        )}
+                                                                    class="max-w-xl rounded-sm border border-line-subtle bg-surface p-3 shadow-2xs">
+                                                                    <div
+                                                                        class="mb-2 flex items-center justify-between gap-2">
+                                                                        <p
+                                                                            class="text-xs text-fg-secondary">
+                                                                            Replying to <span
+                                                                                class="font-semibold text-fg-accent"
+                                                                                >{commentAuthorName(
+                                                                                    comment,
+                                                                                    authorState.name
+                                                                                        || siteAuthorName
+                                                                                )}</span>
+                                                                        </p>
+                                                                        <button
+                                                                            type="button"
+                                                                            onclick={() =>
+                                                                                (replyTo = null)}
+                                                                            class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring"
+                                                                            aria-label="Cancel reply">
+                                                                            <X class="size-3.5" />
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <Textarea
+                                                                        id="admin-reply-msg-{comment.id}"
+                                                                        rows={2}
+                                                                        maxlength={1000}
+                                                                        bind:value={
+                                                                            () => commentContent,
+                                                                            value => {
+                                                                                commentContent =
+                                                                                    value;
+                                                                                replyValidation.input(
+                                                                                    'content'
+                                                                                );
+                                                                            }
+                                                                        }
+                                                                        onblur={() => {
+                                                                            void replyValidation.check(
+                                                                                'content'
+                                                                            );
+                                                                        }}
+                                                                        error={!!replyError}
+                                                                        placeholder="Write an admin reply..."
+                                                                        class="min-h-15 py-2 type-body" />
+                                                                    {#if replyError}<FieldMessage
+                                                                            message={replyError} />{/if}
+
+                                                                    <div
+                                                                        class="mt-2 flex items-center justify-between gap-2">
+                                                                        <span
+                                                                            class="text-xs text-fg-muted tabular-nums">
+                                                                            {1000
+                                                                                - commentContent.length}
+                                                                            left
+                                                                        </span>
+                                                                        <div
+                                                                            class="flex items-center gap-1.5">
+                                                                            <Button
+                                                                                type="ghost"
+                                                                                size="xs"
+                                                                                onclick={() =>
+                                                                                    (replyTo =
+                                                                                        null)}>
+                                                                                Cancel
+                                                                            </Button>
+                                                                            <Button
+                                                                                htmlType="submit"
+                                                                                type="primary"
+                                                                                size="xs"
+                                                                                disabled={isSubmitting
+                                                                                    || !commentContent.trim()}
+                                                                                isLoading={isSubmitting}>
+                                                                                {isSubmitting ?
+                                                                                    'Replying...'
+                                                                                :   'Reply'}
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                            {/snippet}
+                                                        </CommentThread>
+                                                    {/if}
+                                                </div>
                                             </div>
                                         {/if}
                                     </div>
-
-                                    <div
-                                        class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-line-subtle pt-3 sm:gap-2">
-                                        <Button
-                                            onclick={() => openPostEditor(post.id)}
-                                            type="primary"
-                                            size="sm"
-                                            class="order-1 w-full px-2.5 sm:px-3 md:w-auto"
-                                            aria-label="Edit post"
-                                            title="Edit Post">
-                                            {#snippet leading()}
-                                                <PenLine class="size-3.5" />
-                                            {/snippet}
-                                            Edit post
-                                        </Button>
-
-                                        <div class="order-2 flex items-center gap-1.5 sm:gap-2">
-                                            <Button
-                                                htmlType="button"
-                                                type="secondary"
-                                                size="sm"
-                                                responsiveIconOnly
-                                                aria-label={post.published ? 'Unpublish post' : (
-                                                    'Publish post'
-                                                )}
-                                                title={post.published ? 'Unpublish post' : (
-                                                    'Publish post'
-                                                )}
-                                                onclick={() => handleTogglePublished(post)}>
-                                                {#snippet leading()}
-                                                    {#if post.published}
-                                                        <EyeOff class="size-3.5" />
-                                                    {:else}
-                                                        <Send class="size-3.5" />
-                                                    {/if}
-                                                {/snippet}
-                                                {post.published ? 'Unpublish' : 'Publish'}
-                                            </Button>
-
-                                            <Button
-                                                htmlType="button"
-                                                type="secondary"
-                                                size="sm"
-                                                responsiveIconOnly
-                                                aria-label={post.pinned ? 'Unpin post' : 'Pin post'}
-                                                title={post.pinned ? 'Unpin post' : 'Pin post'}
-                                                onclick={() => handleTogglePinned(post)}>
-                                                {#snippet leading()}
-                                                    {#if post.pinned}
-                                                        <PinOff class="size-3.5" />
-                                                    {:else}
-                                                        <Pin class="size-3.5" />
-                                                    {/if}
-                                                {/snippet}
-                                                {post.pinned ? 'Unpin' : 'Pin'}
-                                            </Button>
-
-                                            <Button
-                                                htmlType="button"
-                                                type="secondary"
-                                                size="sm"
-                                                responsiveIconOnly
-                                                aria-label="{expandedPostIds.has(post.id) ? 'Hide'
-                                                :   'Show'} comments"
-                                                title="{expandedPostIds.has(post.id) ? 'Hide' : (
-                                                    'Show'
-                                                )} comments"
-                                                aria-expanded={expandedPostIds.has(post.id)}
-                                                aria-controls="comments-{post.id}"
-                                                onclick={() => toggleComments(post.id)}>
-                                                {#snippet leading()}
-                                                    <MessageCircle class="size-3.5" />
-                                                {/snippet}
-                                                {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
-                                            </Button>
-                                        </div>
-
-                                        <Button
-                                            htmlType="button"
-                                            type="danger"
-                                            size="sm"
-                                            responsiveIconOnly
-                                            aria-label="Delete post"
-                                            title="Delete post"
-                                            class="order-3 md:ml-auto"
-                                            onclick={() => confirmDeletePost(post)}>
-                                            {#snippet leading()}
-                                                <Trash class="size-3.5" />
-                                            {/snippet}
-                                            Delete post
-                                        </Button>
-                                    </div>
-                                </div></Card>
-                            <div class="mb-4">
-                                {#if expandedPostIds.has(post.id)}
-                                    <div
-                                        id="comments-{post.id}"
-                                        class="rounded-b-md glass-card border-t border-line-subtle p-4 text-left">
-                                        <div class="mb-3 flex items-center justify-between gap-2">
-                                            <h4 class="type-card-title">
-                                                Comments ({postCommentCounts.get(post.id)
-                                                    ?? post.comment_count})
-                                            </h4>
-                                        </div>
-                                        {#if commentsError[post.id]}<ErrorState
-                                                title="Unable to load comments"
-                                                description={commentsError[post.id]}
-                                                onRetry={() => fetchComments(post.id)} />{/if}
-                                        {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
-                                                label="Loading comments…" />
-                                        {:else if getPostComments(post.id).length === 0}
-                                            <EmptyState
-                                                icon={MessageCircle}
-                                                class="p-5"
-                                                title="No comments yet"
-                                                description="Comments on this post will appear here." />
-                                        {:else}
-                                            <CommentThread
-                                                comments={getPostComments(post.id)}
-                                                authorName={authorState.name || siteAuthorName}
-                                                isAdmin={true}
-                                                controls
-                                                pageSize={COMMENTS_PAGE_SIZE}
-                                                focusCommentId={focusedCommentId}
-                                                onDelete={c => confirmDeleteComment(c.id)}
-                                                {replyTo}>
-                                                {#snippet statusBadge(comment)}
-                                                    {#if comment.reports}<Button
-                                                            type="ghost"
-                                                            size="xs"
-                                                            onclick={() =>
-                                                                openWorkspace(
-                                                                    'reports',
-                                                                    comment.id
-                                                                )}
-                                                            >Reported ({comment.reports})</Button
-                                                        >{/if}
-                                                {/snippet}
-
-                                                {#snippet actions(comment)}
-                                                    <ActivityTimestamp date={comment.created_at} />
-                                                    <button
-                                                        type="button"
-                                                        onclick={() => {
-                                                            replyTo = comment;
-                                                            commentContent = '';
-                                                        }}
-                                                        class="cursor-pointer font-bold text-fg-muted transition-colors hover:text-fg-accent">
-                                                        Reply
-                                                    </button>
-                                                    {#if comment.reports}
-                                                        <button
-                                                            type="button"
-                                                            onclick={() =>
-                                                                dismissCommentReports(comment.id)}
-                                                            class="cursor-pointer font-bold text-fg-accent transition-colors hover:underline">
-                                                            Dismiss Reports
-                                                        </button>
-                                                    {/if}
-                                                {/snippet}
-
-                                                {#snippet replyForm(comment)}
-                                                    <form
-                                                        novalidate
-                                                        onsubmit={e =>
-                                                            handleAdminSubmit(
-                                                                e,
-                                                                comment.id,
-                                                                comment.post_id
-                                                            )}
-                                                        class="max-w-xl rounded-sm border border-line-subtle bg-surface p-3 shadow-2xs">
-                                                        <div
-                                                            class="mb-2 flex items-center justify-between gap-2">
-                                                            <p class="text-xs text-fg-secondary">
-                                                                Replying to <span
-                                                                    class="font-semibold text-fg-accent"
-                                                                    >{commentAuthorName(
-                                                                        comment,
-                                                                        authorState.name
-                                                                            || siteAuthorName
-                                                                    )}</span>
-                                                            </p>
-                                                            <button
-                                                                type="button"
-                                                                onclick={() => (replyTo = null)}
-                                                                class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring"
-                                                                aria-label="Cancel reply">
-                                                                <X class="size-3.5" />
-                                                            </button>
-                                                        </div>
-
-                                                        <Textarea
-                                                            id="admin-reply-msg-{comment.id}"
-                                                            rows={2}
-                                                            maxlength={1000}
-                                                            bind:value={
-                                                                () => commentContent,
-                                                                value => {
-                                                                    commentContent = value;
-                                                                    replyValidation.input(
-                                                                        'content'
-                                                                    );
-                                                                }
-                                                            }
-                                                            onblur={() => {
-                                                                void replyValidation.check(
-                                                                    'content'
-                                                                );
-                                                            }}
-                                                            error={!!replyError}
-                                                            placeholder="Write an admin reply..."
-                                                            class="min-h-15 py-2 type-body" />
-                                                        {#if replyError}<FieldMessage
-                                                                message={replyError} />{/if}
-
-                                                        <div
-                                                            class="mt-2 flex items-center justify-between gap-2">
-                                                            <span
-                                                                class="text-xs text-fg-muted tabular-nums">
-                                                                {1000 - commentContent.length} left
-                                                            </span>
-                                                            <div class="flex items-center gap-1.5">
-                                                                <Button
-                                                                    type="ghost"
-                                                                    size="xs"
-                                                                    onclick={() =>
-                                                                        (replyTo = null)}>
-                                                                    Cancel
-                                                                </Button>
-                                                                <Button
-                                                                    htmlType="submit"
-                                                                    type="primary"
-                                                                    size="xs"
-                                                                    disabled={isSubmitting
-                                                                        || !commentContent.trim()}
-                                                                    isLoading={isSubmitting}>
-                                                                    {isSubmitting ? 'Replying...'
-                                                                    :   'Reply'}
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                {/snippet}
-                                            </CommentThread>
-                                        {/if}
-                                    </div>
-                                {/if}
-                            </div>
-                        {/each}
-                    </div>
-                    <div class="mt-6">
-                        <Pagination
-                            page={postsPageClamped}
-                            totalPages={postsTotalPages}
-                            onPageChange={p => (postsPage = p)} />
-                    </div>
-                {/if}
+                                </div>
+                            {/each}
+                        </div>
+                        <div class="mt-6">
+                            <Pagination
+                                page={postsPageClamped}
+                                totalPages={postsTotalPages}
+                                onPageChange={p => (postsPage = p)} />
+                        </div>
+                    {/if}
+                </div>
             {/if}
         {:else if activeAdminTab === 'projects'}
             <FormSection

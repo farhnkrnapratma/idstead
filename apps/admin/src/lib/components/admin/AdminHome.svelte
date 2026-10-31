@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { stableHeight } from '@idstead/ui/utils/stableHeight.ts';
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
@@ -381,19 +382,21 @@
                 </Button>
             {/snippet}
             {#snippet listState()}
-                {#if feed.loading && !feed.data}
-                    <LoadingState label="Loading activity…" />
-                {:else if feed.error}
-                    <ErrorState
-                        description={feed.error}
-                        size="inline"
-                        onRetry={() => loadLists(true)} />
-                {:else}
-                    <EmptyState
-                        icon={emptyIcon}
-                        title={empty}
-                        description={emptyDescription} />
-                {/if}
+                <div {@attach stableHeight}>
+                    {#if feed.loading && !feed.data}
+                        <LoadingState label="Loading activity…" />
+                    {:else if feed.error}
+                        <ErrorState
+                            description={feed.error}
+                            size="inline"
+                            onRetry={() => loadLists(true)} />
+                    {:else}
+                        <EmptyState
+                            icon={emptyIcon}
+                            title={empty}
+                            description={emptyDescription} />
+                    {/if}
+                </div>
             {/snippet}
             <div class="min-w-0">
                 {#if (feed.loading && !feed.data) || feed.error || !feed.data?.items.length}
