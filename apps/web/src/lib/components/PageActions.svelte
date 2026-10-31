@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { Component } from 'svelte';
     import {
+        ArrowUpRight,
         ChevronDown,
         Copy,
         CopyCheck,
@@ -8,7 +9,6 @@
         Hash,
         Link2,
         ScanText,
-        SquareArrowOutUpRight,
         TextAlignStart
     } from '@lucide/svelte';
     import { page } from '$app/state';
@@ -339,7 +339,8 @@
                                         class="inline-flex items-center gap-1 text-xs font-medium">
                                         {item.label}
                                         {#if item.external}
-                                            <SquareArrowOutUpRight
+                                            <ArrowUpRight
+                                                strokeWidth={1.5}
                                                 class="size-3 text-fg-muted"
                                                 aria-hidden="true" />
                                             <span class="sr-only">(opens in new tab)</span>

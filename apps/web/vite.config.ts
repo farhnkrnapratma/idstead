@@ -25,5 +25,6 @@ export default defineConfig({
             tracing: { server: true }
         })
     ],
+    server: { fs: { allow: ['../../packages/ui/src/fonts'] } },
     ssr: { noExternal: ['@lucide/svelte', '@mdrs/core', '@idstead/domain', '@idstead/data'] }
 });

@@ -114,7 +114,7 @@
 </script>
 
 <div
-    class="mdrs-chart-card relative my-6 flex flex-col gap-2 rounded-md glass-card border border-line-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
+    class="mdrs-chart-card relative my-6 flex flex-col gap-2 rounded-md glass-card border border-line-subtle p-4 shadow-md transition-colors {className}">
     <div class="mdrs-chart-header flex items-start justify-between gap-2">
         {#if spec.title || spec.subtitle}
             <div class="flex min-w-0 flex-col gap-0.5">

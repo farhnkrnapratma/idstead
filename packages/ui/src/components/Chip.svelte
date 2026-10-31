@@ -41,7 +41,7 @@
         'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md border transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
         active ?
             'border-accent-strong bg-accent-strong font-bold text-on-accent shadow-xs'
-        :   'border-line bg-surface text-fg-secondary hover:border-line-strong hover:bg-surface-hover hover:text-fg disabled:hover:border-line disabled:hover:bg-surface disabled:hover:text-fg-secondary',
+        :   'border-line-subtle bg-surface text-fg-secondary hover:border-accent hover:bg-surface-hover hover:text-fg disabled:hover:border-line-subtle disabled:hover:bg-surface disabled:hover:text-fg-secondary',
         sizeStyles[size],
         className
     )}>

@@ -19,7 +19,7 @@
 </script>
 
 <script lang="ts">
-    import { ChevronDown, SquareArrowOutUpRight } from '@lucide/svelte';
+    import { ArrowUpRight, ChevronDown } from '@lucide/svelte';
     import { cn } from '../utils/cn';
     import Button from './Button.svelte';
     import IconButton from './IconButton.svelte';
@@ -124,7 +124,9 @@
                         {/if}
                         <span class="min-w-0 flex-1 truncate text-left">{item.label}</span>
                         {#if item.external}
-                            <SquareArrowOutUpRight class="size-3 shrink-0 text-fg-muted" />
+                            <ArrowUpRight
+                                strokeWidth={1.5}
+                                class="size-3 shrink-0 text-fg-muted" />
                             <span class="sr-only">(opens in new tab)</span>
                         {/if}
                     </Button>

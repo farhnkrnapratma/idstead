@@ -203,8 +203,7 @@
     class="w-[95vw] max-w-2xl"
     onClose={() => consentStore.closeCustomizeModal()}>
     <div class="flex flex-col gap-4 py-1">
-        <div
-            class="flex flex-col gap-2.5 rounded-md border border-line-subtle/70 bg-surface/50 p-3">
+        <div class="flex flex-col gap-2.5 rounded-md border border-line-subtle bg-surface p-3">
             <div class="flex items-center justify-between gap-2">
                 <span class="text-xs font-semibold text-fg-secondary">Quick presets</span>
                 <span
@@ -215,11 +214,10 @@
             </div>
 
             <div class="relative flex h-5 w-full items-center">
-                <div
-                    class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-line-subtle">
+                <div class="pointer-events-none absolute inset-x-0 h-1.5 rounded-md bg-line-subtle">
                 </div>
                 <div
-                    class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-full"
+                    class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-md"
                     style="width: {(presetSliderValue / 2)
                         * 100}%; background-color: {presetColor}">
                 </div>
@@ -244,8 +242,7 @@
             </div>
         </div>
 
-        <div
-            class="divide-y divide-line-subtle/50 rounded-md border border-line-subtle/70 bg-surface/30">
+        <div class="divide-y divide-line-subtle/50 rounded-md border border-line-subtle bg-surface">
             <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
                 <div class="flex min-w-0 flex-1 flex-col gap-0.5">
                     <h4 class="text-xs font-bold text-fg">Behavioral analytics</h4>
@@ -367,7 +364,7 @@
         width: 1.1rem;
         height: 1.1rem;
         margin-top: -0.375rem;
-        border-radius: 9999px;
+        border-radius: 0;
         border: 2px solid var(--color-surface);
         background: var(--thumb-color);
         box-shadow: 0 1px 3px --alpha(var(--color-black) / 30%);
@@ -381,7 +378,7 @@
         width: 1.1rem;
         height: 1.1rem;
         border: 2px solid var(--color-surface);
-        border-radius: 9999px;
+        border-radius: 0;
         background: var(--thumb-color);
         box-shadow: 0 1px 3px --alpha(var(--color-black) / 30%);
         cursor: pointer;

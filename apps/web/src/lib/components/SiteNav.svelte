@@ -14,6 +14,7 @@
     import type { Project } from '@idstead/domain/types.ts';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { OTHER_GROUPS, PAGE_LINKS } from '#app/siteNavigation.ts';
+    import ScrollProgressBar from './ScrollProgressBar.svelte';
     import SpotlightSearch from './SpotlightSearch.svelte';
 
     interface Props {
@@ -61,7 +62,7 @@
     ]);
 </script>
 
-<header class="sticky top-0 z-40 glass-card font-sans dark:border-0!">
+<header class="sticky top-0 z-40 border-b border-line-subtle bg-surface font-sans text-fg">
     <PageContainer
         width="full"
         class="flex h-14 items-center gap-2 sm:gap-4">
@@ -110,7 +111,7 @@
                     tooltipAlign="right"
                     size="sm"
                     onclick={readingModeStore.toggle}
-                    class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9">
+                    class="border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9">
                     <BookOpenText class="size-4" />
                 </IconButton>
             {/if}
@@ -126,4 +127,5 @@
                 class="md:hidden" />
         </div>
     </PageContainer>
+    <ScrollProgressBar />
 </header>

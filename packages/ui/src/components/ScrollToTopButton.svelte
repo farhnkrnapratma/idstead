@@ -3,67 +3,31 @@
     import { fade } from 'svelte/transition';
     import { MoveUp } from '@lucide/svelte';
     import { scrollToTop } from '../utils/scroll.ts';
-    import { scrollStore } from '../stores/scrollStore.svelte';
     import IconButton from './IconButton.svelte';
-    import Tooltip from './Tooltip.svelte';
-
-    const RING_RADIUS = 16;
-    const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
     interface Props {
         show?: boolean;
         class?: string;
         onClick?: () => void;
-        progress?: number;
     }
 
-    let { show = true, class: className = '', onClick, progress }: Props = $props();
-
-    const currentProgress = $derived(progress !== undefined ? progress : scrollStore.progress);
+    let { show = true, class: className = '', onClick }: Props = $props();
 </script>
 
 {#if show}
     <div
         transition:fade={{ duration: 150 }}
         class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 {className}">
-        <Tooltip
-            content="Scroll to top"
-            placement="top"
-            align="right">
-            <div class="relative inline-flex">
-                <IconButton
-                    variant="floating"
-                    size="sm"
-                    ariaLabel="Scroll to top"
-                    showTooltip={false}
-                    keyboardShortcut={buttonKey('scrollTop')}
-                    onclick={onClick || (() => scrollToTop('smooth'))}>
-                    <MoveUp class="size-4 shrink-0" />
-                </IconButton>
-                <svg
-                    class="pointer-events-none absolute inset-0 size-full -rotate-90"
-                    viewBox="0 0 36 36"
-                    aria-hidden="true">
-                    <circle
-                        cx="18"
-                        cy="18"
-                        r={RING_RADIUS}
-                        fill="none"
-                        stroke="var(--color-line-subtle)"
-                        stroke-width="2" />
-                    <circle
-                        cx="18"
-                        cy="18"
-                        r={RING_RADIUS}
-                        fill="none"
-                        stroke="var(--color-accent)"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-dasharray={RING_CIRCUMFERENCE}
-                        stroke-dashoffset={RING_CIRCUMFERENCE * (1 - currentProgress / 100)}
-                        class="transition-[stroke-dashoffset] duration-300 ease-out" />
-                </svg>
-            </div>
-        </Tooltip>
+        <IconButton
+            variant="floating"
+            size="sm"
+            ariaLabel="Scroll to top"
+            showTooltip={false}
+            keyboardShortcut={buttonKey('scrollTop')}
+            class="gap-2 md:w-auto md:px-3"
+            onclick={onClick || (() => scrollToTop('smooth'))}>
+            <MoveUp class="size-4 shrink-0" />
+            <span class="hidden whitespace-nowrap md:inline">Scroll to top</span>
+        </IconButton>
     </div>
 {/if}

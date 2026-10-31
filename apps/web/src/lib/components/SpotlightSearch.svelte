@@ -87,7 +87,7 @@
             onfocus={() => spotlightStore.prefetch()}
             class={cn(
                 variant === 'expanded' ?
-                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-fg-secondary hover:border-accent/50 hover:text-fg-accent sm:h-9 sm:px-3'
+                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-fg-secondary hover:border-accent hover:text-fg-accent sm:h-9 sm:px-3'
                 : variant === 'icon' ?
                     'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md glass-button p-0 text-xs font-semibold text-fg-secondary transition-colors hover:border-accent hover:bg-surface-hover hover:text-fg-accent sm:h-9 sm:w-9'
                 : variant === 'responsive' ?
@@ -103,7 +103,7 @@
                     <span class="truncate font-sans text-xs text-fg-muted">Search...</span>
                 </div>
                 <kbd
-                    class="inline-flex h-5 items-center justify-center rounded-md border border-line-subtle/50 bg-canvas/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-fg-secondary shadow-2xs">
+                    class="inline-flex h-5 items-center justify-center rounded-md border border-line-subtle bg-canvas px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-fg-secondary shadow-2xs">
                     /
                 </kbd>
             {:else if variant === 'icon'}

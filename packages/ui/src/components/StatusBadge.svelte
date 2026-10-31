@@ -69,7 +69,7 @@
         rel="noopener noreferrer"
         title={current.label}
         class={cn(
-            'inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+            'inline-flex max-w-full items-center gap-1.5 rounded-md border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
             className
         )}>
         <StatusIcon

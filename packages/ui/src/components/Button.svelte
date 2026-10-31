@@ -69,22 +69,22 @@
         'primary:critical':
             'font-semibold bg-danger-strong bg-linear-to-b from-danger-sheen to-danger-strong text-on-danger inset-shadow-button-fill shadow-button-danger hover:from-danger-hover-sheen hover:to-danger-strong-hover hover:shadow-button-danger-hover active:from-danger-strong-hover active:to-danger-strong-hover active:shadow-2xs active:inset-shadow-button-pressed disabled:shadow-none disabled:hover:from-danger-sheen disabled:hover:to-danger-strong aria-disabled:shadow-none',
         'secondary:neutral':
-            'glass-button hover:border-accent active:inset-shadow-button-pressed disabled:hover:border-line-subtle/70',
+            'glass-button hover:border-accent active:inset-shadow-button-pressed disabled:hover:border-line-subtle',
         'secondary:critical':
-            'border border-danger/30 bg-surface/55 text-danger-strong shadow-button-surface inset-shadow-button-surface backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 active:inset-shadow-button-pressed disabled:hover:bg-surface/55 dark:bg-surface/40 dark:hover:bg-danger-subtle/30',
+            'border border-danger/30 bg-surface text-danger-strong shadow-button-surface inset-shadow-button-surface hover:bg-danger-subtle/40 hover:border-danger active:inset-shadow-button-pressed disabled:hover:bg-surface dark:hover:bg-danger-subtle/30',
         'tertiary:neutral':
-            'border border-line-subtle/50 bg-surface-muted text-fg-secondary shadow-button-surface inset-shadow-button-surface hover:bg-surface-hover hover:text-fg hover:border-line-subtle/80 active:inset-shadow-button-pressed disabled:hover:bg-surface-muted font-medium',
+            'border border-line-subtle bg-surface-muted text-fg-secondary shadow-button-surface inset-shadow-button-surface hover:bg-surface-hover hover:text-fg hover:border-accent active:inset-shadow-button-pressed disabled:hover:bg-surface-muted font-medium',
         'tertiary:critical':
             'border border-danger/30 bg-danger-subtle/70 text-danger-strong shadow-button-surface inset-shadow-button-surface hover:bg-danger-subtle active:inset-shadow-button-pressed disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
         'outline:neutral':
-            'border border-line-subtle/60 bg-transparent text-fg shadow-2xs hover:bg-surface-hover hover:border-line disabled:hover:bg-transparent disabled:hover:border-line-subtle/60 dark:border-line-subtle',
+            'border border-line-subtle bg-transparent text-fg shadow-2xs hover:bg-surface-hover hover:border-accent disabled:hover:bg-transparent disabled:hover:border-line-subtle ',
         'outline:critical':
-            'border border-danger/40 bg-transparent text-danger-strong shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
+            'border border-danger/30 bg-transparent text-danger-strong shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
         'ghost:neutral':
             'text-fg-secondary hover:text-fg-accent disabled:hover:text-fg-secondary disabled:hover:bg-transparent',
         'ghost:critical': 'text-danger-strong hover:bg-danger-subtle disabled:hover:bg-transparent',
         'danger:critical':
-            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger-strong shadow-button-surface inset-shadow-button-surface backdrop-blur-sm hover:border-danger-strong hover:bg-danger-strong hover:text-on-danger hover:inset-shadow-button-fill hover:shadow-button-danger active:shadow-2xs active:inset-shadow-button-pressed disabled:hover:border-danger/30 disabled:hover:bg-danger-subtle/70 disabled:hover:text-danger-strong disabled:hover:shadow-button-surface disabled:hover:inset-shadow-button-surface dark:bg-danger-subtle/40'
+            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger-strong shadow-button-surface inset-shadow-button-surface hover:border-danger-strong hover:bg-danger-strong hover:text-on-danger hover:inset-shadow-button-fill hover:shadow-button-danger active:shadow-2xs active:inset-shadow-button-pressed disabled:hover:border-danger/30 disabled:hover:bg-danger-subtle/70 disabled:hover:text-danger-strong disabled:hover:shadow-button-surface disabled:hover:inset-shadow-button-surface dark:bg-danger-subtle/40'
     };
 
     const styleKey = $derived(type === 'danger' ? 'danger:critical' : `${type}:${tone}`);

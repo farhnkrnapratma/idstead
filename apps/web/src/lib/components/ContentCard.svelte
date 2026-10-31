@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { navigating } from '$app/state';
-    import { LoaderCircle, Pin, Sparkles, SquareArrowOutUpRight } from '@lucide/svelte';
+    import { ArrowUpRight, LoaderCircle, Pin, Sparkles } from '@lucide/svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
@@ -70,7 +70,7 @@
 {/snippet}
 
 <div
-    class="relative flex h-full flex-col overflow-hidden rounded-md glass-card border-0! text-left dark:border-0!">
+    class="relative flex h-full flex-col overflow-hidden rounded-md glass-card text-left transition-colors hover:border-accent">
     {#if image}
         <ImageWithSkeleton
             src={image.src}
@@ -96,7 +96,8 @@
                 :   { disabled: true }}
                 class="transition-colors after:absolute after:inset-0 after:rounded-md after:content-[''] hover:text-fg-accent focus-visible:outline-none! focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus-ring">
                 {title}{#if external}<span class="sr-only"> (opens in new tab)</span>
-                    <SquareArrowOutUpRight
+                    <ArrowUpRight
+                        strokeWidth={1.5}
                         aria-hidden="true"
                         class="ml-0.5 inline size-3.5 align-baseline text-fg-muted" />{/if}
             </a>
@@ -109,7 +110,7 @@
                 <span class="inline-flex items-center gap-1 align-middle select-none">
                     {#if pinned}
                         <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-fg-success"
+                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-success-subtle text-fg-success"
                             title={pinnedLabel}
                             role="img"
                             aria-label={pinnedLabel}>
@@ -118,7 +119,7 @@
                     {/if}
                     {#if isNew}
                         <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-info-subtle text-fg-accent"
+                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-info-subtle text-fg-accent"
                             title={newLabel}
                             role="img"
                             aria-label={newLabel}>

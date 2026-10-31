@@ -3,19 +3,19 @@
     import { onMount, tick } from 'svelte';
     import {
         ArrowLeft,
-        CheckCheck,
+        ArrowRight,
+        Bell,
+        Calendar,
         Check,
-        ChevronRight,
+        CheckCheck,
+        Flag,
+        Hash,
+        Logs,
         Pin,
         PinOff,
-        Trash,
-        Flag,
-        Calendar,
-        Hash,
-        Bell,
         Search,
-        Users,
-        Logs
+        Trash,
+        Users
     } from '@lucide/svelte';
     import { analyticsPeriod, browserTimeZone } from '../../adminAnalytics.ts';
     import { adminActivityRequest } from '../../adminActivityClient.ts';
@@ -768,7 +768,9 @@
                                     disabled={busy || inbox.isMutating}
                                     onclick={() => openEvent(entry)}>
                                     Details
-                                    {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+                                    {#snippet trailing()}<ArrowRight
+                                            class="size-3"
+                                            strokeWidth={1.5} />{/snippet}
                                 </Button>
                                 <ActionMenu
                                     ariaLabel={`Actions for ${activitySentence(event)}`}
@@ -831,7 +833,9 @@
                                 type="ghost"
                                 onclick={() => open(item)}>
                                 Details
-                                {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+                                {#snippet trailing()}<ArrowRight
+                                        class="size-3"
+                                        strokeWidth={1.5} />{/snippet}
                             </Button>
                         {/if}
                     {/snippet}
@@ -1080,7 +1084,9 @@
                                 disabled={busy || inbox.isMutating}
                                 onclick={() => openHistoryEvent(entry)}>
                                 Details
-                                {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+                                {#snippet trailing()}<ArrowRight
+                                        class="size-3"
+                                        strokeWidth={1.5} />{/snippet}
                             </Button>
                             <ActionMenu
                                 ariaLabel={`Actions for ${activitySentence(event)}`}

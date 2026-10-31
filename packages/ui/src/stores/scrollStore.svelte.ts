@@ -3,6 +3,7 @@ import { createFrameScheduler } from '../utils/frameScheduler.ts';
 
 function createScrollStore() {
     let progress = $state(0);
+    let containerProgress = $state(0);
     let pastThreshold = $state(false);
 
     function init() {
@@ -29,12 +30,15 @@ function createScrollStore() {
 
     return {
         get progress() {
-            return progress;
+            return Math.max(progress, containerProgress);
         },
         get pastThreshold() {
             return pastThreshold;
         },
-        init
+        init,
+        setContainerProgress(value: number) {
+            containerProgress = value;
+        }
     };
 }
 

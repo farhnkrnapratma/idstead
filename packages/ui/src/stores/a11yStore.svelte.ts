@@ -20,7 +20,6 @@ function createA11yStore() {
         if (!browser) return;
         const root = document.documentElement;
         root.setAttribute('data-reduce-motion', String(settings.reduceMotion));
-        root.setAttribute('data-solid-surfaces', String(settings.solidSurfaces));
         root.setAttribute('data-high-contrast', String(settings.highContrast));
         root.setAttribute('data-font-scale', String(settings.fontScale));
         root.setAttribute('data-focus-highlight', String(settings.focusHighlight));
@@ -101,10 +100,6 @@ function createA11yStore() {
         apply({ reduceMotion: !settings.reduceMotion });
     }
 
-    function toggleSolidSurfaces() {
-        apply({ solidSurfaces: !settings.solidSurfaces });
-    }
-
     function toggleHighContrast() {
         apply({ highContrast: !settings.highContrast });
     }
@@ -134,7 +129,6 @@ function createA11yStore() {
         enabledByDevice,
         init,
         toggleReduceMotion,
-        toggleSolidSurfaces,
         toggleHighContrast,
         toggleFocusHighlight,
         toggleDyslexicFont,
@@ -146,7 +140,7 @@ function createA11yStore() {
 export const a11yStore = createA11yStore();
 
 export const A11Y_TOGGLES: {
-    key: 'reduceMotion' | 'solidSurfaces' | 'highContrast' | 'focusHighlight' | 'dyslexicFont';
+    key: 'reduceMotion' | 'highContrast' | 'focusHighlight' | 'dyslexicFont';
     label: string;
     description: string;
     toggle: () => void;
@@ -156,12 +150,6 @@ export const A11Y_TOGGLES: {
         label: 'Reduce motion',
         description: 'Stops animations, transitions and moving backgrounds.',
         toggle: a11yStore.toggleReduceMotion
-    },
-    {
-        key: 'solidSurfaces',
-        label: 'Solid surfaces',
-        description: 'Replaces see-through, blurred panels with solid backgrounds.',
-        toggle: a11yStore.toggleSolidSurfaces
     },
     {
         key: 'highContrast',

@@ -112,7 +112,7 @@
             aria-expanded={isOpen}
             onclick={() => (isOpen = !isOpen)}
             class={cn(
-                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                'border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
                 isOpen && 'border-accent text-fg-accent'
             )}>
             <PersonStanding class="size-4" />
