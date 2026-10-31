@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AuthorOgImage from '#app/components/AuthorOgImage.svelte';
     import { ChevronRight, FolderOpen, Quote, Sprout } from '@lucide/svelte';
     import { page } from '$app/state';
     import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
@@ -42,9 +43,6 @@
     const siteUrl = $derived(author?.siteUrl || '');
     const ogBanner = $derived(publicBannerOgUrl(author));
     const ogImage = $derived(ogBanner || publicAvatarUrl(author));
-    const ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
-    const ogImageWidth = $derived(ogBanner ? '1200' : '512');
-    const ogImageHeight = $derived(ogBanner ? '630' : '512');
     const avatar = $derived(author?.avatar || '');
     const avatarWebp = $derived(avatarWebpSource(author) || avatar);
     const avatarFormats = $derived(avatarSources(author));
@@ -110,32 +108,11 @@
             property="og:site_name"
             content={name} />
         <meta
-            property="og:image"
-            content={ogImage} />
-        <meta
-            property="og:image:secure_url"
-            content={ogImage} />
-        <meta
-            property="og:image:type"
-            content={ogImageType} />
-        <meta
-            property="og:image:width"
-            content={ogImageWidth} />
-        <meta
-            property="og:image:height"
-            content={ogImageHeight} />
-        <meta
-            property="og:image:alt"
-            content="{name} · {desc}" />
-        <meta
             property="og:locale"
             content="en_US" />
         <meta
             property="profile:username"
             content={username} />
-        <meta
-            name="twitter:image"
-            content={ogImage} />
         <meta
             name="twitter:card"
             content="summary_large_image" />
@@ -157,6 +134,9 @@
             content="noindex" />
     {/if}
 </svelte:head>
+<AuthorOgImage
+    {author}
+    alt="{name} · {desc}" />
 
 {#snippet projectTag(tag: string)}
     <Tag
