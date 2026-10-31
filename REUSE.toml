@@ -16,7 +16,6 @@ path = [
     "packages/data/d1/migrations/**",
     "tests/__snapshots__/**",
     "tests/fixtures/**",
-    "graphify-out/**",
     ".claude/agents/**",
     ".claude/hooks/**",
     ".claude/rules/**",
