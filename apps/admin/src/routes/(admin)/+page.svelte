@@ -2869,6 +2869,39 @@
         }
     }
 
+    interface LinkRow {
+        platform: string;
+        displayValue?: string;
+        url: string;
+        icon?: string | null;
+        description?: string | null;
+    }
+
+    async function postLinks(
+        category: 'social' | 'funding' | 'contact',
+        rows: LinkRow[],
+        failureMessage: string
+    ) {
+        const items = rows.map((item, idx) => ({
+            platform: sanitizeInput(item.platform.trim()),
+            display_value:
+                item.displayValue === undefined ? null : sanitizeInput(item.displayValue.trim()),
+            url: item.url.trim(),
+            icon: normalizeIconInput(item.icon),
+            description: sanitizeInput((item.description || '').trim()),
+            sort_order: idx + 1
+        }));
+        const res = await adminFetch('/api/internal/admin/links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, items })
+        });
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body?.error?.message || failureMessage);
+        }
+    }
+
     async function handleSaveSocials(e: SubmitEvent) {
         e.preventDefault();
         if (isSavingSocials) return;
@@ -2879,24 +2912,16 @@
         isSavingSocials = true;
         socialsSaveSuccess = false;
         try {
-            const items = socialState.map((item, idx) => ({
-                platform: sanitizeInput(item.platform.trim()),
-                display_value: null,
-                url: item.url.trim(),
-                icon: normalizeIconInput(item.icon),
-                description: sanitizeInput((item.description || '').trim()),
-                sort_order: idx + 1
-            }));
-
-            const res = await adminFetch('/api/internal/admin/links', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category: 'social', items })
-            });
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body?.error?.message || 'Failed to save social links.');
-            }
+            await postLinks(
+                'social',
+                socialState.map(({ platform, url, icon, description }) => ({
+                    platform,
+                    url,
+                    icon,
+                    description
+                })),
+                'Failed to save social links.'
+            );
 
             socialInitial = $state.snapshot(socialState);
             listValidation.reset();
@@ -2923,24 +2948,7 @@
         isSavingSponsorship = true;
         sponsorshipSaveSuccess = false;
         try {
-            const items = sponsorshipState.map((item, idx) => ({
-                platform: sanitizeInput(item.platform.trim()),
-                display_value: sanitizeInput(item.displayValue.trim()),
-                url: item.url.trim(),
-                icon: normalizeIconInput(item.icon),
-                description: sanitizeInput((item.description || '').trim()),
-                sort_order: idx + 1
-            }));
-
-            const res = await adminFetch('/api/internal/admin/links', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category: 'funding', items })
-            });
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body?.error?.message || 'Failed to save funding links.');
-            }
+            await postLinks('funding', sponsorshipState, 'Failed to save funding links.');
 
             sponsorshipInitial = $state.snapshot(sponsorshipState);
             listValidation.reset();
@@ -2966,24 +2974,11 @@
         isSavingContact = true;
         contactSaveSuccess = false;
         try {
-            const items = contactState.map((item, idx) => ({
-                platform: sanitizeInput(item.platform.trim()),
-                display_value: sanitizeInput(item.displayValue.trim()),
-                url: item.href.trim(),
-                icon: normalizeIconInput(item.icon),
-                description: sanitizeInput((item.description || '').trim()),
-                sort_order: idx + 1
-            }));
-
-            const res = await adminFetch('/api/internal/admin/links', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category: 'contact', items })
-            });
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body?.error?.message || 'Failed to save contact info.');
-            }
+            await postLinks(
+                'contact',
+                contactState.map(item => ({ ...item, url: item.href })),
+                'Failed to save contact info.'
+            );
 
             contactInitial = $state.snapshot(contactState);
             listValidation.reset();
