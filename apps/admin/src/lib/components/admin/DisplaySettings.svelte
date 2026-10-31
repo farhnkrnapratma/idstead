@@ -78,14 +78,14 @@
             <div
                 role="tablist"
                 aria-label="Theme"
-                class="inline-flex w-fit items-center gap-0.5 rounded-md border border-line-subtle/50 bg-surface p-0.5">
+                class="inline-flex w-fit items-center overflow-hidden rounded-md border border-line-subtle/50 bg-surface">
                 {#each themes as theme (theme.value)}
                     <button
                         type="button"
                         role="tab"
                         aria-selected={themeStore.current === theme.value}
                         onclick={() => themeStore.apply(theme.value)}
-                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
+                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             themeStore.current === theme.value
                         ) ?
                             'bg-accent-strong text-on-accent shadow-xs'
@@ -152,14 +152,14 @@
             <div
                 role="tablist"
                 aria-labelledby="display-mode-label"
-                class="inline-flex w-fit items-center gap-0.5 self-start rounded-md border border-line-subtle/50 bg-surface p-0.5">
+                class="inline-flex w-fit items-center self-start overflow-hidden rounded-md border border-line-subtle/50 bg-surface">
                 {#each dateModeTabs as item (item.value)}
                     <button
                         type="button"
                         role="tab"
                         aria-selected={prefs.mode === item.value}
                         onclick={() => adminDisplayStore.apply({ mode: item.value })}
-                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
+                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             prefs.mode === item.value
                         ) ?
                             'bg-accent-strong text-on-accent shadow-xs'
