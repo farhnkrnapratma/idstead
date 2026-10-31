@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export async function publicResponse(request: Request, body: string, type: string, ttl = 60) {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
     const etag =

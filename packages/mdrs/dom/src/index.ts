@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 export { default as CodeTabs } from './CodeTabs.svelte';
 export { default as MarkdownChart } from './MarkdownChart.svelte';
 export { enhanceMarkdownContent } from './enhance';

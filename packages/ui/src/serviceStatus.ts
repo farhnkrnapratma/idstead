@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const SERVICE_STATUSES = {
     UP: { label: 'All systems operational', short: 'Operational', tone: 'success', icon: 'check' },
     HASISSUES: { label: 'Experiencing issues', short: 'Issues', tone: 'danger', icon: 'alert' },

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';
 import type { SvgPath } from '#lib/siteIdentity.ts';
 

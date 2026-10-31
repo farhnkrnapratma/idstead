@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { OidcAuthStore, OidcClientRecord, OidcClientStore } from '@idstead/data';
 import type { OidcSigningKey } from './keys';
 import { parseScopes } from './authorize';

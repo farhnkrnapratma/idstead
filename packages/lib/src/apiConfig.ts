@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const API_VERSIONS = ['v1'] as const;
 export type ApiVersion = (typeof API_VERSIONS)[number];
 export const LATEST_API_VERSION: ApiVersion = API_VERSIONS[API_VERSIONS.length - 1];

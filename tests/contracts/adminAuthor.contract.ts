@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, test } from 'bun:test';
 import type { AdminAuthorStore, AuthorWriter } from '../../packages/data/src/index.ts';
 import { AUTHOR_SEED, type AuthorSeed } from './authorRepository.contract.ts';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { encode, QrCodeDataType } from 'uqr';
 
 export const QR_COLOR = '#000000';

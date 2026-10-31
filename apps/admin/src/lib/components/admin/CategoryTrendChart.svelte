@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { Chart, Svg, Axis, Spline, Bars, Highlight, Tooltip } from 'layerchart';
     import { curveMonotoneX } from 'd3-shape';

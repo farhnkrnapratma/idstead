@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { socialLinkFromRow } from '@idstead/domain/author.ts';
 import type { ProfileRecord } from '../adminAuthor';
 import type { Row } from '../authorReader';

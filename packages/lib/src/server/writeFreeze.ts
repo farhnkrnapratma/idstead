@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Handle } from '@sveltejs/kit/hooks';
 import * as privateEnv from '$app/env/private';
 import { apiError } from './apiError';

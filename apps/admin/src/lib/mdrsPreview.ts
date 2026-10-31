@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { DefineError, renderMarkdown } from '@mdrs/core';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 import { adminFetch } from './adminClient';

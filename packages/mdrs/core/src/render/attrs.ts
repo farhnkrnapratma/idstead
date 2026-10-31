@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 export const ATTR_RE = /([a-zA-Z][\w-]*)="((?:[^"\\]|\\.)*)"/g;
 
 export function parseAttrs(source: string): Record<string, string> {

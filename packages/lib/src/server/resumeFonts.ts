@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import sans from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-400-normal.woff?inline';
 import sansBold from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-700-normal.woff?inline';
 import sansItalic from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-latin-400-italic.woff?inline';

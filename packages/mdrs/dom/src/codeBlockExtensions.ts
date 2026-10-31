@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const EXTENSIONS: Record<string, string> = {
     js: 'js',
     javascript: 'js',

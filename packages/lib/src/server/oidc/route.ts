@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { checkRateLimit, clientIp } from '../rateLimit';
 import { writesFrozen } from '../writeFreeze';
 import { OAUTH_CORS_HEADERS, type OidcEndpointDeps } from './endpoints';

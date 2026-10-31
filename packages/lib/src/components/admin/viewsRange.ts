@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export type ViewsRange = '1d' | '7d' | '30d' | '90d' | '1y';
 
 export interface ViewsBucketRow {

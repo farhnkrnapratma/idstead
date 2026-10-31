@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { Marked, Renderer } from 'marked';
 import markedFootnote from 'marked-footnote';
 import { sanitizeUrl } from '../sanitize';

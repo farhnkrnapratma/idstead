@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const CONTENT_VIDEO_LIMIT = 50_000_000;
 
 export function isWebm(bytes: Uint8Array) {

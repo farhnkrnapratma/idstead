@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const RESUME_CHECKSUM_ALGORITHMS = [
     { ext: 'sha256', label: 'SHA-256', command: 'sha256sum' },
     { ext: 'sha512', label: 'SHA-512', command: 'sha512sum' },

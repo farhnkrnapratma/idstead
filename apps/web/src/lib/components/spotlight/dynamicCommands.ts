@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { isLegalSlug } from '@idstead/domain/legal.ts';
 import { API_VERSIONS, LATEST_API_VERSION, apiUrl, apiVersionUrl } from '#lib/apiConfig.ts';
 import { parseMailingCommand, type MailingAction } from '#lib/mailing.ts';

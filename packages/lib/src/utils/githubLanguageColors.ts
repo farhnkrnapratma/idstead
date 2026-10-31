@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const GITHUB_LANGUAGE_COLORS: Record<string, string> = {
     JavaScript: '#f1e05a',
     TypeScript: '#3178c6',

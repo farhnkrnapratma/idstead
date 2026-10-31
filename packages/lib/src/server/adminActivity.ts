@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { dataStores } from './data';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';

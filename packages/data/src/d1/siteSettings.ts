@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { ANALYTICS_OFF, storedAnalyticsSettings } from '@idstead/domain/analytics.ts';
 import {
     CONTENT_LICENSE_DEFAULT,

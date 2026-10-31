@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { hashIp } from '@idstead/domain/hash.ts';
 import type { BlogRepository, FeedbackRecorder, FeedbackTarget, LegalPageId } from '@idstead/data';
 import { PUBLIC_ID_PATTERN } from '@idstead/domain/postReference.ts';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { workerBinding } from './workerEnv';
 
 export const ASSET_BUCKET_BINDING = 'ASSET_BUCKET';

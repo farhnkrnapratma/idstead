@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Database } from 'bun:sqlite';
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';

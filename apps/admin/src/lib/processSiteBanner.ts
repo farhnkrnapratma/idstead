@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { runImageWorker } from './imageWorker';
 import { BANNER_SOURCE_LIMIT, BANNER_PIXEL_LIMIT } from '#lib/blogBanner.ts';
 

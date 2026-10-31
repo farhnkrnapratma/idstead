@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const WEBFINGER_RELS = {
     profilePage: 'http://webfinger.net/rel/profile-page',
     avatar: 'http://webfinger.net/rel/avatar',

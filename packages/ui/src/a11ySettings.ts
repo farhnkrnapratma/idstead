@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export type FontScale = 100 | 110 | 120 | 130 | 140 | 150;
 
 export interface A11ySettings {

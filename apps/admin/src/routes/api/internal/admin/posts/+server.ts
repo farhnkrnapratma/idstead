@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { countReadingMinutes } from '@idstead/domain/readTime.ts';
 import type { RequestHandler } from './$types';
 import { logAdminActivity } from '#lib/server/adminRequest.ts';

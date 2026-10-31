@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { GitFork, RotateCcwClock, Scale, Star } from '@lucide/svelte';
     import { pluralize } from '@idstead/domain/pluralize.ts';

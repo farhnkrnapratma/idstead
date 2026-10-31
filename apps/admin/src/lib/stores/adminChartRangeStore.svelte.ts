@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { browser } from '$app/env';
 import type { ViewsRange } from '#lib/components/admin/viewsRange.ts';
 import { DEFAULT_CHART_RANGE } from '#lib/adminSettings.ts';

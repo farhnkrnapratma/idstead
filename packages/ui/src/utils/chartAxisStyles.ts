@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const ADMIN_CHART_AXIS_CLASSES = {
     tickLabel: 'text-xxs fill-fg-muted font-mono',
     rule: 'stroke-line-subtle'

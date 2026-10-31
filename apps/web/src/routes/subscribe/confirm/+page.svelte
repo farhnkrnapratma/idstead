@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { MailCheck, MailX, TriangleAlert } from '@lucide/svelte';
     import Button from '@idstead/ui/components/Button.svelte';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export async function readJson<T = any>(response: Response): Promise<T> {
     const text = await response.text();
     try {

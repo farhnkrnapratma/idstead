@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { API_VERSIONS } from '#lib/apiConfig.ts';
 import { SHORTCUT_SECTIONS, commandSection } from '@idstead/ui/shortcutCatalog.ts';
 import {

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Flag, Mail, MessageCircle, MessageSquare, ThumbsDown, ThumbsUp } from '@lucide/svelte';
 
 export type ActivityTone = 'report' | 'comment' | 'message' | 'feedback' | 'helpful' | 'unhelpful';

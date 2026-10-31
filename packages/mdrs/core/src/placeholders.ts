@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const OPEN = '\uE000';
 const CLOSE = '\uE001';
 const MAX_PLACEHOLDER_EXPANSIONS = 5000;

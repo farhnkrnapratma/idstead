@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { enhanceCodeBlocks } from './codeBlocks';
 import { enhanceMermaidBlocks } from './mermaid';
 import { enhanceMarkdownCharts } from './charts';

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { Calendar, MapPin, BuildingComplex } from '@lucide/svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';

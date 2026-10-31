@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { RenderOptions } from '@mdrs/core';
 
 export function siteRenderOptions(siteUrl: string | null | undefined): RenderOptions {

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { BlogRepository, PostListOptions, PublishedPost } from '@idstead/data';
 import { publicPostFields, type PublicPostFields } from '@idstead/domain/blog.ts';
 import { formatReadTime } from '@idstead/domain/formatters.ts';

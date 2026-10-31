@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { themeToken, type EffectiveTheme } from '@idstead/ui/themeColors.ts';
 
 let mermaidInstance: typeof import('mermaid').default | null = null;

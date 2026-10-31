@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import hljs from 'highlight.js';
 import { codeBlockPrefsStore } from './codeBlockPrefsStore.svelte';
 import { readingModeStore } from '@idstead/ui/stores/readingModeStore.svelte.ts';

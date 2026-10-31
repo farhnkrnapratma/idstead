@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { DefineError, unavailableResolvers, type ApiRegistry } from '@mdrs/core';
 import type { AuthorRepository, BlogRepository, Repositories } from '@idstead/data';
 import { publicPostFields } from '@idstead/domain/blog.ts';

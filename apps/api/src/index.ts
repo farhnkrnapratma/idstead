@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Hono, type Context } from 'hono';
 import * as Sentry from '@sentry/cloudflare';
 import { stringify } from 'yaml';

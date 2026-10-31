@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import * as privateEnv from '$app/env/private';
 
 type PlatformEnv = { env?: { TURNSTILE_SECRET?: string } };

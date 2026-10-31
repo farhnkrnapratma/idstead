@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { bannerUrl } from '@idstead/domain/blogAssets.ts';
 import { parsePostReference } from '@idstead/domain/postReference.ts';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';

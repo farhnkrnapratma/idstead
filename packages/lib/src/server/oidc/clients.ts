@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const MAX_REDIRECT_URIS = 10;
 export const MAX_REDIRECT_URI_LENGTH = 2000;
 export const MAX_CLIENT_NAME_LENGTH = 80;

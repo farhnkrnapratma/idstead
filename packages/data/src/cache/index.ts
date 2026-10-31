@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { AuthorRepository } from '../author';
 import type { BlogRepository, CommentRepository, PostSource } from '../blog';
 import type { Repositories } from '../index';

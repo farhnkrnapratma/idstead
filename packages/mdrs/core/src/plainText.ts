@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { extractFrontmatter } from './frontmatter';
 import { stripPlaceholderChars } from './placeholders';
 import { decodeHtmlEntities } from './entities';

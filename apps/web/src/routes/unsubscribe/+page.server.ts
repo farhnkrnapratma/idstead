@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Actions, PageServerLoad } from './$types';
 import { redirect, type Cookies } from '@sveltejs/kit';
 import { serviceData } from '#lib/server/repositories.ts';

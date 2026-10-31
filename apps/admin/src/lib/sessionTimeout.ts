@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const SESSION_WARNING_SECONDS = 30;
 
 const ANNOUNCE_AT = [30, 10, 5];

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+
 <script lang="ts">
     import { tick } from 'svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';

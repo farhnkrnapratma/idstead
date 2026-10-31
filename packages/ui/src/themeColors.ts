@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import palette from 'tailwindcss/theme.css?raw';
 import tokens from './styles/tokens.css?raw';
 

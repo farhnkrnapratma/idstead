@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { loadPublishedPosts } from '#lib/server/blogPosts.ts';
 import { loadPublicResumeDocument } from '#lib/server/publicResumeDocument.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';

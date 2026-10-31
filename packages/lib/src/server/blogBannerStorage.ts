@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';

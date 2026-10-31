@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { expect, test } from 'bun:test';
 import { InferenceQueue } from '../packages/lib/src/server/inferenceQueue.ts';
 

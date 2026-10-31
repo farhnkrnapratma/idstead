@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export function normalizeName(name: string): string {
     let normalized = name.trim().toLowerCase().normalize('NFKC');
     normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

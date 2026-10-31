@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { blogRepositoryContract, type ContractSeed } from './contracts/blogRepository.contract.ts';
 import { createD1BlogRepository, createD1CommentRepository } from '../packages/data/src/d1/blog.ts';
 import { createD1CommentWriter, createD1ViewRecorder } from '../packages/data/src/d1/writes.ts';

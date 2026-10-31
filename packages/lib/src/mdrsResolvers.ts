@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { jsToDefineValue, walkPath, type ApiRegistry, type DefineValue } from '@mdrs/core';
 
 export interface MdrsDataLoaders {

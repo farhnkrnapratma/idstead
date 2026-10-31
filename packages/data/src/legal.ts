@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export type { LegalSlug } from '@idstead/domain/legal.ts';
 import type { LegalSlug } from '@idstead/domain/legal.ts';
 

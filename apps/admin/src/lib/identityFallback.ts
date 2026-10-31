@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { blobatar } from 'blobatar';
 import { normalizeIconInput } from '#lib/author.ts';
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';

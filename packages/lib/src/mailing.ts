@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { emailError } from '@idstead/domain/fieldValidation.ts';
 
 export type MailingAction = 'subscribe' | 'unsubscribe';

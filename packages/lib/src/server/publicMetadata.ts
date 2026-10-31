@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { error } from '@sveltejs/kit';
 import { siteOrigin } from '@idstead/domain/siteOrigin.ts';
 import { publicRepositories } from './repositories';

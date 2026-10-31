@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { afterEach, describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env/public', () => ({}));

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 export const INDENT_SIZES = [2, 4, 8] as const;
 export type IndentSize = (typeof INDENT_SIZES)[number];
 type IndentMode = 'spaces' | 'tabs';

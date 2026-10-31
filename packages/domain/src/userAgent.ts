@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const BROWSERS: [string, RegExp][] = [
     ['Edge', /Edg(?:A|iOS)?\/(\d+)/],
     ['Opera', /OPR\/(\d+)/],

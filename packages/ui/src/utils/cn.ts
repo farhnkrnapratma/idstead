@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const RADIUS_RE = /^rounded(-(?:t|r|b|l|tl|tr|br|bl|s|e|ss|se|ee|es))?(?:-|$)/;
 const OVERFLOW_RE = /^overflow(-[xy])?-/;
 const TEXT_SIZE_KEYWORDS = new Set([

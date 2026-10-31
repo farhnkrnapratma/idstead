@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 interface RateLimit {
     limit(options: { key: string }): Promise<{ success: boolean }>;
 }

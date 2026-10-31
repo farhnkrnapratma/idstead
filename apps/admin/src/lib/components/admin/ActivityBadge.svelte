@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import Badge from '@idstead/ui/components/Badge.svelte';
     import { isFeedbackActivity } from '#lib/adminActivity.ts';

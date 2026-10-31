@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const CONTENT_IMAGE_LIMIT = 500 * 1024;
 export const CONTENT_IMAGE_SOURCE_LIMIT = 10_000_000;
 export const CONTENT_IMAGE_PIXEL_LIMIT = 40_000_000;

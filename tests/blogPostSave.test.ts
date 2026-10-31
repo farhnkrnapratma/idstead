@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, test } from 'bun:test';
 import { savePostOperation } from '../packages/lib/src/server/blogPostSave.ts';
 import type { PostOperationStore } from '../packages/data/src/adminPosts.ts';

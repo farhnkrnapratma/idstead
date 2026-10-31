@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import * as Sentry from '@sentry/cloudflare';
 import { dataStores } from '#lib/server/data.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';

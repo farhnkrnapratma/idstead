@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const WRAPPER_CLASS = 'mdrs-code-scrollbar hljs';
 const TRACK_CLASS = 'mdrs-code-scrollbar-track';
 const THUMB_CLASS = 'mdrs-code-scrollbar-thumb';

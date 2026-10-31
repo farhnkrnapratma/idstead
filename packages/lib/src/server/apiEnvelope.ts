@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const DEFAULT_CODES: Record<number, string> = {
     400: 'BAD_REQUEST',
     401: 'UNAUTHORIZED',

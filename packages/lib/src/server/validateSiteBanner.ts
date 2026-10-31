@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { inspectAvif } from '#lib/avif.ts';
 import { inspectWebp } from '#lib/webp.ts';
 import { IMAGE_LIMIT, bannerSizes, type BannerAssetName } from '#lib/siteIdentity.ts';

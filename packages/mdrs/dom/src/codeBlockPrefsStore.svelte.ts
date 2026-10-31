@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { browser } from '$app/env';
 import { SvelteSet } from 'svelte/reactivity';
 import type { CodeColorScheme } from './codeBlocks.ts';

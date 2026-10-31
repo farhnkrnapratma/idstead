@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { type Tokens } from 'marked';
 
 export function cleanListItemHtml(html: string, loose: boolean): string {

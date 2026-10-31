@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import * as Sentry from '@sentry/sveltekit';
 import { MODERATION_MODEL } from '#lib/server/aiModels.ts';
 

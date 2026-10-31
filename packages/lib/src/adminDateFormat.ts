@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export type AdminDateMode = 'absolute' | 'relative' | 'smart';
 export type AdminDateFormat =
     'mon-d-y' | 'dd/mm/yyyy' | 'dd/mm/yy' | 'month-d-y' | 'wd-mon-d' | 'wd-mon-d-y' | 'iso';

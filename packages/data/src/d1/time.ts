@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const HOUR_MS = 60 * 60 * 1000;
 const formatters = new Map<string, Intl.DateTimeFormat>();
 

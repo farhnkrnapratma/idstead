@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { ProjectRepoRules, SocialLink } from '@idstead/domain/author.ts';
 import type { OpenPgpUserId, PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 import type { ProfileRecord } from './adminAuthor';

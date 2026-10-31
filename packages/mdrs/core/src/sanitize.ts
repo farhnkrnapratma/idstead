@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const SAFE_URL_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
 export function sanitizeUrl(href: string): string | null {

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, test } from 'bun:test';
 import { decodeHtmlEntities as domainDecode } from '../packages/domain/src/entities.ts';
 import { decodeHtmlEntities as mdrsDecode } from '../packages/mdrs/core/src/entities.ts';

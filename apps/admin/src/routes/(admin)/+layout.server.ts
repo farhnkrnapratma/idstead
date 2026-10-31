@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { accessConfig } from '#lib/server/accessAuth.ts';
 import type { LayoutServerLoad } from './$types';
 

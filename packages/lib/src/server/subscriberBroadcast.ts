@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { publicRepositories } from './repositories';
 import type { NewsletterRecipient, NewsletterStore } from '@idstead/data';
 import { newPostEmail, resendApiKey, sendBatch, senderAddress } from './subscribers';

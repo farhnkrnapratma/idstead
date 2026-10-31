@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import UPNG from 'upng-js';
 import { Inflate } from 'pako';
 import { crc32 } from '#lib/png.ts';

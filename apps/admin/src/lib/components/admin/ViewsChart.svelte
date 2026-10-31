@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { Chart, Svg, Axis, Spline, Bars, Tooltip, Highlight } from 'layerchart';
     import { ChartColumnBig, ChartSpline } from '@lucide/svelte';

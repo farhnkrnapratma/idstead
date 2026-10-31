@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { defineEnvVars } from '@sveltejs/kit/env';
 
 const optional = (value: string | undefined) => value;

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, mock, test } from 'bun:test';
 import type { AssetBucket, StoredObject } from '../packages/lib/src/server/r2.ts';
 

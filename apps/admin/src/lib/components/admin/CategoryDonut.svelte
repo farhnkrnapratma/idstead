@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { ChartPie } from '@lucide/svelte';
     import { Chart, Svg, Pie, Arc, Tooltip } from 'layerchart';

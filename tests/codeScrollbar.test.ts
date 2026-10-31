@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createCodeScrollbar } from '../packages/mdrs/dom/src/codeScrollbar.ts';
 

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import decode, { init } from '@jsquash/webp/decode.js';
 import { inspectWebp } from '#lib/webp.ts';
 

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { formatMonthAbbrev } from '#lib/author.ts';
 import { decodeHtmlEntities } from '@mdrs/core';
 

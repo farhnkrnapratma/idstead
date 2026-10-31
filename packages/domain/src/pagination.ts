@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export function pageCount(total: number, size: number) {
     return Math.max(1, Math.ceil(total / size));
 }

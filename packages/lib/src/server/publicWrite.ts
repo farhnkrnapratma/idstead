@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { apiError } from './apiError';
 import { isSameOriginRequest } from './sameOrigin';
 import { verifyTurnstileToken } from './turnstile';

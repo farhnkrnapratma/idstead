@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { buttonKey, COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
     import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';

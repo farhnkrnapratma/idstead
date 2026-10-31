@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 type Box = { x1: number; y1: number; x2: number; y2: number };
 type Art = { image: HTMLCanvasElement; left: number; top: number };
 type Shape = { char: string; x: number; box: Box };

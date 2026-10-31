@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';

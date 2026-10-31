@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
     import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';

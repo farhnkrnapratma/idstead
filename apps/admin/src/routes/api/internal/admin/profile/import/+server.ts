@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { RequestHandler } from './$types';
 import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';

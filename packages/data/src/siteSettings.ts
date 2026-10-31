@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { AnalyticsSettings } from '@idstead/domain/analytics.ts';
 import type { ContentLicenseSettings } from '@idstead/domain/contentLicense.ts';
 

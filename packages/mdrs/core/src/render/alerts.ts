@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const GITHUB_ALERT_RE = /^( {0,3})> ?\[!(note|tip|important|warning|caution)\][ \t]*$/i;
 
 export function convertGithubAlerts(markdown: string): string {

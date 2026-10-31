@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { isValidPostSlug } from './slug';
 
 export const PUBLIC_ID_PATTERN = /^[0-9a-f]{64}$/;

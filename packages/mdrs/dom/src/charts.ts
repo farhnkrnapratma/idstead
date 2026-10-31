@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 import { mount } from 'svelte';
 import { load as yamlLoad } from 'js-yaml';
 import MarkdownChart from './MarkdownChart.svelte';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { dearmor, wkdEmails, wkdHash, type PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 
 export async function wkdKey(hash: string, key: PublicOpenPgpKey | null, siteUrl: string) {

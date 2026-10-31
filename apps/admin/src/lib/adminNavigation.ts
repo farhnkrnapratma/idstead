@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { page } from '$app/state';
 import { goto } from '$app/navigation';
 import { cleanAdminParams } from './adminUrl';

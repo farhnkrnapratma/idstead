@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { expect, test } from 'bun:test';
 import path from 'node:path';
 import { RENDER_VERSION } from '../packages/mdrs/core/src/version.ts';

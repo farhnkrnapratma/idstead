@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { createD1OidcAuthStore, createD1OidcClientStore } from '../packages/data/src/d1/oidc.ts';
 import { oidcContract } from './contracts/oidc.contract.ts';
 import { d1Shim } from './support/d1.ts';

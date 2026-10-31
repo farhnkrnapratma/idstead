@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { InstanceConfig } from '../../packages/domain/src/instance.ts';
 
 export const APPS = ['api', 'jobs', 'web', 'admin'] as const;

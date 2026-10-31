@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export interface PopoverPositionOptions {
     placement?: 'bottom' | 'top' | 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
     offset?: number;

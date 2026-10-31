@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { adminAuthorContract, type AdminAuthorSeed } from './contracts/adminAuthor.contract.ts';
 import { authorFetch, d1AuthorRows } from './support/authorTables.ts';
 import {

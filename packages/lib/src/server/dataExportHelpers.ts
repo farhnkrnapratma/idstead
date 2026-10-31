@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const STAMP_PATTERN = /^\d{8}-\d{6}$/;
 const MEDIA_PATTERN =
     /!\[([^\]]*)\]\((?:https?:\/\/[^\s)/]+)?\/blog\/content\/([0-9a-f]{64})\.(webp|mp4|webm)((?:\s+"[^"]*")?)\)/g;

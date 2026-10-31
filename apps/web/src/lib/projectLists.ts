@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Project } from '@idstead/domain/types.ts';
 
 const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;

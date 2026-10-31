@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { NotificationSummary } from '#lib/adminWorkspace.ts';
 import { adminActivityRequest } from '../adminActivityClient.ts';
 import type {

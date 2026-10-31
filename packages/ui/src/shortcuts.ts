@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Platform } from './platform';
 
 export const SHORTCUT_LABELS = '0123456789abcdefghijklmnopqrstuvwxyz';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const API_PARAMS = {
     id: { alias: null, multi: false },
     field: { alias: 'f', multi: true },

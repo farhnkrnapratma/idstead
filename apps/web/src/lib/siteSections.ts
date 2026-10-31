@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { RouteId } from '$app/types';
 import type { Section } from '@idstead/domain/types.ts';
 

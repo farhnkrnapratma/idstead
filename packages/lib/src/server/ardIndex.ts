@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { normalizeArdEntry, type ArdEntry } from '#lib/server/ard.ts';
 import { crawlArdSources, type ArdFetcher } from '#lib/server/ardIngestion.ts';
 import type { ArdIndexStore } from '@idstead/data';

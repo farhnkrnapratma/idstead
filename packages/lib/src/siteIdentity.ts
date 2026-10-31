@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const IMAGE_LIMIT = 500_000;
 export const UPLOAD_LIMIT = 10_000_000;
 export function avatarSource(profile?: { avatar?: string; avatarVersion?: string | null } | null) {

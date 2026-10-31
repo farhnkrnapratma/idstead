@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { ContentBucket, D1Like } from '@idstead/data';
 
 type D1Statement = ReturnType<D1Like['prepare']>;

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 declare module 'upng-js' {
     const codec: {
         encode(images: ArrayBuffer[], width: number, height: number, colors: number): ArrayBuffer;

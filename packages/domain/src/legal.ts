@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const LEGAL_SLUGS = ['privacy', 'security', 'terms', 'ai-disclosure'] as const;
 
 export type LegalSlug = (typeof LEGAL_SLUGS)[number];

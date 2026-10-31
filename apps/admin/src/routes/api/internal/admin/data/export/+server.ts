@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { RequestHandler } from './$types';
 import { adminServices } from '#lib/server/adminRequest.ts';
 import { buildDataExport } from '#lib/server/dataExport.ts';

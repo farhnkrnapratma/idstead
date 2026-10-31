@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { decodeHtmlEntities } from '@mdrs/core';
 
 export type CommentFilter = 'all' | 'replied' | 'unanswered' | 'admin' | 'reported';

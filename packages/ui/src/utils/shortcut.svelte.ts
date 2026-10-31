@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { shortcutStore } from '../stores/shortcutStore.svelte.ts';
 import { platformStore } from '../stores/platformStore.svelte.ts';
 import { keyLabel, sequenceStep } from '../shortcuts.ts';

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 const JS_RESERVED = new Set([

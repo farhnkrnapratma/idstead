@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+
 <script lang="ts">
     import { ListIndentIncrease, RefreshCw, RefreshCwOff } from '@lucide/svelte';
     import Tooltip from '@idstead/ui/components/Tooltip.svelte';

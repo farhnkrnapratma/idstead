@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 import { decodeHtmlEntities } from '@idstead/domain/entities.ts';
 import { isLegalSlug } from '@idstead/domain/legal.ts';

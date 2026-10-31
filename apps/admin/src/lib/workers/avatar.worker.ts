@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import tracer from 'imagetracerjs';
 import { encodeIndexedPng, encodePng } from '#lib/png.ts';
 import { IMAGE_LIMIT, iconSizes, makeIco } from '#lib/siteIdentity.ts';

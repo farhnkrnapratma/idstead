@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 export { MAX_DOCUMENT_LENGTH } from '../limits';
 export { DefineError, type DefineErrorInfo } from './errors';
 export type { PathSegment } from './ast';

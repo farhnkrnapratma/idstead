@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { ActivityLogFilter } from '@idstead/data';
 import { activityCategories, activityLogSortFields, ACTIVITY_LOG_PAGE_SIZE } from '../activityLog';
 

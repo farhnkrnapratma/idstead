@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export function isSupportedRasterImage(bytes: Uint8Array): boolean {
     const ascii = new TextDecoder().decode(bytes);
     return (

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 export const RATE_LIMIT_WINDOW_MS = 60 * 1000;

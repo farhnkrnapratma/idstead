@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, test } from 'bun:test';
 import { CONTENT_IMAGE_LIMIT } from '../packages/lib/src/blogContentImage.ts';
 import { validateContentImageAvif } from '../packages/lib/src/server/validateContentImage.ts';

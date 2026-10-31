@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <script lang="ts">
     import { shortcut } from '../utils/shortcut.svelte';
     import { buttonKey } from '../shortcuts.ts';

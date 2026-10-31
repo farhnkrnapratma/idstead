@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
 import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';

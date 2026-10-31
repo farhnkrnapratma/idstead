@@ -1,0 +1,3 @@
+These files are copied from third-party projects and remain under the terms
+of their upstream projects. skills-lock.json records where each one comes
+from. No license is granted by this repository.

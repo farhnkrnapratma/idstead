@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export function inspectAvif(
     bytes: Uint8Array,
     limits: { maxBytes: number; width: number; height: number }

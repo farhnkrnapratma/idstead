@@ -1,0 +1,121 @@
+# SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+
+version = 1
+
+[[annotations]]
+path = [
+    "**/*.md",
+    "**/*.json",
+    "**/*.jsonc",
+    "bun.lock",
+    "run.conf",
+    "apps/web/_headers",
+    "apps/*/src/app.html",
+    "packages/data/d1/migrations/**",
+    "tests/__snapshots__/**",
+    "tests/fixtures/**",
+    "graphify-out/**",
+    ".claude/agents/**",
+    ".claude/hooks/**",
+    ".claude/rules/**",
+    ".claude/CLAUDE.md",
+    ".claude/settings.json",
+    ".claude/launch.json",
+    ".claude/skills/api-contract-check/**",
+    ".claude/skills/change-type/**",
+    ".claude/skills/committing-with-commitlint/**",
+    ".claude/skills/create-migration/**",
+    ".claude/skills/finish-feature/**",
+    ".claude/skills/rest-api-best-practices/**",
+    ".claude/skills/setup-idstead/**",
+    ".claude/skills/ui-consistency-check/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Farhan Kurnia Pratama"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["packages/mdrs/**/*.md", "packages/mdrs/**/*.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Farhan Kurnia Pratama"
+SPDX-License-Identifier = "MIT OR Apache-2.0"
+
+[[annotations]]
+path = "brand/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Farhan Kurnia Pratama"
+SPDX-License-Identifier = "LicenseRef-All-Rights-Reserved"
+
+[[annotations]]
+path = "packages/ui/src/fonts/MartianMono-*"
+precedence = "override"
+SPDX-FileCopyrightText = "2020 The Martian Mono Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = "packages/ui/src/fonts/PaperMono-*"
+precedence = "override"
+SPDX-FileCopyrightText = "2025 The Paper-Mono Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = ["packages/lib/src/data/password-words.json", "packages/lib/src/data/password-words.LICENSE.md"]
+precedence = "override"
+SPDX-FileCopyrightText = "Electronic Frontier Foundation"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = [
+    ".claude/skills/animate/**",
+    ".claude/skills/animation-performance/**",
+    ".claude/skills/animation-vocabulary/**",
+    ".claude/skills/apple-design/**",
+    ".claude/skills/break-ui/**",
+    ".claude/skills/emil-design-eng/**",
+    ".claude/skills/find-animation-opportunities/**",
+    ".claude/skills/improve-animations/**",
+    ".claude/skills/mobile-native/**",
+    ".claude/skills/prototype/**",
+    ".claude/skills/review-animations/**",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Emil Kowalski"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".agents/skills/**", ".claude/skills/cloudflare", ".claude/skills/turnstile-spin", ".claude/skills/web-perf", ".claude/skills/workers-best-practices", ".claude/skills/wrangler"]
+precedence = "override"
+SPDX-FileCopyrightText = "Cloudflare, Inc."
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ".claude/skills/security-audit/**"
+precedence = "override"
+SPDX-FileCopyrightText = "Cloudflare, Inc."
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/fallow/**", ".claude/skills/fallow-setup/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "The fallow authors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ".claude/skills/task-observer/**"
+precedence = "override"
+SPDX-FileCopyrightText = "The task-observer authors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = [
+    ".claude/skills/find-docs/**",
+    ".claude/skills/graphify/**",
+    ".claude/skills/svelte-code-writer/**",
+    ".claude/skills/svelte-core-bestpractices/**",
+    ".claude/skills/web-design-guidelines/**",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "The upstream authors"
+SPDX-License-Identifier = "LicenseRef-Upstream"
