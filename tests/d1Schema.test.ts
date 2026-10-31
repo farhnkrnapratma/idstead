@@ -91,7 +91,7 @@ describe('D1 schema', () => {
         expect((db.query('select id from db_legals').get() as Row).id).toMatch(UUID);
     });
 
-    test('rejects values the Postgres constraints rejected', () => {
+    test('rejects values the schema constraints forbid', () => {
         const db = migratedDb();
         expect(() => post(db, 'a', { slug: 'Bad Slug' })).toThrow();
         for (const slug of ['-lead', 'trail-', 'double--dash', 'content'])

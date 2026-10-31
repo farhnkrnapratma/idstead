@@ -37,7 +37,7 @@ async function mentioning(files: string[], pattern: RegExp): Promise<string[]> {
 }
 
 describe('Idstead naming', () => {
-    test('only the migration and instance files use the old name', async () => {
+    test('only this test and the instance files use the personal prefix', async () => {
         const offenders = await mentioning(
             trackedFiles.filter(file => !PREFIX_ALLOWLIST.has(file) && !INSTANCE_FILES.has(file)),
             PERSONAL_PREFIX
