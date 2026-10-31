@@ -84,11 +84,11 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
                 const eventId = crypto.randomUUID();
                 const now = new Date().toISOString();
                 const dayAgo = new Date(Date.parse(now) - 24 * 60 * 60 * 1000).toISOString();
-                const [, , , inserted] = await db.batch([
+                const [, , inserted] = await db.batch([
                     db
                         .prepare(
-                            `INSERT INTO db_feedback_events (id, target_type, target_id, post_id, page_title, vote, ip_hash, created_at, legacy_id)
-                             SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, CASE WHEN ?4 IS NOT NULL THEN ?1 END
+                            `INSERT INTO db_feedback_events (id, target_type, target_id, post_id, page_title, vote, ip_hash, created_at)
+                             SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8
                              WHERE NOT EXISTS (SELECT 1 FROM db_feedback_operations WHERE operation_id = ?9)
                                  AND NOT EXISTS (
                                      SELECT 1 FROM db_feedback_events
@@ -107,13 +107,6 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
                             feedback.operationId,
                             dayAgo
                         ),
-                    db
-                        .prepare(
-                            `INSERT INTO db_post_feedback (id, post_id, vote, ip_hash, created_at)
-                             SELECT id, post_id, vote, ip_hash, created_at FROM db_feedback_events
-                             WHERE id = ?1 AND post_id IS NOT NULL`
-                        )
-                        .bind(eventId),
                     db
                         .prepare(
                             `UPDATE db_post_stats SET helpful_yes = helpful_yes + (e.vote = 'yes'), helpful_no = helpful_no + (e.vote = 'no')

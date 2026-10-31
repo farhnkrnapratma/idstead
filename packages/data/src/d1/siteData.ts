@@ -174,7 +174,6 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                         'DELETE FROM db_comment_reports',
                         'DELETE FROM db_comments',
                         'DELETE FROM db_views',
-                        'DELETE FROM db_post_feedback',
                         'DELETE FROM db_blog_banner_references',
                         `INSERT INTO db_post_storage_cleanup (storage_path, post_id)
                          SELECT storage_path, id FROM db_posts WHERE storage_path IS NOT NULL ON CONFLICT DO NOTHING`,

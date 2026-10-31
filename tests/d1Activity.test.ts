@@ -98,7 +98,6 @@ describe('D1 feedback recorder', () => {
                 .query('select helpful_yes, helpful_no from db_post_stats where post_id = ?')
                 .get(uuid(1))
         ).toEqual({ helpful_yes: 1, helpful_no: 0 });
-        expect(sqlite.query('select count(*) as n from db_post_feedback').get()).toEqual({ n: 1 });
         expect(
             sqlite
                 .query(
