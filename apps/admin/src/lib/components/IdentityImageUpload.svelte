@@ -12,8 +12,9 @@
     lang="ts"
     generics="T">
     import { onDestroy } from 'svelte';
-    import { ImageOff, LoaderCircle, Trash } from '@lucide/svelte';
+    import { ImageOff, Trash } from '@lucide/svelte';
     import Button from '@idstead/ui/components/Button.svelte';
+    import LoadingIndicator from '@idstead/ui/components/LoadingIndicator.svelte';
     import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
@@ -219,9 +220,7 @@
                             `Generating ${title.toLowerCase()} preview`
                         :   `${title} unavailable`}>
                         {#if generating}
-                            <LoaderCircle
-                                class="size-10 animate-spin text-fg-muted"
-                                aria-hidden="true" />
+                            <LoadingIndicator decorative />
                         {:else}
                             <ImageOff
                                 class="size-10 text-fg-muted"

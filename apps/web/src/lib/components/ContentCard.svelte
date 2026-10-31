@@ -1,7 +1,8 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { navigating } from '$app/state';
-    import { ArrowUpRight, LoaderCircle, Pin, Sparkles } from '@lucide/svelte';
+    import { ArrowUpRight, Pin, Sparkles } from '@lucide/svelte';
+    import LoadingIndicator from '@idstead/ui/components/LoadingIndicator.svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
@@ -102,9 +103,10 @@
                         class="ml-0.5 inline size-3.5 align-baseline text-fg-muted" />{/if}
             </a>
             {#if isOpening}
-                <LoaderCircle
-                    aria-hidden="true"
-                    class="inline size-3.5 align-baseline text-fg-muted motion-safe:animate-spin" />
+                <LoadingIndicator
+                    size="inline"
+                    decorative
+                    class="align-middle" />
             {/if}
             {#if pinned || isNew}
                 <span class="inline-flex items-center gap-1 align-middle select-none">
