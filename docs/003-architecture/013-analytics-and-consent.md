@@ -43,7 +43,7 @@ sequenceDiagram
 ## Web request
 
 - `apps/web/src/app.html` holds a `%idstead.analytics%` placeholder in `<head>`. `transformPageChunk` in `apps/web/src/hooks.server.ts` replaces it with the provider's snippet, or with nothing for None. API requests skip the lookup.
-- `buildContentSecurityPolicy` (`packages/lib/src/server/csp.ts`) adds only the active provider's hosts to `script-src`, `connect-src` and `img-src`. With None, no analytics host is allowed.
+- `buildContentSecurityPolicy` (`packages/lib/src/server/csp.ts`) adds only the active provider's hosts to `script-src`, `connect-src` and `img-src`. With None, no analytics host is allowed. Umami Cloud loads its script from `cloud.umami.is` but sends events to `gateway.umami.is`, so both are allowed for it.
 - The root layout load returns `cookieConsent` (whether the provider sets cookies). When it is `false`, the site renders no `ConsentBanner`, the footer has no Cookies link, and Spotlight hides the `/cookies` command.
 - The visitor's choice is stored in `localStorage` under `idstead_cookie_consent_v2` and sent to the tag with `gtag('consent', 'update', …)`.
 
