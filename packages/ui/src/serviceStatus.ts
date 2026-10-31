@@ -1,8 +1,13 @@
 export const SERVICE_STATUSES = {
-    UP: { label: 'All systems operational', tone: 'success', icon: 'check' },
-    HASISSUES: { label: 'Experiencing issues', tone: 'danger', icon: 'alert' },
-    UNDERMAINTENANCE: { label: 'Under maintenance', tone: 'warning', icon: 'maintenance' },
-    UNKNOWN: { label: 'Status unavailable', tone: 'muted', icon: 'unknown' }
+    UP: { label: 'All systems operational', short: 'Operational', tone: 'success', icon: 'check' },
+    HASISSUES: { label: 'Experiencing issues', short: 'Issues', tone: 'danger', icon: 'alert' },
+    UNDERMAINTENANCE: {
+        label: 'Under maintenance',
+        short: 'Maintenance',
+        tone: 'warning',
+        icon: 'maintenance'
+    },
+    UNKNOWN: { label: 'Status unavailable', short: 'Unknown', tone: 'muted', icon: 'unknown' }
 } as const;
 
 export type ServiceStatus = keyof typeof SERVICE_STATUSES;

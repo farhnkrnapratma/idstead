@@ -63,18 +63,22 @@
 </script>
 
 {#if current && StatusIcon}
-    <a
-        href={pageUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        title={current.label}
-        class={cn(
-            'inline-flex max-w-full items-center gap-1.5 rounded-md border border-line-subtle bg-surface px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-            className
-        )}>
-        <StatusIcon
-            aria-hidden="true"
-            class={cn('size-3.5 shrink-0', tones[current.tone])} />
-        <span class="truncate">{current.label}</span>
-    </a>
+    <div class={cn('@container min-w-0 flex-1', className)}>
+        <a
+            href={pageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={current.label}
+            class="inline-flex max-w-full items-center gap-1.5 rounded-md border border-line-subtle bg-surface px-2 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-fg focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none @min-[8rem]:px-2.5">
+            <StatusIcon
+                aria-hidden="true"
+                class={cn('size-3.5 shrink-0', tones[current.tone])} />
+            <span class="sr-only @min-[14rem]:not-sr-only @min-[14rem]:truncate"
+                >{current.label}</span>
+            <span
+                aria-hidden="true"
+                class="hidden truncate @min-[8rem]:inline @min-[14rem]:hidden"
+                >{current.short}</span>
+        </a>
+    </div>
 {/if}
