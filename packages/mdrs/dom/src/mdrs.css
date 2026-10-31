@@ -219,7 +219,7 @@
     }
 
     .mdrs-heading a.mdrs-anchor {
-        @apply relative -my-[0.25em] ml-[0.15em]! inline-flex! size-[1.3em] cursor-pointer! items-center! justify-center! rounded-sm align-[-0.05em]! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-[color,opacity] select-none;
+        @apply relative -my-[0.25em] ml-[0.15em]! inline-flex! size-[1.3em] cursor-pointer! items-center! justify-center! rounded-sm align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-[color,opacity] select-none;
     }
 
     .mdrs-heading a.mdrs-anchor svg {
@@ -230,6 +230,12 @@
     .mdrs-heading:focus-within :is(a.mdrs-anchor, .mdrs-copy-link),
     .mdrs-heading :is(a.mdrs-anchor, .mdrs-copy-link).mdrs-is-active {
         @apply opacity-100;
+    }
+
+    @media (pointer: coarse) {
+        .mdrs-heading :is(a.mdrs-anchor, .mdrs-copy-link) {
+            @apply opacity-100;
+        }
     }
 
     .mdrs-heading a.mdrs-anchor:hover,
@@ -246,7 +252,7 @@
     }
 
     .mdrs-heading .mdrs-copy-link {
-        @apply absolute top-[0.5lh] left-0 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-fg-muted opacity-0 transition-[color,opacity] select-none focus-visible:outline-2 focus-visible:outline-focus-ring max-md:hidden;
+        @apply absolute top-[0.5lh] left-0 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-fg-muted opacity-0 transition-[color,opacity] select-none focus-visible:outline-2 focus-visible:outline-focus-ring max-md:static max-md:ml-1 max-md:inline-flex max-md:translate-none max-md:align-middle;
     }
 
     .mdrs-heading .mdrs-copy-link svg {
