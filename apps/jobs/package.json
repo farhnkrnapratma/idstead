@@ -2,7 +2,7 @@
     "name": "@idstead/jobs",
     "version": "0.0.1",
     "private": true,
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "type": "module",
     "imports": {
         "#lib": "@idstead/lib",

@@ -2,7 +2,7 @@
     "name": "@mdrs/editor",
     "version": "0.0.1",
     "private": true,
-    "license": "MIT",
+    "license": "MIT OR Apache-2.0",
     "type": "module",
     "sideEffects": [
         "**/*.css"

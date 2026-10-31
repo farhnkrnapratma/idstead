@@ -27,6 +27,10 @@ git-flow init --preset=classic --defaults --main main
     printf '%s' "docs: add v1 API reference" | bunx commitlint
     ```
 
+## Licensing
+
+By contributing you agree that your contribution is licensed under the license of the path it changes: AGPL-3.0-only for Idstead code and MIT OR Apache-2.0 for `packages/mdrs/**` ([LICENSING.md](LICENSING.md)). The sign-off certifies the [Developer Certificate of Origin](https://developercertificate.org). New files start with the two SPDX header lines used across the repository; files that cannot hold comments go in `REUSE.toml`. Check with `uvx reuse lint`. Contributions grant no rights in the Idstead name or marks ([TRADEMARKS.md](TRADEMARKS.md)).
+
 ## Before you push
 
 There is no CI pipeline. These local runs are the only gate before Workers Builds deploys:
@@ -40,7 +44,7 @@ bun run lint
 ## Rules of thumb
 
 - Use `bun`/`bunx` only.
-- **No comments in code.** Prefer clear names.
+- **No comments in code.** Prefer clear names. The SPDX header is the only comment a file carries.
 - **Prefer Tailwind utilities** over hand-written CSS.
 - **Reuse the shared components** in `packages/lib`.
 - Never hardcode content (name, bio, links, resume, …). It comes from the database.

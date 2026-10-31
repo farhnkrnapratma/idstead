@@ -89,4 +89,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branches, commits and checks. To re
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Idstead is licensed under the [GNU Affero General Public License v3.0 only](LICENSE). The MDRS packages in `packages/mdrs/` are licensed under MIT OR Apache-2.0. Site content belongs to each site's owner, and the Idstead name and marks are not covered by any code license. See [LICENSING.md](LICENSING.md) and [TRADEMARKS.md](TRADEMARKS.md).

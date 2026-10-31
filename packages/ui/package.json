@@ -2,7 +2,7 @@
     "name": "@idstead/ui",
     "version": "0.0.1",
     "private": true,
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "type": "module",
     "svelte": "./src/index.ts",
     "exports": {
