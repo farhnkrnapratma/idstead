@@ -22,12 +22,10 @@
         "**/*.css"
     ],
     "dependencies": {
-        "@idstead/domain": "workspace:*",
         "@blobatar/svelte": "^2.7.0",
+        "@fontsource-variable/archivo": "^5.3.0",
         "@fontsource-variable/lexend": "^5.3.0",
-        "@fontsource-variable/lilex": "^5.3.0",
-        "@fontsource-variable/noto-sans": "^5.3.0",
-        "@fontsource/ia-writer-quattro": "^5.3.0",
+        "@idstead/domain": "workspace:*",
         "@lucide/svelte": "^1.64.0",
         "bootstrap-icons": "^1.13.2"
     },
