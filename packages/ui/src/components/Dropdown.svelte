@@ -23,6 +23,7 @@
 </script>
 
 <script lang="ts">
+    import FieldLabelText from './FieldLabelText.svelte';
     import { getContext, tick, type Snippet } from 'svelte';
     import { fromAction } from 'svelte/attachments';
     import { Check, ChevronDown, Square, SquareCheck } from '@lucide/svelte';
@@ -317,12 +318,9 @@
                     : hasValue ? 'text-fg-muted'
                     : 'text-fg-secondary/70'
                 )}>
-                {floatingLabel}
-                {#if showAsterisk}
-                    <span
-                        class="text-danger"
-                        aria-hidden="true">*</span>
-                {/if}
+                <FieldLabelText
+                    text={floatingLabel}
+                    required={showAsterisk} />
             </label>
         {/if}
     {/if}
