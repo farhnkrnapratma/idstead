@@ -58,13 +58,15 @@
             <IconButton
                 ariaLabel={label}
                 size="sm"
-                variant="ghost"
                 onclick={toggle}
                 aria-expanded={isOpen}
                 aria-haspopup="dialog"
                 keyboardShortcut={shortcut}
                 shortcutLabel="Open the {label} menu"
-                class={cn(isOpen || active ? 'text-fg!' : 'text-fg-muted! hover:text-fg!')}>
+                class={cn(
+                    'border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                    isOpen && 'border-accent text-fg-accent'
+                )}>
                 <TriggerIcon class="size-4" />
             </IconButton>
         {:else}

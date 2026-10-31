@@ -119,11 +119,11 @@
             {/if}
 
             <div class="flex flex-col gap-3 border-t border-line-subtle pt-4 sm:gap-4 sm:pt-5">
-                <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+                <div class="flex items-center justify-between gap-3 sm:gap-4">
                     <StatusBadge
                         host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
                         code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
-                    <div class="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div class="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
                         <SpotlightSearch variant="icon" />
                         {#if onToggleReadingMode}
                             <IconButton
