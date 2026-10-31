@@ -110,7 +110,7 @@
                     tooltipAlign="right"
                     size="sm"
                     onclick={readingModeStore.toggle}
-                    class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9">
+                    class="border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9">
                     <BookOpenText class="size-4" />
                 </IconButton>
             {/if}

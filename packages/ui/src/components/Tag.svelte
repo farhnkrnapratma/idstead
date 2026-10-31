@@ -25,9 +25,9 @@
     }: Props = $props();
 
     const variantStyles = {
-        neutral: 'text-fg-muted border border-fg-muted/20',
+        neutral: 'text-fg-muted border border-line-subtle',
         subtle: 'bg-fg-muted/10 text-fg-muted',
-        accent: 'bg-accent-subtle text-fg-accent border border-accent/20',
+        accent: 'bg-accent-subtle text-fg-accent border border-accent/30',
         'accent-active': 'bg-accent-strong text-on-accent border border-accent-strong',
         tinted: 'border border-(--tag-tint)/35 bg-(--tag-tint)/10 text-[color-mix(in_oklab,var(--tag-tint)_50%,var(--color-fg))]',
         'tinted-active':
@@ -51,7 +51,7 @@
     {...rest}
     style:--tag-tint={tint}
     class={cn(
-        'inline-block max-w-full rounded-full whitespace-normal',
+        'inline-block max-w-full rounded-md whitespace-normal',
         variantStyles[variant],
         sizeStyles[size],
         (href || onclick)

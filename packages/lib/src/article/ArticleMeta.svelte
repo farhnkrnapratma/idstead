@@ -118,7 +118,7 @@
             <span
                 title="Published"
                 aria-label="Published"
-                class="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-success sm:px-2 sm:py-0.5">
+                class="inline-flex items-center gap-1.5 rounded-md border border-success/30 bg-success-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-success sm:px-2 sm:py-0.5">
                 <CircleCheck
                     class="size-3 shrink-0 text-success"
                     strokeWidth={1.75}
@@ -129,7 +129,7 @@
             <span
                 title="Draft"
                 aria-label="Draft"
-                class="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-fg-warning sm:px-2 sm:py-0.5">
+                class="inline-flex items-center gap-1.5 rounded-md border border-warning/30 bg-warning-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-fg-warning sm:px-2 sm:py-0.5">
                 <CircleDotDashed
                     class="size-3 shrink-0 text-fg-warning"
                     strokeWidth={1.75}

@@ -335,7 +335,7 @@
                         }}
                         aria-current={isActive ? 'true' : undefined}
                         data-permalink={permalinkHeadingId === heading.id ? '' : undefined}
-                        class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-line-strong hover:text-fg aria-[current=true]:text-fg data-permalink:border-line-strong data-permalink:text-fg"
+                        class="block border-l-2 border-line-subtle py-1.5 pl-5 text-xs leading-snug text-fg-muted no-underline transition-colors duration-150 hover:border-accent hover:text-fg aria-[current=true]:text-fg data-permalink:border-line-strong data-permalink:text-fg"
                         style:margin-left="{depth}rem">
                         <MdrsHtml
                             as="span"
@@ -363,12 +363,12 @@
     {#if collapsible}
         <details
             class={cn(
-                'group mdrs-details my-0 overflow-hidden rounded-md glass-card border border-line-subtle/60 text-fg shadow-md backdrop-blur-md select-none',
+                'group mdrs-details my-0 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md select-none',
                 className
             )}
             open={!defaultCollapsed}>
             <summary
-                class="mdrs-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-fg transition-colors select-none group-open:border-line-subtle hover:bg-surface-hover/50 dark:group-open:border-fg/10 [&::-webkit-details-marker]:hidden">
+                class="mdrs-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-fg transition-colors select-none group-open:border-line-subtle hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden">
                 <span class="inline-flex items-center gap-2">
                     <TableOfContentsIcon class="size-4 shrink-0 text-fg" />
 

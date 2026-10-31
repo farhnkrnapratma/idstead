@@ -151,7 +151,7 @@
     }
 
     .mdrs blockquote {
-        @apply my-6 rounded-md border border-line/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-fg-secondary;
+        @apply my-6 rounded-md border border-line-subtle bg-surface-hover/30 p-4 text-sm leading-relaxed text-fg-secondary;
     }
 
     .mdrs blockquote p {
@@ -289,7 +289,7 @@
     }
 
     .mdrs td {
-        @apply border-r border-line-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-fg-secondary last:border-r-0;
+        @apply border-r border-line-subtle px-2.5 py-1.5 text-left leading-relaxed text-fg-secondary last:border-r-0;
         overflow-wrap: break-word;
         word-break: break-word;
     }
@@ -393,7 +393,7 @@
     }
 
     .mdrs-alert--note {
-        @apply border-info/40 bg-info-subtle text-fg-secondary;
+        @apply border-info/30 bg-info-subtle text-fg-secondary;
     }
 
     .mdrs-alert--note .mdrs-alert-title {
@@ -401,7 +401,7 @@
     }
 
     .mdrs-alert--tip {
-        @apply border-success/40 bg-success-subtle text-fg-secondary;
+        @apply border-success/30 bg-success-subtle text-fg-secondary;
     }
 
     .mdrs-alert--tip .mdrs-alert-title {
@@ -409,7 +409,7 @@
     }
 
     .mdrs-alert--important {
-        @apply border-discovery/40 bg-discovery-subtle text-fg-secondary;
+        @apply border-discovery/30 bg-discovery-subtle text-fg-secondary;
     }
 
     .mdrs-alert--important .mdrs-alert-title {
@@ -417,7 +417,7 @@
     }
 
     .mdrs-alert--warning {
-        @apply border-warning/40 bg-warning-subtle text-fg-secondary;
+        @apply border-warning/30 bg-warning-subtle text-fg-secondary;
     }
 
     .mdrs-alert--warning .mdrs-alert-title {
@@ -425,7 +425,7 @@
     }
 
     .mdrs-alert--caution {
-        @apply border-danger/40 bg-danger-subtle text-fg-secondary;
+        @apply border-danger/30 bg-danger-subtle text-fg-secondary;
     }
 
     .mdrs-alert--caution .mdrs-alert-title {
@@ -433,7 +433,7 @@
     }
 
     .mdrs-callout {
-        @apply my-6 rounded-md border border-line/40 bg-surface-hover/30 p-4 text-xs text-fg-secondary transition-colors duration-200 sm:text-sm;
+        @apply my-6 rounded-md border border-line-subtle bg-surface-hover/30 p-4 text-xs text-fg-secondary transition-colors duration-200 sm:text-sm;
     }
 
     .mdrs-callout-title {
@@ -533,11 +533,11 @@
     }
 
     .mdrs-spinner {
-        @apply mr-2 size-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent;
+        @apply mr-2 size-3.5 animate-spin rounded-md border-2 border-accent border-t-transparent;
     }
 
     .mdrs-mermaid {
-        @apply relative my-6 overflow-hidden rounded-md glass-card border border-line-subtle/60 text-fg shadow-md backdrop-blur-md transition-all duration-200;
+        @apply relative my-6 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md transition-all duration-200;
     }
 
     .mdrs-mermaid-display {
@@ -569,7 +569,7 @@
     }
 
     .mdrs-menu {
-        @apply absolute top-full right-0 z-20 mt-1.5 hidden min-w-36 flex-col rounded-md border border-line-subtle bg-surface p-1 shadow-lg backdrop-blur-md;
+        @apply absolute top-full right-0 z-20 mt-1.5 hidden min-w-36 flex-col rounded-md border border-line-subtle bg-surface p-1 shadow-lg;
     }
 
     .mdrs-menu.mdrs-is-open {
@@ -593,7 +593,7 @@
     }
 
     .mdrs-chart-loading {
-        @apply flex h-40 items-center justify-center rounded-md glass-card border border-line-subtle/60 text-xs text-fg-muted;
+        @apply flex h-40 items-center justify-center rounded-md glass-card border border-line-subtle text-xs text-fg-muted;
     }
 
     .mdrs-chart-empty {
@@ -609,7 +609,7 @@
     }
 
     .mdrs-embed {
-        @apply my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-line-subtle/60 shadow-md backdrop-blur-md;
+        @apply my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-line-subtle shadow-md;
     }
 
     .mdrs-embed iframe {
@@ -667,7 +667,7 @@
         height: var(--mdrs-step-badge-size);
         line-height: var(--mdrs-step-badge-size);
         background-color: color-mix(in srgb, var(--color-fg) 8%, var(--color-canvas));
-        @apply z-10 flex items-center justify-center rounded border border-line-subtle/70 text-center font-mono text-xs font-medium text-fg tabular-nums select-none;
+        @apply z-10 flex items-center justify-center rounded border border-line-subtle text-center font-mono text-xs font-medium text-fg tabular-nums select-none;
     }
 
     .mdrs-step::after {
@@ -796,12 +796,12 @@
     }
 
     .mdrs details {
-        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md backdrop-blur-md;
+        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md;
         border: 1px solid var(--color-line-subtle);
     }
 
     .mdrs-details {
-        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md backdrop-blur-md;
+        @apply my-4 overflow-hidden rounded-md glass-card border border-line-subtle text-fg shadow-md;
     }
 
     .dark .mdrs details,
@@ -972,7 +972,7 @@
     }
 
     .mdrs-code-gutter {
-        @apply shrink-0 border-r border-line-subtle/30 bg-transparent pt-0 pb-1.5 font-mono text-code leading-snug select-none;
+        @apply shrink-0 border-r border-line-subtle bg-transparent pt-0 pb-1.5 font-mono text-code leading-snug select-none;
     }
 
     .mdrs-code-gutter--command {

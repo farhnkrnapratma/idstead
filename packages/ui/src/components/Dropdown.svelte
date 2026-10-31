@@ -271,7 +271,7 @@
                 (fullWidth || stackOnMobile) && 'w-full',
                 stackOnMobile && 'sm:w-auto',
                 !disabled && 'hover:text-fg-accent',
-                isOpen && 'border-accent/60 bg-surface text-fg-accent',
+                isOpen && 'border-accent/30 bg-surface text-fg-accent',
                 isFloating && 'h-12 pt-5 pb-1.5 text-sm leading-5'
             )}>
             <span

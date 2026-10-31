@@ -20,7 +20,7 @@
 
 <div
     class={cn(
-        'mt-4 flex flex-col gap-2.5 border-t border-line-subtle/50 pt-3 sm:flex-row sm:items-center sm:gap-3 [&>a]:w-full sm:[&>a]:w-auto [&>button]:w-full sm:[&>button]:w-auto',
+        'mt-4 flex flex-col gap-2.5 border-t border-line-subtle pt-3 sm:flex-row sm:items-center sm:gap-3 [&>a]:w-full sm:[&>a]:w-auto [&>button]:w-full sm:[&>button]:w-auto',
         alignStyles[align],
         className
     )}>

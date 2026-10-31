@@ -71,7 +71,7 @@
 }
 
 @utility glass-button {
-    @apply border border-line bg-surface text-fg transition-colors hover:border-accent hover:bg-surface-hover;
+    @apply border border-line-subtle bg-surface text-fg transition-colors hover:border-accent hover:bg-surface-hover;
 }
 
 @layer base {
@@ -134,7 +134,7 @@
 
     ::-webkit-scrollbar-thumb {
         border: 2px solid transparent;
-        border-radius: 9999px;
+        border-radius: 0;
         background-color: var(--color-code-thumb);
         background-clip: content-box;
     }
@@ -329,56 +329,6 @@ select {
     @apply pt-[0.55rem]! pb-[0.55rem]!;
 }
 
-:root[data-solid-surfaces='true']
-    :is(
-        .glass-card,
-        .glass-overlay,
-        .glass-button,
-        input,
-        select,
-        textarea,
-        button,
-        nav,
-        aside,
-        header,
-        footer,
-        dialog,
-        [role='dialog'],
-        [role='menu'],
-        [role='listbox'],
-        [class*='backdrop-blur'],
-        [class*='glass-']
-    ) {
-    @apply backdrop-blur-none!;
-}
-
-:root[data-solid-surfaces='true']
-    :is(
-        .glass-card,
-        .glass-overlay,
-        input:not([type='checkbox']):not([type='radio']),
-        select,
-        textarea:not(.editor-textarea),
-        [class*='bg-surface/'],
-        [class*='bg-surface/'],
-        [class*='bg-surface-subtle/'],
-        [class*='bg-surface/']
-    ) {
-    @apply border-line-subtle! bg-surface!;
-}
-
-:root[data-solid-surfaces='true'] .glass-button {
-    @apply border-line-subtle! bg-surface!;
-}
-
-:root[data-solid-surfaces='true'] .glass-button:hover {
-    @apply bg-surface-hover!;
-}
-
-:root[data-solid-surfaces='true'] [class*='bg-overlay'] {
-    @apply backdrop-blur-none!;
-}
-
 :root[data-high-contrast='true'] {
     --color-fg-secondary: var(--color-fg);
     --color-fg-muted: var(--color-fg-secondary);
@@ -488,7 +438,7 @@ select {
     }
 
     .footnote-target-highlight {
-        border-radius: 0.25rem;
+        border-radius: 0;
         outline: 1px solid transparent;
         outline-offset: 0;
         animation: footnote-highlight 3.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;

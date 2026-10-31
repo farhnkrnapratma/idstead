@@ -56,7 +56,7 @@
     <Button
         type="ghost"
         size="sm"
-        class="h-auto! justify-start! border border-fg-success/30 bg-fg-success/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-success! hover:border-fg-success/60 hover:bg-fg-success/15! active:scale-95 disabled:cursor-wait!"
+        class="h-auto! justify-start! border border-success/30 bg-fg-success/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-success! hover:border-success hover:bg-fg-success/15! active:scale-95 disabled:cursor-wait!"
         keyboardShortcut={buttonKey('helpfulYes')}
         shortcutLabel="Helpful: yes"
         disabled={!ready || pending}
@@ -71,7 +71,7 @@
     <Button
         type="ghost"
         size="sm"
-        class="h-auto! justify-start! border border-fg-danger/30 bg-fg-danger/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-danger! hover:border-fg-danger/60 hover:bg-fg-danger/15! active:scale-95 disabled:cursor-wait!"
+        class="h-auto! justify-start! border border-danger/30 bg-fg-danger/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-fg-danger! hover:border-danger hover:bg-fg-danger/15! active:scale-95 disabled:cursor-wait!"
         keyboardShortcut={buttonKey('helpfulNo')}
         shortcutLabel="Helpful: no"
         disabled={!ready || pending}
@@ -172,13 +172,13 @@
                 class="relative hidden size-20 shrink-0 items-center justify-center sm:flex"
                 aria-hidden="true">
                 <div
-                    class="absolute inset-0 rounded-full border border-dashed border-line-subtle/80 bg-surface/40">
+                    class="absolute inset-0 rounded-md border border-dashed border-line-subtle bg-surface">
                 </div>
                 <MessageSquareQuote
                     class="absolute top-4 left-4 size-9 fill-accent-tint text-fg-accent"
                     strokeWidth={1.5} />
                 <AtSign
-                    class="absolute right-3 bottom-3 size-8 rounded-full bg-surface p-1 text-success"
+                    class="absolute right-3 bottom-3 size-8 rounded-md bg-surface p-1 text-success"
                     strokeWidth={1.75} />
             </div>
         </div>

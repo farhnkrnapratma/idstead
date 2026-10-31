@@ -50,11 +50,7 @@ describe('a11y settings: resolution', () => {
     });
 
     test('auto-detects only settings with an OS media query', () => {
-        expect(Object.keys(A11Y_SYSTEM_QUERIES).sort()).toEqual([
-            'highContrast',
-            'reduceMotion',
-            'solidSurfaces'
-        ]);
+        expect(Object.keys(A11Y_SYSTEM_QUERIES).sort()).toEqual(['highContrast', 'reduceMotion']);
     });
 });
 

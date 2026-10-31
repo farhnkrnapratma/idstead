@@ -40,7 +40,7 @@
                 <div class="h-4 w-28 rounded bg-line-subtle/50"></div>
             </div>
             <div
-                class="flex flex-col gap-2.5 border-t border-line-subtle/30 pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                class="flex flex-col gap-2.5 border-t border-line-subtle pt-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div class="w-full sm:w-auto">
                     <div class="h-9 w-full rounded-md bg-surface-hover/70 sm:w-28"></div>
                 </div>
@@ -55,13 +55,13 @@
                 <div
                     class="flex animate-pulse flex-col overflow-hidden rounded-md glass-card shadow-sm">
                     <div
-                        class="flex aspect-2/1 w-full items-center justify-center border-b border-line-subtle/25 bg-surface-hover/60">
-                        <div class="size-8 rounded-full bg-surface-hover/80"></div>
+                        class="flex aspect-2/1 w-full items-center justify-center border-b border-line-subtle bg-surface-hover/60">
+                        <div class="size-8 rounded-md bg-surface-hover/80"></div>
                     </div>
 
                     <div class="flex flex-col gap-3 p-4">
                         <div class="flex items-center gap-2">
-                            <div class="h-4 w-16 rounded-full bg-accent/15"></div>
+                            <div class="h-4 w-16 rounded-md bg-accent/15"></div>
                             <div class="h-3 w-20 rounded bg-line-subtle/50"></div>
                             <div class="h-3 w-14 rounded bg-line-subtle/40"></div>
                             <div class="h-3 w-10 rounded bg-line-subtle/40"></div>
@@ -75,9 +75,9 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 pt-1">
-                            <div class="h-5 w-14 rounded-full bg-surface-hover/80"></div>
-                            <div class="h-5 w-16 rounded-full bg-surface-hover/80"></div>
-                            <div class="h-5 w-12 rounded-full bg-surface-hover/80"></div>
+                            <div class="h-5 w-14 rounded-md bg-surface-hover/80"></div>
+                            <div class="h-5 w-16 rounded-md bg-surface-hover/80"></div>
+                            <div class="h-5 w-12 rounded-md bg-surface-hover/80"></div>
                         </div>
                     </div>
                 </div>
@@ -101,8 +101,8 @@
                 <div class="flex flex-col gap-2.5 lg:col-span-5">
                     <div class="h-3.5 w-24 rounded bg-line-subtle/50"></div>
                     <div
-                        class="flex aspect-2/1 w-full items-center justify-center rounded-md border border-line-subtle/50 bg-surface-hover/60">
-                        <div class="size-8 rounded-full bg-surface-hover/80"></div>
+                        class="flex aspect-2/1 w-full items-center justify-center rounded-md border border-line-subtle bg-surface-hover/60">
+                        <div class="size-8 rounded-md bg-surface-hover/80"></div>
                     </div>
                     <div class="h-8 w-full rounded-md bg-surface-hover/40"></div>
                 </div>
@@ -180,7 +180,7 @@
         {#each Array.from({ length: count }, (_, i) => i) as itemIndex (itemIndex)}
             <div class="animate-pulse rounded-md glass-card p-4 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <div class="size-8 shrink-0 rounded-full bg-surface-hover"></div>
+                    <div class="size-8 shrink-0 rounded-md bg-surface-hover"></div>
                     <div class="flex-1 space-y-2">
                         <div class="h-3.5 w-2/5 rounded bg-surface-hover"></div>
                         <div class="h-2.5 w-4/5 rounded bg-line-subtle/50"></div>
@@ -203,7 +203,7 @@
         )}>
         <div
             class={cn(
-                'animate-spin rounded-full border-line-subtle border-t-accent',
+                'animate-spin rounded-md border-line-subtle border-t-accent',
                 sizeStyles[size]
             )}>
         </div>

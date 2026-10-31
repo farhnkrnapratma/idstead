@@ -2,7 +2,6 @@ export type FontScale = 100 | 110 | 120 | 130 | 140 | 150;
 
 export interface A11ySettings {
     reduceMotion: boolean;
-    solidSurfaces: boolean;
     highContrast: boolean;
     fontScale: FontScale;
     focusHighlight: boolean;
@@ -15,7 +14,6 @@ export const A11Y_STORAGE_KEY = 'a11y_overrides';
 
 export const A11Y_DEFAULTS: A11ySettings = {
     reduceMotion: false,
-    solidSurfaces: false,
     highContrast: false,
     fontScale: 100,
     focusHighlight: false,
@@ -24,8 +22,7 @@ export const A11Y_DEFAULTS: A11ySettings = {
 
 export const A11Y_SYSTEM_QUERIES: Partial<Record<A11yToggleKey, string>> = {
     reduceMotion: '(prefers-reduced-motion: reduce)',
-    highContrast: '(prefers-contrast: more)',
-    solidSurfaces: '(prefers-reduced-transparency: reduce)'
+    highContrast: '(prefers-contrast: more)'
 };
 
 const FONT_SCALES: readonly FontScale[] = [100, 110, 120, 130, 140, 150];

@@ -255,7 +255,7 @@
                         <li class="flex flex-col gap-2">
                             <div class="flex gap-3">
                                 <span
-                                    class="flex size-5 shrink-0 items-center justify-center rounded-full border border-line-subtle text-2xs font-semibold text-fg-secondary tabular-nums"
+                                    class="flex size-5 shrink-0 items-center justify-center rounded-md border border-line-subtle text-2xs font-semibold text-fg-secondary tabular-nums"
                                     aria-hidden="true">{index + 1}</span>
                                 <span class="min-w-0 flex-1">{step.text}</span>
                             </div>

@@ -18,7 +18,7 @@
         <img
             {src}
             alt={description}
-            class="size-full rounded-full object-cover"
+            class="size-full rounded-md object-cover"
             onerror={() => (failedSource = src ?? null)} />
     {:else}
         <Blobatar

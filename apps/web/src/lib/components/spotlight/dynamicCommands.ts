@@ -151,13 +151,6 @@ export function createDynamicCommandItems(
                     state: () => a11yStore.current.reduceMotion
                 },
                 {
-                    key: 'solid-surface',
-                    name: 'Solid card surfaces',
-                    subtitle: 'Toggle solid background surfaces mode.',
-                    toggle: () => a11yStore.toggleSolidSurfaces(),
-                    state: () => a11yStore.current.solidSurfaces
-                },
-                {
                     key: 'high-contrast',
                     name: 'High contrast mode',
                     subtitle: 'Toggle high contrast visual mode.',

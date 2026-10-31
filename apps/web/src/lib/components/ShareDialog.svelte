@@ -65,7 +65,7 @@
             <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
                 >Direct link</span>
             <div
-                class="flex items-center gap-2 rounded-md border border-line-subtle bg-canvas/80 p-1.5 pr-2 pl-3 shadow-2xs">
+                class="flex items-center gap-2 rounded-md border border-line-subtle bg-canvas p-1.5 pr-2 pl-3 shadow-2xs">
                 <span
                     class="min-w-0 flex-1 truncate font-mono text-xs text-fg-secondary select-all">
                     {effectiveUrl}
@@ -193,7 +193,7 @@
         </div>
 
         {#if showQrOption && onOpenQr}
-            <div class="border-t border-line-subtle/60 pt-2">
+            <div class="border-t border-line-subtle pt-2">
                 <Button
                     type="ghost"
                     size="sm"
