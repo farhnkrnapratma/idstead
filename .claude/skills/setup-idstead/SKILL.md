@@ -32,7 +32,7 @@ description: Set up a new Idstead instance (personal site, admin portal, public 
     - _D1 step fails_: report Wrangler's message. A missing permission usually means the Cloudflare API token lacks D1 edit rights; the user fixes the token, then runs the setup again (it resumes where it stopped).
 5. **Repeat the dry run** until it reaches "Next steps", then show the user what it would change and ask for a go-ahead.
 6. **Apply:** `bun run setup apply --answers=<file>`. The build and deploys take a few minutes. If a step fails, report the error. Do not delete what earlier steps created; running `apply` again resumes, because every step checks first.
-7. **Hand over.** Tell the user to open the admin, sign in through Cloudflare Access with the admin email, and require two-factor authentication in Zero Trust. Walk them through the printed next steps. Delete the answers file if it is inside the repository.
+7. **Hand over.** Tell the user to open the admin, sign in through Cloudflare Access with the admin email, and enroll a second factor at the Access enrollment page first (`https://<team>.cloudflareaccess.com/AddMfaDevice`), then require two-factor authentication in Zero Trust. Walk them through the printed next steps. Delete the answers file if it is inside the repository.
 
 ## Done when
 

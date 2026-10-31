@@ -123,8 +123,12 @@ export function withAccess(
 
 export function nextSteps(config: InstanceConfig): string[] {
     const { site, admin, api } = config.domains;
+    const enrollUrl =
+        config.access ?
+            `https://${config.access.teamDomain}/AddMfaDevice`
+        :   'the Access enrollment page';
     return [
-        `Cloudflare Zero Trust > Access settings: require two-factor authentication (passkey, security key or authenticator app) for the ${admin} application, or turn on two-factor authentication for your Cloudflare account if you sign in with Cloudflare.`,
+        `Enroll a passkey, security key or authenticator app first at ${enrollUrl}, then require two-factor authentication for the ${admin} application in Cloudflare Zero Trust. If you are locked out, remove the requirement from the application or policy, enroll, and require it again.`,
         `Turnstile: allow the hostname ${site} on the widget whose site key is PUBLIC_TURNSTILE_SITE_KEY.`,
         `Resend: verify the domain of SUBSCRIBER_FROM_EMAIL before the newsletter or contact form sends mail.`,
         `Open https://${admin}, sign in through Cloudflare Access with the admin email, then fill in your profile and write the legal pages.`,
