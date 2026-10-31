@@ -23,6 +23,7 @@ Only `domains.site` is required. Every other field has a default. `idstead.examp
 | `jobs.cron` | `17 3 * * *` | Daily cleanup, render refresh and the pending-subscription and activity log prunes |
 | `jobs.hourlyCron` | `37 * * * *` | Hourly prune of expired lockout counters (failed OpenID Connect client secrets). Must differ from `jobs.cron`: the jobs Worker tells the two runs apart by schedule (`HOURLY_CRON`). |
 | `access.teamDomain`, `access.aud` | none | Cloudflare Access application that guards the admin host: the Zero Trust team domain (`<team>.cloudflareaccess.com`) and the application's audience tag. Rendered into the admin Worker as `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`. `bun run setup` fills them; without them a deployed admin refuses every request. |
+| `source` | none | `https://` URL of the source code this instance runs. Rendered into the web Worker as `SOURCE_URL`; the footer links to it. If you run a modified Idstead, point it at your public repository: the AGPL-3.0 requires offering the source to visitors ([LICENSING.md](../../LICENSING.md)). |
 
 Names must be lowercase letters, digits and hyphens. `packages/domain/src/instance.ts` validates the file and fills the defaults.
 

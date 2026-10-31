@@ -126,6 +126,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/mdrs-data` | POST | same-origin + `requireAdminAuth`; returns the `author`, `blog`, `analytics` or one `post` live-data tree for the editor preview |
 | `/api/internal/admin/site-settings/analytics` | GET, POST | `blogAdmin`; reads or saves the analytics provider, logs `settings.analytics` ([Analytics and consent](013-analytics-and-consent.md)) |
+| `/api/internal/admin/site-settings/content-license` | GET, POST | `blogAdmin`; reads or saves the site content license, logs `settings.contentLicense` ([Content licensing](014-content-licensing.md)) |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/dismiss-reports` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/export` | GET | same-origin + `requireAdminAuth` |

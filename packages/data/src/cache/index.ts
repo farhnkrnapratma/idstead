@@ -255,6 +255,10 @@ export function cachedRepositories(
         analytics: () =>
             remember(domain('site'), 'site.analytics', [], CACHE_TTL_SECONDS, () =>
                 repos.site.analytics()
+            ),
+        contentLicense: () =>
+            remember(domain('site'), 'site.contentLicense', [], CACHE_TTL_SECONDS, () =>
+                repos.site.contentLicense()
             )
     };
     return { author, blog, comments, legal, site };

@@ -23,6 +23,25 @@ describe('D1 site settings adapter', () => {
         });
     });
 
+    test('reads no content license as all rights reserved and round-trips a saved one', async () => {
+        const { db } = d1Shim();
+        const repository = createD1SiteSettingsRepository(db);
+        expect(await repository.contentLicense()).toEqual({ license: 'all-rights-reserved' });
+        await createD1SiteSettingsWriter(db).saveContentLicense({ license: 'CC-BY-NC-ND-4.0' });
+        expect(await repository.contentLicense()).toEqual({ license: 'CC-BY-NC-ND-4.0' });
+        expect(await repository.analytics()).toEqual({ provider: 'none' });
+    });
+
+    test('an invalid stored content license reads as all rights reserved', async () => {
+        const { db, sqlite } = d1Shim();
+        insertRows(sqlite, 'db_site_settings', [
+            { key: 'contentLicense', value: JSON.stringify({ license: 'GPL-3.0' }) }
+        ]);
+        expect(await createD1SiteSettingsRepository(db).contentLicense()).toEqual({
+            license: 'all-rights-reserved'
+        });
+    });
+
     test('a stored value that fails validation reads as none', async () => {
         const { db, sqlite } = d1Shim();
         insertRows(sqlite, 'db_site_settings', [

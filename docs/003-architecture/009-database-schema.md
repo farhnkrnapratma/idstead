@@ -31,6 +31,8 @@ erDiagram
         boolean pinned
         text storage_path "Markdown in R2 content/"
         uuid banner_version FK
+        text content_license "NULL follows the site license"
+        text banner_credit "object, NULL for own work"
         bigint post_revision
         timestamp subscribers_notified_at
         timestamp created_at
@@ -199,7 +201,7 @@ erDiagram
 | `db_notification_clear_operations` | Idempotent "clear notifications" operations. |
 | `db_legals` | Legal pages (`slug`, `title`, `content`). |
 | `db_ard_index` | ARD discovery index (`site_url`, `entries`, `sources`), service stores only. |
-| `db_site_settings` | Site-wide settings by `key`; today only `analytics`, a JSON object of at most 2048 bytes ([Analytics and consent](013-analytics-and-consent.md)). |
+| `db_site_settings` | Site-wide settings by `key`: `analytics` ([Analytics and consent](013-analytics-and-consent.md)) and `contentLicense` ([Content licensing](014-content-licensing.md)), each a JSON object of at most 2048 bytes. |
 | `db_cache_generations` | One generation per cached domain (`author`, `blog`, `legal`, `site` and `comments:<post id>`), bumped by triggers on every write to the tables behind it. |
 
 ## Triggers and data stores

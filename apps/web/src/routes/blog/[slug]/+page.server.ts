@@ -15,6 +15,8 @@ import { publicRepositories } from '#lib/server/repositories.ts';
 import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import type { PageServerLoad } from './$types';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
+import { siteContentLicense } from '#lib/server/siteLicense.ts';
+import { resolvePostLicense } from '@idstead/domain/contentLicense.ts';
 
 export interface BlogComment {
     id: string;
@@ -121,9 +123,13 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
         console.error('Database error fetching related posts:', err);
     }
 
+    const siteLicense = await siteContentLicense(repositories);
+
     return {
         post: { ...publicPostFields(post), read_time: readTime },
         bannerPublicUrl: post.banner_url,
+        license: resolvePostLicense(post.content_license, siteLicense),
+        bannerCredit: post.banner_url ? post.banner_credit : null,
         html,
         headings,
         comments,

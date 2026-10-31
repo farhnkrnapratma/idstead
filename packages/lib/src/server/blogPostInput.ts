@@ -8,6 +8,7 @@ import {
 import { inspectAvif } from '#lib/avif.ts';
 import { validateBanner } from './validateBanner';
 import { isValidPostSlug, POST_SLUG_MAX_LENGTH } from '@idstead/domain/slug.ts';
+import { isContentLicenseId, parseBannerCredit } from '@idstead/domain/contentLicense.ts';
 
 export const POST_PAYLOAD_LIMIT = 3 * 1024 * 1024;
 export const MARKDOWN_LIMIT = 2 * 1024 * 1024;
@@ -62,6 +63,12 @@ function list(value: unknown, count: number, max: number) {
     return value.map(item => text(item, max, true)!);
 }
 
+function postLicense(value: unknown) {
+    if (value == null) return null;
+    if (!isContentLicenseId(value)) throw new Error('Invalid post license.');
+    return value;
+}
+
 export async function parsePostInput(request: Request, wasm: WebAssembly.Module) {
     const form = await (await boundedBody(request)).formData();
     const raw = form.get('post');
@@ -99,7 +106,9 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
             excerpt: text(input.excerpt, 250),
             tags: list(input.tags, 5, 40),
             collaborators: list(input.collaborators, 20, 39),
-            published: input.published
+            published: input.published,
+            content_license: postLicense(input.contentLicense),
+            banner_credit: parseBannerCredit(input.bannerCredit)
         };
         if (input.published && !post.excerpt)
             throw new Error('Excerpt is required to publish a post.');

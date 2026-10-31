@@ -1,3 +1,5 @@
+import type { BannerCredit, ContentLicenseId } from '@idstead/domain/contentLicense.ts';
+
 export interface AdminPost {
     id: string;
     title: string;
@@ -28,6 +30,8 @@ export interface AdminPostDraft {
     excerpt: string | null;
     tags: string[];
     collaborators: string[];
+    content_license: ContentLicenseId | null;
+    banner_credit: BannerCredit | null;
     markdown: string | null;
 }
 

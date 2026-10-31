@@ -3,7 +3,7 @@ import {
     ANALYTICS_PROVIDER_INFO,
     type AnalyticsSettings
 } from '@idstead/domain/analytics.ts';
-import type { Repositories } from '@idstead/data';
+import type { SiteSettingsRepository } from '@idstead/data';
 
 export interface AnalyticsSources {
     script: string[];
@@ -109,7 +109,9 @@ export function analyticsSources(settings: AnalyticsSettings): AnalyticsSources 
     }
 }
 
-export async function siteAnalytics(repos: Pick<Repositories, 'site'>): Promise<SiteAnalytics> {
+export async function siteAnalytics(repos: {
+    site: Pick<SiteSettingsRepository, 'analytics'>;
+}): Promise<SiteAnalytics> {
     const settings = await repos.site.analytics().catch(() => ANALYTICS_OFF);
     return { settings, consent: ANALYTICS_PROVIDER_INFO[settings.provider].cookies };
 }

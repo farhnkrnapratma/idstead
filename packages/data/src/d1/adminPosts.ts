@@ -13,6 +13,7 @@ import type {
     PostOperationRequest,
     PostOperationStore
 } from '../adminPosts';
+import { storedBannerCredit, storedPostLicense } from '@idstead/domain/contentLicense.ts';
 import { DataError } from '../errors';
 import { postMarkdownPath, postRenderPath } from '../paths';
 import {
@@ -137,6 +138,8 @@ export function createD1AdminPostStore(db: D1Like, bucket: ContentBucket): Admin
                     excerpt: typeof row.excerpt === 'string' ? row.excerpt : null,
                     tags: jsonStrings(row.tags),
                     collaborators: jsonStrings(row.collaborators),
+                    content_license: storedPostLicense(row.content_license),
+                    banner_credit: storedBannerCredit(row.banner_credit),
                     markdown
                 };
             }),
@@ -355,12 +358,15 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
             const markdown = postMarkdownPath(postId, op.id);
             const readTime = typeof data.read_time === 'number' ? Math.trunc(data.read_time) : null;
             const text = (key: string) => (typeof data[key] === 'string' ? data[key] : null);
+            const contentLicense = storedPostLicense(data.content_license);
+            const credit = storedBannerCredit(data.banner_credit);
+            const bannerCredit = credit ? JSON.stringify(credit) : null;
             if (!current)
                 statements.push(
                     db
                         .prepare(
-                            `INSERT INTO db_posts (id, title, slug, excerpt, tags, collaborators, published, storage_path, banner_version, read_time, post_revision)
-                             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 1)`
+                            `INSERT INTO db_posts (id, title, slug, excerpt, tags, collaborators, published, storage_path, banner_version, read_time, content_license, banner_credit, post_revision)
+                             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, 1)`
                         )
                         .bind(
                             postId,
@@ -372,7 +378,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                             data.published === true || data.published === 'true' ? 1 : 0,
                             markdown,
                             version,
-                            readTime
+                            readTime,
+                            contentLicense,
+                            bannerCredit
                         )
                 );
             else
@@ -383,6 +391,7 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                                  storage_path = ?8, banner_version = ?9,
                                  banner_path = CASE WHEN ?10 = 'keep' THEN banner_path END,
                                  read_time = coalesce(?11, read_time),
+                                 content_license = ?12, banner_credit = ?13,
                                  updated_at = ${NOW}
                              WHERE id = ?1`
                         )
@@ -397,7 +406,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                             markdown,
                             version,
                             op.banner_operation,
-                            readTime
+                            readTime,
+                            contentLicense,
+                            bannerCredit
                         )
                 );
             statements.push(

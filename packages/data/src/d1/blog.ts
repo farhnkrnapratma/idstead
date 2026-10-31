@@ -1,6 +1,7 @@
 import { bannerUrl } from '@idstead/domain/blogAssets.ts';
 import { parsePostReference } from '@idstead/domain/postReference.ts';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';
+import { storedBannerCredit, storedPostLicense } from '@idstead/domain/contentLicense.ts';
 import {
     publicCommentAuthor,
     type PostStats,
@@ -37,7 +38,7 @@ export interface D1RepositoryOptions {
 }
 
 const POST_COLUMNS =
-    'p.id, p.public_id, p.title, p.slug, p.pinned, p.created_at, p.updated_at, p.excerpt, p.tags, p.collaborators, p.storage_path, p.banner_version, p.read_time';
+    'p.id, p.public_id, p.title, p.slug, p.pinned, p.created_at, p.updated_at, p.excerpt, p.tags, p.collaborators, p.storage_path, p.banner_version, p.read_time, p.content_license, p.banner_credit';
 const STATS_COLUMNS =
     '(SELECT count(*) FROM db_comments c WHERE c.post_id = p.id AND c.is_approved = 1) AS comment_count, coalesce((SELECT s.view_count FROM db_post_stats s WHERE s.post_id = p.id), 0) AS view_count';
 const SEARCH = "(p.title LIKE ?1 ESCAPE '\\' OR p.excerpt LIKE ?1 ESCAPE '\\')";
@@ -69,6 +70,8 @@ function postFromRow(row: D1Row, cdnBase: string | undefined): PublishedPost {
                 )
             ),
         read_minutes: typeof row.read_time === 'number' && row.read_time > 0 ? row.read_time : null,
+        content_license: storedPostLicense(row.content_license),
+        banner_credit: storedBannerCredit(row.banner_credit),
         source: createPostSource({
             postId: id,
             storagePath: typeof row.storage_path === 'string' ? row.storage_path : null

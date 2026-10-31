@@ -142,6 +142,57 @@ describe('D1 post operations', () => {
         expect(await s.operations.find(uuid(102), uuid(9))).toBeNull();
     });
 
+    test('stores the post license and banner credit and bumps the revision when they change', async () => {
+        const s = stores();
+        const credit = {
+            origin: 'third-party',
+            author: 'Ada Lovelace',
+            url: 'https://example.com/photo',
+            license: 'CC BY 4.0'
+        };
+        await save(
+            s,
+            request(1, {
+                post: { ...request(1).post, content_license: 'CC-BY-4.0', banner_credit: credit }
+            })
+        );
+        expect(await s.posts.get(uuid(1))).toMatchObject({
+            content_license: 'CC-BY-4.0',
+            banner_credit: credit
+        });
+        const updated = await save(
+            s,
+            request(2, {
+                revision: 1,
+                post: {
+                    ...request(2).post,
+                    content_license: null,
+                    banner_credit: { origin: 'ai-generated', tool: null }
+                }
+            })
+        );
+        expect(updated).toMatchObject({ state: 'committed', result: { post_revision: 2 } });
+        expect(await s.posts.get(uuid(1))).toMatchObject({
+            content_license: null,
+            banner_credit: { origin: 'ai-generated', tool: null }
+        });
+    });
+
+    test('the schema rejects an unknown post license or banner origin', async () => {
+        const s = stores();
+        await save(s, request(1));
+        expect(() =>
+            s.sqlite
+                .query("update db_posts set content_license = 'GPL-3.0' where id = ?")
+                .run(uuid(1))
+        ).toThrow();
+        expect(() =>
+            s.sqlite
+                .query('update db_posts set banner_credit = ? where id = ?')
+                .run(JSON.stringify({ origin: 'own' }), uuid(1))
+        ).toThrow();
+    });
+
     test('marks stale revisions as conflicts and refuses a reused operation ID', async () => {
         const s = stores();
         await save(s, request(1));

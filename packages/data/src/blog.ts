@@ -4,6 +4,7 @@ import type {
     PublicPostFields,
     RecentComment
 } from '@idstead/domain/blog.ts';
+import type { BannerCredit, ContentLicenseId } from '@idstead/domain/contentLicense.ts';
 
 export interface PostSource {
     readonly kind: 'post-source';
@@ -12,6 +13,8 @@ export interface PostSource {
 export interface PublishedPost extends PublicPostFields {
     banner_url: string | null;
     read_minutes: number | null;
+    content_license: ContentLicenseId | null;
+    banner_credit: BannerCredit | null;
     source: PostSource;
 }
 

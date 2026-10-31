@@ -25,6 +25,13 @@
     import { Mail } from '@lucide/svelte';
     import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@mdrs/core';
     import BannerImageUpload from '../BannerImageUpload.svelte';
+    import PostLicenseFields from './PostLicenseFields.svelte';
+    import {
+        ContentLicenseSettingsError,
+        parseBannerCredit,
+        type ContentLicenseId
+    } from '@idstead/domain/contentLicense.ts';
+    import { bannerCreditForm, bannerCreditPayload } from '../../postLicense.ts';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
     import { cdnBaseUrl } from '#lib/cdn.ts';
     import {
@@ -47,6 +54,9 @@
     let excerpt = $state('');
     let tags = $state<string[]>([]);
     let collaborators = $state<string[]>([]);
+    let contentLicense = $state<ContentLicenseId | null>(null);
+    let bannerCredit = $state(bannerCreditForm(null));
+    let licenseError = $state<{ field: string; message: string } | null>(null);
     const NEW_POST_CONTENT = '# New Post\n\nWrite your markdown content here...';
     let markdownContent = $state(NEW_POST_CONTENT);
 
@@ -71,6 +81,8 @@
     let initialExcerpt = $state('');
     let initialTags = $state<string[]>([]);
     let initialCollaborators = $state<string[]>([]);
+    let initialLicense = $state<ContentLicenseId | null>(null);
+    let initialBannerCredit = $state(JSON.stringify(bannerCreditPayload(bannerCreditForm(null))));
     let initialMarkdownContent = $state('');
 
     const isDirty = $derived(
@@ -81,6 +93,8 @@
             || excerpt.trim() !== initialExcerpt.trim()
             || JSON.stringify(tags) !== JSON.stringify(initialTags)
             || JSON.stringify(collaborators) !== JSON.stringify(initialCollaborators)
+            || contentLicense !== initialLicense
+            || JSON.stringify(bannerCreditPayload(bannerCredit)) !== initialBannerCredit
             || markdownContent.trim() !== initialMarkdownContent.trim()
     );
 
@@ -197,8 +211,12 @@
             collaborators = post.collaborators
                 .map(c => decodeHtmlEntities(c.trim().replace(/^@/, '')))
                 .filter(Boolean);
+            contentLicense = post.content_license;
+            bannerCredit = bannerCreditForm(post.banner_credit);
 
             markdownContent = post.markdown ?? '';
+            initialLicense = contentLicense;
+            initialBannerCredit = JSON.stringify(bannerCreditPayload(bannerCredit));
             initialTitle = title;
             initialExcerpt = excerpt;
             initialTags = [...tags];
@@ -441,8 +459,21 @@
     async function handleSaveClick(toBePublished: boolean) {
         if (isSubmitting || bannerBlocked || loadFailed) return;
         if (!pendingSave && !(await validate(toBePublished))) return;
+        if (!pendingSave && !validLicense()) return;
 
         await executeSave(toBePublished);
+    }
+
+    function validLicense() {
+        try {
+            parseBannerCredit(bannerCreditPayload(bannerCredit));
+            licenseError = null;
+            return true;
+        } catch (error) {
+            if (!(error instanceof ContentLicenseSettingsError)) throw error;
+            licenseError = { field: error.field, message: error.message };
+            return false;
+        }
     }
 
     async function executeSave(toBePublished: boolean) {
@@ -466,6 +497,8 @@
                         .map(c => decodeHtmlEntities(c.trim().replace(/^@/, '')))
                         .filter(Boolean),
                     published: toBePublished,
+                    contentLicense,
+                    bannerCredit: bannerCreditPayload(bannerCredit),
                     bannerOperation: bannerChange.operation
                 };
                 const form = new FormData();
@@ -494,6 +527,8 @@
             excerpt = submitted.excerpt || '';
             tags = submitted.tags;
             collaborators = submitted.collaborators;
+            contentLicense = submitted.contentLicense ?? null;
+            bannerCredit = bannerCreditForm(parseBannerCredit(submitted.bannerCredit));
             markdownContent = result.markdown ?? String(form.get('markdown'));
             await rememberPostSave(operationKey, null);
             pendingSave = null;
@@ -504,6 +539,8 @@
             initialExcerpt = excerpt;
             initialTags = [...tags];
             initialCollaborators = [...collaborators];
+            initialLicense = contentLicense;
+            initialBannerCredit = JSON.stringify(bannerCreditPayload(bannerCredit));
             initialMarkdownContent = markdownContent;
             toastStore.success(submitted.published ? 'Post published.' : 'Post saved as draft.');
             onSaved?.(editId);
@@ -661,6 +698,12 @@
                                 transformItem={item => item.replace(/^@+/, '')} />
                         </FormField>
                     </div>
+
+                    <PostLicenseFields
+                        bind:license={contentLicense}
+                        bind:credit={bannerCredit}
+                        error={licenseError}
+                        onchange={() => (licenseError = null)} />
                 </div>
             </div>
 

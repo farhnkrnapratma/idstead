@@ -17,6 +17,7 @@ Low-level diagrams of how a request travels from the browser through the Cloudfl
 | 11 | [Resume documents](011-resume-documents.md) | Resume versioning (major/minor), `resume/` files, checksums, GPG signature |
 | 12 | [Identity provider](012-identity-provider.md) | WebFinger, avatar by email hash, Sign in with Idstead (OpenID Connect) |
 | 13 | [Analytics and consent](013-analytics-and-consent.md) | Provider setting, head snippet, CSP, cookie banner, `api.v1.analytics` |
+| 14 | [Content licensing](014-content-licensing.md) | Site and post content license, banner credit, footer source link |
 
 Last verified against the code and the live database on **2026-10-15**.
 

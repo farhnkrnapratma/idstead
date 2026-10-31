@@ -5,19 +5,25 @@ import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projec
 import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
 import { resendApiKey, senderAddress } from '#lib/server/subscribers.ts';
 import { siteAnalytics } from '#lib/server/analytics.ts';
+import { siteContentLicense, sourceCodeUrl } from '#lib/server/siteLicense.ts';
+import { contentLicense as resolveContentLicense } from '@idstead/domain/contentLicense.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
     const repos = publicRepositories(fetch);
     const { author: authorRepository, legal } = repos;
-    const [profile, socialLinks, legalPages, analytics] = await Promise.all([
-        authorRepository.profile().catch(() => null),
-        authorRepository.socialLinks().catch(() => []),
-        legal
-            .pages()
-            .then(publishedLegalSlugs)
-            .catch(() => []),
-        siteAnalytics(repos)
-    ]);
+    const [profile, socialLinks, legalPages, analytics, siteLicense, sourceUrl] = await Promise.all(
+        [
+            authorRepository.profile().catch(() => null),
+            authorRepository.socialLinks().catch(() => []),
+            legal
+                .pages()
+                .then(publishedLegalSlugs)
+                .catch(() => []),
+            siteAnalytics(repos),
+            siteContentLicense(repos),
+            sourceCodeUrl()
+        ]
+    );
     const author = profile ? { ...profile, socialLinks } : null;
 
     const [projects, repoRules] = await Promise.all([
@@ -34,6 +40,8 @@ export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) =>
         pinnedRepoNames: repoRules.pinned,
         legalPages,
         newsletterEnabled: Boolean(resendApiKey(platform) && senderAddress(platform)),
-        cookieConsent: analytics.consent
+        cookieConsent: analytics.consent,
+        contentLicense: resolveContentLicense(siteLicense.license),
+        sourceUrl
     };
 };

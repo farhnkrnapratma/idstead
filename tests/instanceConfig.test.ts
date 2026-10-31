@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { InstanceConfigError, resolveInstanceConfig } from '../packages/domain/src/instance.ts';
+import {
+    InstanceConfigError,
+    instanceVariables,
+    resolveInstanceConfig
+} from '../packages/domain/src/instance.ts';
 import { renderWranglerConfigs } from '../tooling/configure.ts';
 
 const example = Bun.JSONC.parse(
@@ -139,5 +143,21 @@ describe('renderWranglerConfigs', () => {
                     migrations_dir: '../../packages/data/d1/migrations'
                 }
             ]);
+    });
+
+    test('source is an optional https URL rendered for the web Worker', () => {
+        expect(resolveInstanceConfig({ domains: { site: 'example.org' } }).source).toBeNull();
+        const config = resolveInstanceConfig({
+            domains: { site: 'example.org' },
+            source: 'https://git.example.org/site'
+        });
+        expect(config.source).toBe('https://git.example.org/site');
+        expect(instanceVariables(config).source).toBe('https://git.example.org/site');
+        expect(() =>
+            resolveInstanceConfig({ domains: { site: 'example.org' }, source: 'http://x.org' })
+        ).toThrow('source');
+        expect(() =>
+            resolveInstanceConfig({ domains: { site: 'example.org' }, source: 42 })
+        ).toThrow('source');
     });
 });

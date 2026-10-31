@@ -1,7 +1,11 @@
-export type AdminSettingsSection = 'appearance' | 'security' | 'analytics' | 'data';
+export type AdminSettingsSection = 'appearance' | 'security' | 'analytics' | 'content' | 'data';
 
 export function resolveAdminSettings(value: string | null): AdminSettingsSection {
-    return value === 'security' || value === 'analytics' || value === 'data' ? value : 'appearance';
+    return (
+            value === 'security' || value === 'analytics' || value === 'content' || value === 'data'
+        ) ?
+            value
+        :   'appearance';
 }
 
 export function cleanAdminParams(params: URLSearchParams, currentYear = new Date().getFullYear()) {

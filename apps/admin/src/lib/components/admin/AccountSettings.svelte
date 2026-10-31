@@ -4,12 +4,21 @@
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '../../adminUrl.ts';
     import { ACCESS_LOGOUT_URL } from '../../adminClient.ts';
-    import { ArrowUpRight, ChartColumn, Database, Eye, LogOut, ShieldCheck } from '@lucide/svelte';
+    import {
+        ArrowUpRight,
+        ChartColumn,
+        Copyright,
+        Database,
+        Eye,
+        LogOut,
+        ShieldCheck
+    } from '@lucide/svelte';
     import { Button, Card } from '@idstead/ui';
     import FormSection from '@idstead/ui/layout/FormSection.svelte';
     import Section from '@idstead/ui/layout/Section.svelte';
     import ActivityTimestamp from './ActivityTimestamp.svelte';
     import AnalyticsSettings from './AnalyticsSettings.svelte';
+    import ContentLicenseSettings from './ContentLicenseSettings.svelte';
     import DisplaySettings from './DisplaySettings.svelte';
 
     const ZERO_TRUST_DASHBOARD = 'https://dash.cloudflare.com/one';
@@ -24,6 +33,7 @@
         { id: 'appearance' as const, label: 'Appearance', icon: Eye },
         { id: 'security' as const, label: 'Account & Security', icon: ShieldCheck },
         { id: 'analytics' as const, label: 'Analytics & cookies', icon: ChartColumn },
+        { id: 'content' as const, label: 'Content license', icon: Copyright },
         { id: 'data' as const, label: 'Data Management', icon: Database }
     ];
 
@@ -44,7 +54,7 @@
     <div>
         <h1 class="type-page-title">Settings</h1>
         <p class="mt-1 type-body text-fg-secondary">
-            Manage appearance, account security, and site data.
+            Manage appearance, account security, analytics, content license, and site data.
         </p>
     </div>
 
@@ -131,6 +141,13 @@
             variant="bordered"
             class="border-line-subtle! bg-surface!">
             <AnalyticsSettings />
+        </Card>
+    {/if}
+    {#if activeTab === 'content'}
+        <Card
+            variant="bordered"
+            class="border-line-subtle! bg-surface!">
+            <ContentLicenseSettings />
         </Card>
     {/if}
     {#if activeTab === 'data'}

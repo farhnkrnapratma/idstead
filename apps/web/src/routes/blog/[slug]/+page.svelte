@@ -62,6 +62,7 @@
     import ShareDialog from '#app/components/ShareDialog.svelte';
     import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
     import HelpfulBlock from '#app/article/HelpfulBlock.svelte';
+    import ArticleLicense from '#app/article/ArticleLicense.svelte';
     import SubscribeForm from '#app/components/SubscribeForm.svelte';
     import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
@@ -457,7 +458,8 @@
         description: post.excerpt || post.title,
         url: siteUrl + '/blog/' + post.slug,
         datePublished: post.created_at,
-        author: { '@type': 'Person', name: author?.name || '', url: siteUrl }
+        author: { '@type': 'Person', name: author?.name || '', url: siteUrl },
+        ...(data.license.url ? { license: data.license.url } : {})
     });
 
     function handleCollaboratorsWindowPointerDown(event: PointerEvent) {
@@ -773,6 +775,12 @@
                 {@attach elementRef<HTMLElement>(node => (articleBodyEl = node ?? undefined))}
                 {@attach enhanceArticle}
                 {@attach syncCodeBlockPrefs} />
+
+            <ArticleLicense
+                license={data.license}
+                bannerCredit={data.bannerCredit}
+                hasBanner={Boolean(bannerPublicUrl)}
+                class="mt-6 sm:mt-8" />
 
             {#if !readingModeStore.active}
                 <HelpfulBlock

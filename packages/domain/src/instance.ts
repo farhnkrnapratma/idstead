@@ -9,6 +9,7 @@ export interface InstanceConfig {
     };
     jobs: { cron: string; hourlyCron: string };
     access: { teamDomain: string; aud: string } | null;
+    source: string | null;
 }
 
 export class InstanceConfigError extends Error {}
@@ -101,7 +102,8 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
             }
         },
         jobs: jobSchedules(jobs),
-        access: accessSettings(root.access)
+        access: accessSettings(root.access),
+        source: sourceUrl(root.source)
     };
 }
 
@@ -112,6 +114,14 @@ function accessSettings(value: unknown): InstanceConfig['access'] {
     if (!teamDomain.endsWith('.cloudflareaccess.com'))
         throw new InstanceConfigError('access.teamDomain must end with .cloudflareaccess.com.');
     return { teamDomain, aud: text(access.aud, 'access.aud', ACCESS_AUD) };
+}
+
+function sourceUrl(value: unknown): string | null {
+    if (value === undefined || value === null) return null;
+    const url = typeof value === 'string' && URL.canParse(value) ? new URL(value) : null;
+    if (!url || url.protocol !== 'https:' || url.username || url.password)
+        throw new InstanceConfigError('source must be an https:// URL.');
+    return url.href;
 }
 
 function jobSchedules(jobs: Raw): InstanceConfig['jobs'] {
@@ -140,6 +150,7 @@ export function instanceVariables(config: InstanceConfig): Record<string, string
         'jobs.cron': config.jobs.cron,
         'jobs.hourlyCron': config.jobs.hourlyCron,
         'access.teamDomain': config.access?.teamDomain ?? '',
-        'access.aud': config.access?.aud ?? ''
+        'access.aud': config.access?.aud ?? '',
+        source: config.source ?? ''
     };
 }

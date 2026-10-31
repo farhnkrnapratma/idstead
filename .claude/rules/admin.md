@@ -11,3 +11,4 @@ paths:
 - `/api/internal/admin/**` keeps its paths. Links to public pages use the author profile's `siteUrl`.
 - Publishing a post enqueues a newsletter queue message (`NEWSLETTER_QUEUE` binding); without the binding it delivers in the request. Manual re-sends stay synchronous.
 - Settings → **Analytics & cookies** (`AnalyticsSettings.svelte`, section `analytics` in `adminUrl.ts`) saves the site's analytics provider through `/api/internal/admin/site-settings/analytics`; the public site reads it from D1, so no deploy is needed.
+- Settings → **Content license** (`ContentLicenseSettings.svelte`, section `content`) saves the site content license through `/api/internal/admin/site-settings/content-license`; the post editor sets a per-post license and banner credit (`PostLicenseFields.svelte`) ([Content licensing](../../docs/003-architecture/014-content-licensing.md)).

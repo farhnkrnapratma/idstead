@@ -17,6 +17,7 @@
     import * as publicEnv from '$app/env/public';
     import { BookOpenText } from '@lucide/svelte';
     import { copyrightLine } from '@idstead/domain/copyright.ts';
+    import FooterNotice from './FooterNotice.svelte';
 
     import { page } from '$app/state';
 
@@ -160,7 +161,7 @@
                         class="-ml-3 w-fit shrink-0 px-1 font-mono text-base font-semibold text-fg!">
                         Idstead
                     </Button>
-                    <span class="text-xs font-medium text-fg-muted select-none">{copyright}</span>
+                    <FooterNotice {copyright} />
                 </div>
             </div>
         </div>

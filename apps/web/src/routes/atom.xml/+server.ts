@@ -3,13 +3,15 @@ import type { RequestHandler } from './$types';
 import { readSite, validDate, publicResponse } from '#lib/server/publicMetadata.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
 import { escapeXml as xml } from '@idstead/domain/xml.ts';
+import { siteContentLicense } from '#lib/server/siteLicense.ts';
+import { contentLicense, licenseNotice } from '@idstead/domain/contentLicense.ts';
 
 export const GET: RequestHandler = async ({ request, platform }) => {
-    const [{ siteUrl, profile }, latest] = await Promise.all([
+    const repositories = publicRepositories();
+    const [{ siteUrl, profile }, latest, siteLicense] = await Promise.all([
         readSite(platform),
-        publicRepositories()
-            .blog.listPublished({ limit: 20 })
-            .catch(() => null)
+        repositories.blog.listPublished({ limit: 20 }).catch(() => null),
+        siteContentLicense(repositories)
     ]);
     if (!latest) error(503, 'Feed is temporarily unavailable.');
     const posts = latest.posts.map(post => {
@@ -36,6 +38,7 @@ ${profile?.bio ? `<subtitle>${xml(profile.bio)}</subtitle>` : ''}
 <link href="${xml(base)}/atom.xml" rel="self" type="application/atom+xml"/>
 <link href="${xml(base)}/" rel="alternate" type="text/html"/>
 <id>${xml(base)}/</id><updated>${updated}</updated>
+<rights>${xml(licenseNotice(contentLicense(siteLicense.license)))}</rights>
 <author><name>${xml(authorName)}</name>${profile?.email ? `<email>${xml(profile.email)}</email>` : ''}<uri>${xml(base)}/</uri></author>
 ${posts
     .map(
@@ -43,7 +46,7 @@ ${posts
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug) + '.md')}" rel="alternate" type="text/markdown"/>
 <id>tag:${xml(host)},2026:post:${xml(post.id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
-<summary type="text">${xml(post.excerpt || '')}</summary></entry>`
+<summary type="text">${xml(post.excerpt || '')}</summary>${post.content_license && post.content_license !== siteLicense.license ? `<rights>${xml(licenseNotice(contentLicense(post.content_license)))}</rights>` : ''}</entry>`
     )
     .join('\n')}
 </feed>`;
