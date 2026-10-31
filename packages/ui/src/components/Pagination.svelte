@@ -16,8 +16,10 @@
 
     const showJump = $derived(totalPages > 5);
     const compact = $derived(size === 'sm');
-    const controlClass = $derived(compact ? 'size-6 shrink-0 p-0' : 'size-9 shrink-0 p-0');
-    const pageClass = $derived(compact ? 'h-6 w-6' : 'h-9 w-9');
+    const controlClass = $derived(
+        compact ? 'size-6 shrink-0 p-0' : 'shrink-0 p-0 h-6! w-6! sm:h-9! sm:w-9!'
+    );
+    const pageClass = $derived(compact ? 'h-6 w-6' : 'h-6 w-6 sm:h-9 sm:w-9');
 
     function goTo(target: number) {
         const clamped = Math.min(Math.max(target, 1), totalPages);

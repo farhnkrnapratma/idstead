@@ -47,7 +47,7 @@
     const resolvedCounter = $derived(formCtx?.counter ?? '');
 
     const baseStyles =
-        'w-full rounded-md border border-line-subtle/50 bg-surface/85 shadow-2xs backdrop-blur-xs text-sm text-fg transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:backdrop-blur-none disabled:bg-surface/20 disabled:border-line-subtle/30 disabled:opacity-50 dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90';
+        'w-full rounded-md border border-line-subtle/50 bg-surface/85 shadow-button-surface backdrop-blur-xs text-sm text-fg transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:backdrop-blur-none disabled:bg-surface/20 disabled:border-line-subtle/30 disabled:opacity-50 dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90';
 </script>
 
 <div class={cn('relative w-full', wrapperClass)}>
