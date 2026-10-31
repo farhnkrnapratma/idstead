@@ -56,11 +56,11 @@
         borderless:
             'bg-transparent text-fg-secondary hover:text-fg-accent disabled:hover:text-fg-secondary',
         overlay:
-            'rounded-full border border-line bg-surface text-fg-accent shadow-sm hover:bg-accent hover:text-on-accent',
+            'rounded-md border border-line-subtle bg-surface text-fg-accent shadow-sm hover:bg-accent hover:text-on-accent',
         floating:
-            'rounded-full glass-button text-fg shadow-md hover:text-fg-accent active:inset-shadow-button-pressed md:shadow-lg',
+            'rounded-md glass-button text-fg shadow-md hover:text-fg-accent active:inset-shadow-button-pressed md:shadow-lg',
         'floating-accent':
-            'rounded-full glass-button border-accent/40 bg-surface/90 text-fg-accent shadow-md hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed md:shadow-lg'
+            'rounded-md glass-button border-accent/30 bg-surface text-fg-accent shadow-md hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed md:shadow-lg'
     };
 
     const sizeStyles = {

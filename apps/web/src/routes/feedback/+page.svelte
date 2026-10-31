@@ -323,7 +323,7 @@
                                         combo: String(index + 1),
                                         label: category.label
                                     }}
-                                    class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
+                                    class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle bg-surface p-3.5 text-left transition-all hover:border-accent hover:bg-surface-hover focus-visible:border-accent focus-visible:outline-none"
                                     aria-label="Select category: {category.label}">
                                     <div class="flex items-center gap-2">
                                         <category.icon

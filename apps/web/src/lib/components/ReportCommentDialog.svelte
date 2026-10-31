@@ -140,7 +140,7 @@
                 void submitReport();
             }}>
             <div
-                class="rounded-md border border-line-subtle bg-surface/60 p-2.5 text-xs text-fg-secondary">
+                class="rounded-md border border-line-subtle bg-surface p-2.5 text-xs text-fg-secondary">
                 <span class="font-semibold text-fg">{comment.author_name || 'Author'}:</span>
                 <p class="mt-0.5 line-clamp-2 text-fg-muted italic">
                     "{comment.content}"
@@ -159,7 +159,7 @@
                                 'group relative flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-all select-none has-focus-visible:outline-2 has-focus-visible:outline-focus-ring',
                                 selectedReason === r.id ?
                                     'border-accent bg-accent/10'
-                                :   'border-line-subtle/70 bg-surface/60 hover:border-accent/40 hover:bg-surface'
+                                :   'border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover'
                             )}>
                             <input
                                 type="radio"

@@ -93,7 +93,7 @@
         onclick={handleToggle}
         class={variant === 'ghost' ? 'hover:bg-surface-hover' : (
             cn(
-                'border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-fg-accent',
+                'border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover hover:text-fg-accent',
                 size !== '2xs' && 'sm:size-9'
             )
         )}>

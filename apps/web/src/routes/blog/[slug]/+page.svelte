@@ -828,7 +828,7 @@
 
                     {#if !replyTo}
                         <div
-                            class="mb-6 rounded-md border border-line-subtle bg-surface/75 p-3.5 text-left shadow-2xs sm:p-4">
+                            class="mb-6 rounded-md border border-line-subtle bg-surface p-3.5 text-left shadow-2xs sm:p-4">
                             <form
                                 novalidate
                                 onsubmit={e => handleSubmit(e)}
@@ -984,9 +984,9 @@
                                 <form
                                     novalidate
                                     onsubmit={e => handleSubmit(e, comment.id)}
-                                    class="mb-3 rounded-md border border-line-subtle bg-canvas/80 p-3.5 text-left shadow-2xs sm:p-4">
+                                    class="mb-3 rounded-md border border-line-subtle bg-canvas p-3.5 text-left shadow-2xs sm:p-4">
                                     <div
-                                        class="mb-3 flex items-center justify-between gap-3 border-b border-line-subtle/50 pb-2.5">
+                                        class="mb-3 flex items-center justify-between gap-3 border-b border-line-subtle pb-2.5">
                                         <p class="text-xs font-semibold text-fg-secondary">
                                             Replying to {getCommentAuthor(comment)}
                                         </p>

@@ -135,7 +135,7 @@
                                 tooltipAlign="right"
                                 size="sm"
                                 onclick={onToggleReadingMode}
-                                class="border-line-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                                class="border-line-subtle bg-surface hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
                                     readingMode
                                 ) ?
                                     'border-accent text-fg-accent'

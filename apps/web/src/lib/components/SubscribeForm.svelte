@@ -26,13 +26,13 @@
                 class="relative size-20 shrink-0 items-center justify-center sm:flex"
                 aria-hidden="true">
                 <div
-                    class="absolute inset-0 border-line-subtle/80 bg-surface/40 sm:rounded-full sm:border sm:border-dashed">
+                    class="absolute inset-0 border-line-subtle bg-surface sm:border sm:border-dashed">
                 </div>
                 <Mail
                     class="absolute top-4 left-4 size-9 fill-accent-tint text-fg-accent"
                     strokeWidth={1.5} />
                 <Paperclip
-                    class="absolute right-3 bottom-3 size-8 rounded-full bg-surface p-1 text-success"
+                    class="absolute right-3 bottom-3 size-8 rounded-md bg-surface p-1 text-success"
                     strokeWidth={1.75} />
             </div>
             <div>
@@ -50,7 +50,7 @@
                 </p>
             </div>
         </div>
-        <div class="border-t border-line-subtle/60 px-3.5 py-3 sm:px-4">
+        <div class="border-t border-line-subtle px-3.5 py-3 sm:px-4">
             <div
                 role="status"
                 aria-atomic="true">

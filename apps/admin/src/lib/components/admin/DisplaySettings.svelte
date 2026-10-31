@@ -78,7 +78,7 @@
             <div
                 role="tablist"
                 aria-label="Theme"
-                class="inline-flex w-fit items-center overflow-hidden rounded-md border border-line-subtle/50 bg-surface">
+                class="inline-flex w-fit items-center overflow-hidden rounded-md border border-line-subtle bg-surface">
                 {#each themes as theme (theme.value)}
                     <button
                         type="button"
@@ -116,7 +116,7 @@
         {/snippet}
 
         <div
-            class="grid overflow-hidden rounded-md border border-line-subtle/50 bg-surface sm:grid-cols-[1fr_1.3fr]">
+            class="grid overflow-hidden rounded-md border border-line-subtle bg-surface sm:grid-cols-[1fr_1.3fr]">
             <div class="flex flex-col gap-2 p-3">
                 <Dropdown
                     id="display-date-format"
@@ -135,7 +135,7 @@
             </div>
             <dl
                 aria-live="polite"
-                class="flex flex-col justify-center gap-y-1.5 border-t border-line-subtle/50 p-3 text-xs sm:border-t-0 sm:border-l">
+                class="flex flex-col justify-center gap-y-1.5 border-t border-line-subtle p-3 text-xs sm:border-t-0 sm:border-l">
                 {#each previews as row (row.label)}
                     <div class="flex items-baseline gap-2">
                         <dt class="w-20 shrink-0 text-fg-muted">{row.label}</dt>
@@ -152,7 +152,7 @@
             <div
                 role="tablist"
                 aria-labelledby="display-mode-label"
-                class="inline-flex w-fit items-center self-start overflow-hidden rounded-md border border-line-subtle/50 bg-surface">
+                class="inline-flex w-fit items-center self-start overflow-hidden rounded-md border border-line-subtle bg-surface">
                 {#each dateModeTabs as item (item.value)}
                     <button
                         type="button"

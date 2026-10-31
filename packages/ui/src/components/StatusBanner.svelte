@@ -20,7 +20,7 @@
     }: Props = $props();
 
     const variantStyles = {
-        info: 'border-line-subtle/50 bg-surface/70 text-fg',
+        info: 'border-line-subtle bg-surface text-fg',
         success: 'border-success/30 bg-success-subtle/20 text-fg',
         warning: 'border-warning/30 bg-warning/10 text-fg',
         error: 'border-danger/30 bg-danger-subtle/20 text-fg'

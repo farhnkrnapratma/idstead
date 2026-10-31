@@ -127,7 +127,7 @@
                 spellcheck={false}
                 disabled={isLoading}
                 placeholder={requiredKeyword}
-                class="w-full rounded-md border border-line-subtle/50 bg-surface/85 px-3 py-2 text-xs text-fg shadow-button-surface backdrop-blur-xs transition-colors outline-none placeholder:text-fg-secondary/70 focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-line-subtle/30 disabled:bg-surface/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90" />
+                class="w-full rounded-md border border-line-subtle bg-surface px-3 py-2 text-xs text-fg shadow-button-surface transition-colors outline-none placeholder:text-fg-secondary/70 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" />
         </div>
     {/if}
 

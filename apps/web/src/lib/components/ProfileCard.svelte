@@ -73,7 +73,7 @@
     </div>
 
     <div class="px-4 pb-5 sm:px-6 sm:pb-6">
-        <div class="profile-avatar relative -mt-12 w-fit rounded-full sm:-mt-14">
+        <div class="profile-avatar relative -mt-12 w-fit rounded-md sm:-mt-14">
             {#if avatarUrl}
                 <ImageWithSkeleton
                     src={avatarUrl}
@@ -82,12 +82,12 @@
                     referrerpolicy="no-referrer"
                     loading="eager"
                     variant="avatar"
-                    rounded="rounded-full"
+                    rounded="rounded-md"
                     class="size-24 shadow-md ring-4 ring-surface sm:size-28"
                     imgClass="object-top" />
             {:else}
                 <div
-                    class="flex size-24 items-center justify-center rounded-full bg-surface-subtle text-3xl font-bold text-fg-accent shadow-md ring-4 ring-surface sm:size-28 sm:text-4xl"
+                    class="flex size-24 items-center justify-center rounded-md bg-surface-subtle text-3xl font-bold text-fg-accent shadow-md ring-4 ring-surface sm:size-28 sm:text-4xl"
                     aria-hidden="true">
                     {name.charAt(0)}
                 </div>

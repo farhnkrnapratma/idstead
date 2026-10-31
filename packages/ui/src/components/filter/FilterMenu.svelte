@@ -53,14 +53,14 @@
                 aria-haspopup="dialog"
                 class={cn(
                     'text-fg-secondary hover:text-fg-accent',
-                    (isOpen || activeCount > 0) && 'border-accent/60 text-fg-accent'
+                    (isOpen || activeCount > 0) && 'border-accent/30 text-fg-accent'
                 )}>
                 <ListFilter class="size-4" />
             </IconButton>
             {#if activeCount > 0}
                 <span
                     aria-hidden="true"
-                    class="pointer-events-none absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-2xs leading-none font-semibold text-on-accent">
+                    class="pointer-events-none absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-accent px-1 text-2xs leading-none font-semibold text-on-accent">
                     {activeCount}
                 </span>
             {/if}

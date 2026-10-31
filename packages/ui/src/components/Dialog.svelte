@@ -148,7 +148,7 @@
         class="fixed inset-0 z-100 flex items-center justify-center overscroll-contain p-4">
         <button
             type="button"
-            class="fixed inset-0 cursor-default touch-none overscroll-contain bg-overlay/80 backdrop-blur-xs"
+            class="fixed inset-0 cursor-default touch-none overscroll-contain bg-overlay/80"
             aria-label="Close modal"
             onwheel={e => e.preventDefault()}
             ontouchmove={e => e.preventDefault()}
