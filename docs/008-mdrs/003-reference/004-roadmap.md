@@ -52,7 +52,7 @@ flowchart LR
 
 ## Compatibility work
 
-The known gaps were closed on 2026-10-17 ([Compatibility](001-compatibility.md)): interpolation is opt-in through `:::define`, inline `$$` ignores prices, numbered lists keep task states, loose lists keep `<p>`, the HTML allowlist is wider, and GitHub alerts render. The next step is running the CommonMark and GFM spec examples as a test suite in the standalone package.
+Plain Markdown renders as plain Markdown ([Compatibility](001-compatibility.md)). The next step is running the CommonMark and GFM spec examples as a test suite in the standalone package.
 
 ## Site-specific behaviour to make configurable
 
@@ -60,7 +60,6 @@ These parts are hard-coded for my-site.example today and become options in the p
 
 - The CDN image pattern that triggers AVIF + WebP `<picture>` output.
 - The default stylesheet. The HTML already uses only stable `mdrs-*` classes ([Styling](003-styling.md)); the package will ship `mdrs.css` as plain CSS with custom properties instead of the Tailwind `@apply` rules used here.
-- The `api.v1` resource registry (`author`, `blog`).
 - Icon libraries (Lucide, Bootstrap Icons).
 - The size and nesting limits.
 

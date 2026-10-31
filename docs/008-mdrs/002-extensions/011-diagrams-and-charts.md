@@ -9,7 +9,7 @@ Two fenced code languages are rendered as graphics instead of code. The server e
 graph TD
   User((Browser)) -->|HTTPS| CF[Cloudflare Workers]
   CF -->|SSR| SK[SvelteKit]
-  SK -->|Query| DB[(Postgres + RLS)]
+  SK -->|Query| DB[(Cloudflare D1)]
 ```
 ````
 
@@ -32,7 +32,7 @@ graph TD
 
 ## Charts
 
-A ` ```chart ` block (or its alias ` ```layerchart `) holds a chart spec in YAML or JSON. The browser renders it as an interactive SVG chart with [LayerChart](https://layerchart.com).
+A ` ```chart ` block holds a chart spec in YAML or JSON. The browser renders it as an interactive SVG chart with [LayerChart](https://layerchart.com).
 
 ````mdrs
 ```chart

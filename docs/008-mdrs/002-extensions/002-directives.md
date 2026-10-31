@@ -59,7 +59,7 @@ A block can live inside a list item, indented to the item's content (up to three
 
 Nested lists inside list-item containers are not supported.
 
-## Fallbacks and errors
+## Unknown and broken directives
 
 MDRS never drops content it doesn't understand:
 
@@ -88,13 +88,14 @@ Code spans and fenced code blocks are protected: a `:::note` line inside a code 
 | `:::details summary="…"` | yes | [Details](004-details.md) |
 | `:::tabs` with `::tab label="…" icon="…"` … `::` | yes | [Tabs and snippets](005-tabs-and-snippets.md) |
 | `:::snippets key="…"` with `::tab` … `::` | yes | [Tabs and snippets](005-tabs-and-snippets.md) |
-| `:::steps` (alias `:::step`) | yes | [Steps](006-steps.md) |
+| `:::steps` | yes | [Steps](006-steps.md) |
 | `:::embed url="…"` | no | [Media and embeds](009-media-and-embeds.md) |
 | `:::math` | yes | [Math](010-math.md) |
 | `:::references` | yes | [References](012-references.md) |
 | `:::define` | yes | [Variables](013-variables.md) |
-| `:::ignore-render` | yes | [Escaping](015-escaping.md) |
+| `:::if` … `:::elif` … `:::else` … `:::endif` | `:::endif` | [Conditionals](016-conditionals.md) |
+| `:::verbatim` | yes | [Escaping](015-escaping.md) |
 
-`:::math`, `:::references`, `:::define` and `:::ignore-render` are handled in earlier passes than the other directives (see [Rendering pipeline](../003-reference/002-rendering-pipeline.md)), so they follow slightly stricter rules, which are listed on their pages.
+`:::math`, `:::references`, `:::define`, `:::if` and `:::verbatim` are handled in earlier passes than the other directives (see [Rendering pipeline](../003-reference/002-rendering-pipeline.md)), so they follow slightly stricter rules, which are listed on their pages.
 
 Source: `packages/mdrs/core/src/render/attrs.ts` (`parseAttrs`), `packages/mdrs/core/src/render/containers.ts` (`CONTAINER_OPEN_RE`, `parseContainers`, `MAX_CONTAINER_DEPTH`).

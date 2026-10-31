@@ -11,7 +11,7 @@
 
 ## Design goal: a drop-in superset
 
-A document written in plain Markdown renders with MDRS exactly as it does with any CommonMark/GFM renderer. The extra syntax only kicks in where plain Markdown has no meaning of its own, or where a document opts in: `${…}` interpolation, for example, needs a `:::define` block. [Compatibility](003-reference/001-compatibility.md) lists the deviations that were fixed, and the few deliberate extensions that remain.
+A document written in plain Markdown renders with MDRS exactly as it does with any CommonMark/GFM renderer. The extra syntax only kicks in where plain Markdown has no meaning of its own, or where a document opts in: `${…}` interpolation, for example, needs a `:::define` block. [Compatibility](003-reference/001-compatibility.md) lists how plain Markdown is kept as written, and the few deliberate extensions.
 
 Every class and ID MDRS generates starts with `mdrs`, and the default look lives in one stylesheet, so each site can restyle the output ([Styling](003-reference/003-styling.md)).
 
@@ -75,9 +75,10 @@ The docs start with the Markdown you already know, then cover what MDRS adds.
 | [Math](002-extensions/010-math.md) | Inline `$$ … $$` and `:::math` blocks |
 | [Diagrams and charts](002-extensions/011-diagrams-and-charts.md) | Mermaid and chart fences |
 | [References](002-extensions/012-references.md) | A bibliography block for footnotes |
-| [Variables](002-extensions/013-variables.md) | `:::define`, expressions, `${…}` and conditional text |
-| [Live data](002-extensions/014-live-data.md) | `api.v1.author` and `api.v1.blog` in expressions |
-| [Escaping](002-extensions/015-escaping.md) | Writing MDRS syntax literally, `\${`, `:::ignore-render` |
+| [Variables](002-extensions/013-variables.md) | `:::define`, strings, expressions, the ternary and `${…}` |
+| [Live data](002-extensions/014-live-data.md) | `api.v1.author`, `api.v1.blog` and `api.v1.analytics` in expressions |
+| [Conditionals](002-extensions/016-conditionals.md) | `:::if` blocks and inline `${if}` |
+| [Escaping](002-extensions/015-escaping.md) | Writing MDRS syntax literally, `\${`, `:::verbatim` |
 
 ### Part 3: reference
 

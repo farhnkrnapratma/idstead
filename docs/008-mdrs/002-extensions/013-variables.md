@@ -2,7 +2,7 @@
 
 A document can declare typed variables in a `:::define` block and use them anywhere in the text with `${…}`. Expressions are evaluated on the server during rendering, so readers only ever see the result.
 
-Interpolation is opt-in: `${…}` and `[text].${…}` only do anything in a document that starts with a `:::define` block holding at least one entry. In any other document they are ordinary text, exactly as in plain Markdown.
+Interpolation is opt-in: `${…}` and inline conditionals (`${if …}`) only do anything in a document that starts with a `:::define` block holding at least one entry. In any other document they are ordinary text, exactly as in plain Markdown.
 
 ```mdrs
 :::define
@@ -31,7 +31,7 @@ Renders "**Welcome to my-site.example.** Engine v2.1, © 2026.", then "First loc
 - Each entry is `name: expression`. Separate entries with new lines or commas.
 - `//` starts a comment that runs to the end of the line.
 - Entries are evaluated top to bottom. To use an earlier entry, write `this.name`; a bare `name` is an error inside the block.
-- Names follow identifier rules (`[A-Za-z_][A-Za-z0-9_]*`) and can't be JavaScript reserved words or `this`, `api`, `db`, `null`, `undefined`, `NaN` or `Infinity`.
+- Names follow identifier rules (`[A-Za-z_][A-Za-z0-9_]*`) and can't be JavaScript reserved words (including `if` and `else`) or `this`, `api`, `elif`, `endif`, `null`, `undefined`, `NaN` or `Infinity`.
 - Defining the same name twice keeps the first value and reports the second as an error.
 
 ```mdrs
@@ -49,13 +49,37 @@ Renders "Final price: Rp 102000".
 
 | Type | Literal | Displayed as |
 | --- | --- | --- |
-| string | `"text"`, with escapes `\n`, `\t`, `\"`, `\\` | the text |
+| string | `'text'` (literal) or `"text"` (expands `$name` and `${…}`) | the text |
 | number | `42`, `3.14` (no exponent form; negatives via unary `-`) | JavaScript number formatting (`0.1 + 0.2` shows `0.30000000000000004`) |
 | boolean | `true`, `false` | `true` / `false` |
 | array | `[1, "two", true]` | JSON, e.g. `[1,"two",true]` |
 | object | `{ key: "value", nested: { n: 1 } }` (keys are bare identifiers) | JSON |
 
-Strings use double quotes only. Inside arrays and objects, items can be separated by commas or new lines.
+Inside arrays and objects, items can be separated by commas or new lines.
+
+## Strings
+
+Strings follow shell quoting rules:
+
+- **Single quotes are literal.** `'Hello $name'` is the text `Hello $name`. The only escapes are `\'` and `\\`.
+- **Double quotes expand.** `"Hello $name"` inserts the variable `name`, and `"${expr}"` inserts the result of any expression. The escapes are `\"`, `\\`, `\n`, `\t` and `\$`.
+- Either quote can hold the other without escaping: `"It's ready"`, `'Say "hi"'`.
+- A `$` that isn't followed by a letter, `_` or `{` stays literal, so `"$5"` needs no escape.
+
+Inside `:::define`, `$name` in a double-quoted string means `this.name`; in the body it means the defined variable.
+
+```mdrs
+:::define
+name: "MDRS"
+literal: 'Hello $name'
+greeting: "Hello $name, version ${1 + 1}"
+price: "Costs $5, not \$name"
+:::
+
+${literal} · ${greeting} · ${price}
+```
+
+Renders "Hello $name · Hello MDRS, version 2 · Costs $5, not $name".
 
 ## Expressions
 
@@ -63,6 +87,7 @@ From lowest to highest precedence:
 
 | Operators | Operands | Result |
 | --- | --- | --- |
+| `? :` | a boolean, then any two values | the second or third operand (right-associative) |
 | `\|\|` | booleans | boolean (short-circuit) |
 | `&&` | booleans | boolean (short-circuit) |
 | `==` `!=` | any | deep equality, the type must match (`"1" == 1` is `false`) |
@@ -73,7 +98,7 @@ From lowest to highest precedence:
 | `!` (unary) | boolean | boolean |
 | `-` (unary) | number | number |
 
-Parentheses group. Paths walk into values: `obj.key`, `obj["key"]`, `list[0]`, and `list.length` for an array's length. There are no function calls, no ternary and no implicit type conversion: `true + 1` is an error.
+Parentheses group. Paths walk into values: `obj.key`, `obj["key"]`, `list[0]`, and `list.length` for an array's length. There are no function calls and no implicit type conversion: `true + 1` is an error. `cond ? a : b` picks a value for short text: `${stable ? "stable" : "preview"}`.
 
 ## Interpolation: `${expression}`
 
@@ -89,32 +114,9 @@ ${n} × 2 + 1 = ${n * 2 + 1}, and n ≥ 3 is ${n >= 3}.
 
 The inserted text is treated as Markdown, so a string variable can carry `**bold**` or a link. HTML inside it goes through the sanitizer like any other HTML.
 
-## Conditional text: `[text].${condition}`
+## Conditionals
 
-Square brackets followed immediately by `.${…}` show the text only when the expression is `true`; otherwise it disappears. The text can contain Markdown.
-
-```mdrs
-:::define
-stable: false
-:::
-
-${if stable}**Stable release.**${else}This is a preview build.${endif}
-```
-
-The expression must evaluate to a boolean, or the error "Expected a boolean expression inside [...].${...}" appears.
-
-The bracketed text can hold its own `${…}`, which is evaluated when the condition is true (up to eight levels deep):
-
-```mdrs
-:::define
-n: 3
-ok: true
-:::
-
-${if ok}Value ${n} is ready.${endif}
-```
-
-Renders "Value 3 is ready."
+`${if cond}…${elif cond}…${else}…${endif}` chooses text inside a paragraph, and `:::if` / `:::elif` / `:::else` / `:::endif` choose whole blocks. See [Conditionals](016-conditionals.md).
 
 ## Where interpolation applies
 
@@ -144,7 +146,7 @@ ${missing_variable}
 
 A broken `:::define` entry doesn't show anything by itself: the variable is simply undefined, so the error appears where it is used.
 
-`validateDefineForSave` checks the whole document: the frontmatter YAML, a misplaced or empty `:::define`, every define entry, every `${…}` in the body (including inside conditional text), and the `:::references` structure. A document without a `:::define` block has no interpolation to check.
+`validateDefineForSave` checks the whole document: the frontmatter YAML, a misplaced or empty `:::define`, every define entry, every `${…}` in the body (including inside conditionals), every `:::if` and `${if}` condition and their structure, and the `:::references` structure. A document without a `:::define` block has no interpolation to check.
 
 The admin runs it in two places:
 
@@ -155,12 +157,15 @@ Common messages:
 
 | Message | Cause |
 | --- | --- |
-| `'x' is undefined` | Unknown variable, or used before its definition |
+| `'x' is undefined` | Unknown variable in the body |
+| `'x' is undefined, or referenced before it was defined` | Unknown variable, or used before its definition, inside `:::define` |
 | `'x' is not valid here — use this.x inside :::define` | Bare name inside `:::define` |
 | `this.* is only valid inside a :::define block` | `this.` in the body |
 | `'x' is already defined` | Duplicate name |
 | `'x' is not a valid variable name (check reserved words / naming rules)` | Reserved word or invalid name |
 | `'+' requires two numbers or at least one string` | `true + 1` and similar |
+| `'? :' requires a boolean condition` | `1 ? a : b` |
+| `Unterminated string literal at position N` | A string without its closing quote |
 | `Property 'k' does not exist`, `Index [3] is out of range` | Bad path |
 | `Only one :::define block is allowed, and it must be the first thing in the document.` | Misplaced or second block (save validation) |
 | `A :::define block needs at least one entry.` | Empty block (save validation) |
