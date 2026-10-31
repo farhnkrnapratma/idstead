@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Component } from 'svelte';
-    import { SquareArrowOutUpRight, Inbox } from '@lucide/svelte';
+    import { ArrowUpRight, Inbox } from '@lucide/svelte';
     import SectionHeader from '@idstead/ui/components/SectionHeader.svelte';
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
@@ -78,7 +78,8 @@
                                             class="size-5 text-xl leading-none sm:size-6 sm:text-2xl" />
                                     </div>
                                 {/if}
-                                <SquareArrowOutUpRight
+                                <ArrowUpRight
+                                    strokeWidth={1.5}
                                     class="order-last size-3 shrink-0 text-fg-muted transition-colors duration-200 group-hover:text-fg-accent sm:order-0" />
                             </div>
                             <div class="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">

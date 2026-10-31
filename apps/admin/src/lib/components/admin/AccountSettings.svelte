@@ -4,7 +4,7 @@
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '../../adminUrl.ts';
     import { ACCESS_LOGOUT_URL } from '../../adminClient.ts';
-    import { ChartColumn, Database, ExternalLink, Eye, LogOut, ShieldCheck } from '@lucide/svelte';
+    import { ArrowUpRight, ChartColumn, Database, Eye, LogOut, ShieldCheck } from '@lucide/svelte';
     import { Button, Card } from '@idstead/ui';
     import FormSection from '@idstead/ui/layout/FormSection.svelte';
     import Section from '@idstead/ui/layout/Section.svelte';
@@ -108,7 +108,9 @@
                             href={ZERO_TRUST_DASHBOARD}
                             target="_blank"
                             rel="noopener noreferrer">
-                            {#snippet leading()}<ExternalLink class="size-3.5" />{/snippet}
+                            {#snippet leading()}<ArrowUpRight
+                                    class="size-3.5"
+                                    strokeWidth={1.5} />{/snippet}
                             Manage sign-in
                         </Button>
                         <Button

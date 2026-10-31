@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Component } from 'svelte';
-    import { ChevronRight } from '@lucide/svelte';
+    import { ArrowRight } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface StatItem {
@@ -53,7 +53,8 @@
                     <span class="min-w-0 truncate text-xs font-bold text-fg-secondary"
                         >{item.label}</span>
                     {#if item.onclick}
-                        <ChevronRight
+                        <ArrowRight
+                            strokeWidth={1.5}
                             class="ml-auto size-4 shrink-0 text-fg-muted transition-[color,translate] group-hover:text-fg-accent motion-safe:group-hover:translate-x-0.5"
                             aria-hidden="true" />
                     {/if}

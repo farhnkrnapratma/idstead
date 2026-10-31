@@ -199,7 +199,7 @@
     }
 
     .mdrs-external-link .mdrs-icon {
-        @apply ml-0.5 inline-block size-2.5 shrink-0 align-baseline;
+        @apply ml-0.5 inline-block size-3 shrink-0 align-baseline;
     }
 
     .mdrs-heading-text {
