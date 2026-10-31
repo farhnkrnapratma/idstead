@@ -1,5 +1,6 @@
 <script lang="ts">
     import { cn } from '../utils/cn';
+    import LoadingIndicator from './LoadingIndicator.svelte';
 
     interface Props {
         label?: string;
@@ -16,8 +17,6 @@
         count = 3,
         class: className = ''
     }: Props = $props();
-
-    const sizeStyles = { sm: 'h-4 w-4 border-2', md: 'h-6 w-6 border-2', lg: 'h-8 w-8 border-3' };
 </script>
 
 {#if variant === 'post-card'}
@@ -201,12 +200,9 @@
             'flex flex-col items-center justify-center gap-3 p-8 text-center select-none',
             className
         )}>
-        <div
-            class={cn(
-                'animate-spin rounded-md border-line-subtle border-t-accent',
-                sizeStyles[size]
-            )}>
-        </div>
+        <LoadingIndicator
+            {size}
+            decorative />
         {#if label}
             <span class="text-xs font-medium text-fg-muted">{label}</span>
         {/if}
