@@ -10,7 +10,7 @@ const { html: page, headings } = await prepareMarkdownPage(source, resolvers);
 const { ok, errors } = await validateDefineForSave(source, resolvers);
 ```
 
-`resolvers` (an `ApiRegistry`) supplies the live data behind `api.v1.author` and `api.v1.blog` in `:::define` blocks. Without it, `unavailableResolvers()` is used and those references render an error marker. The site builds its resolvers with `mdrsResolvers(repositories)` (`packages/lib/src/server/mdrsData.ts`) on the server and `createMdrsResolvers(loaders)` (`packages/lib/src/mdrsResolvers.ts`) in the browser.
+`resolvers` (an `ApiRegistry`, one resolver per `api.v1` resource) supplies the live data behind `api.v1.*` in expressions and conditions; the engine itself names no resource. Without it, `unavailableResolvers()` is used and those references render an error marker. The site builds its resolvers with `mdrsResolvers(repositories)` (`packages/lib/src/server/mdrsData.ts`) on the server and `createMdrsResolvers(loaders)` (`packages/lib/src/mdrsResolvers.ts`) in the browser.
 
 ## Entry points
 
@@ -25,8 +25,8 @@ Only this is public. Everything else under `src/` is internal and may change.
 | Path | Responsibility |
 | --- | --- |
 | `src/markdown.ts` | The pipeline: runs every step in order |
-| `src/render/` | One module per syntax: `containers` (directives, tabs, embeds), `parser` (marked renderers), `math`, `details`, `steps`, `footnotes`, `alerts`, `tasks`, `headings`, `attrs`, `ignoreRender` |
-| `src/define/` | The `:::define` language: `lexer`, `parser`, `ast`, `values`, `evaluate`, `block`, `interpolation`, `identifiers`, `validate`, `errors` |
+| `src/render/` | One module per syntax: `containers` (directives, tabs, embeds), `parser` (marked renderers), `math`, `details`, `steps`, `footnotes`, `alerts`, `tasks`, `headings`, `attrs`, `verbatim` |
+| `src/define/` | The `:::define` language: `lexer`, `parser`, `ast`, `values`, `evaluate`, `block`, `interpolation`, `conditionals`, `identifiers`, `validate`, `errors` |
 | `src/frontmatter.ts`, `src/references.ts`, `src/icons.ts`, `src/placeholders.ts` | Frontmatter, `:::references`, `icon=` loading, internal placeholders |
 | `src/sanitize.ts` | The allowlist sanitizer that every render ends with |
 | `src/plainText.ts`, `src/entities.ts` | Plain-text output and entity decoding |
