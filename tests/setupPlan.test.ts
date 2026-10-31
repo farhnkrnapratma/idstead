@@ -140,7 +140,7 @@ describe('Cloudflare Access setup', () => {
         expect(resolveInstanceConfig(source).access).toEqual(access);
     });
 
-    test('next steps no longer mention a password sign-in', () => {
+    test('next steps point to Cloudflare Access instead of a password sign-in', () => {
         const text = nextSteps(config).join(' ');
         expect(text).toContain('Cloudflare Access');
         expect(text).not.toMatch(/password|\/login/i);

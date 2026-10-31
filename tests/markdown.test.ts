@@ -102,7 +102,7 @@ describe('code fences', () => {
         expect(html).toContain('data-mdrs-highlight-lines="2,3"');
     });
 
-    test('old brace syntax no longer marks lines', async () => {
+    test('a brace info string does not mark lines', async () => {
         const html = await render('```ts {1}\na\n```');
         expect(html).not.toContain('data-highlight-lines');
     });
@@ -334,7 +334,7 @@ describe('robustness and removed directives', () => {
         expect(html).toContain(':::');
     });
 
-    test('a leading :::config block is no longer stripped', async () => {
+    test('a leading :::config block renders as text', async () => {
         const html = await render(':::config\ntheme: old\n:::\n\nbody');
         expect(html).toContain(':::config');
     });

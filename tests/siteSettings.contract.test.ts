@@ -23,7 +23,7 @@ describe('D1 site settings adapter', () => {
         });
     });
 
-    test('a stored value that no longer validates reads as none', async () => {
+    test('a stored value that fails validation reads as none', async () => {
         const { db, sqlite } = d1Shim();
         insertRows(sqlite, 'db_site_settings', [
             { key: 'analytics', value: JSON.stringify({ provider: 'ga4', measurementId: 'x' }) }
@@ -44,7 +44,7 @@ describe('D1 site settings adapter', () => {
         expect(generation()).toBe(before + 1);
     });
 
-    test('the activity log accepts settings and no longer accepts auth', () => {
+    test('the activity log accepts settings and rejects auth', () => {
         const { sqlite } = d1Shim();
         const insert = (category: string) =>
             sqlite
