@@ -334,7 +334,7 @@
 
         <div class="min-w-0 flex-1">
             <div
-                class="relative inline-block max-w-full rounded-md border border-line-subtle bg-surface px-2 py-1 text-left">
+                class="relative inline-block max-w-full rounded-md border border-line-subtle bg-canvas px-2 py-1 text-left">
                 <div class="flex min-h-6.5 items-center justify-between gap-3">
                     <div class="flex min-w-0 items-center gap-1">
                         <span class="truncate text-xs leading-none font-semibold text-fg">
@@ -506,29 +506,33 @@
             <p class="text-xs text-fg-muted">No comments match your search or filter.</p>
         {/if}
     {/if}
-    {#each visibleTree as rootNode (rootNode.comment.id)}
-        {@const rootReplyContainerId = `reply-container-${rootNode.comment.id}`}
-        {@const rootExpanded = repliesOpen(rootNode)}
+    {#if visibleTree.length > 0}
+        <div class="flex flex-col gap-4.5 rounded-md glass-card p-3 sm:gap-5.5 sm:p-4">
+            {#each visibleTree as rootNode (rootNode.comment.id)}
+                {@const rootReplyContainerId = `reply-container-${rootNode.comment.id}`}
+                {@const rootExpanded = repliesOpen(rootNode)}
 
-        <div class="comment-thread-node flex min-w-0 flex-col">
-            {@render renderNode(rootNode, true)}
+                <div class="comment-thread-node flex min-w-0 flex-col">
+                    {@render renderNode(rootNode, true)}
 
-            {#if rootNode.children.length > 0 && rootExpanded}
-                <div
-                    id={rootReplyContainerId}
-                    class="mt-3 ml-4.5 flex flex-col gap-3 sm:ml-10">
-                    {#each rootNode.children as childNode (childNode.comment.id)}
-                        {@render renderNode(childNode)}
-                    {/each}
+                    {#if rootNode.children.length > 0 && rootExpanded}
+                        <div
+                            id={rootReplyContainerId}
+                            class="mt-3 ml-4.5 flex flex-col gap-3 sm:ml-10">
+                            {#each rootNode.children as childNode (childNode.comment.id)}
+                                {@render renderNode(childNode)}
+                            {/each}
+                        </div>
+                    {/if}
                 </div>
+            {/each}
+            {#if pageSize && totalPages > 1}
+                <Pagination
+                    page={currentPage}
+                    {totalPages}
+                    onPageChange={goToPage}
+                    size="sm" />
             {/if}
         </div>
-    {/each}
-    {#if pageSize && totalPages > 1}
-        <Pagination
-            page={currentPage}
-            {totalPages}
-            onPageChange={goToPage}
-            size="sm" />
     {/if}
 </div>

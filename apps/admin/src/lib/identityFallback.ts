@@ -1,4 +1,3 @@
-import '@fontsource/ia-writer-quattro/700.css';
 import { blobatar } from 'blobatar';
 import { normalizeIconInput } from '#lib/author.ts';
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';
@@ -16,13 +15,14 @@ import { processSiteBanner, type SiteBannerOutput } from './processSiteBanner';
 import type { ImagePackage } from '#lib/siteIdentity.ts';
 import { themeToken } from '@idstead/ui/themeColors.ts';
 
-const fontFamilies: Record<BannerFont, string> = {
-    sans: "'iA Writer Quattro', 'Noto Sans Variable', ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, 'Inter', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif",
-    mono: "'Lilex Variable', ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Roboto Mono', 'DejaVu Sans Mono', 'Liberation Mono', Menlo, Monaco, Consolas, 'Source Code Pro', monospace"
-};
+const fontTokens: Record<BannerFont, string> = { sans: '--font-sans', mono: '--font-mono' };
+
+function fontFamily(font: BannerFont) {
+    return getComputedStyle(document.documentElement).getPropertyValue(fontTokens[font]).trim();
+}
 
 function canvasFont(font: BannerFont, size: number, bold: boolean) {
-    return `${bold ? 700 : 400} ${size}px ${fontFamilies[font]}`;
+    return `${bold ? 700 : 400} ${size}px ${fontFamily(font)}`;
 }
 
 function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

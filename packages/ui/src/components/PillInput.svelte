@@ -169,7 +169,7 @@
         inputElement?.focus();
     }}
     class={cn(
-        'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
+        'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-button-surface backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
         isFloating ? 'min-h-12 items-start pt-5! pb-1.5!' : 'min-h-9 items-center py-1.5',
         className
     )}>
