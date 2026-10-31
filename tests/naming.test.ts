@@ -2,10 +2,10 @@ import { describe, expect, test } from 'bun:test';
 import { $ } from 'bun';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const LEGACY_NAME = /fkp/i;
+const PERSONAL_PREFIX = /fkp/i;
 const OWNER_HANDLE = /farhnkrnapratma/i;
 
-const MIGRATION_FILES = new Set(['tests/naming.test.ts']);
+const PREFIX_ALLOWLIST = new Set(['tests/naming.test.ts']);
 
 const INSTANCE_FILES = new Set([
     'CLAUDE.md',
@@ -39,8 +39,8 @@ async function mentioning(files: string[], pattern: RegExp): Promise<string[]> {
 describe('Idstead naming', () => {
     test('only the migration and instance files use the old name', async () => {
         const offenders = await mentioning(
-            trackedFiles.filter(file => !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file)),
-            LEGACY_NAME
+            trackedFiles.filter(file => !PREFIX_ALLOWLIST.has(file) && !INSTANCE_FILES.has(file)),
+            PERSONAL_PREFIX
         );
         expect(offenders).toEqual([]);
     });
