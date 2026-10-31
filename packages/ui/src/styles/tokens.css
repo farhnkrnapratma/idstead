@@ -95,8 +95,8 @@
     --color-report-other: var(--color-slate-600);
 
     --color-button-highlight: color-mix(in oklab, var(--color-white) 30%, transparent);
-    --color-button-edge: color-mix(in oklab, var(--color-black) 18%, transparent);
-    --color-button-contact: color-mix(in oklab, var(--color-mist-950) 22%, transparent);
+    --color-button-edge: color-mix(in oklab, var(--color-black) 8%, transparent);
+    --color-button-contact: color-mix(in oklab, var(--color-mist-950) 12%, transparent);
     --color-button-sheen: color-mix(in oklab, var(--color-white) 90%, transparent);
     --color-button-rim: color-mix(in oklab, var(--color-mist-950) 6%, transparent);
     --color-button-pressed: color-mix(in oklab, var(--color-black) 22%, transparent);
@@ -114,7 +114,7 @@
     );
 
     --inset-shadow-button-fill:
-        inset 0 1px 0 var(--color-button-highlight), inset 0 -2px 0 var(--color-button-edge);
+        inset 0 1px 0 var(--color-button-highlight), inset 0 -1px 0 var(--color-button-edge);
     --inset-shadow-button-surface:
         inset 0 1px 0 var(--color-button-sheen), inset 0 -1px 0 var(--color-button-rim);
     --inset-shadow-button-pressed: inset 0 2px 4px var(--color-button-pressed);
@@ -122,16 +122,16 @@
         color-mix(in srgb, var(--color-button-contact) 45%, transparent);
     --shadow-button-accent:
         0 1px 2px var(--color-button-contact),
-        0 6px 18px -6px color-mix(in srgb, var(--color-accent-strong) 50%, transparent);
+        0 6px 18px -6px color-mix(in srgb, var(--color-accent-strong) 30%, transparent);
     --shadow-button-accent-hover:
         0 1px 2px var(--color-button-contact),
-        0 8px 22px -6px color-mix(in srgb, var(--color-accent-hover) 60%, transparent);
+        0 8px 22px -6px color-mix(in srgb, var(--color-accent-hover) 35%, transparent);
     --shadow-button-danger:
         0 1px 2px var(--color-button-contact),
-        0 6px 18px -6px color-mix(in srgb, var(--color-danger-strong) 50%, transparent);
+        0 6px 18px -6px color-mix(in srgb, var(--color-danger-strong) 30%, transparent);
     --shadow-button-danger-hover:
         0 1px 2px var(--color-button-contact),
-        0 8px 22px -6px color-mix(in srgb, var(--color-danger-strong-hover) 60%, transparent);
+        0 8px 22px -6px color-mix(in srgb, var(--color-danger-strong-hover) 35%, transparent);
 }
 
 :root.dark {
