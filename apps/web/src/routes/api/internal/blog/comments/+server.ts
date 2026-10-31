@@ -1,35 +1,18 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import type { RequestHandler } from './$types';
+import { readPublicWrite } from '#lib/server/publicWrite.ts';
 import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
-import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 import { moderateContent } from '#lib/server/moderation.ts';
 import { PUBLIC_ID_PATTERN } from '@idstead/domain/postReference.ts';
 import type { CommentCreation } from '@idstead/data';
 
-export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    if (!isSameOriginRequest(request, url)) {
-        return apiError(
-            403,
-            'FORBIDDEN_ORIGIN',
-            'Cross-origin requests are not allowed on this endpoint.'
-        );
-    }
-
-    let body: any;
-    try {
-        body = await request.json();
-    } catch {
-        return apiError(400, 'INVALID_JSON_BODY', 'Invalid JSON body.');
-    }
-
-    const turnstileToken = typeof body?.turnstileToken === 'string' ? body.turnstileToken : '';
-    const turnstileOk = await verifyTurnstileToken(turnstileToken, getClientAddress(), platform);
-    if (!turnstileOk) {
-        return apiError(403, 'BLOG_COMMENT_TURNSTILE_FAILED', 'Turnstile verification failed.');
-    }
+export const POST: RequestHandler = async event => {
+    const { platform } = event;
+    const parsed = await readPublicWrite(event, 'BLOG_COMMENT_TURNSTILE_FAILED');
+    if (parsed.response) return parsed.response;
+    const { body } = parsed;
 
     const publicId = typeof body?.postId === 'string' ? body.postId.trim() : '';
     const parentId =
