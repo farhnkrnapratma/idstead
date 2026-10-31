@@ -1,1 +1,1 @@
-export const RENDER_VERSION = 4;
+export const RENDER_VERSION = 5;

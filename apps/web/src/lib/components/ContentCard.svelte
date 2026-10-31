@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { navigating } from '$app/state';
-    import { LoaderCircle, Pin, Sparkles, SquareArrowOutUpRight } from '@lucide/svelte';
+    import { ArrowUpRight, LoaderCircle, Pin, Sparkles } from '@lucide/svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
@@ -96,7 +96,8 @@
                 :   { disabled: true }}
                 class="transition-colors after:absolute after:inset-0 after:rounded-md after:content-[''] hover:text-fg-accent focus-visible:outline-none! focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus-ring">
                 {title}{#if external}<span class="sr-only"> (opens in new tab)</span>
-                    <SquareArrowOutUpRight
+                    <ArrowUpRight
+                        strokeWidth={1.5}
                         aria-hidden="true"
                         class="ml-0.5 inline size-3.5 align-baseline text-fg-muted" />{/if}
             </a>

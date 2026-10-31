@@ -1,6 +1,6 @@
 <script lang="ts">
     import AuthorOgImage from '#app/components/AuthorOgImage.svelte';
-    import { ChevronRight, FolderOpen, Quote, Sprout } from '@lucide/svelte';
+    import { ArrowRight, FolderOpen, Quote, Sprout } from '@lucide/svelte';
     import { page } from '$app/state';
     import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
     import { Button, EmptyState, PageContainer, PageMain, Section } from '@idstead/ui';
@@ -207,8 +207,9 @@
                                 class="w-full justify-center">
                                 Get in touch
                                 {#snippet trailing()}
-                                    <ChevronRight
+                                    <ArrowRight
                                         class="size-3"
+                                        strokeWidth={1.5}
                                         aria-hidden="true" />
                                 {/snippet}
                             </Button>
@@ -243,7 +244,9 @@
                                 keyboardShortcut={buttonKey('viewAllPosts')}
                                 shortcutLabel="View all posts">
                                 View all posts
-                                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                                {#snippet trailing()}<ArrowRight
+                                        class="size-3"
+                                        strokeWidth={1.5} />{/snippet}
                             </Button>
                         </div>
                     {/if}
@@ -289,7 +292,9 @@
                                 keyboardShortcut={buttonKey('viewAllProjects')}
                                 shortcutLabel="View all projects">
                                 View all projects
-                                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                                {#snippet trailing()}<ArrowRight
+                                        class="size-3"
+                                        strokeWidth={1.5} />{/snippet}
                             </Button>
                         </div>
                     {/if}
@@ -318,7 +323,9 @@
                                 aria-label="View full resume including education and experience">
                                 <span class="leading-none">View full resume</span>
                                 {#snippet trailing()}
-                                    <ChevronRight class="size-3" />
+                                    <ArrowRight
+                                        class="size-3"
+                                        strokeWidth={1.5} />
                                 {/snippet}
                             </Button>
                         </div>
