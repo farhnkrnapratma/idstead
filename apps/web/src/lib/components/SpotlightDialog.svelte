@@ -1232,7 +1232,7 @@
             style:max-height={visualViewportHeight !== null ?
                 `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
             :   undefined}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
@@ -1733,7 +1733,7 @@
 
         <div
             {@attach elementRef<HTMLDivElement>(node => (helpDialogEl = node))}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl outline-none focus:outline-none md:w-[40vw] md:max-w-none"
             role="dialog"
             tabindex="-1"
             aria-modal="true"

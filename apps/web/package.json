@@ -22,7 +22,7 @@
         "@idstead/domain": "workspace:*",
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
-        "@lucide/svelte": "^1.65.0",
+        "@lucide/svelte": "^1.66.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@sentry/sveltekit": "^11.10.0",

@@ -29,7 +29,7 @@ flowchart TD
     H2 --> H3["public /api/*: Vary Accept, Expose-Headers, Allow-Origin *<br/>all /api/*: X-Request-ID, X-RateLimit-*"]
     H3 --> ENV{"/api/* and needsApiEnvelope?"}
     ENV -->|yes| E(["apiErrorEnvelope()"])
-    ENV -->|no| LINK["HTML: Link headers<br/>api-catalog, agent-skills, ard, llms.txt, sitemap"]
+    ENV -->|no| LINK["HTML: Link headers<br/>api-catalog, service-desc, service-doc,<br/>agent-skills, ard, llms.txt, sitemap"]
     LINK --> ET{"200 GET/HEAD on public /api/* or /.well-known/*,<br/>no ETag, not PDF?"}
     ET -->|yes| ETAG["publicResponse(): ETag, 304 on match"]
     ET -->|no| HEAD

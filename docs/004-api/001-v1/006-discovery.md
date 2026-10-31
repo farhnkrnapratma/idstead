@@ -23,13 +23,25 @@ Both OpenAPI files are cached with `s-maxage=300` and get an ETag.
 | `/.well-known/api-catalog` | RFC 9727 linkset (`application/linkset+json`) |
 | `/.well-known/ard.json` | ARD manifest `{entries}` (see [../ard.md](../002-ard.md)) |
 
-Every HTML page on `example.com` also sends these `Link` headers:
+Every HTML page on `example.com` also sends these `Link` headers ([RFC 8288](https://www.rfc-editor.org/rfc/rfc8288), [RFC 9727](https://www.rfc-editor.org/rfc/rfc9727#section-3)), built by `discoveryLinks` in `packages/lib/src/server/discoveryLinks.ts`:
 
 - `</.well-known/api-catalog>; rel="api-catalog"`
+- `<https://api.example.com/v1/openapi.json>; rel="service-desc"`
+- `<https://api.example.com/v1>; rel="service-doc"`
 - `</.well-known/agent-skills/index.json>; rel="describedby"`
 - `</.well-known/ard.json>; rel="ard"`
 - `</llms.txt>; rel="describedby"`
 - `</sitemap.xml>; rel="sitemap"`
+
+## Markdown for agents
+
+Every page on `example.com` also answers in Markdown when the request asks for it: `Accept: text/markdown`, with a weight at least as high as any `text/html`. Browsers keep getting HTML, and both representations send `Vary: Accept`.
+
+- Posts (`/blog/{slug}`) and legal pages (`/privacy`, `/terms`, `/security`, `/ai-disclosure`) return their Markdown source, the same as their `.md` URLs.
+- Every other page returns its main content converted from HTML, without navigation, footer, forms, buttons or decorative images, after a frontmatter block with the page `title` and `description`.
+- The response is `Content-Type: text/markdown; charset=utf-8` with `x-markdown-tokens` (an estimate at about four characters per token) and the same `Link` headers as the HTML page.
+
+The negotiation lives in `packages/lib/src/server/markdownNegotiation.ts` and runs as the `markdownHandle` step of `apps/web/src/hooks.server.ts`.
 
 Every `/.well-known/*` response gets an ETag.
 

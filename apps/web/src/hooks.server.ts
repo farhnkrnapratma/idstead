@@ -13,6 +13,15 @@ import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
+import { discoveryLinks } from '#lib/server/discoveryLinks.ts';
+import {
+    htmlToMarkdown,
+    markdownResponse,
+    markdownSourcePath,
+    negotiablePath,
+    prefersMarkdown,
+    varyOnAccept
+} from '#lib/server/markdownNegotiation.ts';
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
 import { analyticsHead, analyticsSources, siteAnalytics } from '#lib/server/analytics.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
@@ -40,10 +49,30 @@ function getCdnBaseUrl(): string {
 const PUBLIC_API_EXPOSED_HEADERS =
     'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256, Repr-Digest, Content-Disposition';
 
+const markdownHandle: Handle = async ({ event, resolve }) => {
+    const method = event.request.method;
+    if (
+        (method !== 'GET' && method !== 'HEAD')
+        || !negotiablePath(event.url.pathname)
+        || !prefersMarkdown(event.request.headers.get('accept'))
+    )
+        return varyOnAccept(await resolve(event));
+    const source = markdownSourcePath(event.url.pathname);
+    if (source) {
+        const document = await event.fetch(source);
+        if (document.ok) return markdownResponse(await document.text(), document, method);
+    }
+    const response = await resolve(event);
+    if (!response.ok || !response.headers.get('content-type')?.includes('text/html'))
+        return response;
+    return markdownResponse(htmlToMarkdown(await response.text()), response, method);
+};
+
 export const handle: Handle = sequence(
     sentryInitHandle,
     Sentry.sentryHandle(),
     csrfHandle,
+    markdownHandle,
     async ({ event, resolve }) => {
         const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
 
@@ -194,20 +223,8 @@ export const handle: Handle = sequence(
             });
 
         if (contentType.includes('text/html')) {
-            response.headers.append('Link', '</.well-known/api-catalog>; rel="api-catalog"');
-            response.headers.append(
-                'Link',
-                '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"'
-            );
-            response.headers.append(
-                'Link',
-                '</.well-known/ard.json>; rel="ard"; type="application/json"'
-            );
-            response.headers.append('Link', '</llms.txt>; rel="describedby"; type="text/markdown"');
-            response.headers.append(
-                'Link',
-                '</sitemap.xml>; rel="sitemap"; type="application/xml"'
-            );
+            for (const link of discoveryLinks(publicEnv.PUBLIC_API_BASE_URL))
+                response.headers.append('Link', link);
         }
 
         if (
