@@ -33,6 +33,16 @@ Every HTML page on `example.com` also sends these `Link` headers ([RFC 8288](htt
 - `</llms.txt>; rel="describedby"`
 - `</sitemap.xml>; rel="sitemap"`
 
+## Markdown for agents
+
+Every page on `example.com` also answers in Markdown when the request asks for it: `Accept: text/markdown`, with a weight at least as high as any `text/html`. Browsers keep getting HTML, and both representations send `Vary: Accept`.
+
+- Posts (`/blog/{slug}`) and legal pages (`/privacy`, `/terms`, `/security`, `/ai-disclosure`) return their Markdown source, the same as their `.md` URLs.
+- Every other page returns its main content converted from HTML, without navigation, footer, forms, buttons or decorative images, after a frontmatter block with the page `title` and `description`.
+- The response is `Content-Type: text/markdown; charset=utf-8` with `x-markdown-tokens` (an estimate at about four characters per token) and the same `Link` headers as the HTML page.
+
+The negotiation lives in `packages/lib/src/server/markdownNegotiation.ts` and runs as the `markdownHandle` step of `apps/web/src/hooks.server.ts`.
+
 Every `/.well-known/*` response gets an ETag.
 
 ## Keeping it in sync
