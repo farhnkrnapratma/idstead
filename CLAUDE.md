@@ -109,3 +109,8 @@ This checkout is also the owner's own instance, **fkp.my.id**. Only these places
 - **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).
 - **Deploys:** each Worker is connected to Workers Builds on `main` only; previews are not connected, so `develop` and PRs deploy nothing.
 - **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`).
+
+<!-- fallow:agent-install v1 claude-import:start -->
+
+@AGENTS.md
+<!-- fallow:agent-install v1 claude-import:end -->
