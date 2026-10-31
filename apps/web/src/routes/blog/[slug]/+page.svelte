@@ -557,7 +557,7 @@
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
-        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
+        :   'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
         <article
             {@attach elementRef<HTMLElement>(node => (articleEl = node))}
             onscroll={handleArticleScroll}
@@ -990,12 +990,6 @@
                                         <p class="text-xs font-semibold text-fg-secondary">
                                             Replying to {getCommentAuthor(comment)}
                                         </p>
-                                        <Button
-                                            type="ghost"
-                                            size="sm"
-                                            keyboardShortcut={buttonKey('formClear')}
-                                            shortcutLabel="Cancel reply"
-                                            onclick={cancelReply}>Cancel</Button>
                                     </div>
 
                                     <div class="flex flex-col gap-3">
@@ -1078,18 +1072,39 @@
 
                                         <ConsentNotice action="posting a reply" />
 
-                                        <div class="mt-1 flex items-center justify-end gap-3">
+                                        <div
+                                            class="mt-1 flex items-center justify-between gap-2 select-none">
                                             <Button
-                                                htmlType="submit"
-                                                type="primary"
+                                                htmlType="button"
+                                                type="outline"
+                                                tone="critical"
                                                 size="sm"
-                                                aria-keyshortcuts="Control+Enter Meta+Enter"
-                                                disabled={isSubmitting}
-                                                isLoading={isSubmitting}
-                                                keyboardShortcut={buttonKey('formSubmit')}
-                                                shortcutLabel="Post reply">
-                                                {isSubmitting ? 'Posting…' : 'Post reply'}
+                                                disabled={!canClearComment || isSubmitting}
+                                                keyboardShortcut={buttonKey('formClear')}
+                                                shortcutLabel="Clear reply"
+                                                onclick={clearCommentForm}>
+                                                Clear<span class="hidden sm:inline"
+                                                    >&nbsp;reply</span>
                                             </Button>
+                                            <div class="flex items-center gap-2">
+                                                <Button
+                                                    htmlType="button"
+                                                    type="ghost"
+                                                    size="sm"
+                                                    shortcutLabel="Cancel reply"
+                                                    onclick={cancelReply}>Cancel</Button>
+                                                <Button
+                                                    htmlType="submit"
+                                                    type="primary"
+                                                    size="sm"
+                                                    aria-keyshortcuts="Control+Enter Meta+Enter"
+                                                    disabled={isSubmitting}
+                                                    isLoading={isSubmitting}
+                                                    keyboardShortcut={buttonKey('formSubmit')}
+                                                    shortcutLabel="Post reply">
+                                                    {isSubmitting ? 'Posting…' : 'Post reply'}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -1139,7 +1154,7 @@
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
     progress={articleScrollProgress}
-    class="hidden lg:fixed lg:right-[calc(18rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+    class="hidden lg:fixed lg:right-[calc(22rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />
 

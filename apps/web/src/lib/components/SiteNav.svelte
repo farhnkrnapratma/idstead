@@ -9,7 +9,7 @@
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { readingModeStore } from '@idstead/ui/stores/readingModeStore.svelte.ts';
-    import { BookOpenText } from '@lucide/svelte';
+    import { BookOpenText, Menu } from '@lucide/svelte';
     import { page } from '$app/state';
     import type { Project } from '@idstead/domain/types.ts';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
@@ -52,6 +52,7 @@
             items: PAGE_LINKS.map(link => ({
                 label: link.label,
                 href: link.href,
+                icon: link.icon,
                 combo: link.combo,
                 current: isCurrent(link.href)
             }))
@@ -97,11 +98,6 @@
                 active={otherActive}
                 shortcut={buttonKey('navMenu')} />
         </nav>
-        <NavMenu
-            label="Menu"
-            groups={menuGroups}
-            shortcut={buttonKey('navMenu')}
-            class="md:hidden" />
         <div class="ml-auto flex items-center gap-1.5 sm:gap-2">
             <SpotlightSearch {projects} />
             {#if readingMode}
@@ -122,6 +118,12 @@
                 theme={themeStore.current}
                 onThemeChange={themeStore.apply} />
             <AccessibilitySelect />
+            <NavMenu
+                label="Menu"
+                groups={menuGroups}
+                shortcut={buttonKey('navMenu')}
+                triggerIcon={Menu}
+                class="md:hidden" />
         </div>
     </PageContainer>
 </header>
