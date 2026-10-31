@@ -35,5 +35,6 @@ export default defineConfig({
             }
         ]
     },
+    server: { fs: { allow: ['../../packages/ui/src/fonts'] } },
     ssr: { noExternal: ['@lucide/svelte', '@mdrs/core', '@idstead/domain', '@idstead/data'] }
 });
