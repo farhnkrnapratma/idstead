@@ -471,6 +471,18 @@
         @apply mx-0.5 inline-flex align-baseline;
     }
 
+    .mdrs sup:not(:has(> [data-mdrs-fn-ref])) {
+        font-variant-position: super;
+        font-size: inherit;
+        vertical-align: baseline;
+    }
+
+    .mdrs sub:not(.mdrs-footnote-backref--sub) {
+        font-variant-position: sub;
+        font-size: inherit;
+        vertical-align: baseline;
+    }
+
     .mdrs [data-mdrs-fn-ref] {
         @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 pt-[0.12em] pb-[0.3em] font-mono text-[0.8em] leading-none font-medium text-fg-accent no-underline hover:underline;
     }
