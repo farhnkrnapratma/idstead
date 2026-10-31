@@ -124,12 +124,9 @@ describe('resumeVersionBump', () => {
 });
 
 describe('Resume version numbers', () => {
-    test('parse new and legacy filenames', () => {
+    test('parse major.minor filenames', () => {
         expect(parseResumeVersion('Resume-Ada-1234567-v2.3.pdf')).toEqual({ major: 2, minor: 3 });
-        expect(parseResumeVersion('Resume-Ada-1234567-v1.0.13.pdf')).toEqual({
-            major: 1,
-            minor: 0
-        });
+        expect(parseResumeVersion('Resume-Ada-1234567-v1.0.13.pdf')).toBeNull();
         expect(parseResumeVersion('resume.pdf')).toBeNull();
     });
 

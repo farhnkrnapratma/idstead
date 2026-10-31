@@ -2170,12 +2170,12 @@
             }
         })();
 
-        const legacyUrl = adminUrl();
+        const currentUrl = adminUrl();
         if (
-            cleanAdminParams(legacyUrl.searchParams).toString()
-            !== legacyUrl.searchParams.toString()
+            cleanAdminParams(currentUrl.searchParams).toString()
+            !== currentUrl.searchParams.toString()
         )
-            navigateAdmin(legacyUrl, true);
+            navigateAdmin(currentUrl, true);
         const stopDisplaySync = adminDisplayStore.init();
         const stopSettingsSync = startAdminSettingsSync();
         document.addEventListener('visibilitychange', handleVisibilityChange);
