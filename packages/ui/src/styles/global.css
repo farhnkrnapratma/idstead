@@ -1,14 +1,26 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/lexend';
-@import '@fontsource-variable/lilex';
-@import '@fontsource-variable/noto-sans';
-@import '@fontsource/ia-writer-quattro';
-@import '@fontsource/ia-writer-quattro/400-italic.css';
-@import '@fontsource/ia-writer-quattro/700.css';
-@import '@fontsource/ia-writer-quattro/700-italic.css';
+@import '@fontsource-variable/archivo/wdth.css';
 @import './tokens.css';
 @source '../';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
+
+@font-face {
+    font-family: 'Paper Mono';
+    src: url('../fonts/PaperMono-VF.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Martian Mono';
+    src: url('../fonts/MartianMono-VF.woff2') format('woff2');
+    font-weight: 100 800;
+    font-stretch: 75% 112.5%;
+    font-style: normal;
+    font-display: swap;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant motion-reduce (&:where([data-reduce-motion='true'], [data-reduce-motion='true'] *));
@@ -35,11 +47,11 @@
 }
 
 @utility glass-card {
-    @apply border-0 bg-surface text-fg shadow-sm dark:border dark:border-fg/5 dark:bg-surface/70 dark:backdrop-blur-md;
+    @apply border border-line-subtle bg-surface text-fg;
 }
 
 @utility glass-overlay {
-    @apply border-0 bg-surface text-fg shadow-xl dark:border dark:border-code-inline dark:bg-surface/95 dark:backdrop-blur-md;
+    @apply border border-line-subtle bg-surface text-fg;
 }
 
 @utility dashed-surface {
@@ -47,7 +59,7 @@
 }
 
 @utility popover-surface {
-    @apply rounded-md border border-line-subtle/50 bg-surface text-fg shadow-xl backdrop-blur-none!;
+    @apply rounded-md border border-line-subtle bg-surface text-fg;
 }
 
 .hljs-addition {
@@ -59,7 +71,7 @@
 }
 
 @utility glass-button {
-    @apply border border-line-subtle/50 bg-surface/85 text-fg shadow-button-surface inset-shadow-button-surface backdrop-blur-md transition-all hover:border-accent hover:bg-surface dark:border-code-inline dark:bg-surface/60 dark:hover:bg-surface/85;
+    @apply border border-line bg-surface text-fg transition-colors hover:border-accent hover:bg-surface-hover;
 }
 
 @layer base {
@@ -67,11 +79,27 @@
         @apply font-sans;
     }
 
+    html,
+    .font-sans {
+        font-feature-settings: 'ss01', 'ss02', 'ss03', 'ss04', 'cv01', 'zero';
+    }
+
     code,
     kbd,
     pre,
     .font-mono {
         @apply font-mono;
+        font-feature-settings: 'calt', 'case', 'cv01';
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-title);
+        letter-spacing: -0.02em;
     }
 
     *,

@@ -16,7 +16,7 @@ This page describes how the system protects itself. To report a vulnerability, s
 ## Authentication and MFA (admin)
 
 - **Sign-in:** a Cloudflare Access self-hosted application covers `admin.example.com`. Its policy admits only the owner's email; the login method is the owner's Cloudflare account or another Access login method. Idstead stores no passwords, authenticator secrets or passkeys.
-- **MFA:** enforced by Access. Require two-factor authentication in the Access policy or the Zero Trust settings, or turn it on for the Cloudflare account used to sign in.
+- **MFA:** enforced by Access. Enroll a passkey, security key or authenticator app at `https://<team>.cloudflareaccess.com/AddMfaDevice` before requiring two-factor authentication in the Access policy or the Zero Trust settings. If locked out, remove the requirement, enroll, then require it again.
 - **Token check:** Access adds `Cf-Access-Jwt-Assertion` to every request. `accessIdentity()` (`packages/lib/src/server/accessAuth.ts`) verifies the RS256 signature against the team's certs, `iss`, `aud` (`ACCESS_AUD`), `exp` and `type = app`, and that the email is listed in `ADMIN_EMAILS`. A deployed admin without `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `ADMIN_EMAILS` refuses every request; only a `vite dev` build on a loopback host uses the `admin@localhost` identity.
 - **Destructive actions:** deleting all site data needs a sign-in from the last 10 minutes (token `iat`) and the typed confirmation `DELETE`.
 - **Lockout:** failed OpenID Connect client secrets are counted in `db_login_failures` (salted SHA-256 key hashes), shared across isolates, with an in-memory fallback.

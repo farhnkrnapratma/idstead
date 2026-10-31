@@ -63,7 +63,6 @@ export * from './platform';
 export * from './shortcutCatalog';
 export * from './shortcuts';
 export * from './stores/a11yStore.svelte';
-export * from './stores/deviceClassStore.svelte';
 export * from './stores/platformStore.svelte';
 export * from './stores/readingModeStore.svelte';
 export * from './stores/scrollStore.svelte';

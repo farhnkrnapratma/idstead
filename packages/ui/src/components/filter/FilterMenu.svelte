@@ -67,7 +67,7 @@
         </span>
     {/snippet}
     <div class="flex max-h-[min(70vh,28rem)] w-64 max-w-[calc(100vw-1rem)] flex-col">
-        <div class="flex flex-col overflow-y-auto py-1">
+        <div class="flex flex-col overflow-y-auto">
             {#each visibleGroups as group, index (group.label)}
                 {#if index > 0}
                     <hr class="my-1 border-line-subtle" />

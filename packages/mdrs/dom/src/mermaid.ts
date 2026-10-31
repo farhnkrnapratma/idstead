@@ -19,6 +19,11 @@ export async function getMermaid(isDark = true) {
     return mermaidInstance;
 }
 
+function sansFontFamily() {
+    if (typeof document === 'undefined') return '';
+    return getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim();
+}
+
 function mermaidTheme(theme: EffectiveTheme) {
     const color = (name: string) => themeToken(`--color-${name}`, theme);
     const node = color('surface-subtle');
@@ -63,8 +68,7 @@ function mermaidTheme(theme: EffectiveTheme) {
                 [`gitBranchLabel${index}`, label]
             ])
         ),
-        fontFamily:
-            '"iA Writer Quattro", "Noto Sans Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, "Inter", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif'
+        fontFamily: sansFontFamily()
     };
 }
 

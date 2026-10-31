@@ -35,7 +35,7 @@ Optional values are passed on when they are set: `GITHUB_PAT` (projects: the pub
 
 These steps happen in other dashboards, so the setup script cannot do them:
 
-- **Two-factor authentication:** in Cloudflare Zero Trust, require two-factor authentication (passkey, security key or authenticator app) for the admin application, or turn it on for the Cloudflare account you sign in with.
+- **Two-factor authentication:** enroll a passkey, security key or authenticator app at `https://<team>.cloudflareaccess.com/AddMfaDevice` first (the admin's Account settings links there). Then, in Cloudflare Zero Trust, require two-factor authentication for the admin application, or turn it on for the Cloudflare account you sign in with. If you are locked out, remove the requirement, enroll, and require it again.
 - **Turnstile:** allow the site hostname on the widget.
 - **Resend:** verify the domain of `SUBSCRIBER_FROM_EMAIL`.
 - **Admin portal:** open `https://admin.<domain>` and sign in through Cloudflare Access with the admin email.

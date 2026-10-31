@@ -217,36 +217,6 @@
                 </ProfileCard>
 
                 <div>
-                    <h2 class="mb-4 type-section-title">Experience</h2>
-                    <ResumeEntryList
-                        kind="experience"
-                        entries={data.experience} />
-                </div>
-
-                <div>
-                    <h2 class="mb-4 type-section-title">Education</h2>
-                    <ResumeEntryList
-                        kind="education"
-                        entries={data.education} />
-                    {#if hasResumeEntries}
-                        <div class="mt-4 flex justify-end">
-                            <Button
-                                type="ghost"
-                                size="sm"
-                                href="/resume"
-                                keyboardShortcut={buttonKey('viewFullResume')}
-                                shortcutLabel="View full resume"
-                                aria-label="View full resume including education and experience">
-                                <span class="leading-none">View full resume</span>
-                                {#snippet trailing()}
-                                    <ChevronRight class="size-3" />
-                                {/snippet}
-                            </Button>
-                        </div>
-                    {/if}
-                </div>
-
-                <div>
                     <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
                     {#if posts.length === 0}
                         <EmptyState
@@ -320,6 +290,36 @@
                                 shortcutLabel="View all projects">
                                 View all projects
                                 {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                            </Button>
+                        </div>
+                    {/if}
+                </div>
+
+                <div>
+                    <h2 class="mb-4 type-section-title">Experience</h2>
+                    <ResumeEntryList
+                        kind="experience"
+                        entries={data.experience} />
+                </div>
+
+                <div>
+                    <h2 class="mb-4 type-section-title">Education</h2>
+                    <ResumeEntryList
+                        kind="education"
+                        entries={data.education} />
+                    {#if hasResumeEntries}
+                        <div class="mt-4 flex justify-end">
+                            <Button
+                                type="ghost"
+                                size="sm"
+                                href="/resume"
+                                keyboardShortcut={buttonKey('viewFullResume')}
+                                shortcutLabel="View full resume"
+                                aria-label="View full resume including education and experience">
+                                <span class="leading-none">View full resume</span>
+                                {#snippet trailing()}
+                                    <ChevronRight class="size-3" />
+                                {/snippet}
                             </Button>
                         </div>
                     {/if}
