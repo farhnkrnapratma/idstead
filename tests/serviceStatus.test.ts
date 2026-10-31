@@ -6,6 +6,7 @@ describe('service status', () => {
         const entries = Object.values(SERVICE_STATUSES);
         expect(new Set(entries.map(entry => entry.icon)).size).toBe(entries.length);
         expect(new Set(entries.map(entry => entry.label)).size).toBe(entries.length);
+        expect(new Set(entries.map(entry => entry.short)).size).toBe(entries.length);
     });
 
     test('maps Instatus page states and falls back to unknown', () => {
