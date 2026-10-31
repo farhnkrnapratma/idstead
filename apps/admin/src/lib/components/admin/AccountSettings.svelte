@@ -12,11 +12,12 @@
     import AnalyticsSettings from './AnalyticsSettings.svelte';
     import DisplaySettings from './DisplaySettings.svelte';
 
-    const ZERO_TRUST_DASHBOARD = 'https://one.dash.cloudflare.com/';
+    const ZERO_TRUST_DASHBOARD = 'https://dash.cloudflare.com/one';
 
     let { children }: { children?: Snippet } = $props();
 
     const admin = $derived(page.data.admin as { email: string; signedInAt: string } | null);
+    const accessTeamDomain = $derived(page.data.accessTeamDomain as string | null);
     const activeTab = $derived(resolveAdminSettings(adminUrl().searchParams.get('settings')));
 
     const tabs = [
@@ -90,6 +91,17 @@
                                 class="font-semibold" />{/if}.
                     </span>
                     <span class="flex shrink-0 flex-wrap gap-2">
+                        {#if accessTeamDomain}
+                            <Button
+                                type="secondary"
+                                size="sm"
+                                href={`https://${accessTeamDomain}/AddMfaDevice`}
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                {#snippet leading()}<ShieldCheck class="size-3.5" />{/snippet}
+                                Enroll MFA
+                            </Button>
+                        {/if}
                         <Button
                             type="secondary"
                             size="sm"

@@ -15,5 +15,6 @@
         //   "**/generated/**"     // OpenAPI, Protobuf codegen
         // ]
     },
-    "rules": {}
+    "rules": {},
+    "ignorePatterns": [".claude/**", ".agents/**"]
 }

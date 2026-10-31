@@ -2,8 +2,12 @@ import type { Component } from 'svelte';
 import {
     AtSign,
     BotMessageSquare,
+    FileUser,
+    FolderOpen,
     HeartHandshake,
+    House,
     Lock,
+    Quote,
     Rss,
     ScrollText,
     ShieldUser,
@@ -29,15 +33,15 @@ export interface SiteNavGroup {
     items: SiteNavLink[];
 }
 
-function page(label: string, href: string): SiteNavLink {
-    return { label, href, combo: sectionCommandKey(href) };
+function page(label: string, href: string, icon?: Component<{ class?: string }>): SiteNavLink {
+    return { label, href, icon, combo: sectionCommandKey(href) };
 }
 
 export const PAGE_LINKS: SiteNavLink[] = [
-    page('Home', '/'),
-    page('Blog', '/blog'),
-    page('Projects', '/projects'),
-    page('Resume', '/resume')
+    page('Home', '/', House),
+    page('Blog', '/blog', Quote),
+    page('Projects', '/projects', FolderOpen),
+    page('Resume', '/resume', FileUser)
 ];
 
 export const OTHER_GROUPS: SiteNavGroup[] = [

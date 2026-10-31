@@ -6,6 +6,7 @@
     import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
     import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
     import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
     import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { type SocialLink } from '#lib/author.ts';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
@@ -149,7 +150,18 @@
                         <AccessibilitySelect dropdownDirection="up" />
                     </div>
                 </div>
-                <span class="text-xs font-medium text-fg-muted select-none">{copyright}</span>
+                <div
+                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <Button
+                        href="/"
+                        type="ghost"
+                        size="sm"
+                        aria-label="Idstead home"
+                        class="-ml-3 w-fit shrink-0 px-1 font-mono text-base font-semibold text-fg!">
+                        Idstead
+                    </Button>
+                    <span class="text-xs font-medium text-fg-muted select-none">{copyright}</span>
+                </div>
             </div>
         </div>
     </div>
