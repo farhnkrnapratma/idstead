@@ -1,14 +1,11 @@
-const OBSOLETE_PARAMS = ['timeZone', 'range', 'from', 'to'] as const;
-
-export type AdminSettingsSection = 'appearance' | 'security' | 'data';
+export type AdminSettingsSection = 'appearance' | 'security' | 'analytics' | 'data';
 
 export function resolveAdminSettings(value: string | null): AdminSettingsSection {
-    return value === 'security' || value === 'data' ? value : 'appearance';
+    return value === 'security' || value === 'analytics' || value === 'data' ? value : 'appearance';
 }
 
 export function cleanAdminParams(params: URLSearchParams, currentYear = new Date().getFullYear()) {
     const next = new URLSearchParams(params);
-    for (const key of OBSOLETE_PARAMS) next.delete(key);
     if (next.get('tab') === 'home') next.delete('tab');
     if (
         next.get('tab') !== 'account'

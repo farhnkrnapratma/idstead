@@ -9,6 +9,10 @@ import {
 import { createD1AuthorRepository } from '../packages/data/src/d1/author.ts';
 import { createD1BlogRepository, createD1CommentRepository } from '../packages/data/src/d1/blog.ts';
 import { createD1LegalPageRepository } from '../packages/data/src/d1/legal.ts';
+import {
+    createD1SiteSettingsRepository,
+    createD1SiteSettingsWriter
+} from '../packages/data/src/d1/siteSettings.ts';
 import type { Repositories } from '../packages/data/src/index.ts';
 import { d1Shim, insertRows, memoryBucket } from './support/d1.ts';
 
@@ -32,7 +36,8 @@ function counted(repos: Repositories) {
             author: wrap('author', repos.author),
             blog: wrap('blog', repos.blog),
             comments: wrap('comments', repos.comments),
-            legal: wrap('legal', repos.legal)
+            legal: wrap('legal', repos.legal),
+            site: wrap('site', repos.site)
         }
     };
 }
@@ -63,7 +68,8 @@ function setup(cache: ResultCache = memoryResultCache()) {
         author: createD1AuthorRepository(db),
         blog: createD1BlogRepository(db, bucket),
         comments: createD1CommentRepository(db),
-        legal: createD1LegalPageRepository(db)
+        legal: createD1LegalPageRepository(db),
+        site: createD1SiteSettingsRepository(db)
     };
     const { calls, repos } = counted(base);
     const cached = cachedRepositories(repos, {
@@ -71,7 +77,7 @@ function setup(cache: ResultCache = memoryResultCache()) {
         cache,
         namespace: async () => 'version-1'
     });
-    return { sqlite, calls, cached };
+    return { sqlite, db, calls, cached };
 }
 
 describe('generational read cache', () => {
@@ -95,6 +101,21 @@ describe('generational read cache', () => {
         await cached.legal.pages();
         expect(calls.filter(call => call === 'blog.listPublished')).toHaveLength(2);
         expect(calls.filter(call => call === 'legal.pages')).toHaveLength(1);
+    });
+
+    test('caches site settings until they are saved again', async () => {
+        const { db, calls, cached } = setup();
+        expect(await cached.site.analytics()).toEqual({ provider: 'none' });
+        expect(await cached.site.analytics()).toEqual({ provider: 'none' });
+        await createD1SiteSettingsWriter(db).saveAnalytics({
+            provider: 'ga4',
+            measurementId: 'G-ABC123'
+        });
+        expect(await cached.site.analytics()).toEqual({
+            provider: 'ga4',
+            measurementId: 'G-ABC123'
+        });
+        expect(calls.filter(call => call === 'site.analytics')).toHaveLength(2);
     });
 
     test('keys arguments canonically and isolates comments per post', async () => {

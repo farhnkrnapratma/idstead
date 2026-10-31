@@ -6,13 +6,13 @@ Sometimes you need to show MDRS syntax instead of having it rendered, for exampl
 | --- | --- |
 | Any Markdown punctuation (`*`, `_`, `#`, `[`, …) | A backslash: `\*` |
 | `$$` | `\$$` |
-| `${name}` or `[text].${x}` | Nothing in a document without `:::define`; otherwise a backslash (`\${name}`, `[text].\${x}`), a code span or code block, or `:::ignore-render` |
-| A directive (`:::note`) | A code span or code block, or `:::ignore-render` |
-| A whole example, including fences and directives | A longer outer fence, or a longer `::::ignore-render` fence |
+| `${name}` or `${if x}` | Nothing in a document without `:::define`; otherwise a backslash (`\${name}`, `\${if x}`), a code span or code block, or `:::verbatim` |
+| A directive (`:::note`, `:::if`) | A code span or code block, or `:::verbatim` |
+| A whole example, including fences and directives | A longer outer fence, or a longer `::::verbatim` fence |
 
 ## Code spans and code blocks
 
-Code is never interpreted: directives, math, interpolation and conditional text stay literal inside code spans and fenced code blocks.
+Code is never interpreted: directives, math, interpolation and conditionals stay literal inside code spans and fenced code blocks.
 
 ````mdrs
 Write `${name}` to insert a variable and `$$x^2$$` for math.
@@ -26,12 +26,12 @@ This callout is shown as source.
 
 To show a fenced block that itself contains a fence, make the outer fence longer (four backticks around three).
 
-## `:::ignore-render`
+## `:::verbatim`
 
-`:::ignore-render` outputs its body as escaped, preformatted text, after variables, math and directives have been protected. Unlike a code block it has no language, header bar or copy button.
+`:::verbatim` outputs its body as escaped, preformatted text. It is protected before conditionals, variables, math and directives run, so nothing inside it is interpreted. Unlike a code block it has no language, header bar or copy button.
 
 ```mdrs
-:::ignore-render
+:::verbatim
 ${not_a_variable} $$not math$$ <b>not bold</b>
 :::
 ```
@@ -43,7 +43,7 @@ ${not_a_variable} $$not math$$ <b>not bold</b>
 The block ends at the first line made of the same number of colons as its opening. To show a complete directive, closing line included, open it with four (or more) colons:
 
 ```mdrs
-::::ignore-render
+::::verbatim
 :::note
 A callout shown as source.
 :::
@@ -59,17 +59,17 @@ A callout shown as source.
 
 ## Backslash before `${`
 
-In a document with a `:::define` block, a backslash keeps interpolation and conditional text literal. The backslash itself is removed, as for any escaped punctuation:
+In a document with a `:::define` block, a backslash keeps interpolation and inline conditionals literal. The backslash itself is removed, as for any escaped punctuation:
 
 ```mdrs
 :::define
 name: "MDRS"
 :::
 
-Write \${name} to get ${name}, and [shown].\${flag} stays as written.
+Write \${name} to get ${name}, and \${if flag} stays as written.
 ```
 
-Renders "Write ${name} to get MDRS, and [shown].${flag} stays as written."
+Renders "Write ${name} to get MDRS, and ${if flag} stays as written."
 
 In a document without `:::define`, nothing needs escaping: `${…}` is already plain text there.
 
@@ -77,4 +77,4 @@ In a document without `:::define`, nothing needs escaping: `${…}` is already p
 
 A single `$` never starts math, so prices need no escaping: `It costs $5`. Doubled dollars followed by a digit, as in `$$5 and $$10`, aren't math either ([Math](010-math.md#inline-math)).
 
-Source: `packages/mdrs/core/src/render/ignoreRender.ts` (`IGNORE_RENDER_OPEN_RE`, `extractIgnoreRenderBlocks`), `packages/mdrs/core/src/render/math.ts` (`MATH_INLINE_RE`), `packages/mdrs/core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs/core/src/define/block.ts` (`hasDefineEntries`).
+Source: `packages/mdrs/core/src/render/verbatim.ts` (`VERBATIM_OPEN_RE`, `extractVerbatimBlocks`, `protectVerbatimBlocks`), `packages/mdrs/core/src/render/math.ts` (`MATH_INLINE_RE`), `packages/mdrs/core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs/core/src/define/block.ts` (`hasDefineEntries`).

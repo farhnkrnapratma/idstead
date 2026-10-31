@@ -30,15 +30,7 @@
                         return null;
                     }
                 };
-                let overrides = read('a11y_overrides');
-                if (!overrides) {
-                    const legacy = read('a11y_settings') || {};
-                    overrides = Object.fromEntries(
-                        Object.entries(legacy).filter(
-                            ([, value]) => value !== false && value !== 100
-                        )
-                    );
-                }
+                const overrides = read('a11y_overrides') || {};
                 const device = query => {
                     const list = window.matchMedia(query);
                     return list.media !== 'not all' && list.matches;

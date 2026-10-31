@@ -54,7 +54,7 @@ export async function resolveIconMarkup(value: string): Promise<string> {
     return (await lucideMarkup(key)) || bootstrapMarkup(key);
 }
 
-export function collectIconNames(markdown: string): string[] {
+function collectIconNames(markdown: string): string[] {
     const names = new Set<string>();
     for (const match of markdown.matchAll(ICON_ATTR_RE)) {
         if (match[1].trim()) names.add(match[1]);

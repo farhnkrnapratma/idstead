@@ -20,24 +20,21 @@ describe('clientAddress', () => {
 });
 
 describe('admin activity log calls', () => {
-    const files = new Bun.Glob('apps/admin/src/routes/api/internal/admin/**/+server.ts').scanSync(
-        '.'
-    );
-    const calls = [...files].flatMap(file => {
-        const source = readFileSync(file, 'utf8');
-        return [
-            ...source.matchAll(/logActivity\(\s*\{([\s\S]*?)\},\s*[\w.?()]*activityLog\b/g)
-        ].map(match => ({ file, body: match[1] }));
+    const routes = [
+        ...new Bun.Glob('apps/admin/src/routes/api/internal/**/+server.ts').scanSync('.')
+    ].map(file => ({ file, source: readFileSync(file, 'utf8') }));
+    const helper = readFileSync('packages/lib/src/server/adminRequest.ts', 'utf8');
+
+    test('admin routes log through logAdminActivity', () => {
+        expect(
+            routes.filter(route => route.source.includes('logAdminActivity(')).length
+        ).toBeGreaterThan(10);
+        expect(
+            routes.filter(route => /\blogActivity\(/.test(route.source)).map(route => route.file)
+        ).toEqual([]);
     });
 
-    test('finds the calls', () => {
-        expect(calls.length).toBeGreaterThan(10);
-    });
-
-    test.each(['ip', 'ipSalt', 'userAgent'])('every call passes %s', field => {
-        const missing = calls
-            .filter(call => !new RegExp(`\\b${field}\\b`).test(call.body))
-            .map(call => call.file);
-        expect(missing).toEqual([]);
+    test.each(['ip', 'ipSalt', 'userAgent'])('logAdminActivity passes %s', field => {
+        expect(helper).toMatch(new RegExp(`\\b${field}:`));
     });
 });

@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { getContext, tick } from 'svelte';
+    import FieldLabelText from './FieldLabelText.svelte';
+    import { resolveFormField } from './formField.svelte.ts';
+    import { tick } from 'svelte';
     import { GripVertical, X } from '@lucide/svelte';
-    import type { FormFieldContext } from '../types';
     import { tryEscapeComma, splitEscapedCommas } from '../utils/pillParsing';
     import { cn } from '../utils/cn';
 
@@ -48,16 +49,11 @@
     let editingText = $state('');
     let draggedIdx = $state<number | null>(null);
 
-    const formCtx = getContext<FormFieldContext>('formField');
-    const resolvedVariant = $derived(variant ?? formCtx?.variant ?? 'floating');
-    const resolvedLabel = $derived(label || formCtx?.label || '');
-    const resolvedRequired = $derived(required ?? formCtx?.required ?? false);
-    const resolvedHideAsterisk = $derived(hideAsterisk ?? formCtx?.hideAsterisk ?? false);
-    const isFloating = $derived(resolvedVariant === 'floating');
+    const field = resolveFormField(() => ({ variant, label, required, hideAsterisk }), 'floating');
+    const formCtx = field.context;
     const hasValue = $derived(value.length > 0 || inputValue.length > 0 || editingIdx !== null);
-    const isFloatingActive = $derived(isFloating && (hasValue || isFocused));
+    const isFloatingActive = $derived(field.isFloating && (hasValue || isFocused));
     const atMax = $derived(maxItems !== undefined && value.length >= maxItems);
-    const resolvedCounter = $derived(formCtx?.counter ?? '');
 
     function focusOnMount(node: HTMLElement) {
         node.focus();
@@ -170,10 +166,10 @@
     }}
     class={cn(
         'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-button-surface backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
-        isFloating ? 'min-h-12 items-start pt-5! pb-1.5!' : 'min-h-9 items-center py-1.5',
+        field.isFloating ? 'min-h-12 items-start pt-5! pb-1.5!' : 'min-h-9 items-center py-1.5',
         className
     )}>
-    {#if isFloating && resolvedLabel}
+    {#if field.isFloating && field.label}
         <label
             for={id}
             class={cn(
@@ -184,18 +180,15 @@
                 :   'top-3 text-sm text-fg-secondary',
                 formCtx?.error ? 'text-danger!' : ''
             )}>
-            {resolvedLabel}
-            {#if resolvedRequired && !resolvedHideAsterisk}
-                <span
-                    class="text-danger"
-                    aria-hidden="true">*</span>
-            {/if}
+            <FieldLabelText
+                text={field.label}
+                required={field.required && !field.hideAsterisk} />
         </label>
     {/if}
-    {#if isFloating && resolvedCounter && (hasValue || isFocused)}
+    {#if field.isFloating && field.counter && (hasValue || isFocused)}
         <span
             class="pointer-events-none absolute top-1.5 right-3 z-10 font-mono text-2xs leading-none text-fg-muted select-none">
-            {resolvedCounter}
+            {field.counter}
         </span>
     {/if}
     {#each value as item, idx (item)}
@@ -282,7 +275,7 @@
             maxlength={maxItemLength}
             onfocus={() => (isFocused = true)}
             class="h-5 min-w-10 flex-1 shrink appearance-none border-none bg-transparent p-0 font-sans text-sm leading-5 text-fg shadow-none ring-0 ring-offset-0 outline-none placeholder:text-fg-muted/60 focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
-            placeholder={isFloating ? ''
+            placeholder={field.isFloating ? ''
             : value.length === 0 ? placeholderEmpty
             : placeholderFilled}
             onkeydown={e => {

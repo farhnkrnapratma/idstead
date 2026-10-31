@@ -16,9 +16,3 @@ export const SITE_SECTIONS: SiteSection[] = [
     { id: 'funding', label: 'Funding', path: '/funding', routeId: '/(site)/funding' },
     { id: 'contact', label: 'Contact', path: '/contact', routeId: '/(site)/contact' }
 ];
-
-export function legacySectionPath(hash: string): string | null {
-    const id = hash.replace(/^#/, '').toLowerCase();
-    const match = SITE_SECTIONS.find(section => section.id === id && section.id !== 'home');
-    return match ? match.path : null;
-}

@@ -73,7 +73,7 @@ async function refreshRenders(env: Env) {
 
 async function hourly(env: Env) {
     const service = dataStores({ env }).service;
-    await service.maintenance.pruneLoginFailures().catch(error => Sentry.captureException(error));
+    await service.maintenance.pruneLockoutFailures().catch(error => Sentry.captureException(error));
 }
 
 async function cleanup(env: Env) {

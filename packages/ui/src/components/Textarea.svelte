@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { getContext } from 'svelte';
+    import FieldLabelText from './FieldLabelText.svelte';
+    import { resolveFormField } from './formField.svelte.ts';
     import type { HTMLTextareaAttributes } from 'svelte/elements';
     import { autoResize } from '../utils/actions.ts';
-    import type { FormFieldContext } from '../types';
     import { cn } from '../utils/cn';
 
     interface Props extends HTMLTextareaAttributes {
@@ -35,16 +35,11 @@
         ...restProps
     }: Props = $props();
 
-    const formCtx = getContext<FormFieldContext>('formField');
+    const field = resolveFormField(() => ({ variant, label, required, hideAsterisk }), 'standard');
+    const formCtx = field.context;
     const generatedId = $props.id();
     const fieldId = $derived(id ?? formCtx?.id ?? generatedId);
-    const resolvedVariant = $derived(variant ?? formCtx?.variant ?? 'standard');
-    const resolvedLabel = $derived(label || formCtx?.label || '');
-    const resolvedRequired = $derived(required ?? formCtx?.required ?? false);
-    const resolvedHideAsterisk = $derived(hideAsterisk ?? formCtx?.hideAsterisk ?? false);
-    const isFloating = $derived(resolvedVariant === 'floating');
     const hasValue = $derived(value !== undefined && value !== null && String(value).length > 0);
-    const resolvedCounter = $derived(formCtx?.counter ?? '');
 
     const baseStyles =
         'w-full rounded-md border border-line-subtle/50 bg-surface/85 shadow-button-surface backdrop-blur-xs text-sm text-fg transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:backdrop-blur-none disabled:bg-surface/20 disabled:border-line-subtle/30 disabled:opacity-50 dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90';
@@ -58,10 +53,10 @@
             bind:value
             {rows}
             {disabled}
-            placeholder={isFloating ? ' ' : placeholder}
+            placeholder={field.isFloating ? ' ' : placeholder}
             class={cn(
                 baseStyles,
-                isFloating ?
+                field.isFloating ?
                     'peer block min-h-12 px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
                 :   'px-3 py-2.5 text-sm placeholder:text-fg-secondary/70',
                 'resize-none scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
@@ -76,10 +71,10 @@
             bind:value
             {rows}
             {disabled}
-            placeholder={isFloating ? ' ' : placeholder}
+            placeholder={field.isFloating ? ' ' : placeholder}
             class={cn(
                 baseStyles,
-                isFloating ?
+                field.isFloating ?
                     'peer block min-h-12 px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
                 :   'px-3 py-2.5 text-sm placeholder:text-fg-secondary/70',
                 error ? 'border-danger! ring-danger/20!' : '',
@@ -89,7 +84,7 @@
             {...restProps}></textarea>
     {/if}
 
-    {#if isFloating && resolvedLabel}
+    {#if field.isFloating && field.label}
         <label
             for={fieldId}
             class={cn(
@@ -102,22 +97,19 @@
                     'text-danger! peer-not-placeholder-shown:text-danger! peer-focus:text-danger!'
                 :   ''
             )}>
-            {resolvedLabel}
-            {#if resolvedRequired && !resolvedHideAsterisk}
-                <span
-                    class="text-danger"
-                    aria-hidden="true">*</span>
-            {/if}
+            <FieldLabelText
+                text={field.label}
+                required={field.required && !field.hideAsterisk} />
         </label>
     {/if}
 
-    {#if isFloating && resolvedCounter}
+    {#if field.isFloating && field.counter}
         <span
             class={cn(
                 'pointer-events-none absolute top-1.5 right-3 z-10 font-mono text-2xs leading-none text-fg-muted select-none',
                 hasValue ? 'block' : 'hidden peer-focus:block'
             )}>
-            {resolvedCounter}
+            {field.counter}
         </span>
     {/if}
 </div>

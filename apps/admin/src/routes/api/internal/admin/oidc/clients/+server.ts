@@ -1,8 +1,7 @@
 import type { RequestHandler } from './$types';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { oidcAdmin } from '#lib/server/oidc/admin.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 import { oidcEnabled } from '#lib/server/oidc/enabled.ts';
 import { oidcEndpoints } from '#lib/server/oidc/config.ts';
 import {
@@ -13,14 +12,6 @@ import {
 } from '#lib/server/oidc/clients.ts';
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
-
-function clientIp(getClientAddress: () => string) {
-    try {
-        return getClientAddress();
-    } catch {
-        return null;
-    }
-}
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const auth = await oidcAdmin(request, url, platform);
@@ -46,7 +37,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const auth = await oidcAdmin(request, url, platform);
     if (!auth.ok) return auth.response;
-    const { service, actor } = auth;
+    const { service } = auth;
 
     let body: Record<string, unknown>;
     try {
@@ -56,18 +47,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     }
 
     const log = (action: string, clientId: string, summary: string) =>
-        logActivity(
-            {
-                actor,
-                action,
-                category: 'security',
-                entityId: clientId,
-                summary,
-                ip: clientIp(getClientAddress),
-                ipSalt: ipSalt(platform),
-                userAgent: request.headers.get('user-agent')
-            },
-            service.activityLog
+        logAdminActivity(
+            request,
+            platform,
+            { action, category: 'security', entityId: clientId, summary },
+            getClientAddress
         );
 
     const clientId = typeof body.clientId === 'string' ? body.clientId : '';

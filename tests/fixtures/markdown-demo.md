@@ -135,7 +135,7 @@ Content with **Markdown**.
 :::
 
 :::callout title="Pro Tip" icon="zap"
-Combine `:::define` variables with `[conditional text].${boolean}` syntax to show or hide entire paragraphs based on runtime state, no JavaScript required.
+Combine `:::define` variables with `${if condition}…${endif}` syntax to show or hide entire paragraphs based on runtime state, no JavaScript required.
 :::
 
 :::callout title="Forced Lucide icon" icon="lucide-rocket"
@@ -549,8 +549,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 - Expression `(2 + 3) * 4` evaluates to: **${math_demo}**
 - First locale: **${supported_locales[0]}** out of ${supported_locales.length} supported
 - Directive count from nested object: **${engine_stats.directives}**
-- [You are viewing the production build of this page.].${is_production}
-- [You are viewing a development build.].${!is_production}
+- ${if is_production}You are viewing the production build of this page.${else}You are viewing a development build.${endif}
 
 ---
 

@@ -15,6 +15,7 @@
         },
         "cloudflare-api": { "type": "http", "url": "https://mcp.cloudflare.com/mcp" },
         "graphify": { "type": "http", "url": "https://api.graphify.com/mcp" },
-        "bun": { "type": "http", "url": "https://bun.com/docs/mcp" }
+        "bun": { "type": "http", "url": "https://bun.com/docs/mcp" },
+        "fallow": { "type": "stdio", "command": "npx", "args": ["--no", "fallow-mcp"] }
     }
 }

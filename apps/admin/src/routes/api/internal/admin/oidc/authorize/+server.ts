@@ -1,8 +1,7 @@
 import type { RequestHandler } from './$types';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { oidcAdmin } from '#lib/server/oidc/admin.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 import { oidcEnabled } from '#lib/server/oidc/enabled.ts';
 import { oidcEndpoints } from '#lib/server/oidc/config.ts';
 import { resolveAuthorization } from '#lib/server/oidc/authorize.ts';
@@ -44,24 +43,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         if (outcome.kind !== 'redirect')
             return apiError(400, 'OIDC_AUTHORIZE_INVALID_REQUEST', 'No decision was made.');
         if (outcome.consented)
-            await logActivity(
+            await logAdminActivity(
+                request,
+                platform,
                 {
-                    actor: auth.actor,
                     action: 'oidc.consent',
                     category: 'security',
                     entityId: outcome.consented.clientId,
-                    summary: `Allowed ${outcome.consented.name} to sign in with this identity.`,
-                    ip: (() => {
-                        try {
-                            return getClientAddress();
-                        } catch {
-                            return null;
-                        }
-                    })(),
-                    ipSalt: ipSalt(platform),
-                    userAgent: request.headers.get('user-agent')
+                    summary: `Allowed ${outcome.consented.name} to sign in with this identity.`
                 },
-                service.activityLog
+                getClientAddress
             );
         return Response.json({ redirect: outcome.url }, { headers: NO_STORE });
     } catch (error) {

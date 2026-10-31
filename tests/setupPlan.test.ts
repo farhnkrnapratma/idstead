@@ -21,7 +21,7 @@ const workers: WorkerKeys = {
         keys: ['PUBLIC_SITE_URL', 'RESEND_API_KEY'],
         required: ['PUBLIC_SITE_URL', 'RESEND_API_KEY']
     },
-    web: { keys: ['PUBLIC_API_BASE_URL', 'PUBLIC_GA_MEASUREMENT_ID', 'IP_SALT'], required: [] },
+    web: { keys: ['PUBLIC_API_BASE_URL', 'PUBLIC_STATUS_PAGE_HOST', 'IP_SALT'], required: [] },
     admin: { keys: ['PUBLIC_SITE_URL', 'ADMIN_EMAILS'], required: [] }
 };
 
@@ -95,7 +95,7 @@ describe('variables', () => {
         expect(requiredVariables(workers)).toEqual(
             expect.arrayContaining(['PUBLIC_SENTRY_DSN', 'RESEND_API_KEY', 'TURNSTILE_SECRET'])
         );
-        expect(requiredVariables(workers)).not.toContain('PUBLIC_GA_MEASUREMENT_ID');
+        expect(requiredVariables(workers)).not.toContain('PUBLIC_STATUS_PAGE_HOST');
         const values = setupVariables(
             { PUBLIC_SENTRY_DSN: 'https://key@sentry.example/1' },
             config
@@ -140,7 +140,7 @@ describe('Cloudflare Access setup', () => {
         expect(resolveInstanceConfig(source).access).toEqual(access);
     });
 
-    test('next steps no longer mention a password sign-in', () => {
+    test('next steps point to Cloudflare Access instead of a password sign-in', () => {
         const text = nextSteps(config).join(' ');
         expect(text).toContain('Cloudflare Access');
         expect(text).not.toMatch(/password|\/login/i);

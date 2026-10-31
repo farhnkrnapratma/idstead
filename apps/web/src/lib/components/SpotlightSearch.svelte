@@ -31,7 +31,11 @@
     });
 
     onMount(() => {
-        const leave = spotlightStore.join(hostId, projects);
+        const leave = spotlightStore.join(
+            hostId,
+            projects,
+            () => import('./SpotlightDialog.svelte')
+        );
         const prefetch = () => spotlightStore.prefetch();
         const idle = window.requestIdleCallback?.(prefetch, { timeout: 4000 });
         const timer = idle === undefined ? setTimeout(prefetch, 2000) : undefined;

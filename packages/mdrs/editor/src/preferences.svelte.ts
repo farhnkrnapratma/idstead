@@ -1,7 +1,7 @@
 export const INDENT_SIZES = [2, 4, 8] as const;
 export type IndentSize = (typeof INDENT_SIZES)[number];
-export type IndentMode = 'spaces' | 'tabs';
-export type LineWrapMode = 'soft' | 'none';
+type IndentMode = 'spaces' | 'tabs';
+type LineWrapMode = 'soft' | 'none';
 
 const STORAGE_KEY = 'markdown_editor_preferences';
 

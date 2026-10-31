@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/cloudflare';
 import { stringify } from 'yaml';
 import { dataStores } from '#lib/server/data.ts';
 import { openapiSpec } from '#lib/openapi.ts';
+import { getAnalytics } from '#lib/server/api/analytics.ts';
 import { getAuthor } from '#lib/server/api/author.ts';
 import {
     getBlog,
@@ -142,6 +143,7 @@ app.get('/v1/blog/views', c => runApi(() => getBlogViews(context(c))));
 app.get('/v1/author', c => runApi(() => getAuthor(context(c))));
 app.get('/v1/resume', c => runApi(() => getAuthor(context(c), ['resume'])));
 app.get('/v1/search', c => runApi(() => getSearch(context(c))));
+app.get('/v1/analytics', c => runApi(() => getAnalytics(context(c))));
 
 function spec(c: Context<AppEnv>) {
     return { ...openapiSpec, servers: [{ url: new URL(c.req.url).origin }] };

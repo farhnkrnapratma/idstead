@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AuthorOgImage from '#app/components/AuthorOgImage.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { onMount } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
@@ -31,7 +32,6 @@
     import { Section } from '@idstead/ui';
     import { decodeHtmlEntities } from '@mdrs/core';
     import { buttonKey } from '@idstead/ui/shortcuts.ts';
-    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
 
     let { data } = $props();
 
@@ -44,11 +44,6 @@
     const description = $derived(
         `Articles on the things ${authorName || 'I'} ${authorName ? 'is' : 'am'} building, learning, and thinking about.`
     );
-    const ogBanner = $derived(publicBannerOgUrl(pageAuthor));
-    const ogImage = $derived(ogBanner || publicAvatarUrl(pageAuthor));
-    const ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
-    const ogImageWidth = $derived(ogBanner ? '1200' : '512');
-    const ogImageHeight = $derived(ogBanner ? '630' : '512');
 
     const filters = createFilterSortStore({ defaultSortField: 'date', defaultSortDir: 'desc' });
 
@@ -161,27 +156,10 @@
         property="og:url"
         content="{siteUrl}/blog" />
     <meta
-        property="og:image"
-        content={ogImage} />
-    <meta
-        property="og:image:secure_url"
-        content={ogImage} />
-    <meta
-        property="og:image:type"
-        content={ogImageType} />
-    <meta
-        property="og:image:width"
-        content={ogImageWidth} />
-    <meta
-        property="og:image:height"
-        content={ogImageHeight} />
-    <meta
-        name="twitter:image"
-        content={ogImage} />
-    <meta
         name="twitter:card"
         content="summary_large_image" />
 </svelte:head>
+<AuthorOgImage author={pageAuthor} />
 
 {#snippet filterableTag(tag: string)}
     {@const isSelected = filters.filters['tag']?.includes(tag) ?? false}

@@ -10,3 +10,4 @@ paths:
 - The token's email must be in `ADMIN_EMAILS`. Without `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `ADMIN_EMAILS` only `vite dev` on a loopback host signs in, as `admin@localhost`. Every response is `noindex` and `no-store`; `robots.txt` disallows everything; `app.html` sets `data-admin-page="true"`.
 - `/api/internal/admin/**` keeps its paths. Links to public pages use the author profile's `siteUrl`.
 - Publishing a post enqueues a newsletter queue message (`NEWSLETTER_QUEUE` binding); without the binding it delivers in the request. Manual re-sends stay synchronous.
+- Settings → **Analytics & cookies** (`AnalyticsSettings.svelte`, section `analytics` in `adminUrl.ts`) saves the site's analytics provider through `/api/internal/admin/site-settings/analytics`; the public site reads it from D1, so no deploy is needed.

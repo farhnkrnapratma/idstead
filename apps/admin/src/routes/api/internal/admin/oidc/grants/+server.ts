@@ -1,8 +1,7 @@
 import type { RequestHandler } from './$types';
+import { logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { oidcAdmin } from '#lib/server/oidc/admin.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
@@ -34,24 +33,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     try {
         if (!(await auth.service.oidcAuth.revokeGrant(body.id)))
             return apiError(404, 'OIDC_GRANT_NOT_FOUND', 'Access not found.');
-        await logActivity(
+        await logAdminActivity(
+            request,
+            platform,
             {
-                actor: auth.actor,
                 action: 'oidc.grant.revoke',
                 category: 'security',
                 entityId: body.id,
-                summary: 'Revoked an app’s access.',
-                ip: (() => {
-                    try {
-                        return getClientAddress();
-                    } catch {
-                        return null;
-                    }
-                })(),
-                ipSalt: ipSalt(platform),
-                userAgent: request.headers.get('user-agent')
+                summary: 'Revoked an app’s access.'
             },
-            auth.service.activityLog
+            getClientAddress
         );
         return Response.json({ success: true }, { headers: NO_STORE });
     } catch (error) {

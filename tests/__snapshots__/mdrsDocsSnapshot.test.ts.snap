@@ -738,7 +738,7 @@ exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #5 1`] =
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/011-diagrams-and-charts.md #1 1`] = `
-"<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Workers%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(Postgres%20%2B%20RLS)%5D"></div></div>
+"<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Workers%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(Cloudflare%20D1)%5D"></div></div>
 "
 `;
 
@@ -792,17 +792,12 @@ exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #2 
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #3 1`] = `
-"<p>3 × 2 + 1 = 7, and n ≥ 3 is true.</p>
+"<p>Hello $name · Hello MDRS, version 2 · Costs $5, not $name</p>
 "
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #4 1`] = `
-"<p>This is a preview build.</p>
-"
-`;
-
-exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #5 1`] = `
-"<p>Value 3 is ready.</p>
+"<p>3 × 2 + 1 = 7, and n ≥ 3 is true.</p>
 "
 `;
 
@@ -820,6 +815,11 @@ I list <span class="mdrs-define-error" title="Database access is unavailable in 
 
 exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #3 1`] = `
 "<p>Read <a href="/blog/hello-world"><span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span></a>, first published <span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span>.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #4 1`] = `
+"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
 "
 `;
 
@@ -845,7 +845,29 @@ A callout shown as source.
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #4 1`] = `
-"<p>Write \${name} to get MDRS, and [shown].\${flag} stays as written.</p>
+"<p>Write \${name} to get MDRS, and \${if flag} stays as written.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #1 1`] = `
+"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #2 1`] = `
+"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #3 1`] = `
+"<p>This is preview build 2.1.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #4 1`] = `
+"<p>Analytics: <span class="mdrs-define-error" title="&#39;on&#39; is undefined">[define error]</span>.</p>
+<p>This site <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span>.</p>
+<p>Provider: <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span>.</p>
 "
 `;
 
@@ -1087,7 +1109,7 @@ Content with **Markdown**.
   <div class="mdrs-callout-title">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-zap" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg><span>Pro Tip</span>
   </div>
-  <div class="mdrs-callout-content"><p>Combine <code>:::define</code> variables with <code>[conditional text].\${boolean}</code> syntax to show or hide entire paragraphs based on runtime state, no JavaScript required.</p>
+  <div class="mdrs-callout-content"><p>Combine <code>:::define</code> variables with <code>\${if condition}…\${endif}</code> syntax to show or hide entire paragraphs based on runtime state, no JavaScript required.</p>
 </div>
 </div><div class="mdrs-callout">
   <div class="mdrs-callout-title">
@@ -1333,7 +1355,6 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">First locale: <strong>en</strong> out of 2 supported</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Directive count from nested object: <strong>14</strong></div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">You are viewing the production build of this page.</div></li>
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"></div></li>
 </ul>
 <hr>
 <h2>Live Data Binding</h2>

@@ -1,25 +1,17 @@
 import type { RequestHandler } from './$types';
-import { dataStores } from '#lib/server/data.ts';
+import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
-import { clientAddress, logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    const service = dataStores(platform).service;
-    if (!service)
-        return apiError(
-            503,
-            'BLOG_NOTIFY_UNAVAILABLE',
-            'Subscriber notifications are not configured.'
-        );
-
-    const auth = await blogAdmin(request, url, platform);
-    if (auth.status)
-        return apiError(auth.status, auth.code ?? 'BLOG_NOTIFY_AUTH_REQUIRED', auth.message);
+    const admin = await adminServices(request, url, platform, {
+        code: 'BLOG_NOTIFY_UNAVAILABLE',
+        message: 'Subscriber notifications are not configured.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let body: unknown;
     try {
@@ -58,18 +50,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Publish the post before notifying subscribers.'
         );
 
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: auth.actor,
             action: 'blog.notify',
             category: 'blog',
             entityId: postId,
-            summary: `Sent a post to ${result.sent} ${result.sent === 1 ? 'subscriber' : 'subscribers'}.`,
-            ip: clientAddress(getClientAddress),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent')
+            summary: `Sent a post to ${result.sent} ${result.sent === 1 ? 'subscriber' : 'subscribers'}.`
         },
-        service.activityLog
+        getClientAddress
     );
     return Response.json(
         { sent: result.sent, reason: result.reason ?? null },

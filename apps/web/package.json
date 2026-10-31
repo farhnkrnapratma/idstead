@@ -22,13 +22,14 @@
         "@idstead/domain": "workspace:*",
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
-        "@lucide/svelte": "^1.64.0",
+        "@lucide/svelte": "^1.65.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@sentry/sveltekit": "^11.10.0",
         "highlight.js": "^11.12.0",
         "katex": "^0.19.1",
-        "uqr": "^0.1.3"
+        "uqr": "^0.1.3",
+        "yaml": "^2.9.1"
     },
     "devDependencies": {
         "@sveltejs/adapter-cloudflare": "^8.0.2",
@@ -37,7 +38,6 @@
         "@tailwindcss/vite": "^4.3.3",
         "svelte": "^5.57.3",
         "svelte-check": "^4.7.7",
-        "tailwindcss": "^4.3.3",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.5",
         "wrangler": "^4.156.0"

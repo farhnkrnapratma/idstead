@@ -20,3 +20,4 @@ skill-updates/
 .playwright-mcp/
 .local/
 graphify-out/
+.fallow/

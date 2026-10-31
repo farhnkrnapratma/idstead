@@ -1,4 +1,6 @@
 <script lang="ts">
+    import FieldLabelText from './FieldLabelText.svelte';
+    import { resolveFormField } from './formField.svelte.ts';
     import { getContext, type Snippet } from 'svelte';
     import { Search } from '@lucide/svelte';
     import {
@@ -6,7 +8,6 @@
         type FilterToolbarContext
     } from './filter/filterToolbarContext';
     import type { HTMLInputAttributes } from 'svelte/elements';
-    import type { FormFieldContext } from '../types';
     import { cn } from '../utils/cn';
     import { shortcut } from '../utils/shortcut.svelte';
 
@@ -62,16 +63,11 @@
         lg: 'box-border h-11 text-base rounded-md px-4'
     };
 
-    const formCtx = getContext<FormFieldContext>('formField');
+    const field = resolveFormField(() => ({ variant, label, required, hideAsterisk }), 'standard');
+    const formCtx = field.context;
     const generatedId = $props.id();
     const fieldId = $derived(id ?? formCtx?.id ?? generatedId);
-    const resolvedVariant = $derived(variant ?? formCtx?.variant ?? 'standard');
-    const resolvedLabel = $derived(label || formCtx?.label || '');
-    const resolvedRequired = $derived(required ?? formCtx?.required ?? false);
-    const resolvedHideAsterisk = $derived(hideAsterisk ?? formCtx?.hideAsterisk ?? false);
-    const isFloating = $derived(resolvedVariant === 'floating');
     const hasValue = $derived(value !== undefined && value !== null && String(value).length > 0);
-    const resolvedCounter = $derived(formCtx?.counter ?? '');
     const showSearchIcon = $derived(restProps.type === 'search' && !leadingIcon && !leadingSlot);
 
     const searchIconStyles = {
@@ -86,7 +82,7 @@
         <div
             class={cn(
                 'pointer-events-none absolute left-3 z-10 flex items-center text-fg-secondary',
-                isFloating ? 'top-1/2 -translate-y-1/2' : ''
+                field.isFloating ? 'top-1/2 -translate-y-1/2' : ''
             )}>
             <i
                 class="bi {leadingIcon} text-sm"
@@ -96,7 +92,7 @@
         <div
             class={cn(
                 'pointer-events-none absolute left-2 z-10 flex items-center',
-                isFloating ? 'top-1/2 -translate-y-1/2' : ''
+                field.isFloating ? 'top-1/2 -translate-y-1/2' : ''
             )}>
             {@render leadingSlot()}
         </div>
@@ -116,7 +112,7 @@
         id={fieldId}
         bind:value
         {disabled}
-        placeholder={isFloating ? ' ' : placeholder}
+        placeholder={field.isFloating ? ' ' : placeholder}
         use:shortcut={{
             combo: keyboardShortcut,
             scope: shortcutScope,
@@ -127,10 +123,10 @@
         class={cn(
             'border border-line-subtle/50 bg-surface/85 text-fg shadow-button-surface backdrop-blur-xs transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-line-subtle/30 disabled:bg-surface/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-fg/10 dark:bg-surface/70 dark:focus:bg-surface/90',
             fullWidth ? 'w-full min-w-0' : '',
-            isFloating ?
+            field.isFloating ?
                 'peer block h-12 rounded-md px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
             :   sizeStyles[resolvedSize],
-            isFloating ? '' : 'placeholder:text-fg-secondary/70',
+            field.isFloating ? '' : 'placeholder:text-fg-secondary/70',
             leadingSlot ? 'pl-12'
             : leadingIcon ? 'pl-9'
             : showSearchIcon ? searchIconStyles[resolvedSize].input
@@ -142,7 +138,7 @@
         )}
         {...restProps} />
 
-    {#if isFloating && resolvedLabel}
+    {#if field.isFloating && field.label}
         <label
             for={fieldId}
             class={cn(
@@ -160,23 +156,20 @@
                     'text-danger! peer-not-placeholder-shown:text-danger! peer-focus:text-danger!'
                 :   ''
             )}>
-            {resolvedLabel}
-            {#if resolvedRequired && !resolvedHideAsterisk}
-                <span
-                    class="text-danger"
-                    aria-hidden="true">*</span>
-            {/if}
+            <FieldLabelText
+                text={field.label}
+                required={field.required && !field.hideAsterisk} />
         </label>
     {/if}
 
-    {#if isFloating && resolvedCounter}
+    {#if field.isFloating && field.counter}
         <span
             class={cn(
                 'pointer-events-none absolute top-1.5 z-10 font-mono text-2xs leading-none text-fg-muted select-none',
                 hasValue ? 'block' : 'hidden peer-focus:block',
                 trailingIcon || trailingSlot ? 'right-9' : 'right-3'
             )}>
-            {resolvedCounter}
+            {field.counter}
         </span>
     {/if}
 
@@ -184,7 +177,7 @@
         <div
             class={cn(
                 'pointer-events-none absolute right-3 z-10 flex items-center text-fg-secondary',
-                isFloating ? 'top-1/2 -translate-y-1/2' : ''
+                field.isFloating ? 'top-1/2 -translate-y-1/2' : ''
             )}>
             <i
                 class="bi {trailingIcon} text-sm"
@@ -194,7 +187,7 @@
         <div
             class={cn(
                 'absolute right-2 z-10 flex items-center',
-                isFloating ? 'top-1/2 -translate-y-1/2' : ''
+                field.isFloating ? 'top-1/2 -translate-y-1/2' : ''
             )}>
             {@render trailingSlot()}
         </div>

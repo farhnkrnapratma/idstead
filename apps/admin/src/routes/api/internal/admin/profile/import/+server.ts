@@ -1,13 +1,8 @@
 import type { RequestHandler } from './$types';
-import { adminActor } from '#lib/server/adminAuth.ts';
-import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { apiError } from '#lib/server/apiError.ts';
-import { dataStores } from '#lib/server/data.ts';
-import { requireAdminAuth } from '#lib/server/adminResume.ts';
-import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
-import { logActivity } from '#lib/server/activityLog.ts';
-import { ipSalt } from '#lib/server/ipSalt.ts';
+import { adminServices, logAdminActivity } from '#lib/server/adminRequest.ts';
+import { apiError } from '#lib/server/apiError.ts';
+import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 
 function s(value: unknown): string {
     return typeof value === 'string' ? sanitizeInput(value.trim()) : '';
@@ -59,13 +54,12 @@ function mapEducation(items: any[]): any[] {
 }
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
-    if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
-    const authError = await requireAdminAuth(request, platform);
-    if (authError) return authError;
-    const { service } = dataStores(platform);
-    if (!service)
-        return apiError(503, 'PROFILE_IMPORT_UNAVAILABLE', 'Profile storage is unavailable.');
+    const admin = await adminServices(request, url, platform, {
+        code: 'PROFILE_IMPORT_UNAVAILABLE',
+        message: 'Profile storage is unavailable.'
+    });
+    if (admin.response) return admin.response;
+    const { service } = admin;
 
     let body: any;
     try {
@@ -182,26 +176,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'PROFILE_IMPORT_EMPTY',
             'No recognized sections (profile, resume, skills, funding, contact, socials) found in the file.'
         );
-
-    const actor = await adminActor(request, platform);
-    await logActivity(
+    await logAdminActivity(
+        request,
+        platform,
         {
-            actor: actor ?? null,
             action: 'profile.import',
             category: 'profile',
             summary: `Imported ${applied.join(', ') || 'nothing'}${Object.keys(errors).length ? `; failed: ${Object.keys(errors).join(', ')}` : ''}.`,
-            details: { applied, errors },
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
+            details: { applied, errors }
         },
-        service.activityLog
+        getClientAddress
     );
 
     return Response.json(

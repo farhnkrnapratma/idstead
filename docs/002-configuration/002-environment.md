@@ -25,7 +25,6 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `GITHUB_PAT` | **secret**, optional | ✓ | ✓ | – | – | GitHub token whose owner's public, non-fork, non-archived repositories fill the projects section and the admin resume import; a fine-grained token with read-only access to public repositories is enough. Without it there are no projects |
 | `PUBLIC_SENTRY_DSN` | public | ✓ | ✓ | ✓ | ✓ | Sentry DSN |
 | `PUBLIC_SENTRY_ENVIRONMENT` | public | ✓ | ✓ | ✓ | ✓ | `production`, `preview` or `development`. `preview` also turns on `noindex`. |
-| `PUBLIC_GA_MEASUREMENT_ID` | public, optional | ✓ | – | – | – | Google Analytics 4 property for `app.html`. Without it no analytics script loads. |
 | `PUBLIC_STATUS_PAGE_HOST`, `PUBLIC_STATUS_PAGE_CODE` | public, optional | ✓ | – | – | – | Instatus page for the footer status badge, hidden without them |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | **secret**, build | – | – | – | – | source-map upload during `vite build` |
 | `CLOUDFLARE_API_TOKEN` | **secret**, local | – | – | – | – | wrangler auth, needed for the remote `AI` binding in local dev. Setup also uses it to create the admin's Access application (permissions `Access: Apps and Policies Write` and `Access: Organizations, Identity Providers, and Groups Read`). |
@@ -70,8 +69,7 @@ A secret manager can also own the Worker secrets. With Phase, give each Worker a
 
 - **Svelte apps:** `apps/web/src/env.ts` and `apps/admin/src/env.ts` declare the schema. Code reads values through `$app/env/private` and `$app/env/public`.
 - **Wrangler workers:**
-    - `apps/api` reads `c.env`, and like jobs aliases `$app/env/*` to its `src/appEnv.ts`.
-    - `apps/jobs` aliases `$app/env/*` to `src/appEnv.ts`, which reads the `cloudflare:workers` env, so shared lib code runs unchanged.
+    - `apps/api` reads `c.env`; it and `apps/jobs` alias `$app/env/*` to `packages/lib/src/server/workerAppEnv.ts`, which reads the `cloudflare:workers` env, so shared lib code runs unchanged.
 - **Cloudflare bindings in SvelteKit:** read them through `workerBinding()` (`packages/lib/src/server/workerEnv.ts`), because `event.platform` is undefined with adapter-cloudflare 8.
 
 ## Rules
