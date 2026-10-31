@@ -18,7 +18,7 @@ export { default as FileUploadField } from './components/FileUploadField.svelte'
 export { default as FormActions } from './components/FormActions.svelte';
 export { default as FormField } from './components/FormField.svelte';
 export { default as IconButton } from './components/IconButton.svelte';
-export { default as ImageWithSkeleton } from './components/ImageWithSkeleton.svelte';
+export { default as RefineImage } from './components/RefineImage.svelte';
 export { default as Input } from './components/Input.svelte';
 export { default as LoadingIndicator } from './components/LoadingIndicator.svelte';
 export { default as LoadingState } from './components/LoadingState.svelte';
@@ -29,7 +29,7 @@ export { default as ReadingModeExitButton } from './components/ReadingModeExitBu
 export { default as RelativeTime } from './components/RelativeTime.svelte';
 export { default as ScrollToTopButton } from './components/ScrollToTopButton.svelte';
 export { default as SectionHeader } from './components/SectionHeader.svelte';
-export { default as ShinyText } from './components/ShinyText.svelte';
+export { default as GradientText } from './components/GradientText.svelte';
 export { default as TechText } from './components/TechText.svelte';
 export { default as ShortcutBadge } from './components/ShortcutBadge.svelte';
 export { default as ShortcutCatalogDialog } from './components/ShortcutCatalogDialog.svelte';

@@ -3,7 +3,7 @@
     import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
     import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
     import Button from '@idstead/ui/components/Button.svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import RefineImage from '@idstead/ui/components/RefineImage.svelte';
     import { processBanner } from '../processBanner.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import type { BannerChange } from '#lib/blogBanner.ts';
@@ -130,7 +130,7 @@
             <div
                 data-banner-preview
                 class="relative aspect-2/1 w-full max-w-120 self-start overflow-hidden rounded-md border border-line-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] @2xl:w-80">
-                <ImageWithSkeleton
+                <RefineImage
                     src={preview || (loadedSource === savedUrl ? savedUrl : null)}
                     alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
                     loading="eager"
