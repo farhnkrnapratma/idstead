@@ -73,7 +73,7 @@ The chart widget is a Svelte component styled with utilities. It exposes `mdrs-c
 
 ## Heading IDs and links
 
-Heading IDs carry the prefix so they can't collide with the page around them. A post heading `## Main` used to produce a second `id="main"` next to the layout's `<main id="main">`. Short links keep working:
+Heading IDs carry the prefix so they can't collide with the page around them. A post heading `## Main` gets `id="mdrs-main"`, so it never repeats the layout's `<main id="main">`. Short links keep working:
 
 - Links inside the document (`[setup](#setup)`) are rewritten to `#mdrs-setup` when that heading exists (`prefixHashLinks`).
 - A URL such as `/blog/post#setup` scrolls to `#mdrs-setup`. The post and legal pages resolve hashes with `resolveMdrsHash`, which prefers the prefixed ID inside the article.

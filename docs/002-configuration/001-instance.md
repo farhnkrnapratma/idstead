@@ -40,5 +40,5 @@ Values that are not part of the Worker topology stay in environment variables. `
 
 - `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required.
 - `PUBLIC_STATUS_PAGE_HOST` and `PUBLIC_STATUS_PAGE_CODE` are optional. They name an Instatus page for the footer badge, which is hidden without them.
-- `PUBLIC_GA_MEASUREMENT_ID` is optional. It names the Google Analytics 4 property (`G-...`) that `gtag.js` reports to under consent mode; without it the page loads no analytics script.
+- Analytics are not an environment value: choose the provider and its ID in the admin under **Settings → Analytics & cookies** ([Analytics and consent](../003-architecture/013-analytics-and-consent.md)).
 - `SENTRY_ORG` and `SENTRY_PROJECT` name the Sentry project that build-time source maps are uploaded to, together with `SENTRY_AUTH_TOKEN`.

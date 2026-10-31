@@ -18,6 +18,7 @@ curl https://api.example.com/v1/blog
 | [author.md](004-author.md) | `/v1/author`, `/v1/resume` |
 | [search.md](005-search.md) | `/v1/search` |
 | [discovery.md](006-discovery.md) | `/v1`, OpenAPI, `.well-known`, `llms.txt`, agent skills |
+| [analytics.md](007-analytics.md) | `/v1/analytics` |
 
 ## Endpoints
 
@@ -31,6 +32,7 @@ curl https://api.example.com/v1/blog
 | GET | `/v1/author` | `json` | `md`, plus `pdf` with `field=resume` only |
 | GET | `/v1/resume` | `json` | `md`, `pdf` |
 | GET | `/v1/search` | `json` | – |
+| GET | `/v1/analytics` | `json` | – |
 | GET | `/v1/openapi.json`, `/v1/openapi.yaml` | spec | – |
 
 Outside `/v1`, `GET /` redirects 301 to `/v1`, and `GET /robots.txt` returns `User-agent: * / Allow: /`.

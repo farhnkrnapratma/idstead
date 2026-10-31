@@ -9,10 +9,10 @@
 ## What you get
 
 - **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/resume`, `/funding` and `/contact`, and privacy, terms, security and AI disclosure pages.
-- **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
+- **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts, conditionals and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
 - **Machine-readable twins**: every post and legal page also exists as `.md` and `.txt`, next to an Atom feed, a sitemap, `llms.txt` and `.well-known` discovery documents.
 - **A public read-only REST API** (`/v1`) for posts, comments, the author profile, resume and search, with an OpenAPI description.
-- **An admin portal** on its own host, behind Cloudflare Access with two-factor authentication: a post editor with live preview, comment moderation, profile, resume and legal page management, and activity analytics.
+- **An admin portal** on its own host, behind Cloudflare Access with two-factor authentication: a post editor with live preview, comment moderation, profile, resume and legal page management, activity analytics, and a choice of site analytics (Google Analytics 4, Google Tag Manager, Umami, Plausible, Cloudflare Web Analytics or none) with a cookie banner only when the provider needs one.
 - **A downloadable resume** with checksums and a detached OpenPGP signature.
 - **An identity home**: WebFinger, your avatar by email hash the way apps use Gravatar, and "Sign in with Idstead", an OpenID Connect provider for the apps you register ([Identity provider](docs/003-architecture/012-identity-provider.md)).
 - **Visitor controls**: light and dark themes, font scale, reduced motion, higher contrast, a dyslexia-friendly font and keyboard-first navigation.
@@ -24,7 +24,7 @@ All personal content (name, bio, resume, skills, links, posts) lives in the data
 - [Bun](https://bun.com/), the only package manager and runtime used here.
 - A Cloudflare account with a domain, for Workers, R2, Queues, Workers AI and rate limiting.
 - [Cloudflare Zero Trust](https://developers.cloudflare.com/cloudflare-one/) (the Free plan is enough) for the Access application in front of the admin.
-- Optional: [Resend](https://resend.com/) for the newsletter and contact form, [Turnstile](https://developers.cloudflare.com/turnstile/) keys, [Sentry](https://sentry.io/) and Google Analytics.
+- Optional: [Resend](https://resend.com/) for the newsletter and contact form, [Turnstile](https://developers.cloudflare.com/turnstile/) keys, [Sentry](https://sentry.io/) and an analytics provider.
 
 ## Getting started
 

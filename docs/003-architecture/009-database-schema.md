@@ -1,8 +1,6 @@
 # 9. Database Schema
 
-The tables of the site, with their relationships. Production runs on Cloudflare D1 since 2026-10-23 (see [D1 schema](#d1-schema)); the diagrams below were drawn from the Postgres schema the D1 schema was converted from, and the relationships are the same. The diagrams list key columns only. Source: the live `information_schema` on 2026-10-15. All tables use the `db_` prefix, introduced in migration `20260810`.
-
-> The retired Postgres schema and its migrations left the repository in Stage 8; a final dump is archived outside it. Schema changes go to `packages/data/d1/migrations/`. The function names below describe that retired schema; the D1 data stores implement the same operations in TypeScript.
+The tables of the site, with their relationships. The schema is Cloudflare D1 (SQLite), defined by the migrations in `packages/data/d1/migrations/`; every table uses the `db_` prefix. The diagrams list key columns only, with their logical types: in D1, UUIDs, timestamps and JSON are `TEXT` and booleans are `INTEGER` ([Types and checks](#types-and-checks)). Only the D1 adapters in `packages/data/src/d1/` query these tables.
 
 ## Content
 
@@ -12,7 +10,7 @@ erDiagram
     db_comments ||--o{ db_comments : "parent_id"
     db_comments ||--o{ db_comment_reports : "comment_id"
     db_posts ||--o{ db_views : "post_id"
-    db_posts ||--o{ db_post_feedback : "post_id"
+    db_posts ||--|| db_post_stats : "post_id"
     db_posts ||--o{ db_feedback_events : "post_id"
     db_feedback_events ||--o{ db_feedback_operations : "event_id"
     db_blog_banner_versions |o--o{ db_posts : "banner_version"
@@ -24,7 +22,6 @@ erDiagram
     db_posts {
         uuid id PK
         text public_id "64 hex, public identifier"
-        integer view_count "kept by db_sync_post_view_count"
         text slug
         text title
         text excerpt
@@ -32,14 +29,12 @@ erDiagram
         text collaborators "array"
         boolean published
         boolean pinned
-        text storage_path "Markdown in Storage blog-posts"
+        text storage_path "Markdown in R2 content/"
         uuid banner_version FK
         bigint post_revision
-        int helpful_yes
-        int helpful_no
-        timestamptz subscribers_notified_at
-        timestamptz created_at
-        timestamptz updated_at
+        timestamp subscribers_notified_at
+        timestamp created_at
+        timestamp updated_at
     }
     db_comments {
         uuid id PK
@@ -51,7 +46,7 @@ erDiagram
         boolean is_approved "Llama Guard verdict"
         boolean is_admin
         boolean is_anonymous
-        timestamptz created_at
+        timestamp created_at
     }
     db_comment_reports {
         uuid id PK
@@ -64,13 +59,13 @@ erDiagram
         uuid id PK
         uuid post_id FK
         text ip_hash "date_sha256(ip+salt)"
-        timestamptz viewed_at
+        timestamp viewed_at
     }
-    db_post_feedback {
-        uuid id PK
-        uuid post_id FK
-        text vote
-        text ip_hash
+    db_post_stats {
+        uuid post_id PK
+        int view_count "kept by the db_views triggers"
+        int helpful_yes
+        int helpful_no
     }
     db_feedback_events {
         uuid id PK
@@ -103,9 +98,9 @@ erDiagram
         text kind
         uuid post_id FK
         uuid comment_id FK
-        jsonb meta
-        timestamptz read_at
-        timestamptz dismissed_at
+        json meta
+        timestamp read_at
+        timestamp dismissed_at
     }
 ```
 
@@ -133,18 +128,18 @@ erDiagram
         text site_url
         uuid avatar_version FK
         uuid banner_version FK
-        jsonb manifest_settings
+        json manifest_settings
         bigint profile_revision
     }
     db_identity_versions {
         uuid id PK
         uuid profile_id FK
-        text kind "identity (legacy: avatar, banner)"
+        text kind "identity"
         text avatar_source "custom, generated"
         text banner_source "custom, generated"
-        jsonb assets
-        timestamptz retired_at
-        timestamptz cleanup_started_at
+        json assets
+        timestamp retired_at
+        timestamp cleanup_started_at
     }
     db_links {
         uuid id PK
@@ -196,44 +191,39 @@ erDiagram
 | Table | Purpose |
 | --- | --- |
 | `db_post_operations` | Idempotent post saves keyed by `operationId`: `state`, `request_hash`, `expected_revision`, `result`. |
-| `db_post_storage_cleanup` | Markdown files queued for deletion from Storage (each removed together with its `.render.json`), with `cleanup_attempts`. |
+| `db_post_storage_cleanup` | Markdown files queued for deletion from R2 (each removed together with its `.render.json`), with `cleanup_attempts`. |
 | `db_subscribers` | Newsletter subscribers: `email`, `status` (pending, active, unsubscribed), `confirm_token_hash`, `unsubscribe_token`, `ip_hash`. |
 | `db_activity_log` | Admin audit log: `actor`, `action`, `category`, `entity_id`, `summary`, `details`, `ip_hash`. Rows older than 30 days are pruned by the jobs Worker's daily cron. |
-| `db_login_failures` | Shared lockout for failed OpenID Connect client secrets: `key_hash` (salted SHA-256 of the lockout key), `failed_at`. RLS on with no policies; reached only through `service_role` RPCs. Pruned by `pg_cron` `prune-login-failures`. |
-| `db_admin_settings` | Per-user admin settings (`user_id`, `settings jsonb`). |
+| `db_lockout_failures` | Shared lockout for failed OpenID Connect client secrets: `key_hash` (salted SHA-256 of the lockout key), `failed_at`. Reached only through `LockoutStore`; the jobs Worker's daily cron prunes old rows. |
+| `db_admin_settings` | Per-user admin settings (`user_id`, `settings json`). |
 | `db_notification_clear_operations` | Idempotent "clear notifications" operations. |
 | `db_legals` | Legal pages (`slug`, `title`, `content`). |
-| `db_ard_index` | ARD discovery index (`site_url`, `entries`, `sources`), service-role only. |
+| `db_ard_index` | ARD discovery index (`site_url`, `entries`, `sources`), service stores only. |
+| `db_site_settings` | Site-wide settings by `key`; today only `analytics`, a JSON object of at most 2048 bytes ([Analytics and consent](013-analytics-and-consent.md)). |
+| `db_cache_generations` | One generation per cached domain (`author`, `blog`, `legal`, `site` and `comments:<post id>`), bumped by triggers on every write to the tables behind it. |
 
-## Functions, policies and jobs
+## Triggers and data stores
 
-- **Admin writes:** the retired schema checked `public.is_admin()` in RLS. On D1 every admin endpoint verifies the Cloudflare Access identity before it writes; see [006-admin-sign-in.md](006-admin-sign-in.md).
-- **Post saves:** `db_prepare_post_operation`, `db_ready_post_operation`, `db_commit_post_operation`. The commit stores `read_time` when the operation data carries one; the admin save route sets it to `countReadingMinutes()` of the final markdown.
-- **Public IDs:** posts and comments carry an immutable 64-hex `public_id` (trigger `db_keep_post_public_id`); page data, the API and the comment and report endpoints use it, never the UUID.
-- **View counts:** `db_posts.view_count` is the public count. The `db_sync_post_view_count` trigger (`SECURITY DEFINER`) adds one for every `db_views` insert and removes one for every delete, and the unique index on `(post_id, ip_hash)` makes a repeated visit a no-op (`ON CONFLICT DO NOTHING`). `db_views` itself, with the salted daily `ip_hash`, is private: `anon` has no grant and no policy, and only the service role and the admin policy read it. A column grant was tried first and reverted (`20261020000000_restore_view_grants`) because PostgREST's embedded `db_views(count)` needs table-level `SELECT`.
-- **Cleanup claims:** `db_claim_blog_banner_cleanup`, `db_claim_identity_cleanup`.
-- **Saves:** `db_save_cv`, `db_save_links`, `db_save_skills`, `db_save_legal`, `db_save_project_repo_rules`.
-- **Public:** `db_record_page_feedback`.
-- **Login lockout** (`service_role` only): `db_login_lockout`, `db_login_record_failure`, `db_login_clear`, `db_prune_login_failures`.
-- **Admin dashboard:** `db_admin_*`, `db_views_timeseries`, `db_activity_log_list`, `db_activity_log_export`, `db_clear_all_data`, `db_subscriber_stats()` (a **function**, not a table).
-- **Profile identity save:** `db_save_profile_identity(p_profile, p_identity)` (`service_role` only). `p_identity` is `{version, assets}` for one `kind = 'identity'` row whose assets must match `db_identity_asset_names()` exactly. It points `avatar_version` and `banner_version` at that row and retires the previous rows. The `db_profile_identity_kind` trigger rejects a profile whose two columns differ while either references an `identity` row.
-- **`safeupdate`:** PostgREST runs with `safeupdate`, so every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause.
-- **Prunes** (`service_role` only): `db_prune_stale_subscriptions`, `db_prune_activity_log` and `db_prune_login_failures`, called by the jobs Worker's cron through `MaintenanceStore`.
+The writes run in the D1 data stores (`packages/data/src/d1/`), each as one `batch()` so it is atomic. Triggers keep the invariants that every writer must respect:
 
-## D1 schema
+- **Admin writes:** every admin endpoint verifies the Cloudflare Access identity before it writes; see [006-admin-sign-in.md](006-admin-sign-in.md). D1 has no row-level security, so public writes are same-origin and Turnstile-gated ([Public write endpoints](004-public-write-endpoints.md)).
+- **Post saves:** `db_post_operations` makes each save idempotent by `operationId`; `db_posts_revision` bumps `post_revision`, and the store refuses a save at a stale revision. The save stores `read_time` from the final markdown.
+- **Public IDs:** posts and comments carry an immutable 64-hex `public_id` (`db_posts_keep_public_id`, `db_comments_keep_public_id`); page data, the API and the comment and report endpoints use it, never the UUID.
+- **Counters:** `db_posts_create_stats` adds the `db_post_stats` row. `db_views_count_insert` and `db_views_count_delete` move `view_count`, and the unique index on `(post_id, ip_hash)` makes a repeated daily visit a no-op. The feedback store moves `helpful_yes` and `helpful_no` in the batch that records the vote in `db_feedback_events`.
+- **Limits and checks:** `db_posts_pin_limit_*` and `db_links_category_limit_*` cap pinned posts and links per category; `db_posts_validate_lists_*` check tags and collaborators; `db_posts_excerpt_on_*` fill the excerpt.
+- **Profile identity:** `db_profiles_identity_kind` keeps `avatar_version` and `banner_version` on the same `identity` row, `db_profiles_retire_images` retires the previous rows, and `db_profiles_revision` bumps `profile_revision`.
+- **Notifications:** `db_comments_notify`, `db_comment_reports_notify` and `db_feedback_events_notify` add `db_admin_notifications` rows; the views `db_admin_notification_items`, `db_admin_feedback_items` and `db_admin_report_items` shape the inbox.
+- **Read cache:** the `*_cache_insert`, `*_cache_update` and `*_cache_delete` triggers bump the domain's row in `db_cache_generations`.
+- **Prunes:** the jobs Worker's daily cron prunes stale subscriptions, activity log rows older than 30 days and old lockout failures through `MaintenanceStore`.
 
-The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/d1/migrations/`, which every data store reads and writes since the cutover on 2026-10-23. `0001_init.sql` was written from the live schema above, with these conversions:
+## Types and checks
 
-- **Types:** UUIDs, timestamps and dates are `TEXT` (UUIDs default to a random v4, timestamps to ISO 8601 UTC with milliseconds, `public_id` to 64 random hex characters); booleans are `INTEGER` 0 or 1; `jsonb` and `text[]` are JSON `TEXT` checked with `json_valid` and `json_type`.
-- **Checks:** D1 has no regular expressions, so pattern checks use `GLOB` (for example `public_id NOT GLOB '*[^0-9a-f]*'`), and checks that need a subquery (the length of each tag) are `BEFORE` triggers.
-- **Triggers:** every Postgres trigger has a SQLite equivalent (`RAISE(ABORT, ...)` for the guards), except the banner-version guard against the `anon` and `authenticated` roles, which has no meaning without browser access to the database. `start_date` and `end_date` on experiences and educations are generated columns.
-- **Counters:** `view_count`, `helpful_yes` and `helpful_no` move from `db_posts` to `db_post_stats`, so recording a view never changes a post row.
-- **Read cache:** `db_cache_generations` holds one generation per cached domain (`author`, `blog`, `legal` and `comments:<post id>`), bumped by triggers on every write to the tables behind it.
-- **Dropped:** the full-text (`gin`) indexes and the foreign key from `db_admin_settings` to `auth.users`.
+- **Types:** UUIDs, timestamps and dates are `TEXT` (UUIDs default to a random v4, timestamps to ISO 8601 UTC with milliseconds, `public_id` to 64 random hex characters); booleans are `INTEGER` 0 or 1; JSON values and lists are `TEXT` checked with `json_valid` and `json_type`.
+- **Checks:** D1 has no regular expressions, so pattern checks use `GLOB` (for example `public_id NOT GLOB '*[^0-9a-f]*'`), and checks that need a subquery (the length of each tag) are `BEFORE` triggers that `RAISE(ABORT, ...)`. `start_date` and `end_date` on experiences and educations are generated columns.
 
-### D1-only tables
+### OpenID Connect tables
 
-`0003_oidc.sql` adds the tables behind "Sign in with Idstead" (the OpenID Connect provider), which never existed in Postgres. They are reached only through `OidcClientStore` and `OidcAuthStore` (`packages/data/src/oidc.ts`), are never cached, are left out of the data export (they hold credentials), and are emptied by delete-all except the subject.
+`0003_oidc.sql` adds the tables behind "Sign in with Idstead" (the OpenID Connect provider). They are reached only through `OidcClientStore` and `OidcAuthStore` (`packages/data/src/oidc.ts`), are never cached, are left out of the data export (they hold credentials), and are emptied by delete-all except the subject.
 
 | Table | Contents |
 | --- | --- |
@@ -243,22 +233,30 @@ The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/
 | `db_oidc_codes` | Authorization codes by `code_hash`, with the grant, `redirect_uri`, `scopes`, `nonce`, the S256 `code_challenge`, `auth_time`, `expires_at` and `used_at`. Spending a code twice revokes its grant. |
 | `db_oidc_refresh_tokens` | Refresh tokens by `token_hash`, with the grant, `scopes`, `auth_time`, `expires_at`, `rotated_at` and `revoked_at`. Each use rotates the token; presenting a rotated one revokes the whole grant. |
 
-`tests/d1Schema.test.ts` loads every migration into SQLite and checks that each column of the live Postgres schema (`tests/fixtures/postgresColumns.json`) still exists and that the triggers behave as before. Apply new migrations with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web`, and to the shared local database used by the dev servers with `bun run db:local`.
+## Migrations
 
-## Maintenance
+| Migration | Change |
+| --- | --- |
+| `0001_init.sql` | The schema |
+| `0002_admin_views.sql` | The admin inbox views |
+| `0003_oidc.sql` | The OpenID Connect tables |
+| `0004_drop_post_summary.sql` | Drops the post summary column |
+| `0005_rename_cv_to_resume.sql` | Renames the `cv` activity category and actions to `resume`, and moves document URLs from `/cv/` to `/resume/` |
+| `0006_lockout_failures.sql` | Renames the lockout table to `db_lockout_failures` |
+| `0007_site_settings.sql` | Adds `db_site_settings`, the `site` cache generation and the `settings` activity category, and files `auth` entries under `security` |
+| `0008_drop_post_feedback.sql` | Stores feedback votes only in `db_feedback_events` |
 
-```sql
-select table_name, string_agg(column_name || ':' || data_type, ', ' order by ordinal_position)
-from information_schema.columns where table_schema = 'public' group by 1 order by 1;
+`tests/d1Schema.test.ts` loads every migration into SQLite and checks that each table the adapters query exists, with its defaults and constraints; `tests/feedbackMigration.test.ts` checks that `0008` keeps every vote and operation. Apply new migrations with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web`, and to the shared local database used by the dev servers with `bun run db:local`. A migration that drops a column or table ships with the release that stops reading it.
 
-select tc.table_name, kcu.column_name, ccu.table_name as references_table
-from information_schema.table_constraints tc
-join information_schema.key_column_usage kcu using (constraint_name, table_schema)
-join information_schema.constraint_column_usage ccu using (constraint_name, table_schema)
-where tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';
+## Inspecting the schema
+
+```sh
+bunx wrangler d1 execute DB --remote --command "SELECT type, name FROM sqlite_master WHERE name LIKE 'db_%' ORDER BY type, name"
+bunx wrangler d1 execute DB --remote --command "PRAGMA table_info(db_posts)"
 ```
 
 ## Source
 
 - `packages/data/d1/migrations/`
-- `tests/d1Schema.test.ts`, `tests/fixtures/postgresColumns.json`
+- `packages/data/src/d1/`
+- `tests/d1Schema.test.ts`, `tests/feedbackMigration.test.ts`
