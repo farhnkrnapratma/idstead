@@ -21,13 +21,13 @@
             variant="floating"
             size="sm"
             ariaLabel="Report an issue or give feedback"
-            tooltip="Feedback"
-            tooltipPlacement="top"
-            tooltipAlign="left"
+            showTooltip={false}
             keyboardShortcut={buttonKey('feedback')}
             shortcutLabel="Send feedback"
+            class="gap-2 md:w-auto md:px-3"
             onclick={() => goto('/feedback')}>
             <MessageSquareWarning class="size-4 shrink-0" />
+            <span class="hidden whitespace-nowrap md:inline">Feedback</span>
         </IconButton>
     </div>
 {/if}
