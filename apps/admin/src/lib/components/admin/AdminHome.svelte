@@ -5,13 +5,13 @@
     import { publicHref, publicSiteUrl } from '#app/publicSite.ts';
     import { analyticsPeriod, browserTimeZone, zonedMidnight } from '../../adminAnalytics.ts';
     import {
+        ArrowRight,
+        ArrowUpRight,
+        CalendarCheck2,
         Eye,
         Flag,
-        ThumbsUp,
-        CalendarCheck2,
         Mail,
-        ArrowRight,
-        SquareArrowOutUpRight,
+        ThumbsUp,
         Users
     } from '@lucide/svelte';
     import { adminActivityRequest } from '../../adminActivityClient.ts';
@@ -355,7 +355,9 @@
                             rel="noopener noreferrer">
                             View {String(row.href).startsWith('/blog/') ? 'article' : 'page'}
                             {#snippet trailing()}
-                                <SquareArrowOutUpRight class="size-2" />
+                                <ArrowUpRight
+                                    strokeWidth={1.5}
+                                    class="size-3" />
                             {/snippet}
                         </Button>
                     {/if}

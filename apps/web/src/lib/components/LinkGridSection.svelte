@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Component } from 'svelte';
-    import { SquareArrowOutUpRight, Inbox } from '@lucide/svelte';
+    import { ArrowUpRight, Inbox } from '@lucide/svelte';
     import SectionHeader from '@idstead/ui/components/SectionHeader.svelte';
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
@@ -66,19 +66,20 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         use:shortcut={{ group: shortcutGroup, label: item.label }}
-                        class="group relative flex flex-col gap-0.5 rounded-md glass-card border border-line-subtle/60 p-2 transition-all duration-200 hover:border-accent/40 hover:bg-surface-hover hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:p-3">
+                        class="group relative flex flex-col gap-0.5 rounded-md glass-card border border-line-subtle p-2 transition-all duration-200 hover:border-accent hover:bg-surface-hover hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:p-3">
                         <div
                             class="flex flex-1 items-center justify-between gap-3 sm:flex-col sm:items-stretch">
                             <div class="contents items-start justify-between gap-3 sm:flex">
                                 {#if item.icon}
                                     <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-fg/5 text-fg-muted transition-colors duration-200 group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-fg-accent">
+                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-fg/5 text-fg-muted transition-colors duration-200 group-hover:border-accent group-hover:bg-accent/10 group-hover:text-fg-accent">
                                         <BrandIcon
                                             icon={item.icon}
                                             class="size-5 text-xl leading-none sm:size-6 sm:text-2xl" />
                                     </div>
                                 {/if}
-                                <SquareArrowOutUpRight
+                                <ArrowUpRight
+                                    strokeWidth={1.5}
                                     class="order-last size-3 shrink-0 text-fg-muted transition-colors duration-200 group-hover:text-fg-accent sm:order-0" />
                             </div>
                             <div class="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">

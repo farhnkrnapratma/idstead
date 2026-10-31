@@ -35,8 +35,13 @@ function oklchToHex(lightness: number, chroma: number, hue: number): string {
 function toHex(value: string): string | undefined {
     const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
     if (hex) return `#${hex.length === 3 ? [...hex].map(digit => digit + digit).join('') : hex}`;
-    const oklch = value.match(/^oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)$/);
-    if (oklch) return oklchToHex(Number(oklch[1]) / 100, Number(oklch[2]), Number(oklch[3]));
+    const oklch = value.match(/^oklch\(([\d.]+)%\s+([\d.]+|none)\s+([\d.]+|none)\)$/);
+    if (oklch)
+        return oklchToHex(
+            Number(oklch[1]) / 100,
+            oklch[2] === 'none' ? 0 : Number(oklch[2]),
+            oklch[3] === 'none' ? 0 : Number(oklch[3])
+        );
 }
 
 export function themeToken(name: string, theme: EffectiveTheme = 'light'): string {

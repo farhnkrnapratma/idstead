@@ -50,7 +50,7 @@
             shortcutLabel="Clear filters"
             aria-label={clearAllLabel}
             title={clearAllLabel}
-            class="h-auto shrink-0 rounded-full border-transparent! p-1.5">
+            class="h-auto shrink-0 rounded-md border-transparent! p-1.5">
             <FunnelX class="size-3" />
         </Button>
     </div>

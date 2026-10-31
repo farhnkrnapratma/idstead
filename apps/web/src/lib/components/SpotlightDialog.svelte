@@ -1205,7 +1205,7 @@
     <span
         class={KEY_GROUP_CLASS}
         aria-hidden="true">
-        <kbd class={cn(KEY_SEGMENT_CLASS, 'border-line-subtle/60 bg-surface text-fg-secondary')}>
+        <kbd class={cn(KEY_SEGMENT_CLASS, 'border-line-subtle bg-surface text-fg-secondary')}>
             <Icon class="size-2.5" />
         </kbd>
     </span>
@@ -1232,7 +1232,7 @@
             style:max-height={visualViewportHeight !== null ?
                 `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
             :   undefined}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-fg/8"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
@@ -1240,7 +1240,7 @@
             inert={showHelp}
             onkeydown={handleDialogTab}>
             <div
-                class="flex items-center justify-between border-b border-line-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
+                class="flex items-center justify-between border-b border-line-subtle px-3 py-1.5 sm:px-4 sm:py-2">
                 <input
                     {@attach elementRef<HTMLInputElement>(node => (inputEl = node))}
                     bind:value={rawQuery}
@@ -1677,7 +1677,7 @@
             </div>
 
             <div
-                class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
+                class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle px-3.5 py-2 text-2xs select-none sm:flex">
                 <div
                     class="flex min-w-0 flex-1 items-center gap-3 text-2xs leading-none font-medium text-fg-muted">
                     {#if isLoading}
@@ -1722,7 +1722,7 @@
         class="fixed inset-0 z-100000 flex items-center justify-center overscroll-contain p-4">
         <button
             type="button"
-            class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
+            class="fixed inset-0 cursor-default touch-none bg-overlay/80 transition-opacity duration-200"
             aria-label="Close reference guide"
             tabindex="-1"
             onclick={() => {
@@ -1733,14 +1733,13 @@
 
         <div
             {@attach elementRef<HTMLDivElement>(node => (helpDialogEl = node))}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-fg/8"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface text-fg shadow-xl outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
             aria-label="Reference guide"
             onkeydown={handleHelpKeydown}>
-            <div
-                class="flex items-center justify-between border-b border-line-subtle/40 px-4 py-2.5">
+            <div class="flex items-center justify-between border-b border-line-subtle px-4 py-2.5">
                 <span class="text-xs font-bold tracking-wide text-fg select-none">
                     Reference Guide
                 </span>
@@ -1907,7 +1906,7 @@
             </div>
 
             <div
-                class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle/60 px-3.5 py-2 text-2xs leading-none select-none sm:flex">
+                class="hidden flex-none items-center justify-end gap-2.5 border-t border-line-subtle px-3.5 py-2 text-2xs leading-none select-none sm:flex">
                 <span class="flex items-center gap-1">
                     {@render iconKey(ArrowUpDown)}
                     <span class="text-fg-muted">navigate</span>

@@ -73,40 +73,38 @@
     </div>
 
     <div class="px-4 pb-5 sm:px-6 sm:pb-6">
-        <div class="profile-avatar relative -mt-12 w-fit rounded-full sm:-mt-14">
-            {#if avatarUrl}
-                <ImageWithSkeleton
-                    src={avatarUrl}
-                    sources={avatarSources}
-                    alt={`Profile picture of ${name}`}
-                    referrerpolicy="no-referrer"
-                    loading="eager"
-                    variant="avatar"
-                    rounded="rounded-full"
-                    class="size-24 shadow-md ring-4 ring-surface sm:size-28"
-                    imgClass="object-top" />
-            {:else}
-                <div
-                    class="flex size-24 items-center justify-center rounded-full bg-surface-subtle text-3xl font-bold text-fg-accent shadow-md ring-4 ring-surface sm:size-28 sm:text-4xl"
-                    aria-hidden="true">
-                    {name.charAt(0)}
-                </div>
-            {/if}
-
+        <div class="flex items-end justify-between gap-3">
+            <div class="profile-avatar -mt-12 w-fit rounded-md sm:-mt-14">
+                {#if avatarUrl}
+                    <ImageWithSkeleton
+                        src={avatarUrl}
+                        sources={avatarSources}
+                        alt={`Profile picture of ${name}`}
+                        referrerpolicy="no-referrer"
+                        loading="eager"
+                        variant="avatar"
+                        rounded="rounded-md"
+                        class="size-24 shadow-md ring-4 ring-surface sm:size-28"
+                        imgClass="object-top" />
+                {:else}
+                    <div
+                        class="flex size-24 items-center justify-center rounded-md bg-surface-subtle text-3xl font-bold text-fg-accent shadow-md ring-4 ring-surface sm:size-28 sm:text-4xl"
+                        aria-hidden="true">
+                        {name.charAt(0)}
+                    </div>
+                {/if}
+            </div>
             {#if onShowQr}
-                <div class="absolute right-0 bottom-0 flex sm:right-0.5 sm:bottom-0.5">
-                    <IconButton
-                        variant="overlay"
-                        size="sm"
-                        ariaLabel="Show QR code"
-                        tooltipPlacement="top"
-                        onclick={onShowQr}
-                        class="ring-4 ring-surface">
-                        <QrCode
-                            class="size-4"
-                            aria-hidden="true" />
-                    </IconButton>
-                </div>
+                <IconButton
+                    size="sm"
+                    ariaLabel="Show QR code"
+                    tooltip="Show QR code"
+                    tooltipPlacement="top"
+                    onclick={onShowQr}>
+                    <QrCode
+                        class="size-4"
+                        aria-hidden="true" />
+                </IconButton>
             {/if}
         </div>
 

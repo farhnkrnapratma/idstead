@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Component } from 'svelte';
-    import { ChevronRight } from '@lucide/svelte';
+    import { ArrowRight } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface StatItem {
@@ -41,19 +41,20 @@
                 class={cn(
                     'group flex h-full min-w-0 flex-col gap-3 rounded-md border border-line-subtle bg-surface p-4 text-left transition-colors',
                     item.onclick
-                        && 'cursor-pointer hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring'
+                        && 'cursor-pointer hover:border-accent hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring'
                 )}>
                 <span class="flex min-w-0 items-center gap-2.5">
                     {#if item.componentIcon}
                         {@const Icon = item.componentIcon}
                         <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent"
+                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent"
                             ><Icon class="size-4" /></span>
                     {/if}
                     <span class="min-w-0 truncate text-xs font-bold text-fg-secondary"
                         >{item.label}</span>
                     {#if item.onclick}
-                        <ChevronRight
+                        <ArrowRight
+                            strokeWidth={1.5}
                             class="ml-auto size-4 shrink-0 text-fg-muted transition-[color,translate] group-hover:text-fg-accent motion-safe:group-hover:translate-x-0.5"
                             aria-hidden="true" />
                     {/if}
@@ -67,10 +68,10 @@
                 </span>
                 {#if item.ratio !== undefined}
                     <span
-                        class="mt-auto block h-1 w-full overflow-hidden rounded-full bg-line-subtle"
+                        class="mt-auto block h-1 w-full overflow-hidden rounded-md bg-line-subtle"
                         aria-hidden="true">
                         <span
-                            class="block h-full rounded-full bg-accent"
+                            class="block h-full rounded-md bg-accent"
                             style="width: {Math.min(1, Math.max(0, item.ratio)) * 100}%"></span>
                     </span>
                 {/if}
@@ -79,11 +80,11 @@
             <button
                 type="button"
                 onclick={item.onclick}
-                class="group flex min-w-0 cursor-pointer flex-col items-start gap-1.5 rounded-md border border-line-subtle bg-surface p-3 text-left transition-colors hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring sm:p-4">
+                class="group flex min-w-0 cursor-pointer flex-col items-start gap-1.5 rounded-md border border-line-subtle bg-surface p-3 text-left transition-colors hover:border-accent hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring sm:p-4">
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
-                        class="flex size-8 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent"
+                        class="flex size-8 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent"
                         ><Icon class="size-4" /></span>
                 {/if}
                 <span class="text-2xl font-extrabold tracking-tight text-fg">{item.value}</span>
@@ -94,7 +95,7 @@
             </button>
         {:else}
             <div
-                class="flex flex-col items-center justify-center rounded-md border border-line-subtle bg-surface/50 p-4 text-center shadow-xs">
+                class="flex flex-col items-center justify-center rounded-md border border-line-subtle bg-surface p-4 text-center shadow-xs">
                 {#if item.icon}
                     <i
                         class="bi {item.icon} mb-1 text-lg text-fg-accent"

@@ -17,7 +17,7 @@
         transition:fade={{ duration: 120 }}
         role="status"
         aria-live="polite"
-        class="pointer-events-none fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-200 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-md glass-overlay border border-accent/40 font-sans text-2xs text-fg shadow-lg">
+        class="pointer-events-none fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-200 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-md glass-overlay border border-accent/30 font-sans text-2xs text-fg shadow-lg">
         <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-3 py-2">
             <span class="flex items-center gap-1.5 font-semibold">
                 <KeySquare

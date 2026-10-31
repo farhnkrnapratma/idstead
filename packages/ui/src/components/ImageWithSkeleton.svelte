@@ -46,9 +46,7 @@
     const isLoaded = $derived(!!src && (loadedSrc === src || failedSrc === src));
     const useSources = $derived(Boolean(sources?.length) && !sourcesFailed);
 
-    let isAvatar = $derived(
-        variant === 'avatar' || Boolean(rounded && rounded.includes('rounded-full'))
-    );
+    let isAvatar = $derived(variant === 'avatar');
 
     function handleLoad() {
         loadedSrc = src ?? null;

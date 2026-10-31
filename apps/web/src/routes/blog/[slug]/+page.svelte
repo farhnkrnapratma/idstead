@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { scrollStore } from '@idstead/ui/stores/scrollStore.svelte.ts';
     import Avatar from '@idstead/ui/components/Avatar.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { createFeedbackClient } from '#app/feedbackClient.svelte.ts';
@@ -126,6 +127,11 @@
         :   0
     );
     const isArticleScrolledPast = $derived(articleScrollTop > 300);
+
+    $effect(() => {
+        scrollStore.setContainerProgress(articleScrollProgress);
+        return () => scrollStore.setContainerProgress(0);
+    });
 
     function handleArticleScroll(e: Event) {
         const target = e.currentTarget as HTMLElement;
@@ -828,7 +834,7 @@
 
                     {#if !replyTo}
                         <div
-                            class="mb-6 rounded-md border border-line-subtle bg-surface/75 p-3.5 text-left shadow-2xs sm:p-4">
+                            class="mb-6 rounded-md border border-line-subtle bg-surface p-3.5 text-left shadow-2xs sm:p-4">
                             <form
                                 novalidate
                                 onsubmit={e => handleSubmit(e)}
@@ -984,9 +990,9 @@
                                 <form
                                     novalidate
                                     onsubmit={e => handleSubmit(e, comment.id)}
-                                    class="mb-3 rounded-md border border-line-subtle bg-canvas/80 p-3.5 text-left shadow-2xs sm:p-4">
+                                    class="mb-3 rounded-md border border-line-subtle bg-canvas p-3.5 text-left shadow-2xs sm:p-4">
                                     <div
-                                        class="mb-3 flex items-center justify-between gap-3 border-b border-line-subtle/50 pb-2.5">
+                                        class="mb-3 flex items-center justify-between gap-3 border-b border-line-subtle pb-2.5">
                                         <p class="text-xs font-semibold text-fg-secondary">
                                             Replying to {getCommentAuthor(comment)}
                                         </p>
@@ -1153,7 +1159,6 @@
 <ScrollToTopButton
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
-    progress={articleScrollProgress}
     class="hidden lg:fixed lg:right-[calc(22rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />

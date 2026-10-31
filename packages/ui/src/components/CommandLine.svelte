@@ -16,7 +16,7 @@
 
 <div
     class={cn(
-        'flex min-w-0 items-center gap-1 rounded-sm border border-line-subtle bg-surface/50 py-1 pr-1 pl-3',
+        'flex min-w-0 items-center gap-1 rounded-sm border border-line-subtle bg-surface py-1 pr-1 pl-3',
         className
     )}>
     <code

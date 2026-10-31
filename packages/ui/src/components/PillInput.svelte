@@ -165,7 +165,7 @@
         inputElement?.focus();
     }}
     class={cn(
-        'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle/50 bg-surface/85 px-3 shadow-button-surface backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-fg/10 dark:bg-surface/70 dark:focus-within:bg-surface/90',
+        'relative flex w-full flex-wrap gap-2 rounded-md border border-line-subtle bg-surface px-3 shadow-button-surface transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none ',
         field.isFloating ? 'min-h-12 items-start pt-5! pb-1.5!' : 'min-h-9 items-center py-1.5',
         className
     )}>
@@ -199,7 +199,7 @@
             ondragstart={e => handleDragStart(idx, e)}
             ondragover={e => e.preventDefault()}
             ondrop={e => handleDrop(idx, e)}
-            class="box-border inline-flex min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0 font-sans text-xs leading-none font-medium text-fg-accent transition-all hover:border-accent/50">
+            class="box-border inline-flex min-h-5 w-fit max-w-full items-center gap-1 rounded-md border border-accent/30 bg-accent/10 px-1.5 py-0 font-sans text-xs leading-none font-medium text-fg-accent transition-all hover:border-accent">
             <span
                 data-pill-grip
                 aria-hidden="true"
@@ -258,7 +258,7 @@
             <button
                 data-pill-remove
                 type="button"
-                class="relative inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-fg-accent transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 after:rounded-full hover:bg-accent/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring pointer-coarse:after:size-9"
+                class="relative inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-fg-accent transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 hover:bg-accent/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring pointer-coarse:after:size-9"
                 aria-label="Remove {item}"
                 onclick={() => removeValue(idx)}>
                 <X class="size-2.5" />

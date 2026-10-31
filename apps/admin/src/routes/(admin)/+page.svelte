@@ -35,57 +35,57 @@
     import { publicSiteUrl as siteUrlFor } from '#app/publicSite.ts';
     import { refreshAll } from '$app/navigation';
     import {
+        AppWindow,
+        ArrowDown,
+        ArrowUp,
+        ArrowUpRight,
+        AtSign,
+        Bell,
+        Bolt,
+        Bot,
+        CircleCheckBig,
+        CircleDotDashed,
+        Copy,
+        DatabaseArrowDown,
+        DatabaseArrowUp,
+        DatabaseX,
+        Download,
+        EyeOff,
+        FileArchive,
+        FileUser,
+        Flag,
+        FolderOpen,
+        GripVertical,
+        HeartHandshake,
+        Image as ImageIcon,
+        KeyRound,
+        Layers,
+        LayoutDashboard,
+        Lock,
+        LogOut,
+        Logs,
+        Menu,
+        MessageCircle,
         PanelLeftClose,
         PanelLeftOpen,
-        GripVertical,
-        Bolt,
-        Quote,
-        User,
-        FileUser,
-        Layers,
-        Share2,
-        HeartHandshake,
-        AppWindow,
-        Send,
-        AtSign,
-        Lock,
-        ShieldUser,
-        ScrollText,
-        Bot,
-        Image as ImageIcon,
-        Trash,
-        ArrowUp,
-        ArrowDown,
-        Save,
-        SquareArrowOutUpRight,
-        Download,
-        X,
-        Copy,
-        KeyRound,
-        ShieldCheck,
-        ShieldAlert,
-        FileArchive,
-        Plus,
-        LogOut,
-        EyeOff,
-        Menu,
         PenLine,
-        MessageCircle,
-        CircleDotDashed,
-        CircleCheckBig,
-        Flag,
-        Users,
         Pin,
         PinOff,
-        FolderOpen,
-        Sparkles,
-        Bell,
-        LayoutDashboard,
+        Plus,
+        Quote,
         RefreshCw,
-        Logs,
-        DatabaseArrowUp,
-        DatabaseArrowDown,
-        DatabaseX
+        Save,
+        ScrollText,
+        Send,
+        Share2,
+        ShieldAlert,
+        ShieldCheck,
+        ShieldUser,
+        Sparkles,
+        Trash,
+        User,
+        Users,
+        X
     } from '@lucide/svelte';
     import { onDestroy, onMount, tick, untrack } from 'svelte';
     import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -3383,7 +3383,7 @@
                     src={adminAvatarUrl}
                     alt={`Profile picture of ${adminUserName || 'the account owner'}`}
                     variant="avatar"
-                    rounded="rounded-full"
+                    rounded="rounded-md"
                     class="size-7 shrink-0" />
                 <span
                     class="flex min-w-0 flex-col transition-opacity duration-150 ease-linear starting:opacity-0 {(
@@ -3736,7 +3736,7 @@
                                                     class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
                                                     {#if post.published}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-discovery-subtle text-discovery"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-discovery-subtle text-discovery"
                                                             title="Published"
                                                             aria-label="Published"
                                                             role="img">
@@ -3745,7 +3745,7 @@
                                                         </span>
                                                     {:else}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-fg-warning"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-warning-subtle text-fg-warning"
                                                             title="Draft"
                                                             aria-label="Draft"
                                                             role="img">
@@ -3755,7 +3755,7 @@
                                                     {/if}
                                                     {#if post.pinned}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-fg-success"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-success-subtle text-fg-success"
                                                             title="Pinned post"
                                                             aria-label="Pinned post"
                                                             role="img">
@@ -3764,7 +3764,7 @@
                                                     {/if}
                                                     {#if isPostNew(post)}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-info-subtle text-info"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-md bg-info-subtle text-info"
                                                             title="New post"
                                                             aria-label="New post"
                                                             role="img">
@@ -3821,7 +3821,7 @@
                                     </div>
 
                                     <div
-                                        class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-line-subtle/40 pt-3 sm:gap-2">
+                                        class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-line-subtle pt-3 sm:gap-2">
                                         <Button
                                             onclick={() => openPostEditor(post.id)}
                                             type="primary"
@@ -4586,7 +4586,7 @@
                             <div
                                 class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
-                                    class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                    class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                     <span
                                         class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                         >Experience Entry #{idx + 1}</span>
@@ -4894,7 +4894,7 @@
                                 </FormField>
 
                                 <div
-                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                     <Button
                                         htmlType="button"
                                         type="danger"
@@ -4971,7 +4971,7 @@
                             <div
                                 class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
                                 <div
-                                    class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                    class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                     <span
                                         class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                         >Education Entry #{idx + 1}</span>
@@ -5252,7 +5252,7 @@
                                 </FormField>
 
                                 <div
-                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                    class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                     <Button
                                         htmlType="button"
                                         type="danger"
@@ -5382,7 +5382,7 @@
                             class="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
                             <div class="flex min-w-0 items-center gap-3.5">
                                 <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent">
+                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
                                     <FileUser class="size-5.5" />
                                 </div>
                                 <div class="min-w-0">
@@ -5436,7 +5436,9 @@
                                     onclick={() =>
                                         window.open(resumeDocState.fileUrl, '_blank', 'noopener')}>
                                     {#snippet leading()}
-                                        <SquareArrowOutUpRight class="size-3.5" />
+                                        <ArrowUpRight
+                                            strokeWidth={1.5}
+                                            class="size-3.5" />
                                     {/snippet}
                                     <span>View PDF</span>
                                 </Button>
@@ -5624,7 +5626,7 @@
                     <div class="rounded-sm border border-line-subtle bg-surface">
                         <div class="flex min-w-0 items-start gap-3.5 p-4">
                             <div
-                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-fg-accent">
+                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
                                 <KeyRound class="size-5.5" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -5785,7 +5787,7 @@
                         <div
                             class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
                                     class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Category #{idx + 1}</span>
@@ -5858,7 +5860,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -5939,7 +5941,7 @@
                         <div
                             class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
                                     class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Social #{idx + 1}</span>
@@ -6064,7 +6066,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6145,7 +6147,7 @@
                         <div
                             class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
                                     class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Funding #{idx + 1}</span>
@@ -6305,7 +6307,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6386,7 +6388,7 @@
                         <div
                             class="flex flex-col gap-3 rounded-sm border border-line-subtle bg-surface p-4">
                             <div
-                                class="flex items-center justify-between gap-2 border-b border-line-subtle/40 pb-2">
+                                class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
                                     class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
                                     >Contact #{idx + 1}</span>
@@ -6542,7 +6544,7 @@
                             </FormField>
 
                             <div
-                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle/40 pt-2.5">
+                                class="mt-0.5 flex items-center justify-end border-t border-line-subtle pt-2.5">
                                 <Button
                                     htmlType="button"
                                     type="danger"
@@ -6960,7 +6962,7 @@
                     </Card>
                     <Card
                         variant="bordered"
-                        class="border-danger/40 bg-danger-subtle/40">
+                        class="border-danger/30 bg-danger-subtle/40">
                         <FormSection
                             title="Danger zone"
                             titleClass="type-card-title"

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { scrollStore } from '@idstead/ui/stores/scrollStore.svelte.ts';
     import { createFeedbackClient } from '../feedbackClient.svelte.ts';
     import { tick, onMount, onDestroy } from 'svelte';
     import type { Attachment } from 'svelte/attachments';
@@ -74,6 +75,11 @@
         :   0
     );
     const isArticleScrolledPast = $derived(articleScrollTop > 300);
+
+    $effect(() => {
+        scrollStore.setContainerProgress(articleScrollProgress);
+        return () => scrollStore.setContainerProgress(0);
+    });
 
     function handleArticleScroll(e: Event) {
         const target = e.currentTarget as HTMLElement;
@@ -354,7 +360,6 @@
 <ScrollToTopButton
     show={isArticleScrolledPast && !readingModeStore.active}
     onClick={scrollArticleToTop}
-    progress={articleScrollProgress}
     class="hidden lg:fixed lg:right-[calc(22rem+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 <ReadingModeExitButton />

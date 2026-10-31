@@ -55,7 +55,7 @@
 
 {#if isFocused}
     <div
-        class="fixed inset-0 z-90 bg-overlay/60 backdrop-blur-xs transition-opacity duration-200"
+        class="fixed inset-0 z-90 bg-overlay/60 transition-opacity duration-200"
         role="presentation"
         aria-hidden="true"
         onclick={() => {
