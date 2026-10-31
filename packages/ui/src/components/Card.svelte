@@ -28,7 +28,7 @@
         default: 'glass-card',
         glass: 'glass-card',
         bordered: 'bg-transparent border border-line-subtle',
-        solid: 'border-0 dark:border bg-surface text-fg shadow-sm'
+        solid: 'border-0 bg-surface text-fg shadow-sm dark:border dark:border-line-subtle'
     };
 
     const densityStyles = { padded: 'p-3.5 sm:p-6', compact: 'p-2.5 sm:p-4', none: 'p-0' };
