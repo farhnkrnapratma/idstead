@@ -47,12 +47,12 @@ sequenceDiagram
 - **Fresh sign-in:** `authTime` is the Access token's `iat`. Deleting all site data needs a token issued in the last 10 minutes and the typed confirmation `DELETE`; otherwise it answers `403 ADMIN_REAUTH_REQUIRED`.
 - **Expired session:** Access redirects a fetch to its login page. `adminFetch()` (`apps/admin/src/lib/adminClient.ts`) uses `redirect: 'manual'` and turns the redirect or a `401` into "Your admin session has expired", so unsaved edits stay on the page; signing in again in another tab restores the session.
 - **Sign-out:** `/cdn-cgi/access/logout`. Access revokes the user's session for every application on the team, so the Cloudflare One Client (WARP) enrolled through the same identity provider can sign out too. Keep the WARP enrollment and the admin application on the same identity provider and session settings, or check the Cloudflare One Client session duration in Zero Trust. Sessions and login methods are managed in Cloudflare Zero Trust.
-- **Lockout:** `packages/lib/src/server/loginRateLimit.ts` still counts failed OpenID Connect client secrets in `db_login_failures`; there is no password login to lock out.
+- **Lockout:** `packages/lib/src/server/secretLockout.ts` counts failed OpenID Connect client secrets in `db_lockout_failures`. Admin sign-in has no password, so there is nothing else to lock out.
 - **Page responses:** every admin response gets `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`.
 
 ## Source
 
 - `apps/admin/src/hooks.server.ts`, `apps/admin/src/routes/(admin)/+layout.server.ts`
-- `packages/lib/src/server/accessAuth.ts`, `adminAuth.ts`, `blogPostAuth.ts`, `adminResume.ts` (`requireAdminAuth`)
+- `packages/lib/src/server/accessAuth.ts`, `adminAuth.ts`, `blogPostAuth.ts`, `adminRequest.ts` (`requireAdminAuth`, `adminServices`, `logAdminActivity`)
 - `apps/admin/src/lib/adminClient.ts`
 - `tooling/setup.ts` (`adminAccess`), `tooling/setup/plan.ts`
