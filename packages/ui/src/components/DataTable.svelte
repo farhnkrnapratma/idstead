@@ -27,6 +27,7 @@
         header?: Snippet;
         meta?: Snippet;
         toolbar?: Snippet;
+        actions?: Snippet;
         footer?: Snippet;
         state?: Snippet;
         onRowSelect?: (row: Record<string, unknown>) => void;
@@ -42,6 +43,7 @@
         header,
         meta,
         toolbar,
+        actions,
         footer,
         state,
         onRowSelect,
@@ -67,7 +69,7 @@
 </script>
 
 <div class="w-full overflow-hidden rounded-md glass-card border border-line-subtle shadow-sm">
-    {#if header || title || meta}
+    {#if header || title || meta || actions}
         <div
             class={cn(
                 'flex min-h-10 flex-wrap items-center gap-1.5 px-4 py-1',
@@ -85,6 +87,9 @@
             {/if}
             {#if meta}{@render meta()}{/if}
             {#if header}{@render header()}{/if}
+            {#if actions}
+                <div class="ml-auto flex shrink-0 items-center gap-2">{@render actions()}</div>
+            {/if}
         </div>
     {/if}
     {#if toolbar}{@render toolbar()}{/if}

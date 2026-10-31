@@ -21,7 +21,9 @@
     }: Props = $props();
 </script>
 
-<div class={cn('flex flex-col items-center justify-center p-8 text-center select-none', className)}>
+<div
+    data-empty-state
+    class={cn('flex flex-col items-center justify-center p-8 text-center select-none', className)}>
     <div class="mb-3 flex items-center justify-center text-fg-muted">
         <Icon class={cn('size-7', iconClass)} />
     </div>
