@@ -13,6 +13,7 @@ import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
+import { discoveryLinks } from '#lib/server/discoveryLinks.ts';
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
 import { analyticsHead, analyticsSources, siteAnalytics } from '#lib/server/analytics.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
@@ -194,20 +195,8 @@ export const handle: Handle = sequence(
             });
 
         if (contentType.includes('text/html')) {
-            response.headers.append('Link', '</.well-known/api-catalog>; rel="api-catalog"');
-            response.headers.append(
-                'Link',
-                '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"'
-            );
-            response.headers.append(
-                'Link',
-                '</.well-known/ard.json>; rel="ard"; type="application/json"'
-            );
-            response.headers.append('Link', '</llms.txt>; rel="describedby"; type="text/markdown"');
-            response.headers.append(
-                'Link',
-                '</sitemap.xml>; rel="sitemap"; type="application/xml"'
-            );
+            for (const link of discoveryLinks(publicEnv.PUBLIC_API_BASE_URL))
+                response.headers.append('Link', link);
         }
 
         if (

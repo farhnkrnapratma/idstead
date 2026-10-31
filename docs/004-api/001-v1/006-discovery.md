@@ -23,9 +23,11 @@ Both OpenAPI files are cached with `s-maxage=300` and get an ETag.
 | `/.well-known/api-catalog` | RFC 9727 linkset (`application/linkset+json`) |
 | `/.well-known/ard.json` | ARD manifest `{entries}` (see [../ard.md](../002-ard.md)) |
 
-Every HTML page on `example.com` also sends these `Link` headers:
+Every HTML page on `example.com` also sends these `Link` headers ([RFC 8288](https://www.rfc-editor.org/rfc/rfc8288), [RFC 9727](https://www.rfc-editor.org/rfc/rfc9727#section-3)), built by `discoveryLinks` in `packages/lib/src/server/discoveryLinks.ts`:
 
 - `</.well-known/api-catalog>; rel="api-catalog"`
+- `<https://api.example.com/v1/openapi.json>; rel="service-desc"`
+- `<https://api.example.com/v1>; rel="service-doc"`
 - `</.well-known/agent-skills/index.json>; rel="describedby"`
 - `</.well-known/ard.json>; rel="ard"`
 - `</llms.txt>; rel="describedby"`
