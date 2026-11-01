@@ -231,7 +231,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             title="No posts yet"
                             description="Check back soon for new articles." />
                     {:else}
-                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
+                        <div class="mt-2 grid grid-cols-1 gap-3 sm:auto-rows-fr sm:gap-4">
                             {#each posts as post (post.id)}
                                 <ContentCard {...postCard(post, { banner: true })}>
                                     {#snippet meta()}
@@ -269,7 +269,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             title="No projects yet"
                             description="Check back soon for featured repositories." />
                     {:else}
-                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
+                        <div class="mt-2 grid grid-cols-1 gap-3 sm:auto-rows-fr sm:gap-4">
                             {#each shownProjects as project (project.name)}
                                 {#snippet languageTag()}
                                     <ProjectLanguageTag

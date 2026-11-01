@@ -808,7 +808,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <h3 class="mb-3 text-sm font-bold tracking-tight text-fg">
                             Continue reading
                         </h3>
-                        <div class="relative z-0 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
+                        <div class="relative z-0 grid grid-cols-1 gap-3 sm:auto-rows-fr sm:gap-4">
                             {#each relatedPosts as related (related.id)}
                                 {@const relatedScope = `related-${related.id}`}
                                 <div use:focusScope={relatedScope}>

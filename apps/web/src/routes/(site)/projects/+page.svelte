@@ -271,7 +271,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {:else}
                     <div
                         use:staggerChildren
-                        class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
+                        class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4 sm:auto-rows-fr">
                         {#each paginatedProjectList as project (project.name)}
                             {#snippet languageTag()}
                                 <ProjectLanguageTag
