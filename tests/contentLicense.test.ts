@@ -50,7 +50,7 @@ describe('content license settings', () => {
 
     test('the notice links Creative Commons licenses and reserves the rest', () => {
         expect(licenseNotice(contentLicense('CC-BY-4.0'))).toBe(
-            'Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/'
+            'Except where otherwise noted, licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/'
         );
         expect(licenseNotice(contentLicense('all-rights-reserved'))).toBe('All rights reserved.');
     });

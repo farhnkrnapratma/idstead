@@ -197,7 +197,9 @@ export function storedPostLicense(value: unknown): ContentLicenseId | null {
 }
 
 export function licenseNotice(license: ResolvedContentLicense): string {
-    return license.url ? `Licensed under ${license.label}: ${license.url}` : 'All rights reserved.';
+    return license.url ?
+            `Except where otherwise noted, licensed under ${license.label}: ${license.url}`
+        :   'All rights reserved.';
 }
 
 export function bannerCreditNotice(credit: BannerCredit | null): string | null {

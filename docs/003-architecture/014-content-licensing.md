@@ -36,7 +36,7 @@ sequenceDiagram
 | Place | Shows |
 | --- | --- |
 | Footer (`FooterNotice.svelte`) | The site license, and "Powered by Idstead" with a Source link when `source` is set in `idstead.jsonc` |
-| Post page (`ArticleLicense.svelte`) | The post's effective license, and the banner credit when the banner is not the owner's work |
+| Post page (`ArticleLicense.svelte`) | "Except where otherwise noted, this post is licensed under …" with the post's effective license, and the banner credit when the banner is not the owner's work |
 | `/blog/{slug}.md`, `/blog/{slug}.txt` | The license notice and banner credit after the body |
 | JSON-LD `BlogPosting` | `license` with the deed URL, for Creative Commons licenses |
 | `atom.xml` | `<rights>` for the feed, and for each post whose license differs from the site's |

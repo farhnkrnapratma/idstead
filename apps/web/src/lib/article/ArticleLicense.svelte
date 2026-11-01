@@ -38,13 +38,13 @@ SPDX-License-Identifier: AGPL-3.0-only
     <div class="flex min-w-0 flex-col gap-1">
         {#if license.url}
             <p>
-                This post is licensed under <a
+                Except where otherwise noted, this post is licensed under <a
                     href={license.url}
                     target="_blank"
                     rel="license noopener noreferrer"
                     title={license.name}
                     class={linkClass}>{license.label}</a
-                >{exception}.
+                >.
             </p>
         {:else}
             <p>All rights reserved{exception}.</p>
