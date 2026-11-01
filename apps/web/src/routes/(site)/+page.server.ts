@@ -12,12 +12,12 @@ const HOME_EXPERIENCE_COUNT = 2;
 const HOME_EDUCATION_COUNT = 1;
 
 export const load: PageServerLoad = async ({ fetch }) => {
-    const [resume, posts, resumeDocument] = await Promise.all([
-        publicRepositories(fetch)
-            .author.resumeEntries()
-            .catch(() => ({ experience: [], education: [] })),
+    const { author } = publicRepositories(fetch);
+    const [resume, posts, resumeDocument, funding] = await Promise.all([
+        author.resumeEntries().catch(() => ({ experience: [], education: [] })),
         loadPublishedPosts(fetch, { limit: HOME_POST_COUNT, pinnedFirst: true }),
-        loadPublicResumeDocument(fetch)
+        loadPublicResumeDocument(fetch),
+        author.fundingLinks().catch(() => [])
     ]);
 
     return {
@@ -25,6 +25,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
         hasPublishedPosts: posts.length > 0,
         experience: resume.experience.slice(0, HOME_EXPERIENCE_COUNT),
         education: resume.education.slice(0, HOME_EDUCATION_COUNT),
-        resumeDocument
+        resumeDocument,
+        hasFunding: funding.length > 0
     };
 };

@@ -24,6 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     } from '#lib/siteIdentity.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import SubscribeForm from '#app/components/SubscribeForm.svelte';
+    import FundingCallout from '#app/components/FundingCallout.svelte';
     import ContentCard from '#app/components/ContentCard.svelte';
     import ProjectMeta from '#app/components/ProjectMeta.svelte';
     import ProjectLanguageTag from '#app/components/ProjectLanguageTag.svelte';
@@ -304,6 +305,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             </Button>
                         </div>
                     {/if}
+                    <FundingCallout
+                        visible={data.hasFunding}
+                        class="mt-4" />
                 </div>
 
                 <div>
