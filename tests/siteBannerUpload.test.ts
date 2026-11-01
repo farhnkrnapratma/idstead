@@ -4,7 +4,6 @@
 
 import { describe, expect, test } from 'bun:test';
 import { inspectAvif } from '../packages/lib/src/avif.ts';
-import { versionToken } from '../packages/domain/src/hash.ts';
 import {
     parseIdentityMeta,
     validateSiteBanner
@@ -158,9 +157,7 @@ describe('banner asset routing', () => {
 
     test('public banner URLs are versioned and absolute for Open Graph', () => {
         const profile = { bannerVersion: 'v1', siteUrl: 'https://example.com' };
-        expect(publicBannerOgUrl(profile)).toBe(
-            `https://example.com/banner-og.webp?v=${versionToken('v1')}`
-        );
+        expect(publicBannerOgUrl(profile)).toBe('https://example.com/banner-og.webp?v=v1');
         expect(publicBannerOgUrl({ bannerVersion: null, siteUrl: 'https://example.com' })).toBe('');
         expect(siteBannerSources(profile).map(source => source.type)).toEqual([
             'image/avif',
@@ -232,7 +229,9 @@ describe('versioned identity serving', () => {
         expect(source).toContain(
             '(await bucket.get(`identity/${version}/${name}`)) ?? (await bucket.get(`identity/${name}`))'
         );
-        expect(source).toContain("url.searchParams.get('v') === versionToken(version)");
+        expect(source).toContain(
+            "url.searchParams.get('v') === (await identityVersionToken(version))"
+        );
         expect(source).toContain("export const IMAGE_CACHE_CONTROL = 'public, max-age=300';");
         expect(source).toContain(
             "export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';"

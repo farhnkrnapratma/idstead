@@ -21,3 +21,14 @@ export function versionToken(version: string): string {
     }
     return first.toString(36).padStart(7, '0') + second.toString(36).padStart(7, '0');
 }
+
+export async function identityVersionToken(version: unknown): Promise<string | null> {
+    if (typeof version !== 'string' || !version) return null;
+    const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(`identity-version:${version}`)
+    );
+    return Array.from(new Uint8Array(digest).slice(0, 8), byte =>
+        byte.toString(16).padStart(2, '0')
+    ).join('');
+}

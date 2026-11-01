@@ -15,6 +15,7 @@ import {
     type ResumeDocument,
     type ProjectRepoRules
 } from '@idstead/domain/author.ts';
+import { identityVersionToken } from '@idstead/domain/hash.ts';
 import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 import type { AuthorRepository } from './author';
 
@@ -25,23 +26,12 @@ function withoutId<T extends { id?: unknown }>(item: T): T {
     return rest as T;
 }
 
-async function versionToken(version: unknown): Promise<string | null> {
-    if (typeof version !== 'string' || !version) return null;
-    const digest = await crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(`identity-version:${version}`)
-    );
-    return Array.from(new Uint8Array(digest).slice(0, 8), byte =>
-        byte.toString(16).padStart(2, '0')
-    ).join('');
-}
-
 export async function publicProfile(profile: AuthorProfile): Promise<AuthorProfile> {
     const { id: _id, revision: _revision, ...rest } = profile;
     return {
         ...rest,
-        avatarVersion: await versionToken(profile.avatarVersion),
-        bannerVersion: await versionToken(profile.bannerVersion)
+        avatarVersion: await identityVersionToken(profile.avatarVersion),
+        bannerVersion: await identityVersionToken(profile.bannerVersion)
     };
 }
 

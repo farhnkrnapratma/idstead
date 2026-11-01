@@ -4,7 +4,7 @@
 
 import * as publicEnv from '$app/env/public';
 import { dataStores } from './data';
-import { versionToken } from '@idstead/domain/hash.ts';
+import { identityVersionToken } from '@idstead/domain/hash.ts';
 import { assetBucket, copyObject } from './r2';
 import {
     bannerSizes,
@@ -198,7 +198,7 @@ export async function serveIdentityAsset(
         'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream',
         'X-Content-Type-Options': 'nosniff',
         'Cache-Control':
-            url.searchParams.get('v') === versionToken(version) ?
+            url.searchParams.get('v') === (await identityVersionToken(version)) ?
                 IMMUTABLE_CACHE_CONTROL
             :   IMAGE_CACHE_CONTROL,
         ETag: object.httpEtag

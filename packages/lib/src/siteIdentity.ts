@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { versionToken } from '@idstead/domain/hash.ts';
-
 export const IMAGE_LIMIT = 500_000;
 export const UPLOAD_LIMIT = 10_000_000;
 export function identityAssetUrl(name: string, version?: string | null) {
-    return version ? `/${name}?v=${versionToken(version)}` : '';
+    return version ? `/${name}?v=${encodeURIComponent(version)}` : '';
 }
 
 export function avatarSource(profile?: { avatar?: string; avatarVersion?: string | null } | null) {

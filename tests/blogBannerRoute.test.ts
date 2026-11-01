@@ -34,6 +34,13 @@ describe('Blog banner URLs on the CDN', () => {
         expect(bannerObjectKey(post, 'avif')).toBe(`staging/blog/${postId}/banner.avif`);
     });
 
+    test('banner tokens are short hashes, never the stored UUID', () => {
+        expect(token).toMatch(/^[0-9a-z]{14}$/);
+        expect(versionToken('7c9e6679-7425-40de-944b-e07fc1f90ae8')).not.toBe(token);
+        const post = { id: postId, slug: 'ubuntu-26-10', published: true, banner_version: version };
+        expect(bannerUrl(post, cdn)).not.toContain(version);
+    });
+
     test('no banner, no URL', () => {
         expect(bannerUrl({ id: postId, slug: 'x', published: true }, cdn)).toBeNull();
         expect(avifSources(null)).toEqual([]);
