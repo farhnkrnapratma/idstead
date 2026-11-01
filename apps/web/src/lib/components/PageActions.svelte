@@ -279,23 +279,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div
     role="group"
     aria-label="Page actions"
-    class={cn('inline-flex shrink-0 items-stretch rounded-md glass-button select-none', className)}>
+    class={cn('inline-flex shrink-0 items-stretch select-none', className)}>
     <button
         type="button"
         onclick={copyPage}
         use:shortcut={{ group: 'copy', chordKey: argKey('/copy', 'md'), label: 'Copy page' }}
-        class="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-l-md px-2.5 text-xs font-medium text-fg-secondary transition-colors hover:text-fg-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
+        class="relative inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-l-md border border-line-subtle bg-surface px-2.5 text-xs font-medium text-fg-secondary transition-colors hover:z-10 hover:border-accent hover:bg-surface-hover hover:text-fg-accent focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none max-sm:w-8 max-sm:justify-center max-sm:px-0">
         {#if copied === 'markdown'}
             <CopyCheck class="size-3.5 text-fg-accent" />
-            Copied
+            <span class="max-sm:sr-only">Copied</span>
         {:else}
             <Copy class="size-3.5" />
-            Copy page
+            <span class="max-sm:sr-only">Copy page</span>
         {/if}
     </button>
     <Dropdown
         ariaLabel="More page actions"
-        placement="bottom-end">
+        placement="bottom-end"
+        class="-ml-px focus-within:z-10 hover:z-10">
         {#snippet trigger({ isOpen, toggle })}
             <button
                 type="button"
@@ -305,8 +306,10 @@ SPDX-License-Identifier: AGPL-3.0-only
                 aria-expanded={isOpen}
                 aria-haspopup="dialog"
                 class={cn(
-                    'inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-r-md border-l border-line-subtle transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                    isOpen ? 'text-fg-accent' : 'text-fg-muted hover:text-fg-accent'
+                    'inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-r-md border bg-surface transition-colors hover:border-accent hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+                    isOpen ?
+                        'border-accent text-fg-accent'
+                    :   'border-line-subtle text-fg-muted hover:text-fg-accent'
                 )}>
                 <ChevronDown
                     class={cn(

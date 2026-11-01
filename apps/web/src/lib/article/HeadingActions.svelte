@@ -117,23 +117,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 <span
     role="group"
     aria-label={scope === 'page' ? 'Page link' : 'Section link'}
-    class="heading-actions inline-flex h-[clamp(1.5rem,1em,2rem)] items-stretch rounded-md border border-line-subtle text-fg-muted transition-colors">
+    class="heading-actions inline-flex h-[clamp(1.5rem,1em,2rem)] items-stretch text-fg-muted">
     <a
         {href}
         aria-label="Permanent link"
-        data-tooltip="Permanent link"
         class={cn(
-            'mdrs-anchor aspect-square h-full w-auto rounded-l-md rounded-r-none',
+            'mdrs-anchor relative h-full w-auto rounded-l-md rounded-r-none border border-line-subtle hover:z-10 hover:border-accent hover:text-fg-accent! focus-visible:z-10',
+            'gap-1.5 px-2.5 after:hidden max-sm:aspect-square max-sm:px-0',
             active && 'mdrs-is-active'
         )}
         onclick={togglePermalink}>
         <Pilcrow
-            class="size-[clamp(0.75rem,0.55em,1rem)]"
+            class="size-3.5"
             aria-hidden="true" />
+        <span class="font-sans text-xs font-medium max-sm:sr-only">Permalink</span>
     </a>
     <Dropdown
         ariaLabel={scope === 'page' ? 'Page link options' : 'Section link options'}
-        placement="bottom-end">
+        placement="bottom-end"
+        class="-ml-px focus-within:z-10 hover:z-10">
         {#snippet trigger({ isOpen, toggle })}
             <button
                 type="button"
@@ -142,12 +144,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                 aria-expanded={isOpen}
                 aria-haspopup="dialog"
                 class={cn(
-                    'heading-menu-trigger inline-flex aspect-square h-full cursor-pointer items-center justify-center rounded-r-md border-l border-line-subtle transition-[color,opacity] focus-visible:outline-2 focus-visible:outline-focus-ring',
-                    isOpen ? 'text-fg-accent' : 'hover:text-fg'
+                    'heading-menu-trigger inline-flex aspect-square h-full cursor-pointer items-center justify-center rounded-r-md border transition-[color,opacity] hover:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring',
+                    isOpen ?
+                        'border-accent text-fg-accent'
+                    :   'border-line-subtle hover:text-fg-accent'
                 )}>
                 <ChevronDown
                     class={cn(
-                        'size-[clamp(0.75rem,0.55em,1rem)] transition-transform duration-200 ease-out',
+                        'size-3.5 transition-transform duration-200 ease-out',
                         isOpen && 'rotate-180'
                     )}
                     aria-hidden="true" />
@@ -203,7 +207,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
     @media (hover: hover) and (pointer: fine) and (width >= 40rem) {
         :global(.mdrs-heading:not(:hover))
-            .heading-actions:not(:has(:focus-visible, [aria-expanded='true'])) {
+            .heading-actions:not(:has(:focus-visible, [aria-expanded='true']))
+            .mdrs-anchor {
             @apply border-transparent;
         }
 
