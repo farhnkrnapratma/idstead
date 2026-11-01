@@ -14,8 +14,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { a11yStore } from '@idstead/ui/stores/a11yStore.svelte.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
     import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
+    import { identityAssetUrl } from '#lib/siteIdentity.ts';
 
-    const { children } = $props();
+    const { data, children } = $props();
 
     shortcutStore.disable();
 
@@ -32,19 +33,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 </script>
 
 <svelte:head>
-    <link
-        rel="icon"
-        type="image/x-icon"
-        href="/favicon.ico" />
-    <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="/favicon-32x32.png" />
-    <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="/apple-touch-icon.png" />
+    {#if data.author?.avatarVersion}
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href={identityAssetUrl('favicon.ico', data.author.avatarVersion)} />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href={identityAssetUrl('favicon-32x32.png', data.author.avatarVersion)} />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href={identityAssetUrl('apple-touch-icon.png', data.author.avatarVersion)} />
+    {/if}
     <meta
         name="theme-color"
         content={themeColors(themeStore.isDark ? 'dark' : 'light').theme_color} />

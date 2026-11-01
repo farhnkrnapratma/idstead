@@ -11,24 +11,26 @@ import {
     postAssetHome,
     publicBannerUrl
 } from '../packages/lib/src/blogBanner.ts';
+import { versionToken } from '../packages/domain/src/hash.ts';
 
 const postId = '0b6f3c1e-8f5a-4c2b-9d7e-1a2b3c4d5e6f';
 const version = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 const cdn = 'https://cdn.example.com';
+const token = versionToken(version);
 
 describe('Blog banner URLs on the CDN', () => {
     test('published posts live in blog/{slug}/', () => {
         const post = { id: postId, slug: 'ubuntu-26-10', published: true, banner_version: version };
         expect(postAssetHome(post)).toBe('blog/ubuntu-26-10');
-        expect(publicBannerUrl(post, cdn)).toBe(`${cdn}/blog/ubuntu-26-10/banner.webp`);
+        expect(publicBannerUrl(post, cdn)).toBe(`${cdn}/blog/ubuntu-26-10/banner.webp?v=${token}`);
         expect(bannerSources(post, cdn)).toEqual([
-            { srcset: `${cdn}/blog/ubuntu-26-10/banner.avif`, type: 'image/avif' }
+            { srcset: `${cdn}/blog/ubuntu-26-10/banner.avif?v=${token}`, type: 'image/avif' }
         ]);
     });
 
     test('drafts live in the staging folder', () => {
         const post = { id: postId, slug: 'draft', published: false, banner_version: version };
-        expect(bannerUrl(post, cdn)).toBe(`${cdn}/staging/blog/${postId}/banner.webp`);
+        expect(bannerUrl(post, cdn)).toBe(`${cdn}/staging/blog/${postId}/banner.webp?v=${token}`);
         expect(bannerObjectKey(post, 'avif')).toBe(`staging/blog/${postId}/banner.avif`);
     });
 

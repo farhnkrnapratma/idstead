@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { IMAGE_CACHE_CONTROL } from './profileAssets';
+import { IMMUTABLE_CACHE_CONTROL } from './profileAssets';
 import {
     assetBucket,
     findAssetBucket,
@@ -46,7 +46,7 @@ export async function copyObject(platform: App.Platform | undefined, from: strin
     const ext = to.split('.').pop() ?? '';
     await copyStoredObject(await assetBucket(platform), from, to, {
         contentType: contentTypes[ext] ?? 'application/octet-stream',
-        cacheControl: IMAGE_CACHE_CONTROL
+        cacheControl: IMMUTABLE_CACHE_CONTROL
     });
 }
 

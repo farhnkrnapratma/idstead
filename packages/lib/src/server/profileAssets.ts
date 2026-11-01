@@ -4,6 +4,7 @@
 
 import * as publicEnv from '$app/env/public';
 import { dataStores } from './data';
+import { versionToken } from '@idstead/domain/hash.ts';
 import { assetBucket, copyObject } from './r2';
 import {
     bannerSizes,
@@ -17,6 +18,7 @@ export const assetNames = identityAssetNames;
 const VERSION_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const IMAGE_CACHE_CONTROL = 'public, max-age=300';
+export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const contentTypes: Record<string, string> = {
     svg: 'image/svg+xml',
@@ -148,7 +150,7 @@ export async function readIdentityObject(
         throw new Error('Invalid identity asset.');
     const bucket = await assetBucket(platform);
     return (
-        (await bucket.get(`identity/${name}`)) ?? (await bucket.get(`identity/${version}/${name}`))
+        (await bucket.get(`identity/${version}/${name}`)) ?? (await bucket.get(`identity/${name}`))
     );
 }
 
@@ -160,7 +162,7 @@ export async function serveIdentityAsset(
     const name = url.pathname === '/hero.png' ? 'avatar.png' : url.pathname.slice(1);
     const missing = () =>
         new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store' } });
-    if (!assetNames.includes(name) || url.searchParams.has('v')) return missing();
+    if (!assetNames.includes(name)) return missing();
     const versions = await dataStores(platform)
         .public.identity.current()
         .catch(() => null);
@@ -195,7 +197,10 @@ export async function serveIdentityAsset(
     const headers = new Headers({
         'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream',
         'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': IMAGE_CACHE_CONTROL,
+        'Cache-Control':
+            url.searchParams.get('v') === versionToken(version) ?
+                IMMUTABLE_CACHE_CONTROL
+            :   IMAGE_CACHE_CONTROL,
         ETag: object.httpEtag
     });
     if (name.endsWith('.svg'))

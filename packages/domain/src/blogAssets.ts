@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { versionToken } from './hash';
+
 export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function bannerKey(postId: string, version: string, ext: 'webp' | 'avif' = 'webp') {
@@ -36,5 +38,7 @@ export function bannerUrl(
     post: PostAssetOwner & { banner_version?: string | null },
     cdnBase: string
 ) {
-    return post.banner_version ? `${cdnBase}/${bannerObjectKey(post)}` : null;
+    return post.banner_version ?
+            `${cdnBase}/${bannerObjectKey(post)}?v=${versionToken(post.banner_version)}`
+        :   null;
 }

@@ -2,10 +2,16 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { versionToken } from '@idstead/domain/hash.ts';
+
 export const IMAGE_LIMIT = 500_000;
 export const UPLOAD_LIMIT = 10_000_000;
+export function identityAssetUrl(name: string, version?: string | null) {
+    return version ? `/${name}?v=${versionToken(version)}` : '';
+}
+
 export function avatarSource(profile?: { avatar?: string; avatarVersion?: string | null } | null) {
-    return profile?.avatarVersion ? '/avatar.png' : profile?.avatar || '';
+    return identityAssetUrl('avatar.png', profile?.avatarVersion) || profile?.avatar || '';
 }
 
 export function publicAvatarUrl(
@@ -17,12 +23,12 @@ export function publicAvatarUrl(
 }
 
 export function avatarWebpSource(profile?: { avatarVersion?: string | null } | null) {
-    return profile?.avatarVersion ? '/avatar.webp' : '';
+    return identityAssetUrl('avatar.webp', profile?.avatarVersion);
 }
 
 export function avatarSources(profile?: { avatarVersion?: string | null } | null) {
     if (!profile?.avatarVersion) return [];
-    return [{ srcset: '/avatar.avif', type: 'image/avif' }];
+    return [{ srcset: identityAssetUrl('avatar.avif', profile.avatarVersion), type: 'image/avif' }];
 }
 
 export const bannerSizes = {
@@ -34,11 +40,11 @@ export const bannerSizes = {
 export type BannerAssetName = keyof typeof bannerSizes;
 
 export function siteBannerOgUrl(profile?: { bannerVersion?: string | null } | null) {
-    return profile?.bannerVersion ? '/banner-og.webp' : '';
+    return identityAssetUrl('banner-og.webp', profile?.bannerVersion);
 }
 
 export function siteBannerSource(profile?: { bannerVersion?: string | null } | null) {
-    return profile?.bannerVersion ? '/banner.webp' : '';
+    return identityAssetUrl('banner.webp', profile?.bannerVersion);
 }
 
 export function publicBannerOgUrl(
@@ -52,8 +58,8 @@ export function publicBannerOgUrl(
 export function siteBannerSources(profile?: { bannerVersion?: string | null } | null) {
     if (!profile?.bannerVersion) return [];
     return [
-        { srcset: '/banner.avif', type: 'image/avif' },
-        { srcset: '/banner.webp', type: 'image/webp' }
+        { srcset: identityAssetUrl('banner.avif', profile.bannerVersion), type: 'image/avif' },
+        { srcset: identityAssetUrl('banner.webp', profile.bannerVersion), type: 'image/webp' }
     ];
 }
 

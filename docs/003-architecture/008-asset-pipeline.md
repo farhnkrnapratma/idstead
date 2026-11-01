@@ -24,8 +24,8 @@ sequenceDiagram
 
     V->>W: GET image URL
     W->>DB: check that an image exists (identity: db_profiles, banner: db_posts.banner_version)
-    W->>R2: GetObject canonical key (staging key of the current version as fallback)
-    W-->>V: bytes (max-age=300 + ETag)
+    W->>R2: GetObject staging key of the current version, canonical key otherwise
+    W-->>V: bytes (immutable for the current ?v token, otherwise max-age=300 + ETag)
 
     J->>DB: claim the banner and identity versions to clean up
     J->>R2: delete retired objects
@@ -48,7 +48,7 @@ sequenceDiagram
 
 - **Home folder.** A published post keeps its files in `blog/{slug}/` and a draft in `staging/blog/{postUuid}/`, with the same layout: `banner.{avif,webp}`, `images/{name}.{avif,webp}`, `videos/{name}.webm` (`postAssetHome()` in `blogBanner.ts`). Blog assets are served straight from the public CDN (`PUBLIC_CDN_BASE_URL`); there is no Worker route for them.
 - **Reserved slugs.** `banners` and `content` are not valid post slugs (`slugifyTitle()` turns them into `banners-post` / `content-post`), so a post folder never collides with the shared `blog/banners/` staging keys. Publishing with a slug another post already owns is rejected before any file is copied.
-- **Uploads** from the editor always land in `staging/blog/{postUuid}/`. The file name is `assetFileName()` of the original name, with `-2`, `-3`… when the staging or published folder already has that name. The editor creates the post ID before the first save and keeps it in the autosave.
+- **Uploads** from the editor always land in `staging/blog/{postUuid}/`. The file name is `assetFileName()` of the original name followed by the first 8 hex characters of the file's SHA-256, with `-2`, `-3`… when the staging or published folder already has that name. The editor creates the post ID before the first save and keeps it in the autosave.
 - **On save** (`relocateMarkdownAssets()`, before the markdown is stored): every CDN URL in the markdown that points to this post's staging folder or its previous home is copied to the post's new home and rewritten, so the stored markdown always has final URLs. The response returns the rewritten markdown to the editor.
 - **After the commit** (`syncPostAssets()`): the new banner moves from its version staging key to `{home}/banner.*` (or the old home's banner moves when the slug or the published state changed, and a banner still in the staging folder moves when the home has none), files in the home that the markdown no longer uses are deleted, the old home is deleted, and for a published post the whole staging folder is deleted. Deleting a post deletes its home and staging.
 - **Publishing or unpublishing from the post list** (`posts/flags`) changes the home without a save, so it moves only the banner (`movePostBanner()`); the markdown still links to the old home, whose files stay until the next save relocates them.
@@ -57,11 +57,11 @@ sequenceDiagram
 
 ## Serving rules
 
-- **One image per owner, no versions in URLs.** The site keeps one profile image, one website banner and one banner per post, each in several formats. Public URLs never carry a version, and any identity request with `?v` returns 404.
+- **One stored image per owner, versioned URLs.** The site keeps one profile image, one website banner and one banner per post, each in several formats. Pages link identity assets as `/{name}?v={token}` (`identityAssetUrl()` in `siteIdentity.ts`) and post banners as `{cdn}/{home}/banner.webp?v={token}` (`bannerUrl()` in `@idstead/domain/blogAssets.ts`). The token is `versionToken()` of the stored version (`@idstead/domain/hash.ts`), a short hash, so no UUID reaches public output. A new image gets a new URL.
 - **Staging and promotion.** Saves still upload to a staging key per version (`identity/{version}/{name}`, `blog/banners/{postUuid}/{operationId}.{ext}`) so a failed or conflicting save never touches the live image. After the DB commit the admin route copies the staged files to the canonical key (`promoteIdentity()`, `syncPostAssets()`) and deletes the staging copies. A partial identity save first copies the unchanged group from the canonical keys into the new staging folder (`copyAssets()`).
-- **Fallback.** If promotion failed, serving falls back to the staging key of the current version (`readIdentityObject()`), which is only deleted after a successful copy.
+- **Current version first.** `readIdentityObject()` reads the staging key of the current version and falls back to the canonical key. The staging key exists only until promotion succeeds, so a request for a new token never receives the previous image.
 - **Identity assets** (`serveIdentityAsset`, `packages/lib/src/server/profileAssets.ts`): 13 files (`identityAssetNames` in `siteIdentity.ts`). `db_profiles.avatar_version` and `banner_version` only say that an image exists. When no version exists yet: fallback to `PUBLIC_CDN_BASE_URL/{name}`.
-- **Cache:** images are `public, max-age=300` (`IMAGE_CACHE_CONTROL`) with the R2 ETag, so a change shows within about 5 minutes and revalidations return 304. The admin editors show the locally prepared image right after a save.
+- **Cache.** An identity request whose `?v` matches the current version gets `public, max-age=31536000, immutable` (`IMMUTABLE_CACHE_CONTROL` in `profileAssets.ts`). Requests without `?v` or with an older token (Open Graph crawlers, `/avatar/{hash}`, pages rendered before a change) get `public, max-age=300` (`IMAGE_CACHE_CONTROL`) with the R2 ETag. Post banners, images and videos are stored with `IMMUTABLE_CACHE_CONTROL` as their R2 `Cache-Control`: banners are only linked with their `?v` token, and Markdown files carry a content hash in their name, so a URL never points at different bytes. The admin editors show the locally prepared image right after a save.
 
 ## Cleanup
 

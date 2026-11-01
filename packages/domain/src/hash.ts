@@ -10,3 +10,14 @@ export async function sha256Hex(text: string): Promise<string> {
 export function hashIp(ip: string, salt: string): Promise<string> {
     return sha256Hex(ip + salt);
 }
+
+export function versionToken(version: string): string {
+    let first = 0x811c9dc5;
+    let second = 0x9e3779b9;
+    for (let index = 0; index < version.length; index++) {
+        const code = version.charCodeAt(index);
+        first = Math.imul(first ^ code, 0x01000193) >>> 0;
+        second = Math.imul(second ^ code, 0x5bd1e995) >>> 0;
+    }
+    return first.toString(36).padStart(7, '0') + second.toString(36).padStart(7, '0');
+}

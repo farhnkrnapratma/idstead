@@ -33,6 +33,7 @@ export async function readSite(platform?: unknown) {
                 headline: profile.headline,
                 email: profile.email,
                 manifest_settings: profile.manifestSettings,
+                avatar_version: profile.avatarVersion ?? null,
                 created_at: profile.createdAt,
                 updated_at: profile.updatedAt
             }

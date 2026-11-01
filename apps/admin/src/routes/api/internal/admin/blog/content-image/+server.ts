@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
 import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
-import { UUID_PATTERN, stagingAssetHome } from '#lib/blogBanner.ts';
+import { UUID_PATTERN, sha256, stagingAssetHome } from '#lib/blogBanner.ts';
 import { CONTENT_IMAGE_LIMIT } from '#lib/blogContentImage.ts';
 import { assetFileName } from '@idstead/domain/assetNaming.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
@@ -79,7 +79,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             platform,
             post: { id: postId, slug: post?.slug, published: post?.published },
             kind: 'images',
-            base,
+            base: `${base}-${(await sha256(bytes)).slice(0, 8)}`,
             ext: 'avif'
         });
         await putContentAsset(platform, `${home}/images/${name}.webp`, bytes, 'image/webp');

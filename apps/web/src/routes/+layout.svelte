@@ -13,6 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
+    import { identityAssetUrl } from '#lib/siteIdentity.ts';
     import ConsentBanner from '#app/components/ConsentBanner.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { Toast, ScrollToTopButton } from '@idstead/ui';
@@ -108,26 +109,26 @@ SPDX-License-Identifier: AGPL-3.0-only
         <link
             rel="icon"
             type="image/x-icon"
-            href="/favicon.ico" />
+            href={identityAssetUrl('favicon.ico', data.author.avatarVersion)} />
         <link
             rel="icon"
             type="image/png"
             sizes="16x16"
-            href="/favicon-16x16.png" />
+            href={identityAssetUrl('favicon-16x16.png', data.author.avatarVersion)} />
         <link
             rel="icon"
             type="image/png"
             sizes="32x32"
-            href="/favicon-32x32.png" />
+            href={identityAssetUrl('favicon-32x32.png', data.author.avatarVersion)} />
         <link
             rel="icon"
             type="image/svg+xml"
             sizes="any"
-            href="/favicon.svg" />
+            href={identityAssetUrl('favicon.svg', data.author.avatarVersion)} />
         <link
             rel="apple-touch-icon"
             sizes="180x180"
-            href="/apple-touch-icon.png" />
+            href={identityAssetUrl('apple-touch-icon.png', data.author.avatarVersion)} />
     {/if}
     <meta
         name="theme-color"

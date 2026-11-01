@@ -38,8 +38,8 @@ export {
 } from '@idstead/domain/blogAssets.ts';
 
 export function avifSources(webpUrl?: string | null): ImageSource[] {
-    if (!webpUrl || !/\.webp$/.test(webpUrl)) return [];
-    return [{ srcset: webpUrl.replace(/\.webp$/, '.avif'), type: 'image/avif' }];
+    if (!webpUrl || !/\.webp(?:\?|$)/.test(webpUrl)) return [];
+    return [{ srcset: webpUrl.replace(/\.webp(\?|$)/, '.avif$1'), type: 'image/avif' }];
 }
 
 export function bannerSources(

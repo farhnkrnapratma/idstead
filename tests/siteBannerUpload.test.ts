@@ -4,6 +4,7 @@
 
 import { describe, expect, test } from 'bun:test';
 import { inspectAvif } from '../packages/lib/src/avif.ts';
+import { versionToken } from '../packages/domain/src/hash.ts';
 import {
     parseIdentityMeta,
     validateSiteBanner
@@ -157,7 +158,9 @@ describe('banner asset routing', () => {
 
     test('public banner URLs are versioned and absolute for Open Graph', () => {
         const profile = { bannerVersion: 'v1', siteUrl: 'https://example.com' };
-        expect(publicBannerOgUrl(profile)).toBe('https://example.com/banner-og.webp');
+        expect(publicBannerOgUrl(profile)).toBe(
+            `https://example.com/banner-og.webp?v=${versionToken('v1')}`
+        );
         expect(publicBannerOgUrl({ bannerVersion: null, siteUrl: 'https://example.com' })).toBe('');
         expect(siteBannerSources(profile).map(source => source.type)).toEqual([
             'image/avif',
@@ -220,14 +223,19 @@ describe('shared identity folder', () => {
     });
 });
 
-describe('unversioned identity serving', () => {
-    test('identity assets are served from canonical keys and reject version queries', async () => {
+describe('versioned identity serving', () => {
+    test('identity assets read the current version first and cache only matching tokens', async () => {
         const source = await Bun.file(
             new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url)
         ).text();
-        expect(source).toContain("url.searchParams.has('v')) return missing();");
-        expect(source).toContain('bucket.get(`identity/${name}`)');
+        expect(source).not.toContain("url.searchParams.has('v')");
+        expect(source).toContain(
+            '(await bucket.get(`identity/${version}/${name}`)) ?? (await bucket.get(`identity/${name}`))'
+        );
+        expect(source).toContain("url.searchParams.get('v') === versionToken(version)");
         expect(source).toContain("export const IMAGE_CACHE_CONTROL = 'public, max-age=300';");
-        expect(source).not.toContain('immutable');
+        expect(source).toContain(
+            "export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';"
+        );
     });
 });

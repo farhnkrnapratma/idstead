@@ -6,6 +6,7 @@ import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 import { themeColors } from '@idstead/ui/themeColors.ts';
+import { identityAssetUrl } from '#lib/siteIdentity.ts';
 
 export const GET: RequestHandler = async ({ request, platform }) => {
     const { profile } = await readSite(platform);
@@ -21,7 +22,7 @@ export const GET: RequestHandler = async ({ request, platform }) => {
         display: 'standalone',
         ...themeColors(),
         icons: [192, 512].map(size => ({
-            src: `/android-chrome-${size}x${size}.png`,
+            src: identityAssetUrl(`android-chrome-${size}x${size}.png`, profile.avatar_version),
             sizes: `${size}x${size}`,
             type: 'image/png',
             purpose: 'any'

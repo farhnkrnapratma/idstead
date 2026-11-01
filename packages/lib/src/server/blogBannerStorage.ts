@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { IMAGE_CACHE_CONTROL } from './profileAssets';
+import { IMMUTABLE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
@@ -19,7 +19,7 @@ export async function putBanner(
     const key = bannerKey(postId, version, format);
     const contentType = format === 'avif' ? 'image/avif' : 'image/webp';
     await bucket.put(key, bytes, {
-        httpMetadata: { contentType, cacheControl: IMAGE_CACHE_CONTROL },
+        httpMetadata: { contentType, cacheControl: IMMUTABLE_CACHE_CONTROL },
         onlyIf: new Headers({ 'If-None-Match': '*' })
     });
     const data = await readObjectBytes(bucket, key);

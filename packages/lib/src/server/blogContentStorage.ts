@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { IMAGE_CACHE_CONTROL } from './profileAssets';
+import { IMMUTABLE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { sha256 } from '#lib/blogBanner.ts';
 
@@ -14,7 +14,7 @@ export async function putContentAsset(
 ) {
     const bucket = await assetBucket(platform);
     await bucket.put(key, bytes, {
-        httpMetadata: { contentType, cacheControl: IMAGE_CACHE_CONTROL }
+        httpMetadata: { contentType, cacheControl: IMMUTABLE_CACHE_CONTROL }
     });
     const data = await readObjectBytes(bucket, key);
     if (!data || (await sha256(data)) !== (await sha256(bytes)))

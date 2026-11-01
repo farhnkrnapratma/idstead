@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
 import { adminServices } from '#lib/server/adminRequest.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
-import { UUID_PATTERN, stagingAssetHome } from '#lib/blogBanner.ts';
+import { UUID_PATTERN, sha256, stagingAssetHome } from '#lib/blogBanner.ts';
 import { CONTENT_VIDEO_LIMIT, isWebm } from '#app/blogContentVideo.ts';
 import { assetFileName } from '@idstead/domain/assetNaming.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             platform,
             post: { id: postId, slug: post?.slug, published: post?.published },
             kind: 'videos',
-            base,
+            base: `${base}-${(await sha256(bytes)).slice(0, 8)}`,
             ext: 'webm'
         });
         await putContentAsset(platform, `${home}/videos/${name}.webm`, bytes, 'video/webm');
