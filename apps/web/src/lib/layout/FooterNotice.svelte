@@ -26,13 +26,15 @@ SPDX-License-Identifier: AGPL-3.0-only
     <ul class="flex flex-col gap-1 sm:items-end sm:text-right">
         {#if contentLicense?.url}
             <li>
-                Except where otherwise noted, content is licensed under <a
-                    href={contentLicense.url}
-                    target="_blank"
-                    rel="license noopener noreferrer"
-                    title={contentLicense.name}
-                    class={linkClass}>{contentLicense.label}</a
-                >.
+                Except where otherwise noted, content is licensed
+                <span class="whitespace-nowrap"
+                    >under <a
+                        href={contentLicense.url}
+                        target="_blank"
+                        rel="license noopener noreferrer"
+                        title={contentLicense.name}
+                        class={linkClass}>{contentLicense.label}</a
+                    >.</span>
             </li>
         {:else if contentLicense}
             <li>{contentLicense.label}.</li>
