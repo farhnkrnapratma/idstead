@@ -225,9 +225,8 @@
     }
 
     .mdrs-heading:hover .mdrs-heading-actions,
-    .mdrs-heading:focus-within .mdrs-heading-actions,
     .mdrs-heading:target .mdrs-heading-actions,
-    .mdrs-heading-actions:has(.mdrs-is-active, [aria-expanded='true']) {
+    .mdrs-heading-actions:has(:focus-visible, .mdrs-is-active, [aria-expanded='true']) {
         @apply opacity-100;
     }
 

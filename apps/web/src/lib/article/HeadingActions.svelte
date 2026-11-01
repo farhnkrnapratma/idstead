@@ -13,6 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { MENU_ITEM_TONE_CLASSES } from '@idstead/ui/utils/menuItemStyles.ts';
     import { activateHeadingAnchor } from '@mdrs/dom/headingAnchors.ts';
     import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
+    import { clearArticleHash } from './articleHash.ts';
 
     interface Props {
         href: string;
@@ -48,6 +49,21 @@ SPDX-License-Identifier: AGPL-3.0-only
     const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
     const markdownLink = $derived(`[${title.replace(/([\\[\]])/g, '\\$1')}](${url})`);
+
+    function togglePermalink(event: MouseEvent & { currentTarget: HTMLAnchorElement }) {
+        const anchor = event.currentTarget;
+        if (anchor.classList.contains('mdrs-is-active')) {
+            event.preventDefault();
+            event.stopPropagation();
+            anchor.classList.remove('mdrs-is-active');
+            clearArticleHash();
+            return;
+        }
+        activateHeadingAnchor(anchor);
+        if (!onPermalink) return;
+        event.preventDefault();
+        onPermalink();
+    }
 
     function showQr() {
         qrRequested = true;
@@ -101,7 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <span
     role="group"
     aria-label={scope === 'page' ? 'Page link' : 'Section link'}
-    class="inline-flex h-[clamp(1.5rem,1em,2rem)] items-stretch rounded-md border border-transparent text-fg-muted transition-colors has-focus-visible:border-line-subtle has-[[aria-expanded=true]]:border-line-subtle max-sm:border-line-subtle [.mdrs-heading:hover_&]:border-line-subtle">
+    class="heading-actions inline-flex h-[clamp(1.5rem,1em,2rem)] items-stretch rounded-md border border-line-subtle text-fg-muted transition-colors">
     <a
         {href}
         aria-label="Permanent link"
@@ -110,12 +126,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             'mdrs-anchor aspect-square h-full w-auto rounded-l-md rounded-r-none',
             active && 'mdrs-is-active'
         )}
-        onclick={event => {
-            activateHeadingAnchor(event.currentTarget);
-            if (!onPermalink) return;
-            event.preventDefault();
-            onPermalink();
-        }}>
+        onclick={togglePermalink}>
         <Pilcrow
             class="size-[clamp(0.75rem,0.55em,1rem)]"
             aria-hidden="true" />
@@ -191,8 +202,14 @@ SPDX-License-Identifier: AGPL-3.0-only
     @reference "@idstead/ui/styles/global.css";
 
     @media (hover: hover) and (pointer: fine) and (width >= 40rem) {
-        :global(.mdrs-heading:not(:hover, :focus-within))
-            .heading-menu-trigger:not([aria-expanded='true']) {
+        :global(.mdrs-heading:not(:hover))
+            .heading-actions:not(:has(:focus-visible, [aria-expanded='true'])) {
+            @apply border-transparent;
+        }
+
+        :global(.mdrs-heading:not(:hover))
+            .heading-actions:not(:has(:focus-visible, [aria-expanded='true']))
+            .heading-menu-trigger {
             @apply opacity-0;
         }
     }
