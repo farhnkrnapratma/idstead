@@ -83,7 +83,7 @@ Links still use the short form. A same-document link `[install](#install-bun)` i
 
 ### Anchor links and the table of contents
 
-In the browser, `enhanceHeadingAnchors` adds `mdrs-heading` to each heading, wraps its text in `mdrs-heading-text` and appends a pilcrow (¶) "Permanent link" anchor (`mdrs-anchor`) pointing at the heading's `#mdrs-…` ID. Headings inside charts and Mermaid diagrams are skipped.
+In the browser, `enhanceHeadingAnchors` adds `mdrs-heading` to each heading, wraps its text in `mdrs-heading-text` and adds an `mdrs-heading-actions` slot after the last word, kept on the same line as that word. By default the slot holds a pilcrow (¶) "Permanent link" anchor (`mdrs-anchor`) pointing at the heading's `#mdrs-…` ID; the `mountActions` option fills it with the host's own controls instead. Headings inside charts and Mermaid diagrams are skipped.
 
 `extractHeadings` builds the table of contents from levels 2 to 6. It skips headings that are visually hidden (`mdrs-sr-only`, `hidden`, `aria-hidden="true"`), such as the screen-reader-only "Footnotes" heading, and keeps `code`, `kbd`, `em`, `strong`, `sub` and `sup` formatting in the entry text. Math in a heading appears in the table of contents as its TeX source.
 

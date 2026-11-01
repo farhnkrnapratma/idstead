@@ -6,14 +6,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import { Link2, Pilcrow } from '@lucide/svelte';
     import { page } from '$app/state';
-    import { activateHeadingAnchor, copyHeadingLink } from '@mdrs/dom/headingAnchors.ts';
-    import { announceLinkCopy } from './articleHash.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
+    import HeadingActions from './HeadingActions.svelte';
 
     interface Props {
         title: string;
+        slug: string;
         excerpt?: string;
         class?: string;
         titleClass?: string;
@@ -24,6 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
     let {
         title,
+        slug,
         excerpt = '',
         class: className = '',
         titleClass = 'text-fg-secondary',
@@ -45,21 +45,15 @@ SPDX-License-Identifier: AGPL-3.0-only
     });
 </script>
 
-{#snippet permalink()}<a
-        href={page.url.pathname}
-        aria-label="Permanent link"
-        data-tooltip="Permanent link"
-        class="mdrs-anchor"
-        onclick={event => {
-            event.preventDefault();
-            activateHeadingAnchor(event.currentTarget);
-            onPermalink?.();
-        }}
-        tabindex="0">
-        <Pilcrow
-            class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
-            aria-hidden="true" />
-    </a>{/snippet}
+{#snippet permalink()}<span class="mdrs-heading-actions"
+        ><HeadingActions
+            href={page.url.pathname}
+            url="{page.url.origin}{page.url.pathname}"
+            {title}
+            qrSlug={slug}
+            scope="page"
+            {onPermalink} /></span
+    >{/snippet}
 
 <header class={cn('article-header border-b border-b-line-subtle pb-4', className)}>
     <h1
@@ -71,19 +65,6 @@ SPDX-License-Identifier: AGPL-3.0-only
             'text-2xl leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.mdrs-heading-text]:font-bold [&_.mdrs-heading-text]:not-italic',
             titleClass
         )}>
-        <button
-            type="button"
-            class="mdrs-copy-link"
-            aria-label="Copy link to this page"
-            data-tooltip="Copy link"
-            onclick={event =>
-                copyHeadingLink(
-                    event.currentTarget,
-                    `${page.url.origin}${page.url.pathname}`,
-                    announceLinkCopy
-                )}>
-            <Link2 aria-hidden="true" />
-        </button>
         {#if titleParts.hasMultiple}
             <span class="mdrs-heading-text inline"
                 >{titleParts.leading}&nbsp;<span class="whitespace-nowrap"

@@ -31,11 +31,11 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
     import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
     import {
-        announceLinkCopy,
         clearArticleHash,
         normalizeArticleHashOnEnter,
         showArticleFragment
     } from '../article/articleHash.ts';
+    import { mountHeadingActions } from '../article/headingActions.ts';
     import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
@@ -201,13 +201,24 @@ SPDX-License-Identifier: AGPL-3.0-only
     const enhanceArticle: Attachment<HTMLElement> = container => {
         void html;
         const dark = isDark;
+        const pageSlug = slug;
+        let detached = false;
+        let removeHeadingActions: (() => void) | undefined;
         tick().then(() => {
+            if (detached) return;
             container.querySelectorAll('pre code').forEach(block => {
                 hljs.highlightElement(block as HTMLElement);
             });
             enhanceMarkdownContent({ container, isDark: dark, onCodeCopy: triggerToast });
-            enhanceHeadingAnchors(container, { bareFragments: true, onCopyLink: announceLinkCopy });
+            removeHeadingActions = enhanceHeadingAnchors(container, {
+                bareFragments: true,
+                mountActions: mountHeadingActions(pageSlug, container)
+            });
         });
+        return () => {
+            detached = true;
+            removeHeadingActions?.();
+        };
     };
 
     const syncCodeBlockPrefs: Attachment<HTMLElement> = () => {
@@ -270,6 +281,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             class="article-scroll-container flex w-full min-w-0 scrollbar-none flex-col [-ms-overflow-style:none] lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[max(2rem,calc((100%-48rem)/2))] lg:pt-8 lg:pb-0 [&::-webkit-scrollbar]:hidden">
             <ArticleHeader
                 onPermalink={showArticleTitle}
+                {slug}
                 {title}
                 titleClass="text-fg">
                 {#snippet meta()}

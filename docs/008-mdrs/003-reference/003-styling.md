@@ -36,7 +36,7 @@ The sanitizer enforces the contract: on any element, a `class` token survives on
 | Diagrams and charts | `mdrs-mermaid`, `mdrs-mermaid-display`, `mdrs-mermaid-source`; `mdrs-chart`, `mdrs-chart-card`, `mdrs-chart-empty`, `mdrs-chart-error`, `mdrs-chart-tooltip` |
 | Embeds | `mdrs-embed` |
 | Footnotes | `mdrs-footnotes` (`mdrs-references` for a `:::references` block), `mdrs-footnote-backref` |
-| Headings | `mdrs-heading`, `mdrs-heading-text`, `mdrs-anchor` |
+| Headings | `mdrs-heading`, `mdrs-heading-text`, `mdrs-heading-tail`, `mdrs-heading-actions`, `mdrs-anchor` |
 | Errors | `mdrs-define-error` |
 
 ## Default stylesheet

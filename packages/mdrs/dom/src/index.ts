@@ -9,10 +9,9 @@ export {
     enhanceHeadingAnchors,
     resolveMdrsHash,
     activateHeadingAnchor,
-    copyHeadingLink,
     mdrsFragment
 } from './headingAnchors';
-export type { HeadingAnchorOptions } from './headingAnchors';
+export type { HeadingAnchorOptions, HeadingLink } from './headingAnchors';
 export {
     refreshCodeBlockPrefs,
     applyCodeThemeVariables,

@@ -4,7 +4,6 @@
 
 import { afterNavigate, goto } from '$app/navigation';
 import { page } from '$app/state';
-import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
 import { mdrsFragment, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
 
 function hashFragment(hash: string): string {
@@ -43,9 +42,4 @@ export function normalizeArticleHashOnEnter(container: () => HTMLElement | null 
     afterNavigate(({ type }) => {
         if (type === 'enter') normalizeArticleHash(container());
     });
-}
-
-export function announceLinkCopy(_url: string, copied: boolean): void {
-    if (copied) toastStore.success('Link copied');
-    else toastStore.error('Copy failed');
 }

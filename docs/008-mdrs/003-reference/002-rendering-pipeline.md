@@ -70,8 +70,8 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
-| `enhanceHeadingAnchors(container, options)` | `packages/mdrs/dom/src/headingAnchors.ts` | ¶ anchor links; `bareFragments: true` links to `#setup` instead of `#mdrs-setup`, and `onCopyLink` adds a copy-link button at the start of the heading box that copies the section URL |
-| `copyHeadingLink(button, url, onCopy)` | `packages/mdrs/dom/src/headingAnchors.ts` | Copies a heading URL and marks its button active |
+| `enhanceHeadingAnchors(container, options)` | `packages/mdrs/dom/src/headingAnchors.ts` | Heading actions after the last word: a ¶ anchor link by default, or whatever `mountActions(slot, link)` mounts into the `mdrs-heading-actions` slot; `bareFragments: true` links to `#setup` instead of `#mdrs-setup`. Returns a cleanup that runs every `mountActions` cleanup |
+| `activateHeadingAnchor(anchor)` | `packages/mdrs/dom/src/headingAnchors.ts` | Marks a heading's ¶ anchor as the active permalink |
 | `mdrsFragment(id)` | `packages/mdrs/dom/src/headingAnchors.ts` | Strips the `mdrs-` prefix for URLs |
 
 Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `mdrsResolvers(repositories)` on the server. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.

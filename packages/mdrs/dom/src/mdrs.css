@@ -220,61 +220,43 @@
         @apply relative scroll-mt-20;
     }
 
-    .mdrs-heading:has(> .mdrs-copy-link) {
-        @apply md:-ml-8 md:pl-8;
+    .mdrs-heading-actions {
+        @apply relative -my-[0.25em] ml-[0.3em] inline-flex items-center align-middle leading-none font-normal whitespace-nowrap not-italic opacity-0 transition-opacity select-none;
     }
 
-    .mdrs-heading a.mdrs-anchor {
-        @apply relative -my-[0.25em] ml-[0.15em]! inline-flex! size-[1.3em] cursor-pointer! items-center! justify-center! rounded-sm align-middle! leading-none! whitespace-nowrap! text-fg-muted! no-underline! opacity-0 transition-[color,opacity] select-none;
-    }
-
-    .mdrs-heading a.mdrs-anchor svg {
-        @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline! select-none;
-    }
-
-    .mdrs-heading:hover :is(a.mdrs-anchor, .mdrs-copy-link),
-    .mdrs-heading:focus-within :is(a.mdrs-anchor, .mdrs-copy-link),
-    .mdrs-heading :is(a.mdrs-anchor, .mdrs-copy-link).mdrs-is-active {
+    .mdrs-heading:hover .mdrs-heading-actions,
+    .mdrs-heading:focus-within .mdrs-heading-actions,
+    .mdrs-heading:target .mdrs-heading-actions,
+    .mdrs-heading-actions:has(.mdrs-is-active, [aria-expanded='true']) {
         @apply opacity-100;
     }
 
-    @media (pointer: coarse) {
-        .mdrs-heading :is(a.mdrs-anchor, .mdrs-copy-link) {
+    @media (pointer: coarse), (width < 40rem) {
+        .mdrs-heading-actions {
             @apply opacity-100;
         }
     }
 
-    .mdrs-heading a.mdrs-anchor:hover,
-    .mdrs-heading a.mdrs-anchor:focus-visible,
-    .mdrs-heading .mdrs-copy-link:hover,
-    .mdrs-heading .mdrs-copy-link:focus-visible {
-        @apply text-fg!;
+    .mdrs-heading a.mdrs-anchor {
+        @apply relative inline-flex size-[1.3em] cursor-pointer items-center justify-center rounded-sm text-fg-muted no-underline transition-colors hover:text-fg focus-visible:text-fg focus-visible:outline-2 focus-visible:outline-focus-ring;
+    }
+
+    .mdrs-heading a.mdrs-anchor svg {
+        @apply block size-[0.85em] shrink-0;
     }
 
     .mdrs-heading a.mdrs-anchor.mdrs-is-active,
-    .mdrs-heading:target a.mdrs-anchor,
-    .mdrs-heading .mdrs-copy-link.mdrs-is-active {
-        @apply text-fg-accent!;
+    .mdrs-heading:target a.mdrs-anchor {
+        @apply text-fg-accent;
     }
 
-    .mdrs-heading .mdrs-copy-link {
-        @apply absolute top-[0.5lh] left-0 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-fg-muted opacity-0 transition-[color,opacity] select-none focus-visible:outline-2 focus-visible:outline-focus-ring max-md:static max-md:ml-1 max-md:inline-flex max-md:translate-none max-md:align-middle;
-    }
-
-    .mdrs-heading .mdrs-copy-link svg {
-        @apply block size-[0.75em] shrink-0;
-    }
-
-    .mdrs-heading a.mdrs-anchor::after,
-    .mdrs-heading .mdrs-copy-link::after {
+    .mdrs-heading a.mdrs-anchor::after {
         content: attr(data-tooltip);
         @apply pointer-events-none absolute top-[calc(100%+0.5rem)] left-1/2 z-70 -translate-x-1/2 rounded-md border border-line-subtle bg-surface px-2 py-1 font-sans text-3xs leading-normal font-medium whitespace-nowrap text-fg opacity-0 shadow-lg transition-opacity;
     }
 
     .mdrs-heading a.mdrs-anchor:hover::after,
-    .mdrs-heading a.mdrs-anchor:focus-visible::after,
-    .mdrs-heading .mdrs-copy-link:hover::after,
-    .mdrs-heading .mdrs-copy-link:focus-visible::after {
+    .mdrs-heading a.mdrs-anchor:focus-visible::after {
         @apply opacity-100;
     }
 
