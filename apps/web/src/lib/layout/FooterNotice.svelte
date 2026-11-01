@@ -23,19 +23,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <div class="flex flex-col gap-1 text-xs font-medium text-fg-muted sm:items-end">
     <span class="select-none">{copyright}</span>
-    <ul
-        class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-end sm:gap-1.5 sm:[&>li+li]:before:mr-1.5 sm:[&>li+li]:before:content-['·']">
+    <ul class="flex flex-col gap-1 sm:items-end sm:text-right">
         {#if contentLicense?.url}
             <li>
-                Content: <a
+                Except where otherwise noted, content is licensed under <a
                     href={contentLicense.url}
                     target="_blank"
                     rel="license noopener noreferrer"
                     title={contentLicense.name}
-                    class={linkClass}>{contentLicense.label}</a>
+                    class={linkClass}>{contentLicense.label}</a
+                >.
             </li>
         {:else if contentLicense}
-            <li>Content: {contentLicense.label}</li>
+            <li>{contentLicense.label}.</li>
         {/if}
         {#if sourceUrl}
             <li>
