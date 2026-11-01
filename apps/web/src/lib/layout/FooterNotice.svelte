@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         {#if contentLicense?.url}
             <li>
                 Except where otherwise noted, content is licensed
-                <span class="whitespace-nowrap"
+                <span class="block"
                     >under <a
                         href={contentLicense.url}
                         target="_blank"
