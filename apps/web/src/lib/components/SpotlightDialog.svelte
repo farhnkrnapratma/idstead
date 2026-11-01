@@ -1258,7 +1258,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                     spellcheck="false"
                     autocomplete="off"
                     placeholder="Search or type / for commands..."
-                    class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-mono text-xs font-medium text-fg shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:text-fg-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
+                    class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! text-xs font-medium text-fg shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:text-xs placeholder:font-normal placeholder:text-fg-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
                     aria-label="Search query"
                     aria-autocomplete="list"
                     aria-controls="search-results"
@@ -1382,7 +1382,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     historyDisplay.title.slice(spaceIdx)
                                                 )}
                                             <div class="flex min-w-0 flex-1 items-center gap-2">
-                                                <span class="shrink-0 font-mono text-xs">
+                                                <span class="shrink-0 text-xs">
                                                     {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                             class={chunk.match ?
                                                                 'font-semibold text-fg-accent'
@@ -1490,9 +1490,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 Search or run any commands
                             </p>
                             <p class="text-2xs text-fg-muted">
-                                Type <span class="font-mono text-fg-accent">/</span> for commands,
-                                or
-                                <span class="font-mono text-fg-accent">/help</span> for the guide
+                                Type <span class="text-fg-accent">/</span> for commands, or
+                                <span class="text-fg-accent">/help</span> for the guide
                             </p>
                         </div>
                     {:else}
@@ -1591,7 +1590,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                         item.title.slice(spaceIdx)
                                                     )}
                                                 <div class="flex min-w-0 flex-1 items-center gap-2">
-                                                    <span class="shrink-0 font-mono text-xs">
+                                                    <span class="shrink-0 text-xs">
                                                         {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                 class={chunk.match ?
                                                                     'font-semibold text-fg-accent'
@@ -1796,7 +1795,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         </div>
                                         <div
                                             class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1 py-1">
-                                            <span class="font-mono text-xs font-medium text-fg">
+                                            <span class="text-xs font-medium text-fg">
                                                 {cmd.command}{#if cmd.argHint}<span
                                                         class="ml-1 font-normal text-fg-muted">
                                                         {cmd.argHint}</span
