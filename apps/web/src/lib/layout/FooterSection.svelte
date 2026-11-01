@@ -167,8 +167,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="-ml-3 w-fit shrink-0 px-1 font-mono text-base font-semibold text-fg!">
                         Idstead
                     </Button>
-                    <FooterNotice {copyright} />
+                    <span class="text-xs font-medium text-fg-muted select-none">{copyright}</span>
                 </div>
+                <FooterNotice />
             </div>
         </div>
     </div>

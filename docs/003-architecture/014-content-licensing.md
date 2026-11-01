@@ -35,7 +35,7 @@ sequenceDiagram
 
 | Place | Shows |
 | --- | --- |
-| Footer (`FooterNotice.svelte`) | "Except where otherwise noted, content is licensed under …" with the site license ("All rights reserved." when there is none), and a "Source (AGPL-3.0)" link when `source` is set in `idstead.jsonc` |
+| Footer (`FooterNotice.svelte`) | "Except where otherwise noted, original content on this site is licensed under …" with the site license ("All rights reserved, except where otherwise noted." when there is none; the link carries `rel="license"` only on pages without a post notice), and a "Source (AGPL-3.0)" link when `source` is set in `idstead.jsonc` |
 | Post page (`ArticleLicense.svelte`) | "Except where otherwise noted, this post is licensed under …" with the post's effective license, and the banner credit when the banner is not the owner's work |
 | `/blog/{slug}.md`, `/blog/{slug}.txt` | The license notice and banner credit after the body |
 | JSON-LD `BlogPosting` | `license` with the deed URL, for Creative Commons licenses |
