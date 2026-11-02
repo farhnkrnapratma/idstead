@@ -227,8 +227,8 @@ export function createWebMcpTools(endpoint: Endpoint): WebMcpTool[] {
 async function register(modelContext: ModelContext, tool: WebMcpTool, signal: AbortSignal) {
     try {
         await modelContext.registerTool(tool, { signal });
-    } catch {
-        return;
+    } catch (error) {
+        console.warn(`Could not register the WebMCP tool ${tool.name}:`, error);
     }
 }
 

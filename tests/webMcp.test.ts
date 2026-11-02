@@ -125,12 +125,41 @@ describe('WebMCP registration', () => {
         expect(shared.registered.length).toBe(4);
     });
 
-    test('keeps the page working when a registration is rejected', async () => {
-        stubDocument({ registerTool: () => Promise.reject(new Error('duplicate tool')) });
+    test('keeps the page working and logs each tool whose registration is rejected', async () => {
+        const warnings: unknown[][] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: unknown[]) => void warnings.push(args);
+        try {
+            stubDocument({ registerTool: () => Promise.reject(new Error('duplicate tool')) });
 
-        const cleanup = registerWebMcpTools(endpoint);
-        await Promise.resolve();
-        expect(() => cleanup()).not.toThrow();
+            const cleanup = registerWebMcpTools(endpoint);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(() => cleanup()).not.toThrow();
+        } finally {
+            console.warn = originalWarn;
+        }
+        expect(warnings.length).toBe(4);
+        expect(String(warnings[0][0])).toContain('search_posts');
+        expect((warnings[0][1] as Error).message).toBe('duplicate tool');
+    });
+
+    test('logs a registration that throws before returning a promise', async () => {
+        const warnings: unknown[][] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: unknown[]) => void warnings.push(args);
+        try {
+            stubDocument({
+                registerTool: () => {
+                    throw new TypeError('unsupported option');
+                }
+            });
+            registerWebMcpTools(endpoint);
+            await new Promise(resolve => setTimeout(resolve, 0));
+        } finally {
+            console.warn = originalWarn;
+        }
+        expect(warnings.length).toBe(4);
+        expect((warnings[0][1] as Error).message).toBe('unsupported option');
     });
 });
 
