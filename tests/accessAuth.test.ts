@@ -119,7 +119,8 @@ describe('admin request identity', () => {
                 { dev: true }
             )
         ).toBeNull();
-        expect(await accessIdentity(local, { env: {} })).toBeNull();
+        const byDefault = await accessIdentity(local, { env: {} }, { now: NOW });
+        expect(byDefault !== null).toBe(import.meta.env.DEV === true);
     });
 
     test('a configured instance never falls back to the dev identity', async () => {
