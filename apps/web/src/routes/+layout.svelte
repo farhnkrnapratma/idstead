@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
     import { identityAssetUrl } from '#lib/siteIdentity.ts';
+    import { registerWebMcpTools } from '#app/webMcp.ts';
     import ConsentBanner from '#app/components/ConsentBanner.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { Toast, ScrollToTopButton } from '@idstead/ui';
@@ -55,12 +56,16 @@ SPDX-License-Identifier: AGPL-3.0-only
         const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(refreshCodeBlockPrefs);
         const cleanupScroll = scrollStore.init();
         const cleanupSubmitShortcut = installSubmitShortcut();
+        const cleanupWebMcp = registerWebMcpTools(path =>
+            apiUrl(path, publicEnv.PUBLIC_API_BASE_URL)
+        );
         return () => {
             cleanupTheme?.();
             cleanupA11y?.();
             cleanupCodeBlockPrefs?.();
             cleanupScroll?.();
             cleanupSubmitShortcut();
+            cleanupWebMcp();
         };
     });
 
