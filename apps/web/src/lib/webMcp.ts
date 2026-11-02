@@ -232,11 +232,20 @@ async function register(modelContext: ModelContext, tool: WebMcpTool, signal: Ab
     }
 }
 
+function availableModelContexts() {
+    const candidates = [
+        (document as Document & { modelContext?: ModelContext }).modelContext,
+        (navigator as Navigator & { modelContext?: ModelContext }).modelContext
+    ];
+    return [...new Set(candidates.filter((context): context is ModelContext => !!context))];
+}
+
 export function registerWebMcpTools(endpoint: Endpoint): () => void {
-    const modelContext = (document as Document & { modelContext?: ModelContext }).modelContext;
-    if (!modelContext) return () => {};
+    const modelContexts = availableModelContexts();
+    if (!modelContexts.length) return () => {};
     const controller = new AbortController();
-    for (const tool of createWebMcpTools(endpoint))
-        void register(modelContext, tool, controller.signal);
+    const tools = createWebMcpTools(endpoint);
+    for (const modelContext of modelContexts)
+        for (const tool of tools) void register(modelContext, tool, controller.signal);
     return () => controller.abort();
 }

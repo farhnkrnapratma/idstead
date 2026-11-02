@@ -48,7 +48,26 @@ afterEach(() => {
     globalThis.fetch = originalFetch;
     if (originalDocument) Object.defineProperty(globalThis, 'document', originalDocument);
     else Reflect.deleteProperty(globalThis, 'document');
+    Reflect.deleteProperty(globalThis.navigator, 'modelContext');
 });
+
+function recordingContext() {
+    const registered: { tool: WebMcpTool; signal: AbortSignal }[] = [];
+    return {
+        registered,
+        registerTool(registeredTool: WebMcpTool, options: { signal: AbortSignal }) {
+            registered.push({ tool: registeredTool, signal: options.signal });
+            return Promise.resolve();
+        }
+    };
+}
+
+function stubNavigator(modelContext: unknown) {
+    Object.defineProperty(globalThis.navigator, 'modelContext', {
+        configurable: true,
+        value: modelContext
+    });
+}
 
 describe('WebMCP registration', () => {
     test('does nothing when the browser has no model context', () => {
@@ -77,6 +96,33 @@ describe('WebMCP registration', () => {
         expect(registered.every(entry => !entry.signal.aborted)).toBe(true);
         cleanup();
         expect(registered.every(entry => entry.signal.aborted)).toBe(true);
+    });
+
+    test('registers on navigator.modelContext for hosts that only provide it', () => {
+        const context = recordingContext();
+        stubNavigator(context);
+
+        const cleanup = registerWebMcpTools(endpoint);
+
+        expect(context.registered.length).toBe(4);
+        cleanup();
+        expect(context.registered.every(entry => entry.signal.aborted)).toBe(true);
+    });
+
+    test('registers on both objects when they differ and once when they are the same', () => {
+        const documentContext = recordingContext();
+        const navigatorContext = recordingContext();
+        stubDocument(documentContext);
+        stubNavigator(navigatorContext);
+        registerWebMcpTools(endpoint);
+        expect(documentContext.registered.length).toBe(4);
+        expect(navigatorContext.registered.length).toBe(4);
+
+        const shared = recordingContext();
+        stubDocument(shared);
+        stubNavigator(shared);
+        registerWebMcpTools(endpoint);
+        expect(shared.registered.length).toBe(4);
     });
 
     test('keeps the page working when a registration is rejected', async () => {
