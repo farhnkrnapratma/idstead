@@ -3,7 +3,7 @@
 Inspect the existing runtime, API client or binding, authentication layer, player, and secret storage before adding Stream. Choose upload and viewing permissions from the application's requirements.
 
 | Task | Read |
-| --- | --- |
+|---|---|
 | Configure Stream in a Worker and use its binding | [Stream binding setup](https://developers.cloudflare.com/stream/manage-video-library/bindings/index.md#setup) |
 | Set creator upload constraints and metadata | [Direct creator uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/index.md) |
 | Choose a token endpoint, Worker binding, or signing key | [Token-generation choices](https://developers.cloudflare.com/stream/viewing-videos/securing-your-stream/index.md#three-ways-to-generate-signed-tokens) |

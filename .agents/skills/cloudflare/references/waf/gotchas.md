@@ -3,7 +3,7 @@
 Use observed requests and the deployed ruleset definitions to diagnose behavior before changing protection.
 
 | Symptom or decision | Documentation to read |
-| --- | --- |
+|---------------------|-----------------------|
 | A rule executes earlier or later than expected | [WAF phases and account/zone order](https://developers.cloudflare.com/waf/reference/phases/index.md) and [terminating actions](https://developers.cloudflare.com/ruleset-engine/rules-language/actions/index.md) |
 | A skip rule leaves a protection active | [Skip scope, phases, products, and logging](https://developers.cloudflare.com/waf/custom-rules/skip/options/index.md) |
 | Updating a ruleset removes unrelated rules | [Ruleset replacement semantics](https://developers.cloudflare.com/ruleset-engine/rulesets-api/update/index.md) |

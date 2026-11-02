@@ -3,7 +3,7 @@
 Read the setup guide for the target environment before creating resources or editing bindings.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Create a namespace and connect a Worker | [Get started](https://developers.cloudflare.com/kv/get-started/index.md) and [KV bindings](https://developers.cloudflare.com/kv/concepts/kv-bindings/index.md) |
 | Configure staging and production namespaces | [KV environments](https://developers.cloudflare.com/kv/reference/environments/index.md) |
 | Generate Worker environment and binding types | [Workers TypeScript](https://developers.cloudflare.com/workers/languages/typescript/index.md) |

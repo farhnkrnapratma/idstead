@@ -3,7 +3,7 @@
 Choose an integration that matches the application's runtime and required API shape. Fetch its guide before installing packages or writing requests; model identifiers, SDK options, and gateway headers belong in the docs.
 
 | Integration task | Current documentation |
-| --- | --- |
+|------------------|-----------------------|
 | New single-model HTTP calls or OpenAI-compatible clients | [REST API](https://developers.cloudflare.com/ai-gateway/usage/rest-api/index.md) |
 | Vercel AI SDK, provider adapters, and fallback providers | [Vercel AI SDK integration](https://developers.cloudflare.com/ai-gateway/integrations/vercel-ai-sdk/index.md) |
 | Preserve OpenAI-native endpoints with the OpenAI SDK, Python, or HTTP | [OpenAI provider guide](https://developers.cloudflare.com/ai-gateway/usage/providers/openai/index.md) |

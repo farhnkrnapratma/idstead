@@ -15,7 +15,7 @@ For freshness requirements, read [Syncing](https://developers.cloudflare.com/ai-
 Read the linked page before implementing; these references route to the maintained documentation instead of copying API examples or configuration.
 
 | Task | Start here |
-| --- | --- |
+|------|------------|
 | Build a new Worker integration | [Workers binding quick start](https://developers.cloudflare.com/ai-search/get-started/workers/index.md) |
 | Choose an API or maintain an existing integration | [API routes](api.md) |
 | Connect data, configure indexing, or manage environments | [Configuration routes](configuration.md) |

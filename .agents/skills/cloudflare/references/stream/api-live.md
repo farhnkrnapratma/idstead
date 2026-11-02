@@ -3,7 +3,7 @@
 Choose the ingest protocol and viewer experience before creating live inputs. Read the current examples for returned endpoints and credentials instead of constructing publish URLs from an input ID.
 
 | Task | Read |
-| --- | --- |
+|---|---|
 | Create an RTMPS/SRT input and connect an encoder | [Start a live stream](https://developers.cloudflare.com/stream/stream-live/start-stream-live/index.md) |
 | Update inputs, recording, retention, or stream keys | [Manage live inputs](https://developers.cloudflare.com/stream/stream-live/start-stream-live/index.md#manage-live-inputs) |
 | Choose persistent-channel playback versus a particular video | [View by live input ID or video ID](https://developers.cloudflare.com/stream/stream-live/watch-live-stream/index.md#view-by-live-input-id-or-video-id) |

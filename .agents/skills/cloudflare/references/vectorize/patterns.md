@@ -1,7 +1,7 @@
 # Vectorize pattern routes
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Generate and query Workers AI embeddings | [Vectorize and Workers AI](https://developers.cloudflare.com/vectorize/get-started/embeddings/index.md) |
 | Query with embeddings from OpenAI | [OpenAI integration](https://developers.cloudflare.com/vectorize/best-practices/query-vectors/index.md#openai) |
 | Choose embedding dimensions and distance metric | [Create indexes](https://developers.cloudflare.com/vectorize/best-practices/create-indexes/index.md) |

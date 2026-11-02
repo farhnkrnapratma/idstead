@@ -3,7 +3,7 @@
 Fetch the selected model's page from the [model catalog](https://developers.cloudflare.com/workers-ai/models/index.md) for request fields, output format, dimensions, and examples. Text, embeddings, images, audio, and translation do not share one response schema.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Invoke inference through a Worker binding | [Workers bindings](https://developers.cloudflare.com/workers-ai/configuration/bindings/index.md) |
 | Invoke inference over HTTP | [REST API reference](https://developers.cloudflare.com/api/resources/ai/methods/run/index.md) |
 | Stream text or use SDK abstractions | [Vercel AI SDK](https://developers.cloudflare.com/workers-ai/configuration/ai-sdk/index.md), or the selected model's streaming example |

@@ -3,7 +3,7 @@
 Choose the workflow that matches the existing storage and delivery architecture, then read its implementation guide.
 
 | Workflow | Documentation |
-| --- | --- |
+|----------|---------------|
 | Let users upload without exposing account credentials | [Direct Creator Upload](https://developers.cloudflare.com/images/storage/upload-images/direct-creator-upload/index.md) |
 | Serve images for different layouts and display densities | [Make responsive images](https://developers.cloudflare.com/images/optimization/make-responsive-images/index.md) |
 | Select output format for hosted images | [Hosted-image format optimization](https://developers.cloudflare.com/images/optimization/hosted-images/serve-uploaded-images/index.md#optimize-format) |

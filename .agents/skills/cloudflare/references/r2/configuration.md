@@ -3,7 +3,7 @@
 Fetch the task's documentation before editing Wrangler configuration or bucket settings.
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Create a bucket and bind it to a Worker | [Workers API setup](https://developers.cloudflare.com/r2/get-started/workers-api/index.md) |
 | Choose local simulation or a remote bucket during development | [Supported bindings per development mode](https://developers.cloudflare.com/workers/local-development/bindings-per-env/index.md) and [local development](https://developers.cloudflare.com/workers/local-development/index.md) |
 | Create S3 credentials and scope permissions | [R2 authentication](https://developers.cloudflare.com/r2/api/tokens/index.md) |

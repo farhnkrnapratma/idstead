@@ -1,7 +1,7 @@
 # Images API Selection
 
 | Operation | Documentation |
-| --- | --- |
+|-----------|---------------|
 | Optimize image bytes in a Worker; select input, transform, output, and response methods | [Optimize with Workers](https://developers.cloudflare.com/images/optimization/binding/index.md#methods) |
 | Upload, list, retrieve, update, or delete hosted images from a Worker | [Manage hosted images with Workers](https://developers.cloudflare.com/images/storage/binding/index.md) |
 | Upload or manage images through HTTP | [Upload methods](https://developers.cloudflare.com/images/storage/upload-images/methods/index.md#upload-using-api) and its linked Images API reference |

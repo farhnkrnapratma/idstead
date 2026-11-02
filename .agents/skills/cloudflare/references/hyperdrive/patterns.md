@@ -3,7 +3,7 @@
 See [api.md](./api.md) for maintained driver and ORM examples. Use the following decisions to select a pattern, then fetch its linked documentation for implementation.
 
 | Workload or decision | Guidance and documentation |
-| --- | --- |
+|----------------------|----------------------------|
 | Popular content or analytics dashboards | Cache only when the product can tolerate the configured stale window. Use [query caching](https://developers.cloudflare.com/hyperdrive/concepts/query-caching/index.md) for eligibility, parameters, and settings. |
 | Mixed cached reads and fresh reads | Route authentication, permissions, and reads after writes through a cache-disabled configuration. Writes do not invalidate cached results; see [read-after-write behavior](https://developers.cloudflare.com/hyperdrive/concepts/query-caching/index.md#read-after-write-behavior). |
 | Multi-tenant queries | Derive tenant scope from authenticated application context and apply it to every query. A cache is not an authorization boundary. Review [query caching](https://developers.cloudflare.com/hyperdrive/concepts/query-caching/index.md) for the selected query's behavior. |

@@ -3,7 +3,7 @@
 Decide which requests need application logic before choosing configuration. Record expected behavior for public files, API paths, protected content, browser navigation, and missing URLs.
 
 | Routing need | Documentation |
-| --- | --- |
+|--------------|---------------|
 | Serve public assets with minimal Worker involvement | [Default Worker routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/index.md) |
 | Combine a SPA with API routes | [Advanced SPA routing control](https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/index.md#advanced-routing-control) |
 | Require authentication or transform assets before serving | [Run Worker before each request](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/index.md#run-worker-before-each-request) |

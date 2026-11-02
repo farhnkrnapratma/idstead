@@ -7,7 +7,7 @@ Fetch the linked documentation before choosing endpoints, authentication headers
 ## Choose a task
 
 | Task | Reference |
-| --- | --- |
+|------|-----------|
 | Create a gateway or choose authentication and provider credentials | [Configuration](./configuration.md) |
 | Integrate an SDK, direct HTTP, or a Worker binding | [SDK integration](./sdk-integration.md) |
 | Configure caching, rate limits, security, billing, or logging | [Features](./features.md) |

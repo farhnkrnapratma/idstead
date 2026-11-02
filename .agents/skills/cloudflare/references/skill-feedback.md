@@ -29,7 +29,7 @@ The issue is drafted from the conversation, so remove the following before draft
 ## Issue body
 
 | Field | Value |
-| --- | --- |
+|-------|-------|
 | Type | `bug` (incorrect guidance), `outdated`, `missing`, or `improvement` |
 | Skill | `cloudflare` |
 | Source | File and section, e.g. `SKILL.md` > "Section name" or `references/<file>.md` > "Section name" |

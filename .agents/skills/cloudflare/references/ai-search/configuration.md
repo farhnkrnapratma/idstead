@@ -1,7 +1,7 @@
 # AI Search Configuration Routes
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Set up a Worker and local development | [Workers binding quick start](https://developers.cloudflare.com/ai-search/get-started/workers/index.md) |
 | Select built-in uploads, R2, or a website; check supported formats | [Data sources](https://developers.cloudflare.com/ai-search/configuration/data-source/index.md) |
 | Connect existing R2 content | [R2 data source](https://developers.cloudflare.com/ai-search/configuration/data-source/r2/index.md) |

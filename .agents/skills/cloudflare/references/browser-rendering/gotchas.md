@@ -3,7 +3,7 @@
 Identify the integration and observed failure before changing timeouts or concurrency. A request-rate limit, exhausted browser time, and a closed session require different responses.
 
 | Concern | Documentation |
-| --- | --- |
+|---------|---------------|
 | Quotas, launch rates, concurrency, and session timeouts | [Limits](https://developers.cloudflare.com/browser-run/limits/index.md) — check the current plan and integration-specific limits |
 | Browser hours and concurrent-browser charges | [Pricing](https://developers.cloudflare.com/browser-run/pricing/index.md) — distinguish Quick Actions from browser sessions |
 | Missing bindings, action failures, or unsupported behavior | [FAQ](https://developers.cloudflare.com/browser-run/faq/index.md) — diagnose the reported error and runtime constraints |

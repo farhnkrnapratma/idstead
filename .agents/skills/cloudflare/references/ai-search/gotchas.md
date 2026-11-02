@@ -1,7 +1,7 @@
 # AI Search Troubleshooting Routes
 
 | Symptom or question | Documentation |
-| --- | --- |
+|---------------------|---------------|
 | API request fails, including authentication or missing instances | [API error codes](https://developers.cloudflare.com/ai-search/troubleshooting/api-error-codes/index.md) |
 | Upload or sync succeeds but content fails during processing | [Indexing error codes](https://developers.cloudflare.com/ai-search/troubleshooting/indexing-error-codes/index.md) |
 | Content is missing or stale | [Syncing](https://developers.cloudflare.com/ai-search/configuration/indexing/syncing/index.md) and [supported data sources and formats](https://developers.cloudflare.com/ai-search/configuration/data-source/index.md) |

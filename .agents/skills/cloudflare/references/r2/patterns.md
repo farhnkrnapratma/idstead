@@ -3,7 +3,7 @@
 Choose the access and delivery model, then fetch the implementation guide.
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Stream object downloads or accept uploads through a Worker | [Use R2 from Workers](https://developers.cloudflare.com/r2/api/workers/workers-api-usage/index.md) |
 | Add conditional reads/writes, range handling, checksums, or batch deletion | [Workers API reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/index.md) |
 | Upload large files with multipart state tracked by the client | [Multipart Worker and client example](https://developers.cloudflare.com/r2/api/workers/workers-multipart-usage/index.md) |

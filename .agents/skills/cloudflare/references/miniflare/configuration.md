@@ -5,7 +5,7 @@ Direct Miniflare does not read Wrangler configuration. Configure its bindings ex
 Match the Worker's intended compatibility date and flags when testing its behavior. Consult [compatibility dates](https://developers.cloudflare.com/workers/testing/miniflare/core/compatibility/index.md) rather than substituting a fixed date from a sample.
 
 | Configure | Documentation |
-| --- | --- |
+|-----------|---------------|
 | Script source, HTTP server, request metadata, or reloading | [Get started](https://developers.cloudflare.com/workers/testing/miniflare/get-started/index.md) |
 | Module format and resolution rules | [Modules](https://developers.cloudflare.com/workers/testing/miniflare/core/modules/index.md) |
 | Values and file-backed bindings | [Variables and secrets](https://developers.cloudflare.com/workers/testing/miniflare/core/variables-secrets/index.md) |

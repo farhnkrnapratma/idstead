@@ -3,7 +3,7 @@
 Use the current references to diagnose the actual response or error instead of copying a workaround.
 
 | Symptom or decision | What to check |
-| --- | --- |
+|---------------------|---------------|
 | Listing stops early or escapes the intended prefix | Follow `truncated` and the returned cursor, retaining the original prefix, delimiter, and metadata options on subsequent requests. See the listing section of the [Workers API reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/index.md). |
 | Conditional read has no body, or conditional write returns null | Distinguish a missing object from a failed condition; choose the HTTP response for the actual request condition. See conditional operations in the [Workers API reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/index.md). |
 | ETag, metadata, checksum, or stream upload behaves unexpectedly | Check supported values and return types in the [Workers API reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/index.md), the [Worker upload example](https://developers.cloudflare.com/r2/api/workers/workers-api-usage/index.md), and [Workers streams](https://developers.cloudflare.com/workers/runtime-apis/streams/index.md). |

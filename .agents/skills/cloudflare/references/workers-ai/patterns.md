@@ -3,7 +3,7 @@
 Use direct generation when the supplied context fits the selected model and retrieval is unnecessary. Use RAG when answers need grounding in a document corpus or relevant passages must be selected from larger data; decide from the actual model context budget rather than a fixed token threshold.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Build retrieval with Workers AI, Vectorize, and document storage | [RAG tutorial](https://developers.cloudflare.com/workers-ai/guides/tutorials/build-a-retrieval-augmented-generation-ai/index.md) |
 | Stream responses or integrate tool calling in an SDK application | [AI SDK integration](https://developers.cloudflare.com/workers-ai/configuration/ai-sdk/index.md) |
 | Constrain generated JSON | [JSON mode](https://developers.cloudflare.com/workers-ai/features/json-mode/index.md) |

@@ -3,7 +3,7 @@
 Read the binding reference before implementing calls. Check the configured binding name and use the project's existing environment types.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Forward a request or fetch a specific asset | [Runtime API reference](https://developers.cloudflare.com/workers/static-assets/binding/index.md#runtime-api-reference) |
 | Understand how binding requests apply HTML and fallback settings | [Binding fetch behavior](https://developers.cloudflare.com/workers/static-assets/binding/index.md#runtime-api-reference) and [HTML handling](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/index.md) |
 | Run authorization or transform content before serving | [Run your Worker script first](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/index.md#run-your-worker-script-first) |

@@ -3,7 +3,7 @@
 Compare the deployed build output and effective configuration with the exact request that failed. Test browser navigation separately from client-side fetches when investigating SPA routing.
 
 | Symptom or decision | Documentation |
-| --- | --- |
+|---------------------|---------------|
 | Asset missing or unexpected files uploaded | [Asset directory](https://developers.cloudflare.com/workers/static-assets/binding/index.md#directory) and [ignore rules](https://developers.cloudflare.com/workers/static-assets/binding/index.md#ignoring-assets) |
 | Worker is bypassed for an asset or protected path | [Worker-first routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/index.md#run-your-worker-script-first) |
 | Browser navigation returns HTML for an API path | [SPA navigation requests](https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/index.md#navigation-requests) and [advanced routing](https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/index.md#advanced-routing-control) |

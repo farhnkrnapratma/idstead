@@ -3,7 +3,7 @@
 Use Workers Static Assets for new static sites, SPAs, generated sites, and applications combining assets with server logic. Inspect the framework, build output, and existing deployment configuration before changing routing.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Set up and deploy a static site or application | [Get started](https://developers.cloudflare.com/workers/static-assets/get-started/index.md) |
 | Choose configuration and an optional asset binding | [Configuration and bindings](https://developers.cloudflare.com/workers/static-assets/binding/index.md) |
 | Serve a client-rendered application | [SPA routing](https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/index.md) |

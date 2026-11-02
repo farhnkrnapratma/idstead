@@ -3,7 +3,7 @@
 Read the matching workflow before writing API calls or translating them into the project's installed SDK. Retrieve identifiers from the target account or zone; do not reuse example IDs.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Inspect the entry point and add custom rules | [Create a custom rule via API](https://developers.cloudflare.com/waf/custom-rules/create-api/index.md) |
 | Discover managed rulesets and deploy them | [Deploy managed rules via API](https://developers.cloudflare.com/waf/managed-rules/deploy-api/index.md) |
 | Create rate limits with the current request schema | [Create a rate limiting rule via API](https://developers.cloudflare.com/waf/rate-limiting-rules/create-api/index.md) |

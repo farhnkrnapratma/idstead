@@ -3,7 +3,7 @@
 Fetch the linked documentation before changing retry policy or interpreting delivery behavior.
 
 | Symptom or question | Documentation and decision |
-| --- | --- |
+|---------------------|----------------------------|
 | Successful work repeats after another message fails | Read [acknowledgement and retry rules](https://developers.cloudflare.com/queues/configuration/batching-retries/index.md); use per-message outcomes for independent work. |
 | A caught failure disappears instead of retrying | Read [handler lifecycle and APIs](https://developers.cloudflare.com/queues/configuration/javascript-apis/index.md); returning successfully can acknowledge messages. Explicitly retry failed work when continuing. |
 | Duplicate processing | Read [delivery guarantees](https://developers.cloudflare.com/queues/reference/delivery-guarantees/index.md); enforce idempotency at the side-effect destination. |

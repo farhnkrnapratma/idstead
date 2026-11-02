@@ -3,7 +3,7 @@
 Fetch the relevant guide before setting feature flags, headers, limits, or billing behavior.
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Enable caching, set TTLs, bypass the cache, or choose a custom cache key | [Caching](https://developers.cloudflare.com/ai-gateway/features/caching/index.md) |
 | Control request volume with fixed or sliding limits | [Rate limiting](https://developers.cloudflare.com/ai-gateway/features/rate-limiting/index.md) |
 | Enforce cost budgets | [Spend limits](https://developers.cloudflare.com/ai-gateway/features/spend-limits/index.md) |

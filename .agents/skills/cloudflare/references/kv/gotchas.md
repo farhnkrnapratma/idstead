@@ -3,7 +3,7 @@
 Read the linked explanation before applying a workaround.
 
 | Symptom or decision | Documentation and guidance |
-| --- | --- |
+|---------------------|----------------------------|
 | Stale value after a write or delete | [How KV works](https://developers.cloudflare.com/kv/concepts/how-kv-works/index.md): allow for eventual consistency; neither local read-after-write visibility nor a fixed global propagation deadline is guaranteed. |
 | Newly created key still appears absent | [Read caching](https://developers.cloudflare.com/kv/api/read-key-value-pairs/index.md): missing-key lookups are cached too. Treat check-then-create as a race, not an atomic existence test. |
 | Concurrent updates overwrite each other or writes are throttled | [Concurrent writes](https://developers.cloudflare.com/kv/api/write-key-value-pairs/index.md#concurrent-writes-to-the-same-key): retries do not make read-modify-write atomic. Use coordination when correctness depends on ordering. |

@@ -3,7 +3,7 @@
 Identify the request path and whether the failure comes from gateway access, upstream provider authentication, or request policy before changing credentials or retry behavior. A status code alone does not establish the failing layer.
 
 | Symptom or task | Current documentation |
-| --- | --- |
+|-----------------|-----------------------|
 | Authentication or provider errors, timeouts, DLP failures, or unexpected cache behavior | [Troubleshooting](https://developers.cloudflare.com/ai-gateway/reference/troubleshooting/index.md) |
 | Gateway authentication failure | [Authenticated Gateway](https://developers.cloudflare.com/ai-gateway/configuration/authentication/index.md) and [REST API authentication](https://developers.cloudflare.com/ai-gateway/usage/rest-api/index.md#authentication) |
 | Provider key or billing mismatch | [BYOK](https://developers.cloudflare.com/ai-gateway/configuration/bring-your-own-keys/index.md), [Unified Billing](https://developers.cloudflare.com/ai-gateway/features/unified-billing/index.md), and the [provider guide](https://developers.cloudflare.com/ai-gateway/usage/providers/index.md) |

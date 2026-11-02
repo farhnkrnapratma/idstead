@@ -3,7 +3,7 @@
 Use the actual error, model identifier, integration, and installed versions to choose the relevant reference.
 
 | Symptom or decision | Documentation and checks |
-| --- | --- |
+|---------------------|--------------------------|
 | Missing binding or types | [Binding configuration](https://developers.cloudflare.com/workers-ai/configuration/bindings/index.md) and [Workers TypeScript](https://developers.cloudflare.com/workers/languages/typescript/index.md); check the environment being run |
 | Development inference fails | [Workers and Wrangler setup](https://developers.cloudflare.com/workers-ai/get-started/workers-wrangler/index.md); check account access and binding setup |
 | Unknown model, invalid input, or unexpected response | Open the exact model in the [catalog](https://developers.cloudflare.com/workers-ai/models/index.md); check its schema, context window, and feature support |

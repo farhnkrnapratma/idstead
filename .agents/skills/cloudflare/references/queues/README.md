@@ -15,7 +15,7 @@ See [How Queues works](https://developers.cloudflare.com/queues/reference/how-qu
 ## Read by task
 
 | Task | Reference |
-| --- | --- |
+|------|-----------|
 | Create queues, bind producers, and configure consumers | [configuration.md](./configuration.md) |
 | Send messages and implement acknowledgement or retries | [api.md](./api.md) |
 | Buffer APIs, defer jobs, or integrate with storage and orchestration | [patterns.md](./patterns.md) |

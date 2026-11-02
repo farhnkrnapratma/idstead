@@ -3,7 +3,7 @@
 Choose the workflow that matches the requested outcome, then retrieve its current examples. Make rule scope explicit and review the affected traffic before enforcement.
 
 | Outcome | Documentation |
-| --- | --- |
+|---------|---------------|
 | Apply managed protection to a zone | [Deploy managed rules](https://developers.cloudflare.com/waf/managed-rules/deploy-api/index.md) |
 | Change a managed rule's behavior or evaluate it with logging | [Override a managed ruleset](https://developers.cloudflare.com/ruleset-engine/managed-rulesets/override-managed-ruleset/index.md) |
 | Enforce an application-specific request policy | [Create a custom rule](https://developers.cloudflare.com/waf/custom-rules/create-api/index.md) |

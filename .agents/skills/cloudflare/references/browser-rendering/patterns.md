@@ -3,7 +3,7 @@
 Use the current examples for the selected integration instead of translating between Puppeteer, Playwright, and Quick Actions by changing method names.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Implement screenshots, PDFs, or extraction | [Quick Actions](https://developers.cloudflare.com/browser-run/quick-actions/index.md) — choose the action and follow its example |
 | Build custom interactions | [Puppeteer](https://developers.cloudflare.com/browser-run/puppeteer/index.md) or [Playwright](https://developers.cloudflare.com/browser-run/playwright/index.md) — browser automation examples |
 | Reconnect across requests | [Reuse sessions](https://developers.cloudflare.com/browser-run/features/reuse-sessions/index.md) — disconnect/reconnect lifecycle and when to use Durable Objects for stateful ownership |

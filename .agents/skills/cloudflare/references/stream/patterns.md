@@ -3,7 +3,7 @@
 Use the official workflow examples after identifying where the existing application handles authorization, video ownership, and processing state.
 
 | Workflow | Read |
-| --- | --- |
+|---|---|
 | Browser uploads through a server-issued URL | [Direct creator uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/index.md) |
 | Large or interruption-prone uploads | [Resumable uploads](https://developers.cloudflare.com/stream/uploading-videos/resumable-uploads/index.md) |
 | Update application state when processing completes | [Video webhooks](https://developers.cloudflare.com/stream/manage-video-library/using-webhooks/index.md) and [upload progress tracking](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/index.md#track-upload-progress) |

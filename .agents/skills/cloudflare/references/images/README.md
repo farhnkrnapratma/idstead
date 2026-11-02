@@ -3,7 +3,7 @@
 Choose the image source and operation before selecting an API. Hosted-image management, remote URL transformations, and the Workers optimization binding have different contracts. Retrieve the documentation for the path the project uses.
 
 | Task | Start here |
-| --- | --- |
+|------|------------|
 | Optimize image bytes in a Worker or manage hosted images | [API selection](api.md) |
 | Configure a binding, variants, or private delivery | [Configuration](configuration.md) |
 | Accept client uploads, serve responsive images, watermark, or store results in R2 | [Patterns](patterns.md) |

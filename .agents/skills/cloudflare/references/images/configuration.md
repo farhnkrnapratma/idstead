@@ -3,7 +3,7 @@
 Inspect the project's Wrangler configuration, dependency versions, existing bindings, and credential storage before changing setup. Preserve its configuration format and generate binding types through its existing tooling.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Add the optimization binding | [Binding setup](https://developers.cloudflare.com/images/optimization/binding/index.md#setup) |
 | Configure hosted-image management in a Worker | [Hosted binding setup](https://developers.cloudflare.com/images/storage/binding/index.md#setup) |
 | Choose local or remote development for the optimization binding | [Local binding development](https://developers.cloudflare.com/images/optimization/binding/index.md#interact-with-your-images-binding-locally) |

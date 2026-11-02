@@ -3,7 +3,7 @@
 Inspect the build script, output directory, Wrangler configuration, and any framework-generated deployment configuration first. Configure the files actually produced by the build, and identify which paths need Worker logic.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Set the asset directory and exclude non-public files | [Directory](https://developers.cloudflare.com/workers/static-assets/binding/index.md#directory) and [ignoring assets](https://developers.cloudflare.com/workers/static-assets/binding/index.md#ignoring-assets) |
 | Make assets available to Worker code | [Asset binding configuration](https://developers.cloudflare.com/workers/static-assets/binding/index.md#binding) |
 | Select paths that must run Worker logic before asset serving | [Worker-first configuration](https://developers.cloudflare.com/workers/static-assets/binding/index.md#run_worker_first) |

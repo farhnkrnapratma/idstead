@@ -5,7 +5,7 @@ Miniflare provides programmatic control of local Workers simulation. Read the li
 ## Choose the testing tool
 
 | Need | Start here |
-| --- | --- |
+|------|------------|
 | Unit tests that execute in the Workers runtime | [Workers Vitest setup](https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/index.md) |
 | Integration tests against built Workers | [Integration test harness](https://developers.cloudflare.com/workers/testing/test-harness/index.md) |
 | Low-level simulator control for a custom harness | [Miniflare testing guide](https://developers.cloudflare.com/workers/testing/miniflare/writing-tests/index.md) |

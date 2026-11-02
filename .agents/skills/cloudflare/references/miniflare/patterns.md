@@ -3,7 +3,7 @@
 Choose the test runtime before adapting an example. With direct Miniflare, the Worker runs in workerd while the test runner runs in Node.js; importing Worker functions into Node.js can change runtime-dependent behavior. See [writing tests](https://developers.cloudflare.com/workers/testing/miniflare/writing-tests/index.md).
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Write unit tests in the Workers runtime | [Workers Vitest setup](https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/index.md) |
 | Use event, Durable Object, or other runtime test helpers | [Vitest test APIs](https://developers.cloudflare.com/workers/testing/vitest-integration/test-apis/index.md) |
 | Test built Workers from an external runner | [Integration test harness](https://developers.cloudflare.com/workers/testing/test-harness/index.md) |

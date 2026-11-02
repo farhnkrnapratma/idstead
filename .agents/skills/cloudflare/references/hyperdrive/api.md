@@ -5,7 +5,7 @@ Start with [README.md](./README.md) and [configuration.md](./configuration.md). 
 ## Driver and binding routes
 
 | Task | Official documentation |
-| --- | --- |
+|------|------------------------|
 | PostgreSQL with node-postgres (`pg`), including binding connection string and parameterized queries | [node-postgres](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-drivers-and-libraries/node-postgres/index.md) |
 | PostgreSQL with tagged-template queries and Postgres.js driver options | [Postgres.js](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-drivers-and-libraries/postgres-js/index.md) |
 | MySQL with binding connection properties and Worker-specific driver options | [mysql2](https://developers.cloudflare.com/hyperdrive/examples/connect-to-mysql/mysql-drivers-and-libraries/mysql2/index.md) |
@@ -17,7 +17,7 @@ Keep an existing supported driver when it fits the application. Choose by databa
 ## ORMs and query builders
 
 | Task | Official documentation |
-| --- | --- |
+|------|------------------------|
 | Use Drizzle with PostgreSQL | [PostgreSQL Drizzle guide](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-drivers-and-libraries/drizzle-orm/index.md) |
 | Use Drizzle with MySQL | [MySQL Drizzle guide](https://developers.cloudflare.com/hyperdrive/examples/connect-to-mysql/mysql-drivers-and-libraries/drizzle-orm/index.md) |
 | Use Prisma with PostgreSQL | [Prisma guide](https://developers.cloudflare.com/hyperdrive/examples/connect-to-postgres/postgres-drivers-and-libraries/prisma-orm/index.md) |

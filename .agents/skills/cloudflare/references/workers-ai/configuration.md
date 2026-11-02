@@ -3,7 +3,7 @@
 Read the setup guide for the application's existing integration and installed SDK/Wrangler versions before adapting configuration.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Create and develop a Worker with Workers AI | [Workers and Wrangler setup](https://developers.cloudflare.com/workers-ai/get-started/workers-wrangler/index.md) |
 | Add an AI binding to an existing Worker | [Workers bindings](https://developers.cloudflare.com/workers-ai/configuration/bindings/index.md) |
 | Generate environment and runtime types | [Workers TypeScript](https://developers.cloudflare.com/workers/languages/typescript/index.md) |

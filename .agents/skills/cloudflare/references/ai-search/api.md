@@ -3,7 +3,7 @@
 Choose documentation that matches the integration you are working on. Fetch the reference before writing binding configuration, request types, response parsing, or streaming code.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | New Worker integration: bindings, search, chat completions, and streaming | [Search Workers binding](https://developers.cloudflare.com/ai-search/api/search/workers-binding/index.md) |
 | Create, list, configure, and inspect instances | [Instances Workers binding](https://developers.cloudflare.com/ai-search/api/instances/workers-binding/index.md) |
 | Query over HTTP and configure request authentication | [Search REST API](https://developers.cloudflare.com/ai-search/api/search/rest-api/index.md) |

@@ -3,7 +3,7 @@
 Choose retrieval-only search when your application displays chunks or handles generation itself; choose chat completions when AI Search should also generate the answer. Read [Search Workers binding](https://developers.cloudflare.com/ai-search/api/search/workers-binding/index.md) for both paths and streaming behavior.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Isolate tenants using separate instances or a shared filtered instance | [Multitenancy](https://developers.cloudflare.com/ai-search/how-to/per-tenant-search/index.md) |
 | Define built-in or custom metadata | [Metadata attributes](https://developers.cloudflare.com/ai-search/configuration/indexing/metadata/index.md) |
 | Filter by metadata, combine conditions, or match a folder and subfolders | [Filtering](https://developers.cloudflare.com/ai-search/configuration/retrieval/filtering/index.md) |

@@ -3,7 +3,7 @@
 Read the relevant API page before implementing; it defines current options, result shapes, supported bulk operations, and constraints.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Read one or several keys; choose text, JSON, binary, or stream results | [Read key-value pairs](https://developers.cloudflare.com/kv/api/read-key-value-pairs/index.md) |
 | Read metadata with values; tune read caching or coalesce related keys | [Read guidance](https://developers.cloudflare.com/kv/api/read-key-value-pairs/index.md) |
 | Write values and metadata; set absolute expiration or a relative lifetime | [Write key-value pairs](https://developers.cloudflare.com/kv/api/write-key-value-pairs/index.md) |

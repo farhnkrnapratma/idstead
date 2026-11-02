@@ -3,7 +3,7 @@
 Identify whether the failure occurs during upload, encoding, authorization, playback, or live ingestion before changing configuration. Read the linked requirements and error guidance for that stage.
 
 | Symptom or check | Read |
-| --- | --- |
+|---|---|
 | Unsupported file or upload constraint failure | [Supported formats and upload requirements](https://developers.cloudflare.com/stream/uploading-videos/index.md) |
 | Large upload fails or restarts after interruption | [Resumable upload requirements](https://developers.cloudflare.com/stream/uploading-videos/resumable-uploads/index.md#requirements) |
 | Stream cannot fetch an imported video | [Upload via link requirements](https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/index.md) |

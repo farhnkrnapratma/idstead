@@ -3,7 +3,7 @@
 Fetch the guide matching the task and adapt its example to the application's delivery and failure requirements.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Accept requests and enqueue asynchronous tasks; publish to multiple queues | [Publish to a Queue via Workers](https://developers.cloudflare.com/queues/examples/publish-to-a-queue-via-workers/index.md) |
 | Buffer writes to an external API or defer a job | [Batching, retries, and delays](https://developers.cloudflare.com/queues/configuration/batching-retries/index.md) |
 | Handle upstream rate limits and backpressure | [Handle rate limits of external APIs](https://developers.cloudflare.com/queues/tutorials/handle-rate-limits/index.md) and [consumer concurrency](https://developers.cloudflare.com/queues/configuration/consumer-concurrency/index.md) |

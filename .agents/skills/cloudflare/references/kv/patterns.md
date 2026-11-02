@@ -3,7 +3,7 @@
 Read the guide for the pattern before implementing it, and confirm that [KV's consistency model](https://developers.cloudflare.com/kv/concepts/how-kv-works/index.md) fits the application.
 
 | Task | Documentation and design decision |
-| --- | --- |
+|------|-----------------------------------|
 | Cache application data or API results | [Cache data with KV](https://developers.cloudflare.com/kv/examples/cache-data-with-workers-kv/index.md): decide acceptable staleness, expiration, and behavior when the origin fails. |
 | Cache eligible HTTP responses | [Workers Cache](https://developers.cloudflare.com/workers/cache/index.md): choose the HTTP caching mechanism based on response semantics. |
 | Store configuration or feature flags | [Distributed configuration](https://developers.cloudflare.com/kv/examples/distributed-configuration-with-workers-kv/index.md): choose defaults and rollout behavior that tolerate delayed updates. |

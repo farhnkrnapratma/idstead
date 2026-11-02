@@ -3,7 +3,7 @@
 Fetch the relevant guide before writing configuration or running CLI commands. Check the project's Wrangler version and compatibility date when adapting examples.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Create a queue and connect producer and consumer Workers | [Getting started](https://developers.cloudflare.com/queues/get-started/index.md) |
 | Configure producer bindings, Worker consumers, retention, and concurrency settings | [Configure Queues](https://developers.cloudflare.com/queues/configuration/configure-queues/index.md) |
 | Configure an external HTTP consumer and its visibility timeout | [Pull consumers](https://developers.cloudflare.com/queues/configuration/pull-consumers/index.md) |

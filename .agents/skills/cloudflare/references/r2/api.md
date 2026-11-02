@@ -3,7 +3,7 @@
 Fetch the relevant page before writing code. Use the Workers API for bucket bindings and the S3 API for S3 clients; their types and semantics differ.
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Read, write, inspect, delete, or list objects; metadata, checksums, ranges, and return types | [Workers API reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/index.md) |
 | Implement a Worker that serves or writes objects | [Use R2 from Workers](https://developers.cloudflare.com/r2/api/workers/workers-api-usage/index.md) |
 | Create, resume, complete, or abort multipart uploads | [Multipart Worker and client example](https://developers.cloudflare.com/r2/api/workers/workers-multipart-usage/index.md) |

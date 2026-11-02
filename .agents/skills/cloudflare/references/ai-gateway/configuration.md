@@ -3,7 +3,7 @@
 Choose the request path before configuring authentication: Cloudflare REST inference, a Workers binding, and provider-native gateway endpoints have different requirements. Gateway access does not by itself define which upstream credentials or billing source a request uses.
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Send a first request and locate the account/gateway identifiers | [Getting started](https://developers.cloudflare.com/ai-gateway/get-started/index.md) |
 | Create, update, or delete a gateway; use the default gateway | [Manage gateways](https://developers.cloudflare.com/ai-gateway/configuration/manage-gateway/index.md) |
 | Manage gateways programmatically | [Gateway management API](https://developers.cloudflare.com/api/resources/ai_gateway/methods/list/index.md) |

@@ -13,7 +13,7 @@ Fetch the relevant documentation before implementing. Current Cloudflare docs ar
 ## Read by task
 
 | Task | Reference |
-| --- | --- |
+|------|-----------|
 | Create secrets, configure bindings, or prepare local development | [configuration.md](./configuration.md) |
 | Read a secret in a Worker or automate management | [api.md](./api.md) |
 | Plan rotation, migration, encryption, or auditing | [patterns.md](./patterns.md) |

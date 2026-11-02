@@ -3,7 +3,7 @@
 Read the guide for the chosen interface for request schemas, return types, authentication, and supported options. Keep Quick Actions and browser session APIs distinct when adapting examples.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Screenshots, PDFs, HTML, scraping, or structured extraction | [Quick Actions](https://developers.cloudflare.com/browser-run/quick-actions/index.md) — links to each action's request options and examples for REST or Workers bindings |
 | Automate a browser in Workers with Puppeteer | [Puppeteer](https://developers.cloudflare.com/browser-run/puppeteer/index.md) — Cloudflare package, browser operations, and session APIs |
 | Automate a browser in Workers with Playwright | [Playwright](https://developers.cloudflare.com/browser-run/playwright/index.md) — Cloudflare package, locators, storage state, and tracing |

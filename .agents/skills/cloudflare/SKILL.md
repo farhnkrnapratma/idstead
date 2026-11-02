@@ -147,7 +147,8 @@ Prefer [Workers Cache](https://developers.cloudflare.com/workers/cache/index.md)
 - Check current Cloudflare docs before relying on limits, prices, compatibility flags, or security requirements; these can change.
 - Validate in proportion to the change: use the project's checks, then exercise the affected behavior when practical.
 
-Cloudflare documentation: <https://developers.cloudflare.com/llms.txt> Cloudflare changelog: <https://developers.cloudflare.com/changelog/index.md>
+Cloudflare documentation: <https://developers.cloudflare.com/llms.txt>
+Cloudflare changelog: <https://developers.cloudflare.com/changelog/index.md>
 
 ## Skill feedback
 

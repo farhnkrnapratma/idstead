@@ -3,7 +3,7 @@
 Start with the failing operation and fetch its documentation before changing credentials or bindings.
 
 | Symptom or decision | What to check | Documentation |
-| --- | --- | --- |
+|---------------------|---------------|---------------|
 | Deployment cannot attach a secret | Selected account, caller's binding permission, and the secret's consuming-service scope; metadata read permission alone is insufficient | [Access control](https://developers.cloudflare.com/secrets-store/access-control/index.md) |
 | Secret is missing or the wrong value is used | Store, secret name, binding name, and selected deployment environment | [Workers integration](https://developers.cloudflare.com/secrets-store/integrations/workers/index.md), [Wrangler environments](https://developers.cloudflare.com/workers/wrangler/environments/index.md) |
 | Secret works in production but fails locally | Local secret provisioning and the management command's local/remote target | [Workers integration](https://developers.cloudflare.com/secrets-store/integrations/workers/index.md), [Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/secrets-store/index.md) |

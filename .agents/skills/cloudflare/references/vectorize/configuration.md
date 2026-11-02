@@ -1,7 +1,7 @@
 # Vectorize configuration routes
 
 | Task | Current documentation |
-| --- | --- |
+|------|-----------------------|
 | Create an index, choose dimensions and metric | [Create indexes](https://developers.cloudflare.com/vectorize/best-practices/create-indexes/index.md) |
 | Bind an index to a Worker, develop, deploy, and verify queries | [Introduction to Vectorize](https://developers.cloudflare.com/vectorize/get-started/intro/index.md) |
 | Configure bindings and generate types | [Binding and TypeScript guidance](https://developers.cloudflare.com/vectorize/reference/client-api/index.md#binding-to-a-worker) |

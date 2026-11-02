@@ -1,7 +1,7 @@
 # Miniflare Troubleshooting and Migrations
 
 | Symptom or task | Check |
-| --- | --- |
+|-----------------|-------|
 | TypeScript, bundled code, or imports fail to load | [Custom builds](https://developers.cloudflare.com/workers/testing/miniflare/writing-tests/index.md#custom-builds) and [module rules](https://developers.cloudflare.com/workers/testing/miniflare/core/modules/index.md#module-rules) |
 | Bindings from Wrangler configuration are missing | [Interacting with bindings](https://developers.cloudflare.com/workers/testing/miniflare/writing-tests/index.md#interacting-with-bindings) — direct Miniflare needs explicit configuration |
 | Tests disagree with Worker runtime behavior | [Test runtime differences](https://developers.cloudflare.com/workers/testing/miniflare/writing-tests/index.md) and [compatibility dates](https://developers.cloudflare.com/workers/testing/miniflare/core/compatibility/index.md) |

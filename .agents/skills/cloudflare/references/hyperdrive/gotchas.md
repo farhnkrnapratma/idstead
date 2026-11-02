@@ -3,7 +3,7 @@
 Start with the actual error and the affected configuration. Fetch [Troubleshoot and debug](https://developers.cloudflare.com/hyperdrive/observability/troubleshooting/index.md) for current error codes and diagnosis rather than guessing from a generic connection failure.
 
 | Symptom | What to inspect and where to read |
-| --- | --- |
+|---------|----------------------------------|
 | Connection refused or authentication failure | Check origin reachability and credentials using [troubleshooting](https://developers.cloudflare.com/hyperdrive/observability/troubleshooting/index.md) and [firewall/networking configuration](https://developers.cloudflare.com/hyperdrive/configuration/firewall-and-networking-configuration/index.md). |
 | Private database or TLS failure | Follow the selected [Workers VPC](https://developers.cloudflare.com/hyperdrive/configuration/connect-to-private-database-vpc/index.md) or [Tunnel/Access](https://developers.cloudflare.com/hyperdrive/configuration/connect-to-private-database/index.md) path and its certificate prerequisites; see [SSL/TLS configuration](https://developers.cloudflare.com/hyperdrive/configuration/tls-ssl-certificates-for-hyperdrive/index.md). |
 | Pool exhaustion or too many connections | Distinguish client connection lifetime from origin pool capacity. Read [connection lifecycle](https://developers.cloudflare.com/hyperdrive/concepts/connection-lifecycle/index.md), [pool tuning](https://developers.cloudflare.com/hyperdrive/configuration/tune-connection-pool/index.md), and [limits](https://developers.cloudflare.com/hyperdrive/platform/limits/index.md). |

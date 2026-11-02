@@ -3,7 +3,7 @@
 Fetch current documentation before diagnosing a numeric limit, API error, or delayed mutation. Do not infer batch sizes or result limits from old snippets.
 
 | Symptom or decision | What to check | Current documentation |
-| --- | --- | --- |
+|---------------------|---------------|-----------------------|
 | A write succeeded but search has not changed | Mutations are asynchronous; acceptance does not guarantee query visibility | [Insert, upsert, and delete semantics](https://developers.cloudflare.com/vectorize/reference/client-api/index.md#operations) |
 | Ingestion is slow or a batch is rejected | Batch size depends on the interface; inspect throughput and payload constraints | [Write throughput](https://developers.cloudflare.com/vectorize/best-practices/insert-vectors/index.md#improve-write-throughput) and [limits](https://developers.cloudflare.com/vectorize/platform/limits/index.md) |
 | Query count is rejected or metadata is incomplete | Returned values and metadata affect query limits; indexed metadata can be truncated | [Query options](https://developers.cloudflare.com/vectorize/reference/client-api/index.md#query-vectors) |

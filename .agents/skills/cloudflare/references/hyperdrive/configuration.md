@@ -3,7 +3,7 @@
 See [README.md](./README.md) for the retrieval workflow. Fetch the relevant guide before creating or changing resources; use current configuration fields and CLI syntax from these sources.
 
 | Task | Official documentation |
-| --- | --- |
+|------|------------------------|
 | Create the first configuration and bind it to a Worker | [Get started](https://developers.cloudflare.com/hyperdrive/get-started/index.md) |
 | Create, inspect, update, or delete configurations; set cache or pool options | [Wrangler commands](https://developers.cloudflare.com/hyperdrive/reference/wrangler-commands/index.md) |
 | Generate TypeScript types from Worker configuration | [Workers TypeScript](https://developers.cloudflare.com/workers/languages/typescript/index.md) |

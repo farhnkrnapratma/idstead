@@ -5,7 +5,7 @@ Use Stream for on-demand video upload and playback or live broadcasting. Start w
 ## Choose a Workflow
 
 | Task | Read |
-| --- | --- |
+|---|---|
 | Let users upload without exposing an API token | [Direct creator uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/index.md) |
 | Choose server upload, resumable upload, or import from a URL | [Upload methods and supported formats](https://developers.cloudflare.com/stream/uploading-videos/index.md) |
 | Embed playback or integrate an existing player | [Stream Player](https://developers.cloudflare.com/stream/viewing-videos/using-the-stream-player/index.md) or [HLS/DASH players](https://developers.cloudflare.com/stream/viewing-videos/using-own-player/index.md) |

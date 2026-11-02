@@ -3,7 +3,7 @@
 Read the task-specific documentation for request schemas, SDK examples, and response fields. For live inputs and outputs, use [api-live.md](./api-live.md).
 
 | Task | Read |
-| --- | --- |
+|---|---|
 | Issue a one-time upload URL to an end user | [Direct creator uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/index.md) |
 | Resume uploads or handle unreliable connections | [Resumable uploads and requirements](https://developers.cloudflare.com/stream/uploading-videos/resumable-uploads/index.md) |
 | Import a video already hosted elsewhere | [Upload via link](https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/index.md) |

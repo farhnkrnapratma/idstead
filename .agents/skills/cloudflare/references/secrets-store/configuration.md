@@ -5,7 +5,7 @@ Fetch the guide for the operation you are performing before writing configuratio
 ## Setup and management
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Create a store and secret, then bind it through Wrangler or the dashboard | [Workers integration](https://developers.cloudflare.com/secrets-store/integrations/workers/index.md) |
 | Create, edit, duplicate, or delete account secrets | [Manage secrets](https://developers.cloudflare.com/secrets-store/manage-secrets/how-to/index.md) |
 | Look up current store/secret command syntax and local versus remote flags | [Wrangler Secrets Store commands](https://developers.cloudflare.com/workers/wrangler/commands/secrets-store/index.md) |

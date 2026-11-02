@@ -3,7 +3,7 @@
 Use this reference for managed protection, custom request policies, rate limiting, and investigation of blocked traffic. Read the relevant developer documentation before implementing; it owns schemas, expressions, ruleset IDs, phase order, and plan availability.
 
 | Task | Start here |
-| --- | --- |
+|------|------------|
 | Choose and enable WAF protections | [Get started](https://developers.cloudflare.com/waf/get-started/index.md) |
 | Deploy managed protection | [Managed rules deployment](https://developers.cloudflare.com/waf/managed-rules/deploy-api/index.md) |
 | Match application-specific requests | [Custom rules](https://developers.cloudflare.com/waf/custom-rules/create-api/index.md) |

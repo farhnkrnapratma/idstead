@@ -3,7 +3,7 @@
 Use the current documentation for method signatures and examples:
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Create, reload, or dispose an instance; wait for its HTTP server | [Get started](https://developers.cloudflare.com/workers/testing/miniflare/get-started/index.md) |
 | Dispatch requests and supply request metadata | [Fetch events](https://developers.cloudflare.com/workers/testing/miniflare/core/fetch/index.md) |
 | Trigger queue and scheduled handlers programmatically | [Dispatching events](https://developers.cloudflare.com/workers/testing/miniflare/get-started/index.md#dispatching-events) |

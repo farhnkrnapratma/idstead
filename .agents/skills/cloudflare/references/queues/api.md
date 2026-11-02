@@ -3,7 +3,7 @@
 Fetch the current API documentation for the operation being implemented; do not infer signatures, payloads, or acknowledgement rules from old examples.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Send individual messages or batches; choose encoding; implement a typed Worker queue handler; dispatch by queue name | [JavaScript APIs](https://developers.cloudflare.com/queues/configuration/javascript-apis/index.md) |
 | Understand automatic acknowledgement, explicit per-message and batch actions, precedence, delivery failures, delays, and backoff | [Batching, retries, and delays](https://developers.cloudflare.com/queues/configuration/batching-retries/index.md) |
 | Pull over HTTP and acknowledge or retry using leases | [Pull consumers](https://developers.cloudflare.com/queues/configuration/pull-consumers/index.md) |

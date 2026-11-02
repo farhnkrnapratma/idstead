@@ -3,7 +3,7 @@
 Identify the account or zone, existing rulesets, and the system managing them before choosing a deployment method. Use the permission requirements in the selected workflow rather than a copied token-permission list.
 
 | Task | Documentation |
-| --- | --- |
+|------|---------------|
 | Enable protections and configure them in the dashboard | [WAF get started](https://developers.cloudflare.com/waf/get-started/index.md) |
 | Configure custom rules through the API or SDK | [Custom rules API workflow](https://developers.cloudflare.com/waf/custom-rules/create-api/index.md) |
 | Configure managed rules through the API or SDK | [Managed rules API workflow](https://developers.cloudflare.com/waf/managed-rules/deploy-api/index.md) |
