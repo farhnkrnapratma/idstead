@@ -86,6 +86,19 @@ describe('content security policy', () => {
         expect(bare).not.toMatch(/\s{2,}/);
     });
 
+    test('scripts run only from self, listed hosts and hashes, never inline', () => {
+        expect(directive('script-src')).not.toContain("'unsafe-inline'");
+        expect(directive('script-src')).toContain("'self'");
+        const hashed = buildContentSecurityPolicy({ scriptHashes: ["'sha256-abc='"] });
+        expect(hashed).toContain(
+            "script-src 'self' https://challenges.cloudflare.com https://api.dashboard.instatus.com 'sha256-abc='"
+        );
+    });
+
+    test('styles keep inline allowance for component styles', () => {
+        expect(directive('style-src')).toContain("'unsafe-inline'");
+    });
+
     test('dev adds the local websocket for hot reload', () => {
         expect(buildContentSecurityPolicy({ dev: true })).toContain('ws://localhost:*');
         expect(policy).not.toContain('localhost');

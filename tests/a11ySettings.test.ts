@@ -62,8 +62,12 @@ describe('a11y settings: pre-paint script', () => {
     test.each(['web', 'admin'])(
         'the %s shell reads the same storage keys and queries',
         async app => {
-            const html = await Bun.file(
+            const shell = await Bun.file(
                 new URL(`../apps/${app}/src/app.html`, import.meta.url)
+            ).text();
+            expect(shell).toContain('<script src="/accessibility-init.js"></script>');
+            const html = await Bun.file(
+                new URL(`../apps/${app}/static/accessibility-init.js`, import.meta.url)
             ).text();
             expect(html).toContain("read('a11y_overrides')");
             expect(html).not.toContain('a11y_settings');

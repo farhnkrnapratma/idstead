@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import type { AnalyticsSources } from './analytics';
+import { bootstrapScriptHashes } from './cspHashes';
 
 interface CspEnv {
     sentryDsn?: string;
     cdnBaseUrl?: string;
     apiBaseUrl?: string;
     analytics?: AnalyticsSources;
+    scriptHashes?: string[];
     dev?: boolean;
 }
 
@@ -53,9 +55,9 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
         'default-src': ["'self'"],
         'script-src': [
             "'self'",
-            "'unsafe-inline'",
             ...SCRIPT_SOURCES,
-            ...(env.analytics?.script ?? [])
+            ...(env.analytics?.script ?? []),
+            ...(env.scriptHashes ?? [])
         ],
         'style-src': ["'self'", "'unsafe-inline'"],
         'font-src': ["'self'", 'data:'],
@@ -89,4 +91,18 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
     return Object.entries(directives)
         .map(([name, sources]) => `${name} ${[...new Set(sources.filter(Boolean))].join(' ')}`)
         .join('; ');
+}
+
+export function htmlContentSecurityPolicy(
+    response: Response,
+    env: Omit<CspEnv, 'scriptHashes'>,
+    extraScriptHashes: string[] = []
+): string {
+    return buildContentSecurityPolicy({
+        ...env,
+        scriptHashes: [
+            ...bootstrapScriptHashes(response.headers.get('content-security-policy')),
+            ...extraScriptHashes
+        ]
+    });
 }

@@ -14,7 +14,7 @@ const appHtml = await Bun.file(new URL('../apps/web/src/app.html', import.meta.u
 describe('analytics tag', () => {
     test('declares UTF-8 before scripts within the first 1024 bytes', () => {
         const charsetIndex = appHtml.indexOf('<meta charset="utf-8" />');
-        const firstScriptIndex = appHtml.indexOf('<script>');
+        const firstScriptIndex = appHtml.indexOf('<script');
         expect(charsetIndex).toBeGreaterThanOrEqual(0);
         expect(charsetIndex + '<meta charset="utf-8" />'.length).toBeLessThanOrEqual(1024);
         expect(charsetIndex).toBeLessThan(firstScriptIndex);

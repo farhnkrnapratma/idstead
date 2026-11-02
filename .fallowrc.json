@@ -16,5 +16,5 @@
         // ]
     },
     "rules": {},
-    "ignorePatterns": [".claude/**", ".agents/**"]
+    "ignorePatterns": [".claude/**", ".agents/**", "apps/*/static/**"]
 }

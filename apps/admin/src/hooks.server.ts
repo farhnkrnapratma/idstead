@@ -11,7 +11,7 @@ import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
 import { accessIdentity, type AccessIdentity } from '#lib/server/accessAuth.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
-import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
+import { htmlContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 
 const sentryInitHandle: Handle =
@@ -99,7 +99,7 @@ const responseHandle: Handle = async ({ event, resolve }) => {
     if (contentType.includes('text/html'))
         response.headers.set(
             'Content-Security-Policy',
-            buildContentSecurityPolicy({
+            htmlContentSecurityPolicy(response, {
                 sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
                 cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
                 dev

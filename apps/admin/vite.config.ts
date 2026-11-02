@@ -26,6 +26,7 @@ export default defineConfig({
             },
             adapter: adapter({ platformProxy: { persist: { path: LOCAL_STATE } } }),
             env: { dir: ENV_DIR },
+            csp: { mode: 'hash', directives: { 'script-src': ['self'] } },
             tracing: { server: true }
         })
     ],

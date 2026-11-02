@@ -13,7 +13,8 @@ import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
 import { publicResponse } from '#lib/server/publicResponse.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
-import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
+import { htmlContentSecurityPolicy } from '#lib/server/csp.ts';
+import { inlineScriptHashes } from '#lib/server/cspHashes.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
@@ -176,6 +177,7 @@ export const handle: Handle = sequence(
         const analytics =
             isApiRequest ? null : await siteAnalytics(publicRepositories(event.fetch));
         const head = analytics ? analyticsHead(analytics.settings, event.url.hostname) : '';
+        const analyticsHashes = await inlineScriptHashes(head);
         let response = await resolve(event, {
             transformPageChunk: ({ html }) => {
                 const cdn = getCdnBaseUrl();
@@ -191,13 +193,17 @@ export const handle: Handle = sequence(
         if (contentType.includes('text/html')) {
             response.headers.set(
                 'Content-Security-Policy',
-                buildContentSecurityPolicy({
-                    sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
-                    cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
-                    apiBaseUrl: apiBaseUrl(publicEnv.PUBLIC_API_BASE_URL),
-                    analytics: analytics ? analyticsSources(analytics.settings) : undefined,
-                    dev
-                })
+                htmlContentSecurityPolicy(
+                    response,
+                    {
+                        sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
+                        cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
+                        apiBaseUrl: apiBaseUrl(publicEnv.PUBLIC_API_BASE_URL),
+                        analytics: analytics ? analyticsSources(analytics.settings) : undefined,
+                        dev
+                    },
+                    analyticsHashes
+                )
             );
         }
         if (isInternalApi || preview) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
