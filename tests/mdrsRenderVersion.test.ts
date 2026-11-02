@@ -7,7 +7,7 @@ import path from 'node:path';
 import { RENDER_VERSION } from '../packages/mdrs/core/src/version.ts';
 
 const pinned = {
-    renderVersion: 5,
+    renderVersion: 6,
     snapshotSha256: 'a268436593e208d29bbe5238fc3754b0d36b9c3bf5a283fd663defe13725a19f'
 };
 

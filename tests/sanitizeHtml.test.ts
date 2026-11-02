@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { describe, expect, test } from 'bun:test';
-import { sanitizeHtml } from '../packages/mdrs/core/src/sanitize';
+import { sanitizeHtml, sanitizeUrl } from '../packages/mdrs/core/src/sanitize';
 import { renderMarkdown, renderMarkdownUnsafe } from '../packages/mdrs/core/src/markdown';
 import { injectHeadingIds, prefixHashLinks } from '../packages/mdrs/core/src/index';
 
@@ -169,5 +169,28 @@ describe('sanitizeHtml: page boundary', () => {
         const html = prefixHashLinks(injectHeadingIds(await renderMarkdown(markdown)));
         expect(html).toContain(' id="');
         expect(sanitizeHtml(html)).toBe(html);
+    });
+});
+
+describe('sanitizeUrl: scheme probe sees decoded text', () => {
+    test.each([
+        ['numeric entity', '&#106;avascript:alert(1)'],
+        ['hex entity', '&#x6A;avascript:alert(1)'],
+        ['named colon', 'javascript&colon;alert(1)'],
+        ['tab entity', 'jav&#x09;ascript:alert(1)'],
+        ['plain javascript', 'javascript:alert(1)'],
+        ['vbscript', 'vbscript:msgbox(1)'],
+        ['data url', 'data:text/html,x']
+    ])('rejects %s', (_name, href) => {
+        expect(sanitizeUrl(href)).toBeNull();
+    });
+
+    test.each([
+        ['https link', 'https://example.com/a'],
+        ['mailto link', 'mailto:a@example.com'],
+        ['relative path', '/blog/hello'],
+        ['protocol-relative', '//example.com/x']
+    ])('keeps %s unchanged', (_name, href) => {
+        expect(sanitizeUrl(href)).toBe(href);
     });
 });

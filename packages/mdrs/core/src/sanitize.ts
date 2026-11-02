@@ -7,7 +7,7 @@ const SAFE_URL_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 export function sanitizeUrl(href: string): string | null {
     const value = href.trim();
     if (/[\uE000\uE001]/.test(value)) return null;
-    const probe = Array.from(value)
+    const probe = Array.from(decodeEntities(value))
         .filter(char => char.charCodeAt(0) > 32 && char.charCodeAt(0) !== 127)
         .join('');
     const scheme = probe.match(/^([a-z][a-z0-9+.-]*):/i);

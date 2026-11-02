@@ -392,8 +392,8 @@ describe('hardening', () => {
         const html = await render(
             '[a](javascript&colon;alert(1)) [b](&#106;avascript:alert(1)) [c](java&#x09;script:alert(1))'
         );
-        expect(html).not.toMatch(/href="(?:javascript:|&#|java&#)/i);
-        expect(html).toContain('href="javascript&amp;colon;');
+        expect(html).not.toMatch(/href="(?:javascript|&#|java&#)/i);
+        expect(html.match(/href="#"/g)?.length).toBe(3);
     });
 
     test('urls keep working with query strings', async () => {
