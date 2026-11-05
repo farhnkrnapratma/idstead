@@ -40,7 +40,7 @@ bun run lint:deprecated  # typed ESLint pass (eslint.deprecated.config.ts) that 
 bun run fmt / fmt:check  # prettier
 ```
 
-Run tests, `bun run check` and `bun run lint` after non-trivial changes; there is no CI pipeline, so these local runs are the only gate before Workers Builds deploys. Repository changes must keep the suites in `tests/contracts/` passing. `tests/` stays at the repository root and imports from `packages/*/src` and `apps/*/src`.
+Run tests, `bun run check` and `bun run lint` after non-trivial changes; CircleCI (`.circleci/config.yml`) runs the same checks on every push but does not gate Workers Builds, so run them locally before merging to `main`. Repository changes must keep the suites in `tests/contracts/` passing. `tests/` stays at the repository root and imports from `packages/*/src` and `apps/*/src`.
 
 Where the instance runs (domains, Worker, bucket and queue names, cron) lives in `idstead.jsonc`: edit it and run `bun run configure` instead of editing the generated `apps/*/wrangler.jsonc`. Env files stay at the repository root and `.env.example` lists every key once; this instance reads them from Phase (see [This instance](#this-instance)).
 

@@ -33,7 +33,7 @@ By contributing you agree that your contribution is licensed under the license o
 
 ## Before you push
 
-There is no CI pipeline. These local runs are the only gate before Workers Builds deploys:
+CircleCI (`.circleci/config.yml`) runs these checks on every push, but it does not gate Workers Builds, so run them locally before merging to `main`:
 
 ```sh
 bun run test

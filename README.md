@@ -77,7 +77,7 @@ bun run lint     # prettier, eslint and the deprecated-API check
 bun run build    # every app
 ```
 
-There is no CI pipeline, so these local runs are the gate before a deploy. Architecture, API, operations and security documentation is in [`docs/`](docs/README.md).
+CircleCI (`.circleci/config.yml`) runs these checks plus a secret scan and commitlint on every push. It does not gate Workers Builds, so run them locally before merging to `main`. Architecture, API, operations and security documentation is in [`docs/`](docs/README.md).
 
 ## Public API
 

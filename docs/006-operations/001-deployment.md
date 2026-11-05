@@ -11,7 +11,7 @@ The [setup script](../001-getting-started/001-setup-script.md) deploys every Wor
 
 Every trigger also watches `package.json`, `bun.lock` and `bunfig.toml`, and build caching is on. A Worker that starts importing another package needs that package in its watch paths, or changes to it will not redeploy the Worker. The Worker names, routes and resource names come from `idstead.jsonc` through the committed `apps/*/wrangler.jsonc` ([instance configuration](../002-configuration/001-instance.md)).
 
-There is no CI pipeline. Run `bun run test`, `bun run check` and `bun run lint` locally before you push or merge to `main`.
+CircleCI (`.circleci/config.yml`) runs the checks on every push but does not gate Workers Builds. Run `bun run test`, `bun run check` and `bun run lint` locally before you push or merge to `main`.
 
 ## Environments
 

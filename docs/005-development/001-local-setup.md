@@ -50,7 +50,7 @@ bun run test         # bun test tests
 bun run build        # build every app (SvelteKit builds + wrangler dry-run bundles)
 ```
 
-There is no CI pipeline. These local runs are the only gate before Workers Builds deploys from `main` ([deployment](../006-operations/001-deployment.md)). Run `test`, `check` and `lint` after any non-trivial change.
+CircleCI (`.circleci/config.yml`) runs these checks on every push, but it does not gate Workers Builds from `main` ([deployment](../006-operations/001-deployment.md)). Run `test`, `check` and `lint` locally after any non-trivial change.
 
 ## Monorepo layout
 
