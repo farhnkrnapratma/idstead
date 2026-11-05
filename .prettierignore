@@ -12,3 +12,4 @@ docs/**/SHOWCASE.md
 skills-lock.json
 .claude/skills/graphify/
 .claude/CLAUDE.md
+.agents/skills/

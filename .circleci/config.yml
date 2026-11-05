@@ -1,0 +1,106 @@
+# SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+
+version: 2.1
+
+executors:
+    node:
+        docker:
+            - image: cimg/node:24.22
+        resource_class: medium
+
+commands:
+    setup-bun:
+        steps:
+            - run:
+                  name: Install bun
+                  command: |
+                      curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"
+                      ln -sf "$HOME/.bun/bin/bun" "$HOME/.bun/bin/bunx"
+                      echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
+
+    setup-trufflehog:
+        steps:
+            - run:
+                  name: Install trufflehog
+                  command: |
+                      base=https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.8
+                      curl -fsSL -o "$HOME/trufflehog.tar.gz" "$base/trufflehog_3.99.8_linux_amd64.tar.gz"
+                      curl -fsSL -o "$HOME/trufflehog.sums" "$base/trufflehog_3.99.8_checksums.txt"
+                      (cd "$HOME" && grep ' trufflehog_3.99.8_linux_amd64.tar.gz$' trufflehog.sums | awk '{print $1"  trufflehog.tar.gz"}' | sha256sum -c -)
+                      mkdir -p "$HOME/.local/bin"
+                      tar -xzf "$HOME/trufflehog.tar.gz" -C "$HOME/.local/bin" trufflehog
+                      echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASH_ENV"
+
+jobs:
+    reuse:
+        docker:
+            - image: cimg/python:3.12
+        steps:
+            - checkout
+            - run: pip install --quiet reuse==6.3.0
+            - run: reuse lint
+
+    check:
+        executor: node
+        steps:
+            - checkout
+            - setup-bun
+            - restore_cache:
+                  keys:
+                      - bun-v1-{{ checksum "bun.lock" }}
+                      - bun-v1-
+            - run: bun install --frozen-lockfile
+            - save_cache:
+                  key: bun-v1-{{ checksum "bun.lock" }}
+                  paths:
+                      - ~/.bun/install/cache
+            - run: bun run fmt:check
+            - run: bunx eslint .
+            - run: bun run lint:deprecated
+            - run: bun run check
+            - run: bun run test
+            - run: bun run build
+            - run: bun audit --audit-level=high
+
+    secrets:
+        docker:
+            - image: cimg/python:3.12
+        steps:
+            - setup-trufflehog
+            # CircleCI checks out a blobless clone, so trufflehog scans a full clone instead
+            - run:
+                  name: Scan history
+                  command: |
+                      git clone --quiet "https://github.com/farhnkrnapratma/idstead.git" "$HOME/scan"
+                      trufflehog git "file://$HOME/scan" --results=verified --fail --no-update
+
+    commitlint:
+        executor: node
+        steps:
+            - checkout
+            - setup-bun
+            - restore_cache:
+                  keys:
+                      - bun-v1-{{ checksum "bun.lock" }}
+                      - bun-v1-
+            - run: bun install --frozen-lockfile
+            - run:
+                  name: Lint commit messages
+                  command: |
+                      if [ "$(git rev-parse --is-shallow-repository)" = true ]; then git fetch --unshallow; fi
+                      git fetch --quiet origin main:refs/remotes/origin/main
+                      if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
+                          bunx --no-install commitlint --last
+                      else
+                          bunx --no-install commitlint --from "$(git merge-base origin/main HEAD)" --to HEAD
+                      fi
+
+workflows:
+    ci:
+        jobs:
+            - reuse
+            - check
+            - secrets
+            - commitlint

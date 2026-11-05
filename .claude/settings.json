@@ -1,87 +1,71 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/block-sensitive-file-edits.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/guard-deploy-config.sh"
-          }
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/block-sensitive-file-edits.sh"
+                    },
+                    { "type": "command", "command": "bash .claude/hooks/guard-deploy-config.sh" }
+                ]
+            },
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/block-bad-commit.sh",
+                        "if": "Bash(git commit:*)",
+                        "timeout": 120
+                    },
+                    {
+                        "type": "command",
+                        "command": "d=\"$(pwd)\"; until [ -f \"$d/.claude/hooks/fallow-gate.sh\" ] || [ -e \"$d/.git\" ] || [ \"$d\" = / ]; do d=\"$(dirname \"$d\")\"; done; if [ -f \"$d/.claude/hooks/fallow-gate.sh\" ]; then cd \"$d\" && exec ./.claude/hooks/fallow-gate.sh; fi; exec \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fallow-gate.sh"
+                    }
+                ]
+            },
+            {
+                "matcher": "Bash|Grep",
+                "hooks": [
+                    { "type": "command", "command": "graphify hook-guard search", "timeout": 10 }
+                ]
+            },
+            {
+                "matcher": "Read|Glob",
+                "hooks": [
+                    { "type": "command", "command": "graphify hook-guard read", "timeout": 10 }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [{ "type": "command", "command": "bash .claude/hooks/format-on-write.sh" }]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/check-before-stop.sh",
+                        "timeout": 120
+                    },
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/graphify-refresh.sh",
+                        "timeout": 15
+                    }
+                ]
+            }
         ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/block-bad-commit.sh",
-            "if": "Bash(git commit:*)",
-            "timeout": 120
-          },
-          {
-            "type": "command",
-            "command": "d=\"$(pwd)\"; until [ -f \"$d/.claude/hooks/fallow-gate.sh\" ] || [ -e \"$d/.git\" ] || [ \"$d\" = / ]; do d=\"$(dirname \"$d\")\"; done; if [ -f \"$d/.claude/hooks/fallow-gate.sh\" ]; then cd \"$d\" && exec ./.claude/hooks/fallow-gate.sh; fi; exec \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fallow-gate.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "graphify hook-guard search",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "graphify hook-guard read",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/format-on-write.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-before-stop.sh",
-            "timeout": 120
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/graphify-refresh.sh",
-            "timeout": 15
-          }
-        ]
-      }
-    ]
-  },
-  "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "fallow@fallow-skills": true
-  }
+    },
+    "enabledPlugins": {
+        "typescript-lsp@claude-plugins-official": true,
+        "playwright@claude-plugins-official": true,
+        "fallow@fallow-skills": true
+    }
 }
