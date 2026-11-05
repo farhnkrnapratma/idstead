@@ -9,6 +9,10 @@ executors:
         docker:
             - image: cimg/node:24.22
         resource_class: medium
+    node-large:
+        docker:
+            - image: cimg/node:24.22
+        resource_class: large
 
 commands:
     setup-bun:
@@ -43,7 +47,7 @@ jobs:
             - run: reuse lint
 
     check:
-        executor: node
+        executor: node-large
         steps:
             - checkout
             - setup-bun
