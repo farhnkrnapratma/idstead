@@ -40,7 +40,6 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |
 | `docsLayout.test.ts` | `docs/` folders are numbered `001…n` and every relative link and anchor resolves |
 | `csp.test.ts`, `cspHashes.test.ts` | Content-Security-Policy builder, script hashes, and the static start-up scripts shared by both apps |
-| `workflows.test.ts` | GitHub workflows: checkout credentials and the Claude job's author gate |
 | `robots.test.ts` | `robots.txt` directives and preview blocking |
 | `moderation.test.ts`, `inferenceQueue.test.ts` | Llama Guard moderation parsing; Workers AI concurrency limit |
 | `accessAuth.test.ts` | Cloudflare Access token checks (signature, `iss`, `aud`, expiry, `type`, `ADMIN_EMAILS`) and the loopback-only dev identity |
