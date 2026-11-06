@@ -128,6 +128,7 @@ delegate('ipSalt.ts', ['ipSalt']);
 delegate('moderation.ts', ['moderateContent']);
 
 delegate('adminAuth.ts', ['verifyAdminRequest']);
+delegate('accessAuth.ts', ['accessIdentity']);
 delegate('adminResume.ts', ['deleteResumeFile']);
 delegate('blogPostAssets.ts', [
     'relocateMarkdownAssets',
