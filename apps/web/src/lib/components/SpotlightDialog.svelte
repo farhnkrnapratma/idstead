@@ -63,6 +63,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { isHiddenCommand } from '#app/commandVisibility.ts';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { createDynamicCommandItems } from './spotlight/dynamicCommands';
+    import { searchLocalItems as searchLocal, dedupeItems } from './spotlight/localSearch';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
         matchFuzzy,
@@ -272,177 +273,19 @@ SPDX-License-Identifier: AGPL-3.0-only
         };
     }
 
+    const localMatcher = { fuzzy: fuzzyMatch, compile: compileRegexQuery };
     function searchLocalItems(q: string): SpotlightItem[] {
-        const cleanQ = q.trim();
-        if (!cleanQ) {
-            return [];
-        }
-
-        const isCommandQuery = cleanQ.startsWith('/');
-        const isRegexQuery = isRegex;
-        const compiledRegex = isRegexQuery ? compileRegexQuery(cleanQ) : null;
-
-        const matchedItems: { item: SpotlightItem; score: number }[] = [];
-
-        if (isCommandQuery) {
-            const dynamicCmds = getDynamicCommandItems(cleanQ);
-            for (const dyn of dynamicCmds) {
-                if (
-                    !isRegexQuery
-                    || (compiledRegex
-                        && (compiledRegex.test(dyn.title)
-                            || (dyn.subtitle && compiledRegex.test(dyn.subtitle))))
-                ) {
-                    matchedItems.push({ item: dyn, score: 95 });
-                }
-            }
-        }
-
-        for (const cmd of defaultCommands) {
-            if (isCommandQuery) {
-                const cmdName = cmd.title.toLowerCase();
-                const queryLower = cleanQ.toLowerCase();
-                if (cmdName.startsWith(queryLower) || cmdName.includes(queryLower)) {
-                    matchedItems.push({ item: cmd, score: 90 });
-                    continue;
-                }
-            }
-
-            const matchTitle = fuzzyMatch(cmd.title, cleanQ);
-            const matchSub =
-                cmd.subtitle ? fuzzyMatch(cmd.subtitle, cleanQ) : { matched: false, score: 0 };
-
-            if (isRegexQuery) {
-                if (
-                    compiledRegex
-                    && (compiledRegex.test(cmd.title)
-                        || (cmd.subtitle && compiledRegex.test(cmd.subtitle)))
-                ) {
-                    matchedItems.push({ item: cmd, score: 75 });
-                    continue;
-                }
-            }
-
-            if (matchTitle.matched || matchSub.matched) {
-                const titleScore = matchTitle.matched ? matchTitle.score : 0;
-                const subScore = matchSub.matched ? matchSub.score * 0.5 : 0;
-                matchedItems.push({ item: cmd, score: Math.max(titleScore, subScore) });
-            }
-        }
-
-        for (const p of projects) {
-            const projectTags = p.tags ?? [];
-            const matchName = fuzzyMatch(p.name, cleanQ);
-            const matchDesc = fuzzyMatch(p.desc, cleanQ);
-            const tagMatch = projectTags.some(t => fuzzyMatch(t, cleanQ).matched);
-
-            let isMatch = matchName.matched || matchDesc.matched || tagMatch;
-            let score = Math.max(
-                matchName.matched ? matchName.score : 0,
-                matchDesc.matched ? matchDesc.score * 0.5 : 0
-            );
-
-            if (isRegexQuery) {
-                if (
-                    compiledRegex
-                    && (compiledRegex.test(p.name)
-                        || (p.desc && compiledRegex.test(p.desc))
-                        || projectTags.some(t => compiledRegex.test(t)))
-                ) {
-                    isMatch = true;
-                    score = 70;
-                }
-            }
-
-            if (isMatch) {
-                matchedItems.push({
-                    item: {
-                        id: `proj-${p.name}`,
-                        category: 'projects',
-                        title: p.name,
-                        subtitle: p.desc || '',
-                        url: p.url,
-                        tags: (p.tags ?? []).slice(0, 3),
-                        icon: FolderOpen,
-                        badge: 'Project'
-                    },
-                    score
-                });
-            }
-        }
-
-        if (!isCommandQuery) {
-            for (const link of linkItems ?? []) {
-                const matchTitle = fuzzyMatch(link.title, cleanQ);
-                const matchSub = fuzzyMatch(link.subtitle ?? '', cleanQ);
-                let score = Math.max(
-                    matchTitle.matched ? matchTitle.score : 0,
-                    matchSub.matched ? matchSub.score * 0.5 : 0
-                );
-                let isMatch = matchTitle.matched || matchSub.matched;
-                if (isRegexQuery) {
-                    isMatch = Boolean(
-                        compiledRegex
-                        && (compiledRegex.test(link.title)
-                            || compiledRegex.test(link.subtitle ?? ''))
-                    );
-                    score = isMatch ? 70 : 0;
-                }
-                if (isMatch) matchedItems.push({ item: link, score });
-            }
-        }
-
-        const sorted =
-            cleanQ === '/' ?
-                matchedItems.sort((a, b) => a.item.title.localeCompare(b.item.title))
-            :   matchedItems.sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    if (isCommandQuery) {
-                        return a.item.title.localeCompare(b.item.title);
-                    }
-                    const lenDiff = a.item.title.length - b.item.title.length;
-                    if (lenDiff !== 0) return lenDiff;
-                    return a.item.title.localeCompare(b.item.title);
-                });
-
-        const seenIds = new SvelteSet<string>();
-        const seenTitles = new SvelteSet<string>();
-        const uniqueMatches: SpotlightItem[] = [];
-
-        for (const m of sorted) {
-            const lowerTitle = m.item.title.toLowerCase();
-            if (seenIds.has(m.item.id) || seenTitles.has(lowerTitle)) {
-                continue;
-            }
-            seenIds.add(m.item.id);
-            seenTitles.add(lowerTitle);
-            uniqueMatches.push(m.item);
-        }
-
-        return uniqueMatches;
-    }
-
-    function dedupeItems(candidates: SpotlightItem[]): SpotlightItem[] {
-        const seenIds = new SvelteSet<string>();
-        const seenUrls = new SvelteSet<string>();
-        const seenTitles = new SvelteSet<string>();
-        const uniqueCombined: SpotlightItem[] = [];
-
-        for (const item of candidates) {
-            const lowerTitle = item.title.toLowerCase();
-            if (
-                seenIds.has(item.id)
-                || seenTitles.has(lowerTitle)
-                || (item.url && seenUrls.has(item.url))
-            ) {
-                continue;
-            }
-            seenIds.add(item.id);
-            seenTitles.add(lowerTitle);
-            if (item.url) seenUrls.add(item.url);
-            uniqueCombined.push(item);
-        }
-        return uniqueCombined;
+        return searchLocal(
+            q,
+            isRegex,
+            {
+                commands: defaultCommands,
+                dynamicCommands: getDynamicCommandItems,
+                projects,
+                links: linkItems ?? []
+            },
+            localMatcher
+        );
     }
 
     async function runSearch(inputString: string) {
