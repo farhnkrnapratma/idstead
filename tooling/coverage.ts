@@ -43,7 +43,8 @@ let failed = false;
 for (const [name, target] of [
     ['suite', 'tests'],
     ['smoke', 'tooling/smoke.test.ts'],
-    ['loader', 'tooling/loadAll.test.ts']
+    ['loader', 'tooling/loadAll.test.ts'],
+    ['turnstile', 'tooling/turnstileKey.test.ts']
 ] as const) {
     const dir = join(work, name);
     mkdirSync(dir);
