@@ -5,9 +5,9 @@
 import { afterEach, expect, test } from 'bun:test';
 import { flushSync, mount, tick, unmount } from 'svelte';
 import { page } from '$app/state';
-import { lenient } from '../lenient.ts';
+import { lenient } from '../tests/lenient.ts';
 
-const root = new URL('../../', import.meta.url).pathname;
+const root = new URL('../', import.meta.url).pathname;
 const files = [...new Bun.Glob('{apps,packages}/**/src/**/*.svelte').scanSync({ cwd: root })]
     .filter(file => !file.includes('node_modules'))
     .sort();

@@ -4,7 +4,7 @@
 
 import { expect, test } from 'bun:test';
 import { flushSync, mount, unmount } from 'svelte';
-import Button from '../../packages/ui/src/components/Button.svelte';
+import Button from '../packages/ui/src/components/Button.svelte';
 
 test('renders a button', () => {
     const target = document.createElement('div');
