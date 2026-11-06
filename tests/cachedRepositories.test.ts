@@ -63,7 +63,7 @@ describe('cachedRepositories', () => {
         const found = await repos.blog.findPublished('p1');
         const again = await repos.blog.findPublished('p1');
         expect(calls['blog.findPublished']).toBe(1);
-        expect(isPostSource((again as { source: unknown }).source)).toBe(true);
+        expect(isPostSource((again as unknown as { source: unknown }).source)).toBe(true);
         expect(found).toBeTruthy();
 
         await repos.blog.listPublished();
