@@ -141,4 +141,61 @@ describe('resume pdf', () => {
         expect(formatDateRange('2020-01-01', '2022-06-01', false)).toBe('Jan 2020 - Jun 2022');
         expect(formatDateRange(null, null, false)).toBe('');
     });
+
+    test('embeds a valid avatar and falls back when the image is unreadable', async () => {
+        const png = Uint8Array.from(
+            atob(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+            ),
+            char => char.charCodeAt(0)
+        );
+        const warn = console.warn;
+        console.warn = () => {};
+        try {
+            const withPng = fixture();
+            withPng.profile.avatarBytes = png;
+            expect(
+                (
+                    await PDFDocument.load(await generateResumePdfBuffer(withPng, fonts))
+                ).getPageCount()
+            ).toBe(1);
+
+            const withJpeg = fixture();
+            withJpeg.profile.avatarBytes = new Uint8Array([0xff, 0xd8, 0xff, 0x00]);
+            expect(
+                (
+                    await PDFDocument.load(await generateResumePdfBuffer(withJpeg, fonts))
+                ).getPageCount()
+            ).toBe(1);
+
+            const withBadPng = fixture();
+            withBadPng.profile.avatarBytes = new Uint8Array([1, 2, 3]);
+            expect(
+                (
+                    await PDFDocument.load(await generateResumePdfBuffer(withBadPng, fonts))
+                ).getPageCount()
+            ).toBe(1);
+
+            const withEmpty = fixture();
+            withEmpty.profile.avatarBytes = new Uint8Array();
+            expect(
+                (
+                    await PDFDocument.load(await generateResumePdfBuffer(withEmpty, fonts))
+                ).getPageCount()
+            ).toBe(1);
+        } finally {
+            console.warn = warn;
+        }
+    }, 30_000);
+
+    test('wraps many header links onto several lines and accepts empty experience descriptions', async () => {
+        const data = fixture();
+        data.links = Array.from({ length: 10 }, (_, index) => ({
+            url: `https://example.com/a/very/long/path/segment/that/keeps/going/${index}`
+        }));
+        data.experiences[0].description = '';
+        data.profile.bio = Array.from({ length: 60 }, () => 'lorem ipsum dolor sit amet').join(' ');
+        const doc = await PDFDocument.load(await generateResumePdfBuffer(data, fonts));
+        expect(doc.getPageCount()).toBe(1);
+    });
 });
