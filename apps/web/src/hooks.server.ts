@@ -30,21 +30,18 @@ import {
 import { pageDataCache } from '#lib/server/pageDataCache.ts';
 import { analyticsHead, analyticsSources, siteAnalytics } from '#lib/server/analytics.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
+import { persistAcrossHmr } from '#lib/server/hmrCache.ts';
 
-const sentryInitHandle: Handle =
-    import.meta.hot?.data.sentryInitHandle
-    ?? (Sentry.getClient() ?
+const sentryInitHandle = persistAcrossHmr<Handle>(import.meta.hot, 'sentryInitHandle', () =>
+    Sentry.getClient() ?
         ({ event, resolve }) => resolve(event)
     :   Sentry.initCloudflareSentryHandle({
             dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
             environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
             tracesSampleRate: dev ? 0 : 1.0,
             integrations: privateRequestIntegrations()
-        }));
-
-if (import.meta.hot) {
-    import.meta.hot.data.sentryInitHandle = sentryInitHandle;
-}
+        })
+);
 
 function getCdnBaseUrl(): string {
     const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '').trim();
