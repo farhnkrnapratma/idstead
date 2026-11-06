@@ -64,6 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { createDynamicCommandItems } from './spotlight/dynamicCommands';
     import { searchLocalItems as searchLocal, dedupeItems } from './spotlight/localSearch';
+    import { resolveHistoryItem as resolveHistory } from './spotlight/history';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
         matchFuzzy,
@@ -549,59 +550,12 @@ SPDX-License-Identifier: AGPL-3.0-only
     }
 
     function resolveHistoryItem(entry: SearchHistoryEntry): SpotlightItem | null {
-        if (entry.id === 'dyn-code-minimal' || entry.title.toLowerCase() === '/code minimal') {
-            const dynamic = getDynamicCommandItems('/code clean');
-            const cleanItem = dynamic.find(d => d.id === 'dyn-code-clean');
-            if (cleanItem) return cleanItem;
-        }
-
-        const fromDefault = defaultCommands.find(
-            c => c.id === entry.id || c.title.toLowerCase() === entry.title.toLowerCase()
-        );
-        if (fromDefault) return fromDefault;
-
-        if (entry.title.startsWith('/')) {
-            const dynamic = getDynamicCommandItems(entry.title);
-            const matchedDyn = dynamic.find(
-                d => d.id === entry.id || d.title.toLowerCase() === entry.title.toLowerCase()
-            );
-            if (matchedDyn) return matchedDyn;
-        }
-
-        const matchedProject = projects.find(
-            p => `proj-${p.name}` === entry.id || p.name.toLowerCase() === entry.title.toLowerCase()
-        );
-        if (matchedProject) {
-            return {
-                id: `proj-${matchedProject.name}`,
-                category: 'projects',
-                title: matchedProject.name,
-                subtitle: matchedProject.desc,
-                url: matchedProject.url,
-                icon: FolderOpen,
-                badge: 'Project'
-            };
-        }
-
-        if (entry.category === 'posts' && entry.id.startsWith('post-')) {
-            const postUrl = entry.id.replace('post-', '');
-            return {
-                id: entry.id,
-                category: 'posts',
-                title: entry.title,
-                subtitle: entry.subtitle,
-                url: postUrl,
-                icon: Quote,
-                badge: 'Post'
-            };
-        }
-
-        const fromResults = results.find(
-            r => r.id === entry.id || r.title.toLowerCase() === entry.title.toLowerCase()
-        );
-        if (fromResults) return fromResults;
-
-        return null;
+        return resolveHistory(entry, {
+            defaultCommands,
+            dynamicCommands: getDynamicCommandItems,
+            projects,
+            results
+        });
     }
 
     function getHistoryDisplay(entry: SearchHistoryEntry) {

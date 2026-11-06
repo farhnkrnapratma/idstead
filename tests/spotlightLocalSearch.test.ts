@@ -10,6 +10,7 @@ import {
     type LocalSearchSource
 } from '../apps/web/src/lib/components/spotlight/localSearch.ts';
 import type { SpotlightItem } from '../apps/web/src/lib/components/spotlight/types.ts';
+import { resolveHistoryItem } from '../apps/web/src/lib/components/spotlight/history.ts';
 
 const item = (id: string, title: string, extra: Partial<SpotlightItem> = {}): SpotlightItem =>
     ({ id, category: 'pages', title, ...extra }) as SpotlightItem;
@@ -129,5 +130,42 @@ describe('dedupeItems', () => {
             item('d', 'Three')
         ]);
         expect(result.map(entry => entry.id)).toEqual(['a', 'd']);
+    });
+});
+
+describe('resolveHistoryItem', () => {
+    const historySource = {
+        defaultCommands: [item('cmd-theme', '/theme')],
+        dynamicCommands: (query: string) =>
+            query === '/code clean' ?
+                [item('dyn-code-clean', '/code clean')]
+            :   [item('dyn-x', query)],
+        projects: [{ name: 'idstead', desc: 'Site', url: 'https://example.com/idstead' }],
+        results: [item('res-1', 'Result one')]
+    };
+    const entry = (id: string, title: string, extra: Record<string, unknown> = {}) =>
+        ({ id, title, category: 'pages', subtitle: 'sub', ...extra }) as never;
+
+    test('finds the default command, the minimal-code alias and dynamic commands', () => {
+        expect(resolveHistoryItem(entry('cmd-theme', '/theme'), historySource)?.id).toBe(
+            'cmd-theme'
+        );
+        expect(
+            resolveHistoryItem(entry('dyn-code-minimal', '/code minimal'), historySource)?.id
+        ).toBe('dyn-code-clean');
+        expect(resolveHistoryItem(entry('dyn-y', '/other'), historySource)?.id).toBe('dyn-x');
+    });
+
+    test('rebuilds projects, posts and falls back to current results', () => {
+        expect(resolveHistoryItem(entry('proj-idstead', 'idstead'), historySource)).toMatchObject({
+            category: 'projects',
+            url: 'https://example.com/idstead',
+            badge: 'Project'
+        });
+        expect(
+            resolveHistoryItem(entry('post-hello', 'Hello', { category: 'posts' }), historySource)
+        ).toMatchObject({ category: 'posts', url: 'hello', badge: 'Post' });
+        expect(resolveHistoryItem(entry('res-1', 'Result one'), historySource)?.id).toBe('res-1');
+        expect(resolveHistoryItem(entry('gone', 'Gone'), historySource)).toBeNull();
     });
 });
