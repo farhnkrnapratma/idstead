@@ -9,3 +9,8 @@ linker = "hoisted"
 
 [run]
 shell = "bun"
+
+[test]
+preload = ["./tests/preload.ts"]
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = ["node_modules", "tests/", "tooling/"]

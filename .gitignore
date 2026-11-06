@@ -25,3 +25,6 @@ skill-updates/
 .local/
 graphify-out/
 .fallow/
+
+# coverage
+coverage/
