@@ -103,7 +103,8 @@ mock.module('../../packages/lib/src/server/profileAssets.ts', () => ({
 }));
 mock.module('../../packages/lib/src/server/postRender.ts', () => ({
     buildPostRender: (...args: unknown[]) => more.buildPostRender(...args),
-    refreshPostRenders: (...args: unknown[]) => more.refreshPostRenders(...args)
+    refreshPostRenders: (...args: unknown[]) => more.refreshPostRenders(...args),
+    parsePostRender: (...args: unknown[]) => slot.parsePostRender?.(...args)
 }));
 
 mock.module('../../packages/lib/src/server/writeFreeze.ts', () => ({
@@ -173,4 +174,13 @@ mock.module('../../packages/lib/src/server/analytics.ts', () => ({
         slot.analyticsHead ? slot.analyticsHead(...args) : realAnalyticsHead(...args),
     analyticsSources: (...args: Parameters<typeof realAnalyticsSources>) =>
         slot.analyticsSources ? slot.analyticsSources(...args) : realAnalyticsSources(...args)
+}));
+
+const realMdrs = await import('@mdrs/core');
+mock.module('@mdrs/core', () => ({
+    ...realMdrs,
+    validateDefineForSave: (...args: unknown[]) =>
+        slot.validateDefineForSave ?
+            slot.validateDefineForSave(...args)
+        :   (realMdrs.validateDefineForSave as (...args: unknown[]) => unknown)(...args)
 }));

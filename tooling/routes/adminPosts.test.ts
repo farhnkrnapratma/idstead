@@ -77,7 +77,7 @@ more.buildPostRender = async () => {
 mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions: () => ({}) }));
 slot.queuePostEffects = async (_newsletter: unknown, _platform: unknown, effect: unknown) =>
     void state.effects.push(effect);
-mock.module('@mdrs/core', () => ({ validateDefineForSave: async () => state.validation }));
+slot.validateDefineForSave = async () => state.validation;
 
 const { POST, GET } =
     (await import('../../apps/admin/src/routes/api/internal/admin/posts/+server.ts')) as {
