@@ -11,6 +11,7 @@ import {
 } from '../apps/web/src/lib/components/spotlight/localSearch.ts';
 import type { SpotlightItem } from '../apps/web/src/lib/components/spotlight/types.ts';
 import { resolveHistoryItem } from '../apps/web/src/lib/components/spotlight/history.ts';
+import { mergeResults } from '../apps/web/src/lib/components/spotlight/localSearch.ts';
 
 const item = (id: string, title: string, extra: Partial<SpotlightItem> = {}): SpotlightItem =>
     ({ id, category: 'pages', title, ...extra }) as SpotlightItem;
@@ -167,5 +168,21 @@ describe('resolveHistoryItem', () => {
         ).toMatchObject({ category: 'posts', url: 'hello', badge: 'Post' });
         expect(resolveHistoryItem(entry('res-1', 'Result one'), historySource)?.id).toBe('res-1');
         expect(resolveHistoryItem(entry('gone', 'Gone'), historySource)).toBeNull();
+    });
+});
+
+describe('mergeResults', () => {
+    test('drops results already listed in history or repeated by id, title or url', () => {
+        const result = mergeResults(
+            [{ id: 'h1', title: 'Saved' }],
+            [
+                item('h1', 'Other'),
+                item('a', 'saved'),
+                item('b', 'One', { url: '/one' }),
+                item('c', 'Two', { url: '/one' }),
+                item('d', 'Three')
+            ]
+        );
+        expect(result.map(entry => entry.id)).toEqual(['b', 'd']);
     });
 });

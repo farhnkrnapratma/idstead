@@ -222,3 +222,27 @@ export function dedupeItems(candidates: SpotlightItem[]): SpotlightItem[] {
     }
     return unique;
 }
+
+export function mergeResults(
+    history: { id: string; title: string }[],
+    candidates: SpotlightItem[]
+): SpotlightItem[] {
+    const seenIds = new Set<string>();
+    const seenTitles = new Set<string>();
+    const seenUrls = new Set<string>();
+    for (const entry of history) {
+        seenIds.add(entry.id);
+        seenTitles.add(entry.title.toLowerCase());
+    }
+    const unique: SpotlightItem[] = [];
+    for (const item of candidates) {
+        const lowerTitle = item.title.toLowerCase();
+        if (seenIds.has(item.id) || seenTitles.has(lowerTitle)) continue;
+        if (item.url && seenUrls.has(item.url)) continue;
+        seenIds.add(item.id);
+        seenTitles.add(lowerTitle);
+        if (item.url) seenUrls.add(item.url);
+        unique.push(item);
+    }
+    return unique;
+}
