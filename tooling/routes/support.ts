@@ -122,7 +122,7 @@ function delegate(file: string, names: string[]) {
 
 delegate('publicWrite.ts', ['readPublicWrite']);
 delegate('repositories.ts', ['publicRepositories', 'serviceData']);
-delegate('workerEnv.ts', ['workerBinding']);
+delegate('workerEnv.ts', ['workerBinding', 'runInBackground']);
 delegate('ipSalt.ts', ['ipSalt']);
 delegate('moderation.ts', ['moderateContent']);
 
@@ -160,4 +160,17 @@ mock.module('../../packages/lib/src/server/siteUrl.ts', () => ({
         slot.configuredSiteUrl ? slot.configuredSiteUrl(...args) : realConfiguredSiteUrl(...args),
     configuredAdminUrl: (...args: Parameters<typeof realConfiguredAdminUrl>) =>
         realConfiguredAdminUrl(...args)
+}));
+
+const realAnalytics = await import('../../packages/lib/src/server/analytics.ts');
+const { siteAnalytics: realSiteAnalytics, analyticsHead: realAnalyticsHead } = realAnalytics;
+const { analyticsSources: realAnalyticsSources, CONSENT_STORAGE_KEY } = realAnalytics;
+mock.module('../../packages/lib/src/server/analytics.ts', () => ({
+    CONSENT_STORAGE_KEY,
+    siteAnalytics: (...args: Parameters<typeof realSiteAnalytics>) =>
+        slot.siteAnalytics ? slot.siteAnalytics(...args) : realSiteAnalytics(...args),
+    analyticsHead: (...args: Parameters<typeof realAnalyticsHead>) =>
+        slot.analyticsHead ? slot.analyticsHead(...args) : realAnalyticsHead(...args),
+    analyticsSources: (...args: Parameters<typeof realAnalyticsSources>) =>
+        slot.analyticsSources ? slot.analyticsSources(...args) : realAnalyticsSources(...args)
 }));

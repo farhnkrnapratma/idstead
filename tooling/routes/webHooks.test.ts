@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { more, slot, slots } from './support.ts';
 
 const state = {
@@ -59,11 +59,6 @@ more.serveIdentityAsset = async (request: Request) => {
     return new Response('image', { headers: { 'content-type': 'image/webp' } });
 };
 slots.checkRateLimit = async () => state.limit;
-mock.module('../../packages/lib/src/server/analytics.ts', () => ({
-    siteAnalytics: async () => state.analytics,
-    analyticsHead: () => state.head,
-    analyticsSources: () => ({ script: [], connect: [] })
-}));
 slot.publicRepositories = () => ({});
 
 const loaded = new Map<boolean, (input: any) => Promise<Response>>();
@@ -135,7 +130,16 @@ const html = (
     });
 const json = (body: unknown, init: ResponseInit = {}) => Response.json(body, init);
 
+afterAll(() => {
+    delete slot.siteAnalytics;
+    delete slot.analyticsHead;
+    delete slot.analyticsSources;
+});
+
 beforeEach(() => {
+    slot.siteAnalytics = async () => state.analytics;
+    slot.analyticsHead = () => state.head;
+    slot.analyticsSources = () => ({ script: [], connect: [] });
     state.limit = { limited: false, headers: {} };
     state.analytics = null;
     state.head = '<script>window.a=1</script>';
