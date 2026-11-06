@@ -121,7 +121,9 @@ delegate('moderation.ts', ['moderateContent']);
 
 delegate('adminAuth.ts', ['verifyAdminRequest']);
 delegate('adminResume.ts', ['deleteResumeFile']);
-delegate('blogPostAssets.ts', ['relocateMarkdownAssets', 'syncPostAssets']);
+delegate('blogPostAssets.ts', ['relocateMarkdownAssets', 'syncPostAssets', 'movePostBanner']);
+delegate('postEffects.ts', ['queuePostEffects']);
+delegate('subscriberBroadcast.ts', ['notifyNewPost']);
 delegate('oidc/admin.ts', ['oidcAdmin']);
 delegate('oidc/enabled.ts', ['oidcEnabled']);
 delegate('oidc/config.ts', ['oidcEndpoints']);

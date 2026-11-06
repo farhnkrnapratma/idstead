@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { more, sentry, slots } from './support.ts';
+import { more, sentry, slot, slots } from './support.ts';
 
 const POST_ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
@@ -42,13 +42,11 @@ more.refreshPostRenders = async () => {
     if (state.failing.has('renders')) throw new Error('renders');
     return state.refresh;
 };
-mock.module('../../packages/lib/src/server/subscriberBroadcast.ts', () => ({
-    notifyNewPost: async (...args: unknown[]) => {
-        state.notified.push(args);
-        if (state.notifyError) throw new Error('send');
-        return state.notify;
-    }
-}));
+slot.notifyNewPost = async (...args: unknown[]) => {
+    state.notified.push(args);
+    if (state.notifyError) throw new Error('send');
+    return state.notify;
+};
 mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
 mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions: () => ({}) }));
 

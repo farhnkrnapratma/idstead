@@ -85,10 +85,8 @@ mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions:
 mock.module('../../packages/lib/src/server/siteUrl.ts', () => ({
     configuredSiteUrl: () => 'https://example.com'
 }));
-mock.module('../../packages/lib/src/server/postEffects.ts', () => ({
-    queuePostEffects: async (_newsletter: unknown, _platform: unknown, effect: unknown) =>
-        void state.effects.push(effect)
-}));
+slot.queuePostEffects = async (_newsletter: unknown, _platform: unknown, effect: unknown) =>
+    void state.effects.push(effect);
 mock.module('@mdrs/core', () => ({ validateDefineForSave: async () => state.validation }));
 
 const { POST, GET } =
