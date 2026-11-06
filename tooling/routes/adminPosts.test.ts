@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { admin } from './support.ts';
+import { admin, more, slots } from './support.ts';
 
 class BannerRequiredError extends Error {}
 class OperationReusedError extends Error {}
@@ -35,9 +35,7 @@ const state = {
 };
 
 mock.module('virtual:banner-webp-wasm', () => ({ default: () => 'wasm' }));
-mock.module('../../packages/lib/src/server/data.ts', () => ({
-    dataStores: () => ({ service: state.service })
-}));
+slots.dataStores = () => ({ service: state.service });
 mock.module('../../packages/lib/src/server/blogPostAuth.ts', () => ({
     blogAdmin: async () => state.auth
 }));
@@ -63,14 +61,12 @@ mock.module('../../packages/lib/src/server/blogPostSave.ts', () => ({
         return state.operation;
     }
 }));
-mock.module('../../packages/lib/src/server/blogBannerStorage.ts', () => ({
-    putBanner: async (_p: unknown, _id: string, _op: string, _image: unknown, kind: string) =>
-        void state.banners.push(kind),
-    cleanupBlogAssets: async () => {
-        if (state.cleanupError) throw new Error('cleanup');
-        return state.cleanup;
-    }
-}));
+slots.putBanner = async (_p: unknown, _id: string, _op: string, _image: unknown, kind: string) =>
+    void state.banners.push(kind);
+slots.cleanupBlogAssets = async () => {
+    if (state.cleanupError) throw new Error('cleanup');
+    return state.cleanup;
+};
 mock.module('../../packages/lib/src/server/blogPostAssets.ts', () => ({
     relocateMarkdownAssets: async ({ markdown }: { markdown: string }) => {
         if (state.relocateError !== undefined) throw state.relocateError;
@@ -83,12 +79,10 @@ mock.module('../../packages/lib/src/server/blogPostAssets.ts', () => ({
 }));
 mock.module('../../packages/lib/src/cdn.ts', () => ({ cdnBaseUrl: () => 'https://cdn.test' }));
 mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
-mock.module('../../packages/lib/src/server/postRender.ts', () => ({
-    buildPostRender: async () => {
-        if (state.renderError) throw new Error('render');
-        return { html: '<p>x</p>' };
-    }
-}));
+more.buildPostRender = async () => {
+    if (state.renderError) throw new Error('render');
+    return { html: '<p>x</p>' };
+};
 mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions: () => ({}) }));
 mock.module('../../packages/lib/src/server/siteUrl.ts', () => ({
     configuredSiteUrl: () => 'https://example.com'

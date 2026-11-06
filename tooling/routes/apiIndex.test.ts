@@ -3,35 +3,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { sentry, slots } from './support.ts';
 
 const state = {
     limit: { limited: false, headers: {} as Record<string, string> },
     handler: (async () => Response.json({ ok: true })) as () => Promise<Response>,
-    captured: [] as unknown[],
-    contexts: [] as any[],
-    configs: [] as Array<Record<string, unknown>>
+    contexts: [] as any[]
 };
 
-mock.module('@sentry/cloudflare', () => ({
-    captureException: (error: unknown) => void state.captured.push(error),
-    withSentry: (config: (env: any) => Record<string, unknown>, handler: unknown) => {
-        state.configs.push(
-            config({}),
-            config({ PUBLIC_SENTRY_DSN: 'dsn', PUBLIC_SENTRY_ENVIRONMENT: 'preview' })
-        );
-        return handler;
-    }
-}));
-mock.module('../../packages/lib/src/server/data.ts', () => ({
-    dataStores: (platform: unknown, options: unknown) => {
-        state.contexts.push({ platform, options });
-        return { public: { marker: 'repos' } };
-    }
-}));
-mock.module('../../packages/lib/src/server/rateLimit.ts', () => ({
-    checkRateLimit: async () => state.limit,
-    clientIp: () => '203.0.113.9'
-}));
+slots.dataStores = (platform: unknown, options: unknown) => {
+    state.contexts.push({ platform, options });
+    return { public: { marker: 'repos' } };
+};
+slots.checkRateLimit = async () => state.limit;
 const route = (name: string) => async (context: any) => {
     state.contexts.push({ route: name, url: context.url.pathname, repos: context.repos });
     return state.handler();
@@ -62,6 +46,8 @@ const worker = (await import(target)).default as unknown as {
     fetch: (request: Request, env: Record<string, string>, ctx: unknown) => Promise<Response>;
 };
 
+const configsAtLoad = sentry.configs.slice(-2);
+
 async function call(
     path: string,
     init: RequestInit = {},
@@ -74,14 +60,14 @@ async function call(
 beforeEach(() => {
     state.limit = { limited: false, headers: {} };
     state.handler = async () => Response.json({ ok: true });
-    state.captured = [];
+    sentry.exceptions.length = 0;
     state.contexts = [];
 });
 
 describe('api worker', () => {
     test('configures sentry from the environment', () => {
-        expect(state.configs[0]).toMatchObject({ dsn: '', environment: 'production' });
-        expect(state.configs[1]).toMatchObject({ dsn: 'dsn', environment: 'preview' });
+        expect(configsAtLoad[0]).toMatchObject({ dsn: '', environment: 'production' });
+        expect(configsAtLoad[1]).toMatchObject({ dsn: 'dsn', environment: 'preview' });
     });
 
     test('answers preflights before anything else', async () => {
@@ -199,7 +185,7 @@ describe('api worker', () => {
         };
         const failed = await call('/v1/blog');
         expect(failed.status).toBe(500);
-        expect(state.captured).toHaveLength(1);
+        expect(sentry.exceptions).toHaveLength(1);
         state.handler = async () =>
             new Response('<html></html>', { headers: { 'content-type': 'text/html' } });
         const html = await call('/v1/blog');

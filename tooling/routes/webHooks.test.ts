@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { more, slots } from './support.ts';
 
 const state = {
     client: false,
@@ -52,27 +53,18 @@ mock.module('@sentry/sveltekit', () => ({
     captureException: (error: unknown) => void state.captured.push(error),
     handleErrorWithSentry: () => () => {}
 }));
-mock.module('../../packages/lib/src/server/writeFreeze.ts', () => ({
-    writeFreezeHandle: (input: any) => input.resolve(input.event)
-}));
 mock.module('../../packages/lib/src/server/csrf.ts', () => ({
     csrfHandle: (input: any) => input.resolve(input.event)
 }));
 mock.module('../../packages/lib/src/server/pageDataCache.ts', () => ({
     pageDataCache: (input: any) => input.resolve(input.event)
 }));
-mock.module('../../packages/lib/src/server/profileAssets.ts', () => ({
-    assetNames: ['avatar.webp', 'banner.webp'],
-    serveIdentityAsset: async (request: Request) => {
-        if (state.serveError) throw new Error('storage');
-        state.served.push(request.url);
-        return new Response('image', { headers: { 'content-type': 'image/webp' } });
-    }
-}));
-mock.module('../../packages/lib/src/server/rateLimit.ts', () => ({
-    checkRateLimit: async () => state.limit,
-    clientIp: () => '203.0.113.9'
-}));
+more.serveIdentityAsset = async (request: Request) => {
+    if (state.serveError) throw new Error('storage');
+    state.served.push(request.url);
+    return new Response('image', { headers: { 'content-type': 'image/webp' } });
+};
+slots.checkRateLimit = async () => state.limit;
 mock.module('../../packages/lib/src/server/analytics.ts', () => ({
     siteAnalytics: async () => state.analytics,
     analyticsHead: () => state.head,
