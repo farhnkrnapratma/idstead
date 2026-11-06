@@ -34,17 +34,14 @@ const state = {
     synced: [] as unknown[]
 };
 
-mock.module('virtual:banner-webp-wasm', () => ({ default: () => 'wasm' }));
 slots.dataStores = () => ({ service: state.service });
 mock.module('../../packages/lib/src/server/blogPostAuth.ts', () => ({
     blogAdmin: async () => state.auth
 }));
-mock.module('../../packages/lib/src/server/blogPostInput.ts', () => ({
-    parsePostInput: async () => {
-        if (state.parseError !== undefined) throw state.parseError;
-        return structuredClone(state.input);
-    }
-}));
+slot.parsePostInput = async () => {
+    if (state.parseError !== undefined) throw state.parseError;
+    return structuredClone(state.input);
+};
 mock.module('../../packages/lib/src/server/blogPostSave.ts', () => ({
     BannerRequiredError,
     OperationReusedError,
@@ -75,7 +72,6 @@ slot.syncPostAssets = async (options: unknown) => {
     if (state.syncError) throw new Error('sync');
     state.synced.push(options);
 };
-mock.module('../../packages/lib/src/cdn.ts', () => ({ cdnBaseUrl: () => 'https://cdn.test' }));
 mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
 more.buildPostRender = async () => {
     if (state.renderError) throw new Error('render');

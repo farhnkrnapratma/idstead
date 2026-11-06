@@ -121,9 +121,20 @@ delegate('moderation.ts', ['moderateContent']);
 
 delegate('adminAuth.ts', ['verifyAdminRequest']);
 delegate('adminResume.ts', ['deleteResumeFile']);
-delegate('blogPostAssets.ts', ['relocateMarkdownAssets', 'syncPostAssets', 'movePostBanner']);
+delegate('blogPostAssets.ts', [
+    'relocateMarkdownAssets',
+    'syncPostAssets',
+    'movePostBanner',
+    'uniqueAssetName'
+]);
+delegate('blogPostInput.ts', ['parsePostInput', 'boundedBody']);
+delegate('validateContentImage.ts', ['validateContentImage', 'validateContentImageAvif']);
+delegate('blogContentStorage.ts', ['putContentAsset']);
 delegate('postEffects.ts', ['queuePostEffects']);
 delegate('subscriberBroadcast.ts', ['notifyNewPost']);
 delegate('oidc/admin.ts', ['oidcAdmin']);
 delegate('oidc/enabled.ts', ['oidcEnabled']);
 delegate('oidc/config.ts', ['oidcEndpoints']);
+
+mock.module('virtual:banner-webp-wasm', () => ({ default: () => 'wasm' }));
+mock.module('../../packages/lib/src/cdn.ts', () => ({ cdnBaseUrl: () => 'https://cdn.test' }));
