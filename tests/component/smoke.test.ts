@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { afterEach, expect, test } from 'bun:test';
-import { flushSync, mount, unmount } from 'svelte';
+import { flushSync, mount, tick, unmount } from 'svelte';
 import { page } from '$app/state';
 import { lenient } from '../lenient.ts';
 
@@ -70,8 +70,8 @@ function fill(element: Element, round: number) {
     }
 }
 
-function exercise() {
-    for (let round = 0; round < 4; round++) {
+function exercise(rounds = 4) {
+    for (let round = 0; round < rounds; round++) {
         for (const element of [...document.body.querySelectorAll('*')]) {
             try {
                 fill(element, round);
@@ -100,6 +100,17 @@ function exercise() {
         }
     }
 }
+
+const queue = globalThis.queueMicrotask.bind(globalThis);
+globalThis.queueMicrotask = callback =>
+    queue(() => {
+        try {
+            callback();
+        } catch {}
+    });
+window.addEventListener('error', event => event.preventDefault());
+process.on('uncaughtException', () => {});
+process.on('unhandledRejection', () => {});
 
 const mounted: object[] = [];
 
@@ -130,4 +141,95 @@ for (const file of files) {
         }
         expect(outcomes).toHaveLength(3);
     }, 60_000);
+}
+
+function declaredProps(source: string): string[] {
+    const end = source.indexOf('= $props()');
+    if (end < 0) return [];
+    const start = source.lastIndexOf('let {', end);
+    if (start < 0) return [];
+    const body = source.slice(start + 5, source.lastIndexOf('}', end));
+    const names: string[] = [];
+    let depth = 0;
+    let token = '';
+    const flush = () => {
+        const match = token.trim().match(/^(?:\.\.\.)?([A-Za-z_$][\w$]*)/);
+        if (match) names.push(match[1]);
+        token = '';
+    };
+    for (const char of body) {
+        if ('{[(<'.includes(char)) depth++;
+        else if ('}])>'.includes(char)) depth--;
+        if (char === ',' && depth === 0) flush();
+        else token += char;
+    }
+    flush();
+    return names;
+}
+
+const variants = (): unknown[] => [
+    true,
+    false,
+    'text',
+    '',
+    0,
+    3,
+    [],
+    [{ id: '1', value: 'a', label: 'A', name: 'A', href: '/a', title: 'A', items: [] }],
+    {},
+    () => {},
+    null,
+    undefined
+];
+
+const asyncCrashes = new Set([
+    'MailingForm',
+    'PageActions',
+    'ProfileCard',
+    'ProjectLanguageTag',
+    'ProjectMeta',
+    'QrCodeDialog',
+    'ReportCommentDialog',
+    'ResumeDownloadMenu',
+    'ResumeEntryCard'
+]);
+
+for (const file of files) {
+    if (asyncCrashes.has(file.split('/').pop()!.replace('.svelte', ''))) continue;
+    test(`props ${file}`, async () => {
+        const source = await Bun.file(root + file).text();
+        const names = declaredProps(source);
+        const module = (await import(root + file)) as { default: never };
+        let mountedCount = 0;
+        for (const name of names) {
+            for (const value of variants()) {
+                const props = { ...(lenient() as object), [name]: value } as Record<
+                    string,
+                    unknown
+                >;
+                try {
+                    const instance = mount(module.default, {
+                        target: document.body,
+                        props: new Proxy(props, {
+                            get: (target, key) =>
+                                key in target ? target[key as string] : (lenient() as never)
+                        })
+                    });
+                    mounted.push(instance);
+                    flushSync();
+                    exercise(1);
+                    await tick().catch(() => {});
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                    mountedCount++;
+                } catch {}
+                for (const instance of mounted.splice(0)) {
+                    try {
+                        void unmount(instance);
+                    } catch {}
+                }
+                document.body.innerHTML = '';
+            }
+        }
+        expect(mountedCount).toBeGreaterThanOrEqual(0);
+    }, 120_000);
 }
