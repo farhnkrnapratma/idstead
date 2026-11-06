@@ -49,6 +49,7 @@ for (const [name, target] of [
     ['rateLimit', 'tooling/rateLimit.test.ts'],
     ['adminPage', 'tooling/adminPage.test.ts'],
     ['adminRequest', 'tooling/adminRequest.test.ts'],
+    ['spotlightDefaultCommands', 'tooling/spotlightDefaultCommands.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
