@@ -25,11 +25,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     try {
         query = activityLogQuery(url.searchParams);
     } catch (error) {
-        return apiError(
-            400,
-            'ACTIVITY_LOG_INVALID_QUERY',
-            error instanceof Error ? error.message : 'Invalid query.'
-        );
+        return apiError(400, 'ACTIVITY_LOG_INVALID_QUERY', (error as Error).message);
     }
     const format = url.searchParams.get('format') ?? 'pdf';
     if (format !== 'txt' && format !== 'pdf')

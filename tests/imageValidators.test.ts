@@ -4,6 +4,25 @@
 
 import { describe, expect, test } from 'bun:test';
 import { deflate } from 'pako';
+import {
+    ascii,
+    avatarForm,
+    avif,
+    box,
+    concat,
+    ico,
+    pngChunk,
+    rebuildPng,
+    riff,
+    sizes,
+    solidPng,
+    u32,
+    vector,
+    vp8,
+    vp8l,
+    vp8x
+} from './imageFixtures.ts';
+
 import { inspectAvif } from '../packages/lib/src/avif.ts';
 import { inspectWebp } from '../packages/lib/src/webp.ts';
 import { BANNER_HEIGHT, BANNER_LIMIT, BANNER_WIDTH } from '../packages/lib/src/blogBanner.ts';
@@ -14,58 +33,6 @@ import {
     validateIco,
     validatePng
 } from '../packages/lib/src/server/validateAvatar.ts';
-
-const ascii = (text: string) => new TextEncoder().encode(text);
-
-function concat(parts: Uint8Array[]) {
-    const out = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
-    let offset = 0;
-    for (const part of parts) {
-        out.set(part, offset);
-        offset += part.length;
-    }
-    return out;
-}
-
-function u32(value: number, little = false) {
-    const out = new Uint8Array(4);
-    new DataView(out.buffer).setUint32(0, value, little);
-    return out;
-}
-
-function riff(chunks: Array<[string, Uint8Array]>) {
-    const body = concat([
-        ascii('WEBP'),
-        ...chunks.map(([name, data]) =>
-            concat([ascii(name), u32(data.length, true), data, new Uint8Array(data.length % 2)])
-        )
-    ]);
-    return concat([ascii('RIFF'), u32(body.length, true), body]);
-}
-
-function vp8(width: number, height: number) {
-    const data = new Uint8Array(12);
-    data[0] = 0x10;
-    data.set([0x9d, 0x01, 0x2a], 3);
-    new DataView(data.buffer).setUint16(6, width, true);
-    new DataView(data.buffer).setUint16(8, height, true);
-    return data;
-}
-
-function vp8l(width: number, height: number) {
-    const data = new Uint8Array(6);
-    data[0] = 0x2f;
-    new DataView(data.buffer).setUint32(1, (width - 1) | ((height - 1) << 14), true);
-    return data;
-}
-
-function vp8x(width: number, height: number, flags = 0x10) {
-    const data = new Uint8Array(10);
-    data[0] = flags;
-    data.set([(width - 1) & 255, ((width - 1) >> 8) & 255, (width - 1) >> 16], 4);
-    data.set([(height - 1) & 255, ((height - 1) >> 8) & 255, (height - 1) >> 16], 7);
-    return data;
-}
 
 const limits = { maxBytes: 100_000, width: 64, height: 32 };
 const webpFailure = (bytes: Uint8Array, custom = limits) =>
@@ -206,22 +173,6 @@ describe('inspectWebp', () => {
     });
 });
 
-function box(type: string, payload: Uint8Array) {
-    return concat([u32(payload.length + 8), ascii(type), payload]);
-}
-
-function avif(width: number, height: number, overrides: { brand?: string; skip?: string } = {}) {
-    const ispe = box('ispe', concat([new Uint8Array(4), u32(width), u32(height)]));
-    const parts = [
-        box('ftyp', concat([ascii(overrides.brand ?? 'avif'), new Uint8Array(4)])),
-        overrides.skip === 'meta' ?
-            new Uint8Array(0)
-        :   box('meta', concat([new Uint8Array(4), box('iprp', box('ipco', ispe))])),
-        overrides.skip === 'mdat' ? new Uint8Array(0) : box('mdat', new Uint8Array(4))
-    ];
-    return concat(parts);
-}
-
 const avifLimits = { maxBytes: 100_000, width: 64, height: 32 };
 const avifFailure = (bytes: Uint8Array) =>
     expect(() => inspectAvif(bytes, avifLimits)).toThrow('valid AVIF');
@@ -291,30 +242,6 @@ describe('inspectAvif', () => {
         avifFailure(shortIspe);
     });
 });
-
-function solidPng(size: number) {
-    return new Uint8Array(encodePng(new Uint8Array(size * size * 4).fill(255), size, size));
-}
-
-function pngChunk(name: string, data: Uint8Array) {
-    const body = concat([ascii(name), data]);
-    return concat([u32(data.length), body, u32(crc32(body))]);
-}
-
-function rebuildPng(png: Uint8Array, edit: (chunks: Array<[string, Uint8Array]>) => void) {
-    const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
-    const chunks: Array<[string, Uint8Array]> = [];
-    for (let pos = 8; pos < png.length;) {
-        const length = view.getUint32(pos);
-        chunks.push([
-            String.fromCharCode(...png.subarray(pos + 4, pos + 8)),
-            png.slice(pos + 8, pos + 8 + length)
-        ]);
-        pos += length + 12;
-    }
-    edit(chunks);
-    return concat([png.slice(0, 8), ...chunks.map(([name, data]) => pngChunk(name, data))]);
-}
 
 const pngFailure = (bytes: Uint8Array, size: number, message: string) =>
     expect(() => validatePng(bytes.slice().buffer, size)).toThrow(message);
@@ -414,24 +341,6 @@ describe('validatePng', () => {
     });
 });
 
-function ico(parts: Uint8Array[], overrides: { count?: number; lengthOffset?: number } = {}) {
-    const header = new Uint8Array(54);
-    const view = new DataView(header.buffer);
-    view.setUint16(2, 1, true);
-    view.setUint16(4, overrides.count ?? 3, true);
-    let offset = 54;
-    parts.forEach((part, index) => {
-        header[6 + index * 16] = [16, 32, 48][index];
-        header[7 + index * 16] = [16, 32, 48][index];
-        view.setUint32(14 + index * 16, part.length, true);
-        view.setUint32(18 + index * 16, offset + (overrides.lengthOffset ?? 0), true);
-        offset += part.length;
-    });
-    return concat([header, ...parts]);
-}
-
-const sizes = [16, 32, 48].map(solidPng);
-
 describe('validateIco', () => {
     test('accepts three PNG entries', () => {
         validateIco(ico(sizes).slice().buffer);
@@ -456,24 +365,6 @@ describe('validateIco', () => {
         fail(new Uint8Array(600_000), 'Invalid ICO.');
     });
 });
-
-const avatarAvif = await Bun.file(new URL('./fixtures/avatar-512.avif', import.meta.url)).bytes();
-const webp512 = riff([['VP8L', vp8l(512, 512)]]);
-const vector = JSON.stringify([{ d: 'M0 0L10 10Z', fill: '#112233', opacity: 1 }]);
-
-function avatarForm(overrides: Record<string, FormDataEntryValue | null> = {}) {
-    const form = new FormData();
-    const entries: Record<string, FormDataEntryValue | null> = {};
-    for (const [name, size] of Object.entries(iconSizes))
-        entries[name] = new File([solidPng(size)], name);
-    entries['favicon.ico'] = new File([ico(sizes)], 'favicon.ico');
-    entries.vector = vector;
-    entries['avatar.webp'] = new File([webp512], 'avatar.webp');
-    entries['avatar.avif'] = new File([avatarAvif], 'avatar.avif');
-    for (const [name, value] of Object.entries({ ...entries, ...overrides }))
-        if (value !== null) form.set(name, value);
-    return form;
-}
 
 describe('validateAvatar', () => {
     test('returns the validated package', async () => {

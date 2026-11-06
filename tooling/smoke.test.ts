@@ -143,6 +143,69 @@ for (const file of files) {
     }, 60_000);
 }
 
+const adminTabs = [
+    'reports',
+    'feedback',
+    'notifications',
+    'logs',
+    'posts',
+    'projects',
+    'profile',
+    'resume',
+    'skills',
+    'socials',
+    'funding',
+    'contact',
+    'apps',
+    'privacy',
+    'security',
+    'terms',
+    'ai-disclosure',
+    'account'
+];
+const adminSearches = [
+    '',
+    ...adminTabs.map(tab => `?tab=${tab}`),
+    ...['appearance', 'security', 'content', 'data'].map(
+        section => `?tab=account&settings=${section}`
+    ),
+    '?tab=posts&editPost=new'
+];
+
+const richSkip = new Set(['AnalyticsSettings', 'CategoryTrendChart', 'MailingDialog']);
+
+for (const file of files) {
+    if (richSkip.has(file.split('/').pop()!.replace('.svelte', ''))) continue;
+    const routed = file.includes('(admin)/+page.svelte');
+    for (const search of routed ? adminSearches : ['']) {
+        test(`rich ${file} ${search}`, async () => {
+            const module = (await import(root + file)) as { default: never };
+            const variants = routed ? [{ data: lenient(2) }] : [lenient(2), { data: lenient(2) }];
+            (page as unknown as { url: URL }).url = new URL('https://dom.test/' + search);
+            for (const props of variants as Record<string, unknown>[]) {
+                (page as { data: unknown }).data = props.data ?? lenient(2);
+                try {
+                    const instance = mount(module.default, { target: document.body, props });
+                    mounted.push(instance);
+                    flushSync();
+                    for (let round = 0; round < 2; round++) {
+                        await tick().catch(() => {});
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                        exercise();
+                    }
+                } catch {}
+                for (const instance of mounted.splice(0)) {
+                    try {
+                        void unmount(instance);
+                    } catch {}
+                }
+                document.body.innerHTML = '';
+            }
+            (page as unknown as { url: URL }).url = new URL('https://dom.test/');
+        }, 120_000);
+    }
+}
+
 function declaredProps(source: string): string[] {
     const end = source.indexOf('= $props()');
     if (end < 0) return [];

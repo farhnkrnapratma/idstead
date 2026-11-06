@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { describe, expect, mock, test } from 'bun:test';
-import type { AssetBucket, StoredObject } from '../packages/lib/src/server/r2.ts';
+import { memoryPlatform } from './support/assets.ts';
 
 mock.module('$app/env/private', () => ({}));
 mock.module('$app/env/public', () => ({}));
@@ -15,48 +15,6 @@ const ID = '11111111-1111-4111-8111-111111111111';
 const VERSION = '22222222-2222-4222-8222-222222222222';
 const STAGING = `staging/blog/${ID}`;
 const HOME = 'blog/my-post';
-
-function memoryPlatform(keys: string[]) {
-    const store = new Map(keys.map(key => [key, key]));
-    const meta = (key: string): StoredObject => ({
-        key,
-        etag: `etag-${store.get(key)}`,
-        httpEtag: `"etag-${store.get(key)}"`,
-        uploaded: new Date()
-    });
-    const bucket: AssetBucket = {
-        async head(key) {
-            return store.has(key) ? meta(key) : null;
-        },
-        async get(key) {
-            const value = store.get(key);
-            if (value === undefined) return null;
-            const bytes = new TextEncoder().encode(value);
-            return {
-                ...meta(key),
-                body: new Response(bytes).body!,
-                arrayBuffer: async () => bytes.buffer
-            };
-        },
-        async put(key, value) {
-            store.set(
-                key,
-                typeof value === 'string' ? value : new TextDecoder().decode(value as ArrayBuffer)
-            );
-            return meta(key);
-        },
-        async delete(keys) {
-            for (const key of Array.isArray(keys) ? keys : [keys]) store.delete(key);
-        },
-        async list(options) {
-            const objects = [...store.keys()]
-                .filter(key => key.startsWith(options?.prefix ?? ''))
-                .map(meta);
-            return { objects, truncated: false };
-        }
-    };
-    return { platform: { env: { ASSET_BUCKET: bucket } } as unknown as App.Platform, store };
-}
 
 const draft = { id: ID, slug: 'my-post', published: false, banner_version: VERSION };
 const published = { ...draft, published: true };

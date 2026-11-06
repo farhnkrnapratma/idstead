@@ -13,21 +13,18 @@ import { accessIdentity, type AccessIdentity } from '#lib/server/accessAuth.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
 import { htmlContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
+import { persistAcrossHmr } from '#lib/server/hmrCache.ts';
 
-const sentryInitHandle: Handle =
-    import.meta.hot?.data.sentryInitHandle
-    ?? (Sentry.getClient() ?
+const sentryInitHandle = persistAcrossHmr<Handle>(import.meta.hot, 'sentryInitHandle', () =>
+    Sentry.getClient() ?
         ({ event, resolve }) => resolve(event)
     :   Sentry.initCloudflareSentryHandle({
             dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
             environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
             tracesSampleRate: dev ? 0 : 1.0,
             integrations: privateRequestIntegrations()
-        }));
-
-if (import.meta.hot) {
-    import.meta.hot.data.sentryInitHandle = sentryInitHandle;
-}
+        })
+);
 
 const PUBLIC_PATHS = new Set(['/robots.txt']);
 
