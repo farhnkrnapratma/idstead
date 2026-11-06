@@ -35,9 +35,6 @@ const state = {
 };
 
 slots.dataStores = () => ({ service: state.service });
-mock.module('../../packages/lib/src/server/blogPostAuth.ts', () => ({
-    blogAdmin: async () => state.auth
-}));
 slot.parsePostInput = async () => {
     if (state.parseError !== undefined) throw state.parseError;
     return structuredClone(state.input);
@@ -125,6 +122,7 @@ beforeEach(() => {
         writers: { newsletter: {} }
     };
     state.auth = { status: 0, actor: 'actor-1' };
+    slot.blogAdmin = async () => state.auth;
     state.input = saveInput();
     state.parseError = undefined;
     state.validation = { ok: true, errors: [] };

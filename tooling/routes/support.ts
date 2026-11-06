@@ -138,3 +138,9 @@ delegate('oidc/config.ts', ['oidcEndpoints']);
 
 mock.module('virtual:banner-webp-wasm', () => ({ default: () => 'wasm' }));
 mock.module('../../packages/lib/src/cdn.ts', () => ({ cdnBaseUrl: () => 'https://cdn.test' }));
+
+const { blogAdmin: realBlogAdmin } = await import('../../packages/lib/src/server/blogPostAuth.ts');
+mock.module('../../packages/lib/src/server/blogPostAuth.ts', () => ({
+    blogAdmin: (...args: Parameters<typeof realBlogAdmin>) =>
+        slot.blogAdmin ? slot.blogAdmin(...args) : realBlogAdmin(...args)
+}));
