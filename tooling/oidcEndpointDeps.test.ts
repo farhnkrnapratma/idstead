@@ -4,7 +4,7 @@
 
 import { describe, expect, test } from 'bun:test';
 import { oidcEndpointDeps } from '../packages/lib/src/server/oidc/deps';
-import { d1Shim } from './support/d1';
+import { d1Shim } from '../tests/support/d1';
 
 async function signingKeyJson() {
     const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [

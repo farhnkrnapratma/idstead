@@ -50,6 +50,7 @@ for (const [name, target] of [
     ['adminPage', 'tooling/adminPage.test.ts'],
     ['adminRequest', 'tooling/adminRequest.test.ts'],
     ['spotlightDefaultCommands', 'tooling/spotlightDefaultCommands.test.ts'],
+    ['oidcEndpointDeps', 'tooling/oidcEndpointDeps.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
