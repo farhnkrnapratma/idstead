@@ -4,26 +4,13 @@
 
 import { afterEach, expect, test } from 'bun:test';
 import { flushSync, mount, unmount } from 'svelte';
+import { page } from '$app/state';
+import { lenient } from '../lenient.ts';
 
 const root = new URL('../../', import.meta.url).pathname;
 const files = [...new Bun.Glob('{apps,packages}/**/src/**/*.svelte').scanSync({ cwd: root })]
     .filter(file => !file.includes('node_modules'))
     .sort();
-
-function lenient(): unknown {
-    const target = function () {};
-    return new Proxy(target, {
-        get(_, key) {
-            if (key === Symbol.toPrimitive) return () => '';
-            if (key === Symbol.iterator) return function* () {};
-            if (key === 'then') return undefined;
-            if (key === 'length') return 0;
-            return lenient();
-        },
-        apply: () => lenient(),
-        has: () => true
-    });
-}
 
 Element.prototype.animate = function () {
     return {
@@ -34,10 +21,18 @@ Element.prototype.animate = function () {
     } as unknown as Animation;
 };
 
-globalThis.fetch = (async () =>
-    new Response('{}', {
-        headers: { 'content-type': 'application/json' }
-    })) as unknown as typeof fetch;
+globalThis.fetch = (async () => ({
+    ok: true,
+    status: 200,
+    headers: new Headers({ 'content-type': 'application/json' }),
+    json: async () => lenient(),
+    text: async () => 'text',
+    blob: async () => new Blob(['x']),
+    arrayBuffer: async () => new ArrayBuffer(8),
+    clone() {
+        return this;
+    }
+})) as unknown as typeof fetch;
 
 const events = [
     'focus',
@@ -62,23 +57,47 @@ const events = [
     'resize'
 ];
 
+function fill(element: Element, round: number) {
+    if (element instanceof HTMLInputElement) {
+        if (element.type === 'checkbox' || element.type === 'radio')
+            element.checked = round % 2 === 0;
+        else if (element.type === 'file') return;
+        else element.value = ['a', 'a@b.co', '42', 'https://example.org/x', ''][round % 5];
+    } else if (element instanceof HTMLTextAreaElement) {
+        element.value = ['text', '# heading\n\nbody', ''][round % 3];
+    } else if (element instanceof HTMLSelectElement && element.options.length > 0) {
+        element.selectedIndex = round % element.options.length;
+    }
+}
+
 function exercise() {
-    for (const element of [...document.body.querySelectorAll('*')]) {
-        for (const type of events) {
+    for (let round = 0; round < 4; round++) {
+        for (const element of [...document.body.querySelectorAll('*')]) {
             try {
-                element.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-                if (type === 'keydown') {
-                    for (const key of ['Enter', 'Escape', 'ArrowDown', 'ArrowUp', 'Tab', ' ']) {
-                        element.dispatchEvent(
-                            new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
-                        );
+                fill(element, round);
+            } catch {}
+            for (const type of events) {
+                try {
+                    element.dispatchEvent(
+                        new window.Event(type, { bubbles: true, cancelable: true })
+                    );
+                    if (type === 'keydown') {
+                        for (const key of ['Enter', 'Escape', 'ArrowDown', 'ArrowUp', 'Tab', ' ']) {
+                            element.dispatchEvent(
+                                new window.KeyboardEvent('keydown', {
+                                    key,
+                                    bubbles: true,
+                                    cancelable: true
+                                })
+                            );
+                        }
                     }
-                }
+                } catch {}
+            }
+            try {
+                flushSync();
             } catch {}
         }
-        try {
-            flushSync();
-        } catch {}
     }
 }
 
@@ -97,7 +116,8 @@ for (const file of files) {
     test(`smoke ${file}`, async () => {
         const module = (await import(root + file)) as { default: never };
         const outcomes: boolean[] = [];
-        for (const props of [{}, lenient()] as Record<string, unknown>[]) {
+        for (const props of [{}, lenient(), { data: lenient() }] as Record<string, unknown>[]) {
+            (page as { data: unknown }).data = props.data ?? lenient();
             try {
                 const instance = mount(module.default, { target: document.body, props });
                 mounted.push(instance);
@@ -108,6 +128,6 @@ for (const file of files) {
                 outcomes.push(false);
             }
         }
-        expect(outcomes).toHaveLength(2);
-    });
+        expect(outcomes).toHaveLength(3);
+    }, 60_000);
 }
