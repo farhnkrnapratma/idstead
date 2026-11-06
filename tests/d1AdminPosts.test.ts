@@ -267,3 +267,79 @@ describe('D1 post operations', () => {
         expect(s.bucket.objects).toEqual({});
     });
 });
+
+async function failureOf(promise: Promise<unknown>) {
+    try {
+        await promise;
+    } catch (error) {
+        return error as DataError;
+    }
+    throw new Error('expected a rejection');
+}
+
+describe('D1 post operation edge cases', () => {
+    test('reports a post whose markdown file is missing', async () => {
+        const s = stores();
+        await save(s, request(1));
+        delete s.bucket.objects[`content/${markdownPath(1, 101)}`];
+        expect(await failureOf(s.posts.get(uuid(1)))).toMatchObject({
+            operation: 'adminPosts.get.markdown',
+            cause: 'The markdown file is missing.'
+        });
+    });
+
+    test('rejects operations with an unknown banner action', async () => {
+        const s = stores();
+        expect(
+            await failureOf(s.operations.prepare(request(1, { banner: { operation: 'bogus' } })))
+        ).toMatchObject({ operation: 'postOperations.prepare', cause: 'Invalid post operation' });
+    });
+
+    test('rejects a banner replacement whose pending version is gone', async () => {
+        const s = stores();
+        const prepared = await s.operations.prepare(
+            request(1, { banner: { operation: 'replace', sha256: sha, bytes: 1000 } })
+        );
+        expect(prepared.status).toBe('prepared');
+        s.sqlite.run('DELETE FROM db_blog_banner_versions');
+        await s.operations.writeMarkdown(uuid(1), uuid(101), '# Hello');
+        await s.operations.ready(uuid(101), ACTOR);
+        expect(await failureOf(s.operations.commit(uuid(101), ACTOR))).toMatchObject({
+            operation: 'postOperations.commit',
+            cause: 'Banner version unavailable'
+        });
+    });
+
+    test('rejects a save whose banner references point at unknown versions', async () => {
+        const s = stores();
+        const rejected = await save(
+            s,
+            request(1, { post: { ...request(1).post, banner_references: [uuid(999)] } })
+        );
+        expect(rejected).toMatchObject({ state: 'rejected' });
+    });
+
+    test('reads revisions and recovers operations by ID', async () => {
+        const s = stores();
+        expect(await s.operations.revision(uuid(1))).toBeNull();
+        await save(s, request(1));
+        expect(await s.operations.revision(uuid(1))).toEqual({
+            banner_version: null,
+            post_revision: 1
+        });
+        expect(await s.operations.find(uuid(101), ACTOR)).toMatchObject({
+            id: uuid(101),
+            state: 'committed'
+        });
+        expect(await s.operations.find(uuid(999), ACTOR)).toBeNull();
+        await s.operations.ready(uuid(999), ACTOR);
+    });
+
+    test('keeps a reused operation from reading another actor’s state', async () => {
+        const s = stores();
+        await s.operations.prepare(request(1));
+        expect(await s.operations.prepare({ ...request(1), actor: uuid(777) })).toEqual({
+            status: 'reused'
+        });
+    });
+});
