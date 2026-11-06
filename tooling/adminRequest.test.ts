@@ -94,6 +94,17 @@ describe('adminServices', () => {
         expect(result.service).toBeUndefined();
     });
 
+    test('returns the storage services for an authorized admin', async () => {
+        const result = await adminServices(
+            request({ origin, 'sec-fetch-site': 'same-origin' }),
+            url,
+            {},
+            { code: 'STORE_DOWN' }
+        );
+        expect(result.response).toBeUndefined();
+        expect(result.service).toEqual({ activityLog: undefined });
+    });
+
     test('reports unavailable storage with the given code and message', async () => {
         storage.available = false;
         const result = await adminServices(
