@@ -90,7 +90,9 @@ export const more = {
 mock.module('../../packages/lib/src/server/profileAssets.ts', () => ({
     assetNames: ['avatar.webp', 'banner.webp'],
     serveIdentityAsset: (...args: unknown[]) => more.serveIdentityAsset(...args),
-    cleanupAssets: (...args: unknown[]) => more.cleanupAssets(...args)
+    cleanupAssets: (...args: unknown[]) => more.cleanupAssets(...args),
+    removeAssets: (...args: unknown[]) => slot.removeAssets?.(...args),
+    removeCanonicalIdentity: (...args: unknown[]) => slot.removeCanonicalIdentity?.(...args)
 }));
 mock.module('../../packages/lib/src/server/postRender.ts', () => ({
     buildPostRender: (...args: unknown[]) => more.buildPostRender(...args),
@@ -116,3 +118,10 @@ delegate('repositories.ts', ['publicRepositories', 'serviceData']);
 delegate('workerEnv.ts', ['workerBinding']);
 delegate('ipSalt.ts', ['ipSalt']);
 delegate('moderation.ts', ['moderateContent']);
+
+delegate('adminAuth.ts', ['verifyAdminRequest']);
+delegate('adminResume.ts', ['deleteResumeFile']);
+delegate('blogPostAssets.ts', ['relocateMarkdownAssets', 'syncPostAssets']);
+delegate('oidc/admin.ts', ['oidcAdmin']);
+delegate('oidc/enabled.ts', ['oidcEnabled']);
+delegate('oidc/config.ts', ['oidcEndpoints']);

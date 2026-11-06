@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { admin, more, slots } from './support.ts';
+import { admin, more, slot, slots } from './support.ts';
 
 class BannerRequiredError extends Error {}
 class OperationReusedError extends Error {}
@@ -67,16 +67,14 @@ slots.cleanupBlogAssets = async () => {
     if (state.cleanupError) throw new Error('cleanup');
     return state.cleanup;
 };
-mock.module('../../packages/lib/src/server/blogPostAssets.ts', () => ({
-    relocateMarkdownAssets: async ({ markdown }: { markdown: string }) => {
-        if (state.relocateError !== undefined) throw state.relocateError;
-        return `${markdown}\nrelocated`;
-    },
-    syncPostAssets: async (options: unknown) => {
-        if (state.syncError) throw new Error('sync');
-        state.synced.push(options);
-    }
-}));
+slot.relocateMarkdownAssets = async ({ markdown }: { markdown: string }) => {
+    if (state.relocateError !== undefined) throw state.relocateError;
+    return `${markdown}\nrelocated`;
+};
+slot.syncPostAssets = async (options: unknown) => {
+    if (state.syncError) throw new Error('sync');
+    state.synced.push(options);
+};
 mock.module('../../packages/lib/src/cdn.ts', () => ({ cdnBaseUrl: () => 'https://cdn.test' }));
 mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
 more.buildPostRender = async () => {
