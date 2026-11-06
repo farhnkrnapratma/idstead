@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { admin } from './support.ts';
 
 class BannerRequiredError extends Error {}
 class OperationReusedError extends Error {}
@@ -30,15 +31,10 @@ const state = {
     findError: false,
     banners: [] as string[],
     effects: [] as unknown[],
-    synced: [] as unknown[],
-    logged: [] as Array<Record<string, any>>
+    synced: [] as unknown[]
 };
 
 mock.module('virtual:banner-webp-wasm', () => ({ default: () => 'wasm' }));
-mock.module('../../packages/lib/src/server/adminRequest.ts', () => ({
-    logAdminActivity: async (_r: Request, _p: unknown, entry: Record<string, any>) =>
-        void state.logged.push(entry)
-}));
 mock.module('../../packages/lib/src/server/data.ts', () => ({
     dataStores: () => ({ service: state.service })
 }));
@@ -166,7 +162,7 @@ beforeEach(() => {
     state.banners = [];
     state.effects = [];
     state.synced = [];
-    state.logged = [];
+    admin.logged = [];
 });
 
 async function failure(response: Response) {
@@ -231,8 +227,8 @@ describe('POST /api/internal/admin/posts', () => {
         expect(state.banners).toEqual(['webp', 'avif']);
         expect(state.operation.render).toBe(JSON.stringify({ html: '<p>x</p>' }));
         expect(state.effects).toEqual([{ postId: 'post-1', published: true, wasPublished: false }]);
-        expect(state.logged[0]).toMatchObject({ action: 'blog.publish', entityId: 'post-1' });
-        expect(state.logged[0].summary).toBe('publish post "title".');
+        expect(admin.logged[0]).toMatchObject({ action: 'blog.publish', entityId: 'post-1' });
+        expect(admin.logged[0].summary).toBe('publish post "title".');
         expect(state.synced).toHaveLength(1);
     });
 
@@ -247,8 +243,8 @@ describe('POST /api/internal/admin/posts', () => {
             const first = await (await POST(event())).json();
             expect(first.cleanupPending).toBe(true);
             expect(state.operation.render).toBeNull();
-            expect(state.logged[0].action).toBe('blog.update');
-            expect(state.logged[0].summary).toBe('update post.');
+            expect(admin.logged[0].action).toBe('blog.update');
+            expect(admin.logged[0].summary).toBe('update post.');
             expect(state.effects[0]).toMatchObject({ published: false, wasPublished: false });
 
             state.syncError = false;
@@ -278,7 +274,7 @@ describe('POST /api/internal/admin/posts', () => {
         };
         const body = await (await POST(event())).json();
         expect(body.markdown).toBeNull();
-        expect(state.logged[0].action).toBe('blog.delete');
+        expect(admin.logged[0].action).toBe('blog.delete');
         expect(state.synced[0]).toMatchObject({ markdown: null, deleted: true });
     });
 
