@@ -46,6 +46,7 @@ for (const [name, target] of [
     ['loader', 'tooling/loadAll.test.ts'],
     ['turnstile', 'tooling/turnstileKey.test.ts'],
     ['dynamicCommands', 'tooling/dynamicCommands.test.ts'],
+    ['rateLimit', 'tooling/rateLimit.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
