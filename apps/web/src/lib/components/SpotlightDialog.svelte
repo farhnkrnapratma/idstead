@@ -14,28 +14,15 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
-    import {
-        ArrowUpDown,
-        CornerDownLeft,
-        SquareTerminal,
-        FolderOpen,
-        X,
-        CaseSensitive,
-        WholeWord,
-        Regex,
-        ChevronLeft,
-        ChevronRight,
-        Keyboard,
-        Quote
-    } from '@lucide/svelte';
+    import { SquareTerminal, ChevronLeft, ChevronRight, Quote } from '@lucide/svelte';
     import { portal } from '@idstead/ui/utils/actions.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import ShortcutBadge from '@idstead/ui/components/ShortcutBadge.svelte';
-    import { KEY_GROUP_CLASS, KEY_SEGMENT_CLASS } from '@idstead/ui/utils/shortcut.svelte.ts';
+
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import CommandSectionHeading from '@idstead/ui/components/CommandSectionHeading.svelte';
     import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
-    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
+    import { COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
     import { lockScroll } from '@idstead/ui/utils/scroll.ts';
     import { visualViewport } from '@idstead/ui/utils/visualViewport.svelte.ts';
     import ShareDialog from './ShareDialog.svelte';
@@ -68,6 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { mergeResults } from './spotlight/localSearch';
     import SpotlightHelpPanel from './SpotlightHelpPanel.svelte';
     import SpotlightSearchBar from './SpotlightSearchBar.svelte';
+    import SpotlightFooter from './SpotlightFooter.svelte';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
         matchFuzzy,
@@ -968,16 +956,6 @@ SPDX-License-Identifier: AGPL-3.0-only
     }
 </script>
 
-{#snippet iconKey(Icon: typeof ArrowUpDown)}
-    <span
-        class={KEY_GROUP_CLASS}
-        aria-hidden="true">
-        <kbd class={cn(KEY_SEGMENT_CLASS, 'border-line-subtle bg-surface text-fg-secondary')}>
-            <Icon class="size-2.5" />
-        </kbd>
-    </span>
-{/snippet}
-
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if isOpen}
@@ -1372,42 +1350,11 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {/if}
             </div>
 
-            <div
-                class="hidden flex-none items-center justify-between gap-2 border-t border-line-subtle px-3.5 py-2 text-2xs select-none sm:flex">
-                <div
-                    class="flex min-w-0 flex-1 items-center gap-3 text-2xs leading-none font-medium text-fg-muted">
-                    {#if isLoading}
-                        <span>Searching…</span>
-                    {:else if rawQuery.trim()}
-                        <span>
-                            {deduplicatedResults.length}
-                            result{deduplicatedResults.length === 1 ? '' : 's'}
-                        </span>
-                    {/if}
-                </div>
-                <div
-                    class="flex shrink-0 items-center gap-2.5 text-2xs leading-none font-medium text-fg-muted">
-                    <span class="flex items-center gap-1">
-                        {@render iconKey(ArrowUpDown)}
-                        <span class="hidden sm:inline">navigate</span>
-                    </span>
-                    {#if categorizedResults.some(group => group.hasPrev || group.hasNext)}
-                        <span class="flex items-center gap-1">
-                            <ShortcutBadge combo="PageUp" />
-                            <ShortcutBadge combo="PageDown" />
-                            <span class="hidden sm:inline">page</span>
-                        </span>
-                    {/if}
-                    <span class="flex items-center gap-1">
-                        {@render iconKey(CornerDownLeft)}
-                        <span class="hidden sm:inline">execute</span>
-                    </span>
-                    <span class="flex items-center gap-1">
-                        <ShortcutBadge combo="Esc" />
-                        <span class="hidden sm:inline">close</span>
-                    </span>
-                </div>
-            </div>
+            <SpotlightFooter
+                {isLoading}
+                query={rawQuery}
+                resultCount={deduplicatedResults.length}
+                hasPages={categorizedResults.some(group => group.hasPrev || group.hasNext)} />
         </div>
     </div>
 {/if}
