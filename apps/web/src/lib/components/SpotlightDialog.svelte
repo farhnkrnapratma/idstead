@@ -8,7 +8,6 @@ SPDX-License-Identifier: AGPL-3.0-only
     import MailingDialog from './MailingDialog.svelte';
     import { type MailingCommand } from '#lib/mailing.ts';
     let mailingRequest = $state<MailingCommand | null>(null);
-    import { SvelteSet } from 'svelte/reactivity';
     import { onMount, tick } from 'svelte';
     import { spotlightStore } from '../stores/spotlightStore.svelte';
     import { goto, preloadData } from '$app/navigation';
@@ -65,6 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { createDynamicCommandItems } from './spotlight/dynamicCommands';
     import { searchLocalItems as searchLocal, dedupeItems } from './spotlight/localSearch';
     import { resolveHistoryItem as resolveHistory } from './spotlight/history';
+    import { enterTarget, stepIndex } from './spotlight/keyboard';
     import SpotlightHelpPanel from './SpotlightHelpPanel.svelte';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
@@ -601,20 +601,12 @@ SPDX-License-Identifier: AGPL-3.0-only
         const navLength = filteredHistory.length + flatItems.length;
 
         switch (e.key) {
-            case 'ArrowDown': {
-                e.preventDefault();
-                e.stopPropagation();
-                if (navLength > 0) {
-                    activeIndex = activeIndex < navLength - 1 ? activeIndex + 1 : 0;
-                    scrollActiveIntoView();
-                }
-                break;
-            }
+            case 'ArrowDown':
             case 'ArrowUp': {
                 e.preventDefault();
                 e.stopPropagation();
                 if (navLength > 0) {
-                    activeIndex = activeIndex > 0 ? activeIndex - 1 : navLength - 1;
+                    activeIndex = stepIndex(e.key, activeIndex, navLength);
                     scrollActiveIntoView();
                 }
                 break;
@@ -622,22 +614,12 @@ SPDX-License-Identifier: AGPL-3.0-only
             case 'Enter': {
                 e.preventDefault();
                 e.stopPropagation();
-                if (
-                    filteredHistory.length > 0
-                    && activeIndex >= 0
-                    && activeIndex < filteredHistory.length
-                ) {
-                    const entry = filteredHistory[activeIndex];
+                const target = enterTarget(activeIndex, filteredHistory.length, flatItems.length);
+                if (target?.kind === 'history') {
+                    const entry = filteredHistory[target.index];
                     if (entry) selectHistoryEntry(entry);
-                } else if (activeIndex >= filteredHistory.length && activeIndex < navLength) {
-                    const itemIdx = activeIndex - filteredHistory.length;
-                    if (flatItems[itemIdx]) {
-                        select(flatItems[itemIdx]);
-                    }
-                } else if (filteredHistory.length > 0) {
-                    selectHistoryEntry(filteredHistory[0]);
-                } else if (flatItems.length > 0) {
-                    select(flatItems[0]);
+                } else if (target?.kind === 'item' && flatItems[target.index]) {
+                    select(flatItems[target.index]);
                 }
                 break;
             }
@@ -808,9 +790,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     });
 
     let deduplicatedResults = $derived.by(() => {
-        const seenIds = new SvelteSet<string>();
-        const seenTitles = new SvelteSet<string>();
-        const seenUrls = new SvelteSet<string>();
+        const seenIds = new Set<string>();
+        const seenTitles = new Set<string>();
+        const seenUrls = new Set<string>();
 
         if (filteredHistory.length > 0) {
             for (const h of filteredHistory) {
