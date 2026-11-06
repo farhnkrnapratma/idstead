@@ -119,7 +119,7 @@ Bun.plugin({
         }));
         build.onLoad({ filter: /\.svelte$/ }, async ({ path }) => {
             const source = await Bun.file(path).text();
-            const { js } = compile(source, { filename: path, generate: 'client', dev: true });
+            const { js } = compile(source, { filename: path, generate: 'client', dev: false });
             const map = Buffer.from(JSON.stringify(js.map)).toString('base64');
             return {
                 contents: `${js.code}\n//# sourceMappingURL=data:application/json;base64,${map}`,
@@ -132,7 +132,7 @@ Bun.plugin({
                 path.endsWith('.ts') ?
                     new Bun.Transpiler({ loader: 'ts' }).transformSync(source)
                 :   source;
-            const { js } = compileModule(code, { filename: path, generate: 'client', dev: true });
+            const { js } = compileModule(code, { filename: path, generate: 'client', dev: false });
             return { contents: js.code, loader: 'js' };
         });
     }
