@@ -25,12 +25,6 @@ const state = {
     })
 };
 
-mock.module('$app/env/public', () => ({
-    PUBLIC_SENTRY_DSN: 'https://key@o1.ingest.sentry.io/1',
-    PUBLIC_SENTRY_ENVIRONMENT: 'production',
-    PUBLIC_CDN_BASE_URL: 'https://cdn.example.com/',
-    PUBLIC_API_BASE_URL: 'https://api.example.com'
-}));
 mock.module('@sveltejs/kit/hooks', () => ({
     sequence:
         (...handlers: Array<(input: any) => Promise<Response>>) =>

@@ -4,6 +4,13 @@
 
 import { mock } from 'bun:test';
 
+mock.module('$app/env/public', () => ({
+    PUBLIC_SENTRY_DSN: 'https://key@o1.ingest.sentry.io/1',
+    PUBLIC_SENTRY_ENVIRONMENT: 'production',
+    PUBLIC_CDN_BASE_URL: 'https://cdn.example.com/',
+    PUBLIC_API_BASE_URL: 'https://api.example.com'
+}));
+
 export const admin = {
     response: null as Response | null,
     authFailure: null as Response | null,
@@ -143,4 +150,14 @@ const { blogAdmin: realBlogAdmin } = await import('../../packages/lib/src/server
 mock.module('../../packages/lib/src/server/blogPostAuth.ts', () => ({
     blogAdmin: (...args: Parameters<typeof realBlogAdmin>) =>
         slot.blogAdmin ? slot.blogAdmin(...args) : realBlogAdmin(...args)
+}));
+
+const realSiteUrl = await import('../../packages/lib/src/server/siteUrl.ts');
+const { configuredSiteUrl: realConfiguredSiteUrl, configuredAdminUrl: realConfiguredAdminUrl } =
+    realSiteUrl;
+mock.module('../../packages/lib/src/server/siteUrl.ts', () => ({
+    configuredSiteUrl: (...args: Parameters<typeof realConfiguredSiteUrl>) =>
+        slot.configuredSiteUrl ? slot.configuredSiteUrl(...args) : realConfiguredSiteUrl(...args),
+    configuredAdminUrl: (...args: Parameters<typeof realConfiguredAdminUrl>) =>
+        realConfiguredAdminUrl(...args)
 }));

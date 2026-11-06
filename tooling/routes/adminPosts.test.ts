@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { admin, more, slot, slots } from './support.ts';
 
 class BannerRequiredError extends Error {}
@@ -75,9 +75,6 @@ more.buildPostRender = async () => {
     return { html: '<p>x</p>' };
 };
 mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions: () => ({}) }));
-mock.module('../../packages/lib/src/server/siteUrl.ts', () => ({
-    configuredSiteUrl: () => 'https://example.com'
-}));
 slot.queuePostEffects = async (_newsletter: unknown, _platform: unknown, effect: unknown) =>
     void state.effects.push(effect);
 mock.module('@mdrs/core', () => ({ validateDefineForSave: async () => state.validation }));
@@ -108,6 +105,11 @@ const saveInput = (extra: Record<string, unknown> = {}) => ({
     ...extra
 });
 
+afterAll(() => {
+    delete slot.blogAdmin;
+    delete slot.configuredSiteUrl;
+});
+
 beforeEach(() => {
     state.service = {
         adminPosts: {
@@ -123,6 +125,7 @@ beforeEach(() => {
     };
     state.auth = { status: 0, actor: 'actor-1' };
     slot.blogAdmin = async () => state.auth;
+    slot.configuredSiteUrl = () => 'https://example.com';
     state.input = saveInput();
     state.parseError = undefined;
     state.validation = { ok: true, errors: [] };
