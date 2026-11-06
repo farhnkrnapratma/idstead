@@ -22,7 +22,9 @@ const wait = (ms = 20) => new Promise(resolve => setTimeout(resolve, ms));
 class FakeResizeObserver {
     static instances: FakeResizeObserver[] = [];
     observed = new Set<Element>();
-    constructor(public callback: (entries: unknown[]) => void) {
+    callback: (entries: unknown[]) => void;
+    constructor(callback: (entries: unknown[]) => void) {
+        this.callback = callback;
         FakeResizeObserver.instances.push(this);
     }
     observe(element: Element) {
