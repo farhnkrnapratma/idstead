@@ -9,17 +9,37 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { elementRef } from '@idstead/ui/utils/elementRef.ts';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import CommandSectionHeading from '@idstead/ui/components/CommandSectionHeading.svelte';
-    import { CaseSensitive, Keyboard, Regex, WholeWord, X } from '@lucide/svelte';
-    import type { HelpCategory, HelpCommandSpec } from './spotlight/types';
+    import ShortcutBadge from '@idstead/ui/components/ShortcutBadge.svelte';
+    import { COMMAND_SHORTCUTS, CATALOG_KEY } from '@idstead/ui/shortcuts.ts';
+    import { KEY_GROUP_CLASS, KEY_SEGMENT_CLASS } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import type { Component } from 'svelte';
+    import {
+        ArrowUpDown,
+        CaseSensitive,
+        CornerDownLeft,
+        Keyboard,
+        Regex,
+        WholeWord,
+        X
+    } from '@lucide/svelte';
+    import type { HelpCommandSpec } from './spotlight/types';
+
+    type HelpCommandView = Omit<HelpCommandSpec, 'icon'> & { icon: Component<{ class?: string }> };
+    type HelpCategoryView = {
+        id: string;
+        label: string;
+        context?: string;
+        commands: HelpCommandView[];
+    };
 
     interface Props {
-        categories: (HelpCategory & { context?: string })[];
+        categories: HelpCategoryView[];
         helpCmdIndexMap: Map<string, number>;
         activeIndex?: number;
         dialogEl?: HTMLDivElement | null;
         onClose: () => void;
         onOpenShortcuts: () => void;
-        onSelect: (cmd: HelpCommandSpec) => void;
+        onSelect: (cmd: { command: string; actionQuery?: string }) => void;
         onPointerMove: (index: number) => void;
         onKeydown: (event: KeyboardEvent) => void;
     }
@@ -36,6 +56,16 @@ SPDX-License-Identifier: AGPL-3.0-only
         onKeydown
     }: Props = $props();
 </script>
+
+{#snippet iconKey(Icon: typeof ArrowUpDown)}
+    <span
+        class={KEY_GROUP_CLASS}
+        aria-hidden="true">
+        <kbd class={cn(KEY_SEGMENT_CLASS, 'border-line-subtle bg-surface text-fg-secondary')}>
+            <Icon class="size-2.5" />
+        </kbd>
+    </span>
+{/snippet}
 
 <div
     use:portal

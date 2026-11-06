@@ -101,3 +101,14 @@ SPDX-License-Identifier: AGPL-3.0-only
         </Button>
     </div>
 </div>
+
+<style>
+    @reference "@idstead/ui/styles/global.css";
+
+    .search-input::-webkit-search-cancel-button,
+    .search-input::-webkit-search-decoration,
+    .search-input::-webkit-search-results-button,
+    .search-input::-webkit-search-results-decoration {
+        @apply hidden appearance-none;
+    }
+</style>
