@@ -48,6 +48,7 @@ for (const [name, target] of [
     ['dynamicCommands', 'tooling/dynamicCommands.test.ts'],
     ['rateLimit', 'tooling/rateLimit.test.ts'],
     ['adminPage', 'tooling/adminPage.test.ts'],
+    ['adminRequest', 'tooling/adminRequest.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
