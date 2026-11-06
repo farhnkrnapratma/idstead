@@ -42,6 +42,7 @@ let failed = false;
 
 for (const [name, target] of [
     ['suite', 'tests'],
+    ['smoke', 'tooling/smoke.test.ts'],
     ['loader', 'tooling/loadAll.test.ts']
 ] as const) {
     const dir = join(work, name);
