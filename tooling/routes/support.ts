@@ -102,3 +102,17 @@ mock.module('../../packages/lib/src/server/writeFreeze.ts', () => ({
     writesFrozen: (platform?: { env?: Record<string, unknown> }) =>
         ['1', 'true'].includes(String(platform?.env?.WRITES_FROZEN ?? '').toLowerCase())
 }));
+
+export const slot: Record<string, (...args: any[]) => any> = {};
+
+function delegate(file: string, names: string[]) {
+    mock.module(`../../packages/lib/src/server/${file}`, () =>
+        Object.fromEntries(names.map(name => [name, (...args: unknown[]) => slot[name]?.(...args)]))
+    );
+}
+
+delegate('publicWrite.ts', ['readPublicWrite']);
+delegate('repositories.ts', ['publicRepositories', 'serviceData']);
+delegate('workerEnv.ts', ['workerBinding']);
+delegate('ipSalt.ts', ['ipSalt']);
+delegate('moderation.ts', ['moderateContent']);

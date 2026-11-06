@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { more, slots } from './support.ts';
+import { more, slot, slots } from './support.ts';
 
 const state = {
     client: false,
@@ -70,9 +70,7 @@ mock.module('../../packages/lib/src/server/analytics.ts', () => ({
     analyticsHead: () => state.head,
     analyticsSources: () => ({ script: [], connect: [] })
 }));
-mock.module('../../packages/lib/src/server/repositories.ts', () => ({
-    publicRepositories: () => ({})
-}));
+slot.publicRepositories = () => ({});
 
 const loaded = new Map<boolean, (input: any) => Promise<Response>>();
 
