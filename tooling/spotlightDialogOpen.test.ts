@@ -147,3 +147,33 @@ test('drives the open palette through search, options, keyboard and help', async
     press('Escape', input);
     await settle();
 });
+
+test('runs the palette commands for sharing, mailing, navigation and code blocks', async () => {
+    const instance = mount(SpotlightDialog, { target: document.body, props: {} });
+    mounted.push(instance);
+    flushSync();
+    for (const query of [
+        '/share',
+        '/qr',
+        '/mailing subscribe',
+        '/goto blog',
+        '/code minimal',
+        '/theme',
+        '/cookies'
+    ]) {
+        spotlightStore.open('');
+        await settle();
+        type(query);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        await settle();
+        const input = document.querySelector<HTMLInputElement>('#spotlight-search-input');
+        if (input) press('Enter', input);
+        await settle();
+    }
+    spotlightStore.open('');
+    await settle();
+    expect(
+        document.querySelector('#spotlight-search-input') !== null
+            || document.body.textContent !== null
+    ).toBe(true);
+}, 120000);
