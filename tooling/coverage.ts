@@ -58,6 +58,7 @@ for (const [name, target] of [
     ['blogIndexPage', 'tooling/blogIndexPage.test.ts'],
     ['markdownChart', 'tooling/markdownChart.test.ts'],
     ['activityWorkspace', 'tooling/activityWorkspace.test.ts'],
+    ['activityLogWorkspace', 'tooling/activityLogWorkspace.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
