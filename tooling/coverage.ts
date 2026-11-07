@@ -60,6 +60,7 @@ for (const [name, target] of [
     ['activityWorkspace', 'tooling/activityWorkspace.test.ts'],
     ['activityLogWorkspace', 'tooling/activityLogWorkspace.test.ts'],
     ['identityProviderSettings', 'tooling/identityProviderSettings.test.ts'],
+    ['postEditor', 'tooling/postEditor.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
