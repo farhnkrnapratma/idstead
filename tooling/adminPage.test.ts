@@ -86,11 +86,18 @@ for (const tab of tabs) {
         }
         for (const button of [...document.querySelectorAll<HTMLButtonElement>('button')].slice(
             0,
-            8
+            40
         )) {
             button.click();
             flushSync();
             await new Promise(resolve => setTimeout(resolve, 5));
+        }
+        for (const field of document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+            'input[type="text"], input:not([type]), textarea'
+        )) {
+            field.value = 'Sample';
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            flushSync();
         }
         expect(document.body.innerHTML.length).toBeGreaterThan(0);
     }, 120_000);
