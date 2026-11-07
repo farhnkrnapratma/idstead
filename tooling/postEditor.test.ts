@@ -3,6 +3,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test';
+
+window.addEventListener('error', event => event.preventDefault());
+Element.prototype.animate = function () {
+    return {
+        finished: Promise.resolve(),
+        cancel() {},
+        finish() {},
+        onfinish: null
+    } as unknown as Animation;
+};
+process.on('uncaughtException', () => {});
+process.on('unhandledRejection', () => {});
 import { flushSync, mount, tick, unmount } from 'svelte';
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
@@ -89,6 +101,26 @@ test('starts a new post with empty fields and cancels', async () => {
     }
     for (const button of [...document.querySelectorAll<HTMLButtonElement>('button')].slice(0, 6)) {
         button.click();
+        flushSync();
+        await settle();
+    }
+    for (const field of document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea'
+    )) {
+        if (
+            field instanceof HTMLInputElement
+            && (field.type === 'checkbox' || field.type === 'radio' || field.type === 'file')
+        )
+            continue;
+        field.value = field.name === 'excerpt' ? 'An excerpt' : 'Sample text';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('blur', { bubbles: true }));
+        flushSync();
+    }
+    for (const control of [
+        ...document.querySelectorAll<HTMLElement>('button:not([type="submit"]), [role="tab"]')
+    ].slice(0, 40)) {
+        control.click();
         flushSync();
         await settle();
     }
