@@ -61,6 +61,7 @@ beforeEach(() => {
 afterEach(() => {
     unsubscribe();
     readingModeStore.disable();
+    delete (document as unknown as { fonts?: unknown }).fonts;
 });
 
 describe('language helpers', () => {

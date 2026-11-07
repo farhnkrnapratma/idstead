@@ -47,6 +47,20 @@ for (const [name, target] of [
     ['turnstile', 'tooling/turnstileKey.test.ts'],
     ['dynamicCommands', 'tooling/dynamicCommands.test.ts'],
     ['rateLimit', 'tooling/rateLimit.test.ts'],
+    ['adminPage', 'tooling/adminPage.test.ts'],
+    ['adminRequest', 'tooling/adminRequest.test.ts'],
+    ['spotlightDefaultCommands', 'tooling/spotlightDefaultCommands.test.ts'],
+    ['oidcEndpointDeps', 'tooling/oidcEndpointDeps.test.ts'],
+    ['spotlightDialogOpen', 'tooling/spotlightDialogOpen.test.ts'],
+    ['blogPostPage', 'tooling/blogPostPage.test.ts'],
+    ['feedbackPage', 'tooling/feedbackPage.test.ts'],
+    ['homePage', 'tooling/homePage.test.ts'],
+    ['blogIndexPage', 'tooling/blogIndexPage.test.ts'],
+    ['markdownChart', 'tooling/markdownChart.test.ts'],
+    ['activityWorkspace', 'tooling/activityWorkspace.test.ts'],
+    ['activityLogWorkspace', 'tooling/activityLogWorkspace.test.ts'],
+    ['identityProviderSettings', 'tooling/identityProviderSettings.test.ts'],
+    ['postEditor', 'tooling/postEditor.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);

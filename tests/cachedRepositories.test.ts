@@ -126,3 +126,24 @@ describe('cachedRepositories', () => {
         expect(await generations.current('none')).toBe(0);
     });
 });
+
+describe('cached author reads', () => {
+    test('caches every author read under its own key', async () => {
+        const calls: Calls = {};
+        const repos = cachedRepositories(fakeRepositories(calls), options());
+        for (const read of [
+            () => repos.author.fundingLinks(),
+            () => repos.author.contactLinks(),
+            () => repos.author.resumeEntries(),
+            () => repos.author.skillGroups(),
+            () => repos.author.projectRepoRules(),
+            () => repos.author.activeResumeDocument(),
+            () => repos.author.activeOpenPgpKey(),
+            () => repos.author.siteUrl()
+        ]) {
+            await read();
+            await read();
+        }
+        expect(Object.keys(calls).filter(key => key.startsWith('author.')).length).toBe(8);
+    });
+});
