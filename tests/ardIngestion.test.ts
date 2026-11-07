@@ -222,3 +222,74 @@ describe('ARD persistent index', () => {
         expect(writes).toBe(1);
     });
 });
+
+describe('ARD crawl failures', () => {
+    const redirectingFetcher =
+        (target: (path: string) => Response) => async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (!url.startsWith(siteUrl)) return new Response('Not found', { status: 404 });
+            return target(url.slice(siteUrl.length));
+        };
+
+    test('requires the site to be given as a bare HTTPS origin', async () => {
+        await expect(
+            crawlArdSources(
+                `${siteUrl}/some/path`,
+                redirectingFetcher(() => new Response(''))
+            )
+        ).rejects.toThrow('canonical HTTPS site origin');
+    });
+
+    test('follows a same-origin redirect and refuses one that leaves the site', async () => {
+        const seen: string[] = [];
+        const followed = await crawlArdSources(
+            siteUrl,
+            redirectingFetcher(path => {
+                seen.push(path);
+                if (path === '/.well-known/ard.json')
+                    return new Response(null, {
+                        status: 301,
+                        headers: { location: '/moved.json' }
+                    });
+                if (path === '/moved.json')
+                    return new Response(
+                        JSON.stringify({ entries: [entry('moved', `${siteUrl}/moved`)] }),
+                        { headers: { 'Content-Type': 'application/json' } }
+                    );
+                return new Response('Not found', { status: 404 });
+            })
+        );
+        expect(seen).toContain('/moved.json');
+        expect(followed.entries.map(item => item.displayName)).toContain('moved');
+
+        await expect(
+            crawlArdSources(
+                siteUrl,
+                redirectingFetcher(path => {
+                    if (path === '/.well-known/ard.json')
+                        return new Response(null, {
+                            status: 302,
+                            headers: { location: 'https://elsewhere.example/ard.json' }
+                        });
+                    return new Response('Not found', { status: 404 });
+                })
+            )
+        ).rejects.toThrow('No valid ARD entries');
+    });
+
+    test('warns about optional sources that fail and stops redirect loops', async () => {
+        const looping = await crawlArdSources(
+            siteUrl,
+            redirectingFetcher(path => {
+                if (path === '/.well-known/ard.json')
+                    return new Response(null, {
+                        status: 301,
+                        headers: { location: '/.well-known/ard.json' }
+                    });
+                return new Response('Server error', { status: 500 });
+            })
+        ).catch(error => error as Error);
+        const message = looping instanceof Error ? looping.message : '';
+        expect(message).toContain('No valid ARD entries');
+    });
+});
