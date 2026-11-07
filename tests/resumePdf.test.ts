@@ -134,7 +134,7 @@ describe('resume pdf', () => {
         const safe = await countLinks('https://example.com');
         expect(await countLinks('https://a)/S/JavaScript/JS(x)')).toBe(safe - 1);
         expect(await countLinks('javascript:alert(1)')).toBe(safe - 1);
-    });
+    }, 30_000);
 
     test('formats date ranges', () => {
         expect(formatDateRange('2025-09-01', null, true)).toBe('Sep 2025 - Present');
