@@ -53,6 +53,7 @@ for (const [name, target] of [
     ['oidcEndpointDeps', 'tooling/oidcEndpointDeps.test.ts'],
     ['spotlightDialogOpen', 'tooling/spotlightDialogOpen.test.ts'],
     ['blogPostPage', 'tooling/blogPostPage.test.ts'],
+    ['feedbackPage', 'tooling/feedbackPage.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
