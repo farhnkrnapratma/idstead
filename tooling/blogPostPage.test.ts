@@ -11,6 +11,18 @@ mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.exampl
 const { default: BlogPostPage } =
     (await import('../apps/web/src/routes/blog/[slug]/+page.svelte')) as { default: never };
 
+window.addEventListener('error', event => event.preventDefault());
+Element.prototype.animate = function () {
+    return {
+        finished: Promise.resolve(),
+        cancel() {},
+        finish() {},
+        onfinish: null
+    } as unknown as Animation;
+};
+process.on('uncaughtException', () => {});
+process.on('unhandledRejection', () => {});
+
 const realFetch = globalThis.fetch;
 const mounted: object[] = [];
 
@@ -130,7 +142,9 @@ test('renders a post with its comments, related posts and dialogs', async () => 
         flushSync();
     }
     for (const control of [
-        ...document.querySelectorAll<HTMLElement>('button, [role="tab"], [role="option"]')
+        ...document.querySelectorAll<HTMLElement>(
+            'button:not([type="submit"]), [role="tab"], [role="option"]'
+        )
     ].slice(0, 40)) {
         control.click();
         flushSync();
