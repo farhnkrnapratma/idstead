@@ -54,22 +54,30 @@ test.each(['reports', 'feedback', 'notifications'] as const)(
         await new Promise(resolve => setTimeout(resolve, 150));
         await settle();
 
-        const search = document.querySelector<HTMLInputElement>(
-            'input[type="search"], input[type="text"]'
-        );
-        if (search) {
-            search.value = 'row';
-            search.dispatchEvent(new Event('input', { bubbles: true }));
+        for (const control of [
+            ...document.querySelectorAll<HTMLElement>(
+                'button, [role="option"], [role="tab"], select'
+            )
+        ].slice(0, 40)) {
+            if (control instanceof HTMLSelectElement && control.options.length > 1) {
+                control.selectedIndex = 1;
+                control.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                control.click();
+            }
             flushSync();
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 5));
+        }
+        await settle();
+        const detailSearch = document.querySelectorAll<HTMLInputElement>(
+            'input[type="search"], input[type="text"]'
+        )[1];
+        if (detailSearch) {
+            detailSearch.value = 'row';
+            detailSearch.dispatchEvent(new Event('input', { bubbles: true }));
+            flushSync();
             await settle();
         }
-
-        document
-            .querySelector<HTMLElement>('[data-workspace-row], button[aria-pressed], li button')
-            ?.click();
-        flushSync();
-        await settle();
         expect(document.body.innerHTML.length).toBeGreaterThan(0);
     },
     60000
