@@ -84,6 +84,14 @@ for (const tab of tabs) {
             await new Promise(resolve => setTimeout(resolve, 20));
             exercise(1);
         }
+        for (const button of [...document.querySelectorAll<HTMLButtonElement>('button')].slice(
+            0,
+            8
+        )) {
+            button.click();
+            flushSync();
+            await new Promise(resolve => setTimeout(resolve, 5));
+        }
         expect(document.body.innerHTML.length).toBeGreaterThan(0);
     }, 120_000);
 }
