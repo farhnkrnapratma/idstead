@@ -116,4 +116,25 @@ test('renders a post with its comments, related posts and dialogs', async () => 
     expect(document.body.textContent).toContain('Authored by ada and bob');
     expect(document.body.textContent).toContain('Nice post');
     expect(document.body.textContent).toContain('Earlier post');
+    for (const field of document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea'
+    )) {
+        if (
+            field instanceof HTMLInputElement
+            && (field.type === 'checkbox' || field.type === 'radio')
+        )
+            continue;
+        field.value = field.name === 'email' ? 'reader@example.com' : 'Sample text';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('blur', { bubbles: true }));
+        flushSync();
+    }
+    for (const control of [
+        ...document.querySelectorAll<HTMLElement>('button, [role="tab"], [role="option"]')
+    ].slice(0, 40)) {
+        control.click();
+        flushSync();
+        await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    await settle();
 }, 60000);
