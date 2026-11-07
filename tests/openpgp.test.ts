@@ -200,3 +200,43 @@ describe('verification bundle', () => {
         expect(strFromU8(zip['VERIFY.txt'])).toContain('not signed yet');
     });
 });
+
+describe('keyserver failures', () => {
+    const respond = (response: Response) => (async () => response) as unknown as typeof fetch;
+
+    test('explains why a keyserver link is refused or unavailable', async () => {
+        await expect(verifyKeyserver('not a url', FPR, respond(new Response('')))).rejects.toThrow(
+            'is not a valid URL.'
+        );
+        await expect(
+            verifyKeyserver('https://user:pw@keys.example/k', FPR, respond(new Response('')))
+        ).rejects.toThrow('keyserver links must use https without credentials.');
+        await expect(
+            verifyKeyserver('https://keys.example/k', FPR, (async () => {
+                throw new Error('offline');
+            }) as unknown as typeof fetch)
+        ).rejects.toThrow('did not respond.');
+        await expect(
+            verifyKeyserver(
+                'https://keys.example/k',
+                FPR,
+                respond(new Response('', { status: 404 }))
+            )
+        ).rejects.toThrow('does not have this key (HTTP 404)');
+    });
+
+    test('refuses responses redirected off https or larger than a public key', async () => {
+        const redirected = new Response(armoredKey, { status: 200 });
+        Object.defineProperty(redirected, 'url', { value: 'http://keys.example/k' });
+        await expect(
+            verifyKeyserver('https://keys.example/k', FPR, respond(redirected))
+        ).rejects.toThrow('redirected away from https.');
+        await expect(
+            verifyKeyserver(
+                'https://keys.example/k',
+                FPR,
+                respond(new Response(new Uint8Array(600 * 1024)))
+            )
+        ).rejects.toThrow('returned more data than a public key.');
+    });
+});
