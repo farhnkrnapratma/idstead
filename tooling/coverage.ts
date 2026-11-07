@@ -62,6 +62,7 @@ for (const [name, target] of [
     ['identityProviderSettings', 'tooling/identityProviderSettings.test.ts'],
     ['postEditor', 'tooling/postEditor.test.ts'],
     ['resumeDownloadMenuFull', 'tooling/resumeDownloadMenuFull.test.ts'],
+    ['contactAndProjectsPages', 'tooling/contactAndProjectsPages.test.ts'],
     ['routes', 'tooling/routes']
 ] as const) {
     const dir = join(work, name);
