@@ -23,6 +23,11 @@ if [[ "$cmd" =~ $all_re ]]; then
   mapfile -t -O "${#files[@]}" files < <(git diff --name-only --diff-filter=ACMR)
 fi
 
+forbidden=$(printf '%s\n' "${files[@]}" | grep -E '(^|/)(AGENTS\.md|GEMINI\.md|CONVENTIONS\.md|openai\.yaml|copilot-instructions\.md|\.cursorrules|\.windsurfrules|\.clinerules|\.aider[^/]*|\.(codex|copilot|cursor|windsurf|roo|kiro|amazonq|junie|trae|augment|gemini|opencode|continue|devin|qwen|cline)|\.tessl[^/]*|\.(claude|agents)/skills/[^/]+/\.github)(/|$)' || true)
+if [ -n "$forbidden" ]; then
+  deny "Commit blocked: other AI agent config is staged; keep only .agents/ and .claude/: ${forbidden//$'\n'/, }"
+fi
+
 existing=()
 for f in "${files[@]}"; do
   [ -n "$f" ] && [ -f "$f" ] && existing+=("$f")
