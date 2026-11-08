@@ -53,4 +53,10 @@ describe('oidcEndpointDeps', () => {
         for (let attempt = 0; attempt < 20; attempt++) await deps!.lockout.fail(['client-a']);
         expect(await deps!.lockout.retryAfter(['client-a'])).toBeGreaterThan(0);
     });
+
+    test('reads the profile through the public repositories and fails without a database', async () => {
+        const { platform: ready } = platform({ OIDC_SIGNING_KEY: await signingKeyJson() });
+        const deps = await oidcEndpointDeps(ready, request, () => '');
+        await expect(deps!.profile()).rejects.toBeDefined();
+    });
 });

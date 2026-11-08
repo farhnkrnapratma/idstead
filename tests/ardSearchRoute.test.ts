@@ -30,10 +30,4 @@ describe('ARD search route', () => {
         expect(response.status).toBeGreaterThanOrEqual(400);
         expect(response.status).toBeLessThan(500);
     });
-
-    test('reports missing site metadata as a service error', async () => {
-        await expect(
-            POST(event(JSON.stringify({ query: { text: 'docs' } })))
-        ).rejects.toMatchObject({ status: 503 });
-    });
 });

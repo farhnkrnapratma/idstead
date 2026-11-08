@@ -240,3 +240,11 @@ describe('keyserver failures', () => {
         ).rejects.toThrow('returned more data than a public key.');
     });
 });
+
+test('treats keyserver bytes that are not a key as a key the server does not serve', async () => {
+    const garbage = new TextEncoder().encode('not a key at all');
+    const fetchFn = (async () => new Response(garbage)) as unknown as typeof fetch;
+    await expect(verifyKeyserver('https://keys.example/k', FPR, fetchFn)).rejects.toThrow(
+        'does not serve key'
+    );
+});

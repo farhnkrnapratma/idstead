@@ -510,9 +510,11 @@ describe('verifyTurnstileToken', () => {
     test('rejects missing tokens and secrets', async () => {
         expect(await verifyTurnstileToken('', '203.0.113.1', platform)).toBe(false);
         expect(await verifyTurnstileToken(null, '203.0.113.1', platform)).toBe(false);
-        expect(await quiet(() => verifyTurnstileToken('t', '203.0.113.1', { env: {} }))).toBe(
-            false
-        );
+        expect(
+            await quiet(() =>
+                verifyTurnstileToken('t', '203.0.113.1', { env: { TURNSTILE_SECRET: '' } })
+            )
+        ).toBe(false);
     });
 
     test('sends the remote address only when it is public', async () => {

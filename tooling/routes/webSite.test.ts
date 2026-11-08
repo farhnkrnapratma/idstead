@@ -152,7 +152,7 @@ describe('layout load', () => {
         state.analyticsError = true;
         state.rulesError = true;
         state.source = undefined;
-        const { data } = await run();
+        const { data } = await run({ env: { RESEND_API_KEY: '', SUBSCRIBER_FROM_EMAIL: '' } });
         expect(data.author).toBeNull();
         expect(data.legalPages).toEqual([]);
         expect(data.pinnedRepoNames).toEqual([]);

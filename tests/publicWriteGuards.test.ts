@@ -52,19 +52,23 @@ describe('public write guards', () => {
         expect(await (missing.response as Response).json()).toMatchObject({
             code: 'CONTACT_TURNSTILE_FAILED'
         });
-        const console_error = console.error;
-        console.error = () => {};
+        const realFetch = globalThis.fetch;
+        globalThis.fetch = (async () =>
+            Response.json({ success: false })) as unknown as typeof fetch;
         try {
             const unverified = await readPublicWrite(
-                event({
-                    headers: { ...SAME_ORIGIN, 'content-type': 'application/json' },
-                    body: JSON.stringify({ turnstileToken: 'token' })
-                }),
+                {
+                    ...event({
+                        headers: { ...SAME_ORIGIN, 'content-type': 'application/json' },
+                        body: JSON.stringify({ turnstileToken: 'token' })
+                    }),
+                    platform: { env: { TURNSTILE_SECRET: 'secret' } }
+                },
                 'CONTACT_TURNSTILE_FAILED'
             );
             expect((unverified.response as Response).status).toBe(403);
         } finally {
-            console.error = console_error;
+            globalThis.fetch = realFetch;
         }
     });
 });

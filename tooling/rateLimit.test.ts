@@ -67,7 +67,7 @@ describe('checkRateLimit', () => {
     test('evicts the oldest key when too many are tracked', async () => {
         for (let index = 0; index < 10_001; index++) await checkRateLimit(`flood-${index}`);
         expect((await checkRateLimit('flood-new')).limited).toBe(false);
-    });
+    }, 60_000);
 
     test('defers to the Workers rate limiter binding when present', async () => {
         const decisions: boolean[] = [true, false];

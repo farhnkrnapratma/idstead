@@ -84,7 +84,7 @@ export async function renderWranglerConfigs(config: InstanceConfig) {
     return rendered;
 }
 
-async function main() {
+export async function main() {
     const check = process.argv.includes('--check');
     let config: InstanceConfig;
     try {

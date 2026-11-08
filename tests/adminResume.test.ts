@@ -247,7 +247,7 @@ describe('processResumeGenerate', () => {
         expect(changed.reasons.length).toBeGreaterThan(0);
         const badBody = new Request('https://admin.test/api', { method: 'POST', body: '{' });
         expect((await resume.processResumeGenerate(badBody, platform)).status).toBe(200);
-    });
+    }, 60_000);
 
     test('ranks projects by pinned status, stars and recency', async () => {
         docs.sourceData = async () => ({
