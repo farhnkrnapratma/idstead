@@ -55,7 +55,7 @@ Where the instance runs (domains, Worker, bucket and queue names, cron) lives in
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it, and reuse the shared components and layout primitives instead of page-local one-offs; run the `ui-consistency-check` skill after touching a page or component.
 - **Always write security-aware code.** Validate/sanitize untrusted input at every boundary, avoid injection/XSS/auth-bypass-shaped patterns, and default to the same scrutiny the `security-audit` skill and `security-reviewer` agent apply.
 - Formatting is enforced by `prettier.config.ts` + `eslint.config.ts` (`bun run fmt`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout.
-- This repository is set up for Claude Code only. Do not add configuration for other coding agents (`AGENTS.md`, `.agents/`, `.cursor/`, `.codex/` and the like).
+- This repository is set up for Claude Code only. Do not add configuration for other coding agents (`AGENTS.md`, `.cursor/`, `.codex/` and the like).
 
 ## Where details live
 
@@ -109,11 +109,6 @@ This checkout is also the owner's own instance, **fkp.my.id**. Only these places
 - **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).
 - **Deploys:** each Worker is connected to Workers Builds on `main` only; previews are not connected, so `develop` and PRs deploy nothing.
 - **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`).
-
-<!-- fallow:agent-install v1 claude-import:start -->
-
-@AGENTS.md
-<!-- fallow:agent-install v1 claude-import:end -->
 
 ## Coverage
 
