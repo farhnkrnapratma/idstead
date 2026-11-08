@@ -4,7 +4,6 @@
 
 [![CI](https://img.shields.io/circleci/build/github/farhnkrnapratma/idstead/main?label=CI)](https://app.circleci.com/pipelines/github/farhnkrnapratma/idstead) ![Coverage](https://img.shields.io/badge/coverage-90.0%25%20lines-brightgreen) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue) ![Runtime](https://img.shields.io/badge/runtime-Bun-black?logo=bun) ![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white) ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white) ![Tests](https://img.shields.io/badge/tests-bun%20test-black?logo=bun)
 
-
 ---
 
 > **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data lives in Cloudflare D1 and R2, and Cloudflare Access guards the admin. Expect breaking changes until the first release.
