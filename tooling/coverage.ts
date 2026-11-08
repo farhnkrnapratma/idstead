@@ -67,6 +67,7 @@ for (const [name, target] of [
     ['oauthRoute', 'tooling/oauthRoute.test.ts'],
     ['blogContentStorage', 'tooling/blogContentStorage.test.ts'],
     ['blogPostsLoad', 'tooling/blogPostsLoad.test.ts'],
+    ['publishedPostsErrorPath', 'tooling/publishedPostsErrorPath.test.ts'],
     ['apiAuthorResume', 'tooling/apiAuthorResume.test.ts'],
     ['webProfileCard', 'tooling/webProfileCard.test.ts'],
     ['headingActions', 'tooling/headingActions.test.ts'],
