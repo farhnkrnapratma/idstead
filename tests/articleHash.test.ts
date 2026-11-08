@@ -10,7 +10,7 @@ import {
     showArticleFragment
 } from '../apps/web/src/lib/article/articleHash.ts';
 
-const original = { url: page.url, state: page.state };
+const original = { url: page.url as unknown as URL, state: page.state as unknown };
 
 afterEach(() => {
     (page as unknown as { url: URL }).url = original.url;

@@ -102,7 +102,7 @@ describe('adminServices', () => {
             { code: 'STORE_DOWN' }
         );
         expect(result.response).toBeUndefined();
-        expect(result.service).toEqual({ activityLog: undefined });
+        expect(result.service as unknown).toEqual({ activityLog: undefined });
     });
 
     test('reports unavailable storage with the given code and message', async () => {

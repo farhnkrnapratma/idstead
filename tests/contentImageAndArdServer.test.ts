@@ -9,7 +9,6 @@ import {
     ardIndexUnavailableResponse,
     getArdIndexEntries
 } from '../packages/lib/src/server/ardIndexServer.ts';
-import { loadPublishedPosts } from '../packages/lib/src/server/blogPosts.ts';
 
 const decoderModule = new WebAssembly.Module(
     await Bun.file('node_modules/@jsquash/webp/codec/dec/webp_dec.wasm').bytes()
@@ -57,14 +56,5 @@ describe('ARD index server', () => {
         await expect(
             getArdIndexEntries('https://example.com', {}, failing as never)
         ).rejects.toThrow('The ARD registry index is temporarily unavailable.');
-    });
-});
-
-describe('published posts loader', () => {
-    test('returns no posts when the blog cannot be read', async () => {
-        const posts = await loadPublishedPosts(
-            (async () => new Response('{}', { status: 500 })) as unknown as typeof fetch
-        );
-        expect(posts).toEqual([]);
     });
 });

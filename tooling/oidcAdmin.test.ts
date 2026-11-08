@@ -62,7 +62,7 @@ describe('oidcAdmin', () => {
             ok: true,
             actor: 'ada@example.com',
             authTime: 100,
-            service: state.service
+            service: state.service as never
         });
     });
 });
