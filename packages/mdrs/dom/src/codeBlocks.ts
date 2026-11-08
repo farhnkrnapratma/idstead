@@ -454,12 +454,12 @@ export function createCodeActionControls(
         kebabWrapper.style.opacity = '1';
     }
 
-    let kebabClickHandler = (e: MouseEvent) => {
+    const toggleKebab = (e: MouseEvent) => {
         e.stopPropagation();
         if (!kebabPanel.classList.contains('mdrs-is-open')) openKebab();
         else closeKebab();
     };
-    kebabBtn.addEventListener('click', kebabClickHandler);
+    let kebabClickHandler = toggleKebab;
 
     const onDocumentClick = (e: MouseEvent) => {
         if (!kebabWrapper.isConnected) {
@@ -568,11 +568,7 @@ export function createCodeActionControls(
         } else {
             kebabBtn.innerHTML = ICONS.kebab;
             kebabBtn.setAttribute('aria-label', 'Code block options');
-            kebabClickHandler = (e: MouseEvent) => {
-                e.stopPropagation();
-                if (!kebabPanel.classList.contains('mdrs-is-open')) openKebab();
-                else closeKebab();
-            };
+            kebabClickHandler = toggleKebab;
         }
         kebabBtn.addEventListener('click', kebabClickHandler);
     }

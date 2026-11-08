@@ -125,7 +125,7 @@ async function putResumeObject(
     key: string,
     body: Uint8Array,
     contentType: string,
-    downloadName?: string
+    downloadName: string
 ) {
     const storage = await resumeStorage(platform);
     if (storage) {
@@ -133,9 +133,7 @@ async function putResumeObject(
             httpMetadata: {
                 contentType,
                 cacheControl: 'public, max-age=60',
-                ...(downloadName ?
-                    { contentDisposition: `attachment; filename="${downloadName}"` }
-                :   {})
+                contentDisposition: `attachment; filename="${downloadName}"`
             }
         });
         return;

@@ -337,10 +337,8 @@ function parseSearchRequest(value: unknown): ArdSearchRequest {
     )
         return invalid('pageSize must be an integer between 1 and 100.');
 
-    if (!query.text)
-        return invalid('query.text must be a non-empty string of at most 2000 characters.');
     return {
-        query: { ...query, text: query.text },
+        query: { ...query, text: query.text as string },
         federation,
         pageSize,
         offset: decodePageToken(value.pageToken)

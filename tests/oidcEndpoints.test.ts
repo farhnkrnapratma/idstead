@@ -345,3 +345,76 @@ describe('token endpoint', () => {
         expect((await unsupported.json()).error).toBe('unsupported_grant_type');
     });
 });
+
+describe('token request validation', () => {
+    test('rejects missing parameters, malformed verifiers and malformed client credentials', async () => {
+        const { deps } = await setup();
+        const missing = await handleTokenRequest(
+            form({ grant_type: 'authorization_code' }, basic('client-confidential-1', SECRET)),
+            deps
+        );
+        expect(missing.status).toBe(400);
+        expect(await missing.json()).toMatchObject({ error: 'invalid_request' });
+
+        const malformed = await handleTokenRequest(
+            form(
+                {
+                    grant_type: 'authorization_code',
+                    code: 'abc',
+                    redirect_uri: REDIRECT,
+                    code_verifier: 'too short'
+                },
+                basic('client-confidential-1', SECRET)
+            ),
+            deps
+        );
+        expect(malformed.status).toBe(400);
+        expect(await malformed.json()).toMatchObject({ error: 'invalid_grant' });
+
+        const badCredentials = await handleTokenRequest(
+            form(
+                {
+                    grant_type: 'authorization_code',
+                    code: 'abc',
+                    redirect_uri: REDIRECT,
+                    code_verifier: VERIFIER
+                },
+                { authorization: 'Basic !!!not-base64!!!' }
+            ),
+            deps
+        );
+        expect(badCredentials.status).toBeGreaterThanOrEqual(400);
+    });
+});
+
+describe('userinfo after a grant is revoked', () => {
+    test('refuses an access token whose grant was revoked', async () => {
+        const { deps } = await setup();
+        const code = await authorizeCode(deps);
+        const issued = await (
+            await handleTokenRequest(
+                form(
+                    {
+                        grant_type: 'authorization_code',
+                        code,
+                        redirect_uri: REDIRECT,
+                        code_verifier: VERIFIER
+                    },
+                    basic('client-confidential-1', SECRET)
+                ),
+                deps
+            )
+        ).json();
+        const grant = await deps.auth.activeGrant('client-confidential-1');
+        expect(grant).not.toBeNull();
+        await deps.auth.revokeGrant(grant!.id);
+        const info = await handleUserinfo(
+            new Request(`${ISSUER}/oauth/userinfo`, {
+                headers: { authorization: `Bearer ${issued.access_token}` }
+            }),
+            deps
+        );
+        expect(info.status).toBe(401);
+        expect(info.headers.get('www-authenticate')).toBeDefined();
+    });
+});

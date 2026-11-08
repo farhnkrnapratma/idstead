@@ -68,6 +68,18 @@ jobs:
             - run: bun run build
             - run: bun audit --audit-level=high
 
+    coverage:
+        executor: node-large
+        steps:
+            - checkout
+            - setup-bun
+            - restore_cache:
+                  keys:
+                      - bun-v1-{{ checksum "bun.lock" }}
+                      - bun-v1-
+            - run: bun install --frozen-lockfile
+            - run: bun run coverage
+
     secrets:
         docker:
             - image: cimg/python:3.12
@@ -106,5 +118,6 @@ workflows:
         jobs:
             - reuse
             - check
+            - coverage
             - secrets
             - commitlint

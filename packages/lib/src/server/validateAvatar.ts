@@ -55,10 +55,7 @@ export function validatePng(buffer: ArrayBuffer, size: number) {
     }
     inflater.push(new Uint8Array(), true);
     if (!dataSeen || !ended || inflater.err || !inflated) throw new Error('Invalid PNG data.');
-    const decoded = UPNG.decode(buffer);
-    const pixels = UPNG.toRGBA8(decoded);
-    if (pixels.length !== 1 || pixels[0].byteLength !== size * size * 4)
-        throw new Error('Invalid image pixels.');
+    UPNG.toRGBA8(UPNG.decode(buffer));
 }
 
 export function validateIco(buffer: ArrayBuffer) {

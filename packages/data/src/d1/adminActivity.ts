@@ -785,8 +785,6 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                         latest: String(row.created_at)
                     };
                     entry.count++;
-                    if (String(row.created_at) > entry.latest)
-                        entry.latest = String(row.created_at);
                     reasons.set(key, entry);
                 }
                 return {

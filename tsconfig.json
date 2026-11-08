@@ -17,6 +17,7 @@
         "tests",
         "tooling",
         "apps/web/src/app.d.ts",
-        "apps/web/src/cloudflare-workers.d.ts"
+        "apps/web/src/cloudflare-workers.d.ts",
+        "packages/lib/src/banner-wasm.d.ts"
     ]
 }
