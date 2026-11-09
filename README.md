@@ -2,7 +2,7 @@
 <p align="center">A self-hostable personal site and identity home: profile, blog, projects, resume, funding and contact pages, an admin portal and a public API, running on Cloudflare Workers.</p>
 <p align="center"><a href="https://fkp.my.id/">Live example</a></p>
 
-[![CI](https://img.shields.io/circleci/build/github/farhnkrnapratma/idstead/main?label=CI)](https://app.circleci.com/pipelines/github/farhnkrnapratma/idstead) ![Coverage](https://img.shields.io/badge/coverage-90.0%25%20lines-brightgreen) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue) ![Runtime](https://img.shields.io/badge/runtime-Bun-black?logo=bun) ![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white) ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white) ![Tests](https://img.shields.io/badge/tests-bun%20test-black?logo=bun)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main) ![Coverage](https://img.shields.io/badge/coverage-90.0%25%20lines-brightgreen) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue) ![Runtime](https://img.shields.io/badge/runtime-Bun-black?logo=bun) ![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white) ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white) ![Tests](https://img.shields.io/badge/tests-bun%20test-black?logo=bun)
 
 ---
 
