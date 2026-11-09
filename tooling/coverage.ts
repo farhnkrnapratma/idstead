@@ -85,6 +85,7 @@ for (const [name, target] of [
     ['pageDataCache', 'tooling/pageDataCache.test.ts'],
     ['activityLogIp', 'tooling/activityLogIp.test.ts'],
     ['accessAuth', 'tooling/accessAuth.test.ts'],
+    ['githubProjectsFailures', 'tooling/githubProjectsFailures.test.ts'],
     ['blogPostPage', 'tooling/blogPostPage.test.ts'],
     ['feedbackPage', 'tooling/feedbackPage.test.ts'],
     ['homePage', 'tooling/homePage.test.ts'],
