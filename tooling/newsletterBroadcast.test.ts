@@ -9,7 +9,7 @@ mock.module('$app/env/private', () => ({}));
 
 const { notifyNewPost } = await import('../packages/lib/src/server/subscriberBroadcast.ts');
 const { createD1NewsletterStore } = await import('../packages/data/src/d1/subscribers.ts');
-const { d1Shim, insertRows } = await import('./support/d1.ts');
+const { d1Shim, insertRows } = await import('../tests/support/d1.ts');
 
 const POST_ID = '7f3c2a10-4b1d-4c8e-9a2f-0d1e2f3a4b5c';
 const platform = {

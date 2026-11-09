@@ -86,6 +86,8 @@ for (const [name, target] of [
     ['activityLogIp', 'tooling/activityLogIp.test.ts'],
     ['accessAuth', 'tooling/accessAuth.test.ts'],
     ['githubProjectsFailures', 'tooling/githubProjectsFailures.test.ts'],
+    ['ipSalt', 'tooling/ipSalt.test.ts'],
+    ['newsletterBroadcast', 'tooling/newsletterBroadcast.test.ts'],
     ['blogPostPage', 'tooling/blogPostPage.test.ts'],
     ['feedbackPage', 'tooling/feedbackPage.test.ts'],
     ['homePage', 'tooling/homePage.test.ts'],
@@ -105,7 +107,10 @@ for (const [name, target] of [
         ['bun', 'test', target, '--coverage', '--coverage-reporter=lcov', `--coverage-dir=${dir}`],
         { cwd: root, stdout: 'inherit', stderr: 'inherit' }
     );
-    if (run.exitCode !== 0) failed = true;
+    if (run.exitCode !== 0) {
+        console.error(`coverage run failed: ${name}`);
+        failed = true;
+    }
     parse(await Bun.file(join(dir, 'lcov.info')).text(), merged);
 }
 
