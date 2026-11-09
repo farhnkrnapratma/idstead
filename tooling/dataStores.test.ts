@@ -8,7 +8,7 @@ mock.module('$app/env/public', () => ({}));
 mock.module('$app/env/private', () => ({}));
 
 const { dataStores } = await import('../packages/lib/src/server/data.ts');
-const { d1Shim, insertRows, memoryBucket } = await import('./support/d1.ts');
+const { d1Shim, insertRows, memoryBucket } = await import('../tests/support/d1.ts');
 
 describe('dataStores', () => {
     test('builds service stores once per call', () => {
