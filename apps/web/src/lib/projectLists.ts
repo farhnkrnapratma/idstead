@@ -16,8 +16,8 @@ export function isRepoNew(project: Project, now = Date.now()): boolean {
 }
 
 export function homeProjects(projects: Project[], pinnedNames: string[], count: number): Project[] {
-    return projects
-        .toSorted(
+    return [...projects]
+        .sort(
             (a, b) =>
                 Number(isRepoPinned(b, pinnedNames)) - Number(isRepoPinned(a, pinnedNames))
                 || new Date(b.pushedAt || 0).getTime() - new Date(a.pushedAt || 0).getTime()
