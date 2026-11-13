@@ -33,4 +33,10 @@ describe('homeProjects', () => {
     test('lists the most recently pushed projects when none are pinned', () => {
         expect(homeProjects(projects, [], 2).map(p => p.name)).toEqual(['newest', 'middle']);
     });
+
+    test('does not mutate the input list', () => {
+        const input = [...projects];
+        homeProjects(input, ['middle'], 3);
+        expect(input.map(p => p.name)).toEqual(['old-pinned', 'newest', 'middle']);
+    });
 });

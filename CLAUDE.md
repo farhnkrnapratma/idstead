@@ -105,7 +105,7 @@ Rules:
 This checkout is also the owner's own instance, **fkp.my.id**. Only these places may name it: `idstead.jsonc` (site `fkp.my.id`, the default Worker and queue names, and the bucket `static`), the rendered `apps/*/wrangler.jsonc`, the live-example link in `README.md`, the security contact in `SECURITY.md`, and this section of `CLAUDE.md`.
 
 - **Environment variables** come from Phase (app `idstead`, environments `development` and `production`; `.claude/rules/phase.md` has the rules). Run commands as `phase run --env dev|prod -- <command>`; Production Worker secrets are synced from the Phase folders `/workers/<app>`, so never edit them in the Cloudflare dashboard.
-- **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).
+- **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.toml` (`run --list`).
 - **Deploys:** each Worker is connected to Workers Builds on `main` only; previews are not connected, so `develop` and PRs deploy nothing.
 - **Database:** production runs on the D1 database `idstead` since 2026-10-23 (`DATA_CACHE=1`).
 

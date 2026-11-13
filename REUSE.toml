@@ -10,7 +10,7 @@ path = [
     "**/*.json",
     "**/*.jsonc",
     "bun.lock",
-    "run.conf",
+    "run.toml",
     "apps/web/_headers",
     "apps/*/src/app.html",
     "packages/data/d1/migrations/**",
