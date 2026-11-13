@@ -1,0 +1,39 @@
+PHASE_ENV = "dev"
+
+[dev]
+default = ["dev.web", "dev.admin", "dev.api", "dev.jobs"]
+web = 'phase run --env $PHASE_ENV -- bun run --cwd apps/web dev'
+host = 'phase run --env $PHASE_ENV -- bun run --cwd apps/web dev --host'
+admin = 'phase run --env $PHASE_ENV -- bun run --cwd apps/admin dev'
+api = 'phase run --env $PHASE_ENV -- bun run --cwd apps/api dev'
+jobs = 'phase run --env $PHASE_ENV -- bun run --cwd apps/jobs dev'
+sites = ["dev.web", "dev.admin"]
+workers = ["dev.api", "dev.jobs"]
+
+[build]
+default = 'phase run --env prod -- bun run build'
+dev = 'phase run --env dev -- bun run build'
+
+[check]
+default = 'bun run check'
+
+[test]
+default = 'phase run --env $PHASE_ENV -- bun run test'
+only = 'phase run --env $PHASE_ENV -- bun test'
+
+[lint]
+default = 'bun run lint'
+fix = 'bun run lint:fix'
+
+[fmt]
+default = 'bun run fmt'
+check = 'bun run fmt:check'
+
+[install]
+default = 'bun install'
+
+[graph]
+default = 'graphify update .'
+
+[verify]
+default = ["test", "check", "fmt.check"]
