@@ -23,16 +23,16 @@
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/avif": "^2.1.1",
-        "@lucide/svelte": "^1.72.0",
+        "@lucide/svelte": "^1.74.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/editor": "workspace:*",
-        "@sentry/sveltekit": "^11.12.0",
+        "@sentry/sveltekit": "^11.13.0",
         "blobatar": "^2.7.0",
         "d3-scale": "^4.0.3",
         "d3-shape": "^3.2.1",
         "imagetracerjs": "1.2.6",
-        "layerchart": "^2.10.1"
+        "layerchart": "^2.11.0"
     },
     "devDependencies": {
         "@sveltejs/adapter-cloudflare": "^8.0.2",
@@ -44,7 +44,7 @@
         "svelte-check": "^4.7.8",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.8",
-        "wrangler": "^4.161.0"
+        "wrangler": "^4.163.0"
     },
     "sideEffects": [
         "**/*.css"
