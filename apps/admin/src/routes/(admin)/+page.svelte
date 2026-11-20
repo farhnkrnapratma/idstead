@@ -3407,11 +3407,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                             width="w-24"
                             class="mt-1" />
                     {:else}
-                        <span class="truncate text-xs leading-tight font-bold text-fg"
-                            >{adminUserName}</span>
+                        <span class="truncate text-xs leading-tight font-bold text-fg">
+                            {adminUserName}
+                        </span>
                         <span
                             class="truncate text-xxs leading-tight text-fg-muted"
-                            title={adminUserEmail}>{adminUserEmail}</span>
+                            title={adminUserEmail}>
+                            {adminUserEmail}
+                        </span>
                     {/if}
                 </span>
             </div>
@@ -3473,17 +3476,21 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         sidebarCollapsed
                                     ) ?
                                         'md:hidden'
-                                    :   ''}">{link.label}</span>
+                                    :   ''}">
+                                    {link.label}
+                                </span>
                                 {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
                                     <Badge
                                         variant="accent"
                                         circle
                                         class={sidebarCollapsed ?
                                             'ml-auto md:absolute md:top-0 md:right-0 md:ml-0'
-                                        :   'ml-auto'}
-                                        >{formatBadgeCount(
-                                            adminNotificationsStore.unreadCount
-                                        )}<span class="sr-only"> unread</span></Badge>
+                                        :   'ml-auto'}>
+                                        {formatBadgeCount(adminNotificationsStore.unreadCount)}<span
+                                            class="sr-only">
+                                            unread
+                                        </span>
+                                    </Badge>
                                 {/if}
                             </button>
                         </Tooltip>
@@ -3930,7 +3937,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     Delete post
                                                 </Button>
                                             </div>
-                                        </div></Card>
+                                        </div>
+                                    </Card>
                                     <div>
                                         {#if expandedPostIds.has(post.id)}
                                             <div
@@ -3977,9 +3985,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                                             openWorkspace(
                                                                                 'reports',
                                                                                 comment.id
-                                                                            )}
-                                                                        >Reported ({comment.reports})</Button
-                                                                    >{/if}
+                                                                            )}>
+                                                                        Reported ({comment.reports})
+                                                                    </Button>{/if}
                                                             {/snippet}
 
                                                             {#snippet actions(comment)}
@@ -4022,12 +4030,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                                         <p
                                                                             class="text-xs text-fg-secondary">
                                                                             Replying to <span
-                                                                                class="font-semibold text-fg-accent"
-                                                                                >{commentAuthorName(
+                                                                                class="font-semibold text-fg-accent">
+                                                                                {commentAuthorName(
                                                                                     comment,
                                                                                     authorState.name
                                                                                         || siteAuthorName
-                                                                                )}</span>
+                                                                                )}
+                                                                            </span>
                                                                         </p>
                                                                         <button
                                                                             type="button"
@@ -4626,8 +4635,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 <div
                                     class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                     <span
-                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                        >Experience Entry #{idx + 1}</span>
+                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                        Experience Entry #{idx + 1}
+                                    </span>
                                     <div class="flex items-center gap-1">
                                         <Button
                                             htmlType="button"
@@ -4641,7 +4651,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     resumeState.experience,
                                                     idx,
                                                     'up'
-                                                ))}><ArrowUp class="size-3.5" /></Button>
+                                                ))}>
+                                            <ArrowUp class="size-3.5" />
+                                        </Button>
                                         <Button
                                             htmlType="button"
                                             type="ghost"
@@ -4654,7 +4666,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     resumeState.experience,
                                                     idx,
                                                     'down'
-                                                ))}><ArrowDown class="size-3.5" /></Button>
+                                                ))}>
+                                            <ArrowDown class="size-3.5" />
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -5011,8 +5025,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 <div
                                     class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                     <span
-                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                        >Education Entry #{idx + 1}</span>
+                                        class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                        Education Entry #{idx + 1}
+                                    </span>
                                     <div class="flex items-center gap-1">
                                         <Button
                                             htmlType="button"
@@ -5026,7 +5041,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     resumeState.education,
                                                     idx,
                                                     'up'
-                                                ))}><ArrowUp class="size-3.5" /></Button>
+                                                ))}>
+                                            <ArrowUp class="size-3.5" />
+                                        </Button>
                                         <Button
                                             htmlType="button"
                                             type="ghost"
@@ -5039,7 +5056,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     resumeState.education,
                                                     idx,
                                                     'down'
-                                                ))}><ArrowDown class="size-3.5" /></Button>
+                                                ))}>
+                                            <ArrowDown class="size-3.5" />
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -5380,9 +5399,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
                 {#if pdfGeneratedFilename}
                     <StatusBanner variant="success">
-                        <span
-                            >Generated <strong class="font-bold">{pdfGeneratedFilename}</strong
-                            >.</span>
+                        <span>
+                            Generated <strong class="font-bold">{pdfGeneratedFilename}</strong>.
+                        </span>
                     </StatusBanner>
                 {/if}
 
@@ -5693,12 +5712,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                     {#if keyExpiresSoon}
                                         <Badge
                                             size="sm"
-                                            variant="warning">Expires {keyExpires}</Badge>
+                                            variant="warning">
+                                            Expires {keyExpires}
+                                        </Badge>
                                     {:else}
-                                        <span
-                                            >{keyExpires ?
-                                                `Expires ${keyExpires}`
-                                            :   'Never expires'}</span>
+                                        <span>
+                                            {keyExpires ? `Expires ${keyExpires}` : 'Never expires'}
+                                        </span>
                                     {/if}
                                 </div>
                             </div>
@@ -5827,8 +5847,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <div
                                 class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                    >Category #{idx + 1}</span>
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                    Category #{idx + 1}
+                                </span>
                                 <div class="flex items-center gap-1">
                                     <Button
                                         htmlType="button"
@@ -5838,8 +5859,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         title="Move skill up"
                                         disabled={idx === 0}
                                         onclick={() =>
-                                            (skillsState = moveArrayItem(skillsState, idx, 'up'))}
-                                        ><ArrowUp class="size-3.5" /></Button>
+                                            (skillsState = moveArrayItem(skillsState, idx, 'up'))}>
+                                        <ArrowUp class="size-3.5" />
+                                    </Button>
                                     <Button
                                         htmlType="button"
                                         type="ghost"
@@ -5848,8 +5870,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         title="Move skill down"
                                         disabled={idx === skillsState.length - 1}
                                         onclick={() =>
-                                            (skillsState = moveArrayItem(skillsState, idx, 'down'))}
-                                        ><ArrowDown class="size-3.5" /></Button>
+                                            (skillsState = moveArrayItem(
+                                                skillsState,
+                                                idx,
+                                                'down'
+                                            ))}>
+                                        <ArrowDown class="size-3.5" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -5981,8 +6008,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <div
                                 class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                    >Social #{idx + 1}</span>
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                    Social #{idx + 1}
+                                </span>
                                 <div class="flex items-center gap-1">
                                     <Button
                                         htmlType="button"
@@ -5992,8 +6020,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         title="Move social link up"
                                         disabled={idx === 0}
                                         onclick={() =>
-                                            (socialState = moveArrayItem(socialState, idx, 'up'))}
-                                        ><ArrowUp class="size-3.5" /></Button>
+                                            (socialState = moveArrayItem(socialState, idx, 'up'))}>
+                                        <ArrowUp class="size-3.5" />
+                                    </Button>
                                     <Button
                                         htmlType="button"
                                         type="ghost"
@@ -6002,8 +6031,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         title="Move social link down"
                                         disabled={idx === socialState.length - 1}
                                         onclick={() =>
-                                            (socialState = moveArrayItem(socialState, idx, 'down'))}
-                                        ><ArrowDown class="size-3.5" /></Button>
+                                            (socialState = moveArrayItem(
+                                                socialState,
+                                                idx,
+                                                'down'
+                                            ))}>
+                                        <ArrowDown class="size-3.5" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -6187,8 +6221,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <div
                                 class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                    >Funding #{idx + 1}</span>
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                    Funding #{idx + 1}
+                                </span>
                                 <div class="flex items-center gap-1">
                                     <Button
                                         htmlType="button"
@@ -6202,7 +6237,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 sponsorshipState,
                                                 idx,
                                                 'up'
-                                            ))}><ArrowUp class="size-3.5" /></Button>
+                                            ))}>
+                                        <ArrowUp class="size-3.5" />
+                                    </Button>
                                     <Button
                                         htmlType="button"
                                         type="ghost"
@@ -6215,7 +6252,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 sponsorshipState,
                                                 idx,
                                                 'down'
-                                            ))}><ArrowDown class="size-3.5" /></Button>
+                                            ))}>
+                                        <ArrowDown class="size-3.5" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -6428,8 +6467,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <div
                                 class="flex items-center justify-between gap-2 border-b border-line-subtle pb-2">
                                 <span
-                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted"
-                                    >Contact #{idx + 1}</span>
+                                    class="min-w-0 truncate font-mono text-xs font-light text-fg-muted">
+                                    Contact #{idx + 1}
+                                </span>
                                 <div class="flex items-center gap-1">
                                     <Button
                                         htmlType="button"
@@ -6439,8 +6479,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         title="Move contact item up"
                                         disabled={idx === 0}
                                         onclick={() =>
-                                            (contactState = moveArrayItem(contactState, idx, 'up'))}
-                                        ><ArrowUp class="size-3.5" /></Button>
+                                            (contactState = moveArrayItem(
+                                                contactState,
+                                                idx,
+                                                'up'
+                                            ))}>
+                                        <ArrowUp class="size-3.5" />
+                                    </Button>
                                     <Button
                                         htmlType="button"
                                         type="ghost"
@@ -6453,7 +6498,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 contactState,
                                                 idx,
                                                 'down'
-                                            ))}><ArrowDown class="size-3.5" /></Button>
+                                            ))}>
+                                        <ArrowDown class="size-3.5" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -6656,9 +6703,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="mb-4">
                         <div
                             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <span
-                                >Autosaved local draft found (different from saved database
-                                version).</span>
+                            <span>
+                                Autosaved local draft found (different from saved database version).
+                            </span>
                             <div class="flex shrink-0 items-center gap-2">
                                 <Button
                                     type="secondary"
@@ -6733,9 +6780,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="mb-4">
                         <div
                             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <span
-                                >Autosaved local draft found (different from saved database
-                                version).</span>
+                            <span>
+                                Autosaved local draft found (different from saved database version).
+                            </span>
                             <div class="flex shrink-0 items-center gap-2">
                                 <Button
                                     type="secondary"
@@ -6810,9 +6857,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="mb-4">
                         <div
                             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <span
-                                >Autosaved local draft found (different from saved database
-                                version).</span>
+                            <span>
+                                Autosaved local draft found (different from saved database version).
+                            </span>
                             <div class="flex shrink-0 items-center gap-2">
                                 <Button
                                     type="secondary"
@@ -6886,9 +6933,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="mb-4">
                         <div
                             class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <span
-                                >Autosaved local draft found (different from saved database
-                                version).</span>
+                            <span>
+                                Autosaved local draft found (different from saved database version).
+                            </span>
                             <div class="flex shrink-0 items-center gap-2">
                                 <Button
                                     type="secondary"

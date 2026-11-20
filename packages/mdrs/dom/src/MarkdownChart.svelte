@@ -328,8 +328,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                                     class="size-2.5 shrink-0 rounded-full"
                                     style="background-color: {item.color};"></span>
                                 <span class="truncate text-fg-secondary">{item.label}:</span>
-                                <span class="ml-auto font-mono font-medium text-fg sm:ml-0"
-                                    >{item.value}</span>
+                                <span class="ml-auto font-mono font-medium text-fg sm:ml-0">
+                                    {item.value}
+                                </span>
                             </div>
                         {/each}
                     </div>

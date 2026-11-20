@@ -646,18 +646,18 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
-                                        >{allAuthors[0]}</a
-                                    >,
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
+                                        {allAuthors[0]}
+                                    </a>,
                                 </span>
                                 <span class="inline-flex items-center">
                                     <a
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
-                                        >{allAuthors[1]}</a
-                                    >,
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
+                                        {allAuthors[1]}
+                                    </a>,
                                 </span>
                                 <span>and</span>
                                 <a
@@ -673,27 +673,27 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
-                                        >{allAuthors[0]}</a
-                                    >,
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
+                                        {allAuthors[0]}
+                                    </a>,
                                 </span>
                                 <span class="inline-flex items-center">
                                     <a
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
-                                        >{allAuthors[1]}</a
-                                    >,
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
+                                        {allAuthors[1]}
+                                    </a>,
                                 </span>
                                 <span class="inline-flex items-center">
                                     <a
                                         href="https://github.com/{allAuthors[2]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline"
-                                        >{allAuthors[2]}</a
-                                    >,
+                                        class="font-semibold text-fg underline-offset-4 transition-colors hover:text-fg-accent hover:underline">
+                                        {allAuthors[2]}
+                                    </a>,
                                 </span>
                                 <span>and</span>
                                 <div
@@ -741,8 +741,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                         src={`https://github.com/${collab}.png?size=128`}
                                                         class="size-5" />
                                                     <span
-                                                        class="font-semibold text-fg hover:underline"
-                                                        >{collab}</span>
+                                                        class="font-semibold text-fg hover:underline">
+                                                        {collab}
+                                                    </span>
                                                 </a>
                                             {/each}
                                         </div>
@@ -954,9 +955,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         keyboardShortcut={buttonKey('formClear')}
                                         shortcutLabel="Clear comment"
                                         onclick={clearCommentForm}>
-                                        <span
-                                            >Clear<span class="hidden sm:inline">&nbsp;comment</span
-                                            ></span>
+                                        <span>
+                                            Clear<span class="hidden sm:inline">&nbsp;comment</span>
+                                        </span>
                                     </Button>
                                     <Button
                                         htmlType="submit"
@@ -1115,8 +1116,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 keyboardShortcut={buttonKey('formClear')}
                                                 shortcutLabel="Clear reply"
                                                 onclick={clearCommentForm}>
-                                                Clear<span class="hidden sm:inline"
-                                                    >&nbsp;reply</span>
+                                                Clear<span class="hidden sm:inline">
+                                                    &nbsp;reply
+                                                </span>
                                             </Button>
                                             <div class="flex items-center gap-2">
                                                 <Button
@@ -1124,7 +1126,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     type="ghost"
                                                     size="sm"
                                                     shortcutLabel="Cancel reply"
-                                                    onclick={cancelReply}>Cancel</Button>
+                                                    onclick={cancelReply}>
+                                                    Cancel
+                                                </Button>
                                                 <Button
                                                     htmlType="submit"
                                                     type="primary"
@@ -1236,7 +1240,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 shortcutLabel="Cancel"
                 onclick={() => {
                     showNoFeedbackDialog = false;
-                }}>Cancel</Button>
+                }}>
+                Cancel
+            </Button>
             <Button
                 type="primary"
                 size="md"
@@ -1246,7 +1252,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 onclick={() => {
                     showNoFeedbackDialog = false;
                     window.location.href = '/feedback';
-                }}>Send feedback</Button>
+                }}>
+                Send feedback
+            </Button>
         </div>
     {/snippet}
 </Dialog>

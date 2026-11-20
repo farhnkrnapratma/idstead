@@ -118,7 +118,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 type="ghost"
                 size="xs"
                 disabled={isDefault}
-                onclick={() => adminDisplayStore.reset()}>Reset to defaults</Button>
+                onclick={() => adminDisplayStore.reset()}>
+                Reset to defaults
+            </Button>
         {/snippet}
 
         <div
@@ -154,7 +156,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         <div class="flex flex-col gap-2">
             <span
                 id="display-mode-label"
-                class="text-xs font-semibold text-fg">Show timestamps as</span>
+                class="text-xs font-semibold text-fg">
+                Show timestamps as
+            </span>
             <div
                 role="tablist"
                 aria-labelledby="display-mode-label"

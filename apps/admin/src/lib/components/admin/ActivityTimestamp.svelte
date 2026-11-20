@@ -43,7 +43,8 @@ SPDX-License-Identifier: AGPL-3.0-only
         title={`${formatRelativeTime(date)} · ${zone}`}
         aria-label={`${prefix ? prefix + ': ' : ''}${formatted} · ${zone}`}
         class={cn('shrink-0 text-xs whitespace-nowrap text-fg-muted', className)}>
-        {#if prefix}<span class={compact ? 'hidden sm:inline' : ''}>{prefix}:&nbsp;</span
-            >{/if}{formatted}
+        {#if prefix}<span class={compact ? 'hidden sm:inline' : ''}>
+                {prefix}:&nbsp;
+            </span>{/if}{formatted}
     </time>
 {/if}

@@ -17,5 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 {#if required}
     <span
         class="text-danger"
-        aria-hidden="true">*</span>
+        aria-hidden="true">
+        *
+    </span>
 {/if}

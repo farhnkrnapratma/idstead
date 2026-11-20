@@ -60,9 +60,13 @@ SPDX-License-Identifier: AGPL-3.0-only
     <time
         datetime={typeof date === 'string' ? date : date?.toISOString()}
         title={titleAttr}
-        class={className}>{text}</time>
+        class={className}>
+        {text}
+    </time>
 {:else}
     <span
         title={titleAttr}
-        class={className}>{text}</span>
+        class={className}>
+        {text}
+    </span>
 {/if}

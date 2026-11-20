@@ -32,27 +32,28 @@ SPDX-License-Identifier: AGPL-3.0-only
     <span
         title={metadata}
         class={textClass}>
-        {#if withAuthor}Reported a comment by {author} for&nbsp;{:else}<span class="text-fg-muted"
-                >Reason:&nbsp;</span
-            >{/if}{reportReasonLabel(item.meta?.reason ?? 'other')}
+        {#if withAuthor}Reported a comment by {author} for&nbsp;{:else}<span class="text-fg-muted">
+                Reason:&nbsp;
+            </span>{/if}{reportReasonLabel(item.meta?.reason ?? 'other')}
     </span>
     {#if item.report_status === 'resolved'}<span
-            class="shrink-0 font-sans font-normal text-fg-muted">Resolved</span
-        >{/if}
+            class="shrink-0 font-sans font-normal text-fg-muted">
+            Resolved
+        </span>{/if}
 {:else if item.kind === 'comment_new'}
     <span
         title={metadata}
         class={textClass}>
-        {#if withAuthor}{author} commented:&nbsp;{:else}<span class="text-fg-muted"
-                >Comment:&nbsp;</span
-            >{/if}“{item.meta?.comment ?? ''}”
+        {#if withAuthor}{author} commented:&nbsp;{:else}<span class="text-fg-muted">
+                Comment:&nbsp;
+            </span>{/if}“{item.meta?.comment ?? ''}”
     </span>
 {:else if isFeedbackActivity(item)}
-    {#if withAuthor}<span class={textClass}
-            >Marked this {activityPageKind(item)} as {item.meta?.vote === 'yes' ?
+    {#if withAuthor}<span class={textClass}>
+            Marked this {activityPageKind(item)} as {item.meta?.vote === 'yes' ?
                 'helpful'
-            :   'unhelpful'}</span
-        >{/if}
+            :   'unhelpful'}
+        </span>{/if}
 {:else if withAuthor}
     <span
         title={metadata}

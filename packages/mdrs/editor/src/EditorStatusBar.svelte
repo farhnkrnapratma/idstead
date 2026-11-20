@@ -29,12 +29,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         <span class="editor-theme-foreground shrink-0">Ln {line}, Col {column}</span>
         <span class="flex shrink-0 items-center gap-1">
             <ListIndentIncrease class="hidden size-3 sm:inline-flex" />
-            <span class="sm:hidden"
-                >{preferences.indentMode === 'tabs' ? 'T' : `S: ${preferences.indentSize}`}</span>
-            <span class="hidden sm:inline"
-                >{preferences.indentMode === 'tabs' ?
-                    'Tabs'
-                :   `Spaces: ${preferences.indentSize}`}</span>
+            <span class="sm:hidden">
+                {preferences.indentMode === 'tabs' ? 'T' : `S: ${preferences.indentSize}`}
+            </span>
+            <span class="hidden sm:inline">
+                {preferences.indentMode === 'tabs' ? 'Tabs' : `Spaces: ${preferences.indentSize}`}
+            </span>
         </span>
         <span class="shrink-0">UTF-8</span>
         <span class="shrink-0">{lineEnding}</span>
@@ -53,7 +53,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 </Tooltip>
                 <span
                     role="status"
-                    aria-live="polite">[{autosaveState}]</span>
+                    aria-live="polite">
+                    [{autosaveState}]
+                </span>
             </div>
             <Tooltip content="Autosave: {autosaveState}">
                 <button

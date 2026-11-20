@@ -62,7 +62,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {#if title}
                     <svelte:element
                         this={titleTag}
-                        class={titleClass}>{title}</svelte:element>
+                        class={titleClass}>
+                        {title}
+                    </svelte:element>
                 {/if}
                 {#if description}
                     <p class="mt-1 type-body text-fg-secondary">{description}</p>

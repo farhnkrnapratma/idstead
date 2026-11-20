@@ -96,7 +96,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {#if required && !hideAsterisk}
                     <span
                         class="text-danger"
-                        aria-hidden="true">*</span>
+                        aria-hidden="true">
+                        *
+                    </span>
                     <span class="sr-only">(required)</span>
                 {/if}
             </label>
@@ -131,11 +133,15 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {:else if hintSnippet}
                     <span
                         id="{id}-hint"
-                        class="text-fg-muted">{@render hintSnippet()}</span>
+                        class="text-fg-muted">
+                        {@render hintSnippet()}
+                    </span>
                 {:else if hint}
                     <span
                         id="{id}-hint"
-                        class="text-fg-muted">{hint}</span>
+                        class="text-fg-muted">
+                        {hint}
+                    </span>
                 {/if}
             </div>
         </div>

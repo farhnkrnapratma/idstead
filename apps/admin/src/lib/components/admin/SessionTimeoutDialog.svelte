@@ -110,8 +110,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             </svg>
             <span
                 aria-hidden="true"
-                class="absolute font-mono text-sm font-bold tabular-nums {styles.text}"
-                >{remaining}</span>
+                class="absolute font-mono text-sm font-bold tabular-nums {styles.text}">
+                {remaining}
+            </span>
         </div>
         <div class="min-w-0">
             <p class="text-sm font-semibold text-fg">
@@ -140,12 +141,16 @@ SPDX-License-Identifier: AGPL-3.0-only
                 type="secondary"
                 size="md"
                 onclick={onSignOut}
-                disabled={isSigningOut}>Sign out now</Button>
+                disabled={isSigningOut}>
+                Sign out now
+            </Button>
             <Button
                 type="primary"
                 size="md"
                 data-autofocus
-                onclick={onExtend}>Stay signed in</Button>
+                onclick={onExtend}>
+                Stay signed in
+            </Button>
         </div>
     {/snippet}
 </Dialog>

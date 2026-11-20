@@ -89,7 +89,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#each tags as t (t)}
                 <Tag
                     variant="neutral"
-                    size="sm">{decodeHtmlEntities(t)}</Tag>
+                    size="sm">
+                    {decodeHtmlEntities(t)}
+                </Tag>
             {/each}
         </TagGroup>
     {/if}

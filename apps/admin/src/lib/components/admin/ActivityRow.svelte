@@ -83,6 +83,8 @@ SPDX-License-Identifier: AGPL-3.0-only
             aria-label="Delete notification"
             title="Permanently delete notification"
             class="absolute top-1/2 right-1.5 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-fg-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
-            onclick={onDelete}><X class="size-4" /></button>
+            onclick={onDelete}>
+            <X class="size-4" />
+        </button>
     {/if}
 </div>

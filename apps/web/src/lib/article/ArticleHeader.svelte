@@ -45,15 +45,15 @@ SPDX-License-Identifier: AGPL-3.0-only
     });
 </script>
 
-{#snippet permalink()}<span class="mdrs-heading-actions"
-        ><HeadingActions
+{#snippet permalink()}<span class="mdrs-heading-actions">
+        <HeadingActions
             href={page.url.pathname}
             url="{page.url.origin}{page.url.pathname}"
             {title}
             qrSlug={slug}
             scope="page"
-            {onPermalink} /></span
-    >{/snippet}
+            {onPermalink} />
+    </span>{/snippet}
 
 <header class={cn('article-header border-b border-b-line-subtle pb-4', className)}>
     <h1
@@ -66,13 +66,15 @@ SPDX-License-Identifier: AGPL-3.0-only
             titleClass
         )}>
         {#if titleParts.hasMultiple}
-            <span class="mdrs-heading-text inline"
-                >{titleParts.leading}&nbsp;<span class="whitespace-nowrap"
-                    >{titleParts.last}{@render permalink()}</span
-                ></span>
+            <span class="mdrs-heading-text inline">
+                {titleParts.leading}&nbsp;<span class="whitespace-nowrap">
+                    {titleParts.last}{@render permalink()}
+                </span>
+            </span>
         {:else}
-            <span class="mdrs-heading-text inline whitespace-nowrap"
-                >{titleParts.last}{@render permalink()}</span>
+            <span class="mdrs-heading-text inline whitespace-nowrap">
+                {titleParts.last}{@render permalink()}
+            </span>
         {/if}
     </h1>
 

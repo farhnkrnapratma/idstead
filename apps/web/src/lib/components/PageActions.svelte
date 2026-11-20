@@ -265,13 +265,17 @@ SPDX-License-Identifier: AGPL-3.0-only
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 data-sveltekit-reload={item.external ? undefined : true}
                 tabindex="-1"
-                use:shortcut={item.shortcut}>{item.label}</a>
+                use:shortcut={item.shortcut}>
+                {item.label}
+            </a>
         {:else}
             <button
                 type="button"
                 tabindex="-1"
                 onclick={item.run}
-                use:shortcut={item.shortcut}>{item.label}</button>
+                use:shortcut={item.shortcut}>
+                {item.label}
+            </button>
         {/if}
     {/each}
 </div>

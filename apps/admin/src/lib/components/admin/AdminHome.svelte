@@ -426,8 +426,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             {:else if key === 'author'}
                                 {item.author}
                             {:else if key === 'reason'}
-                                <span title={reportReasonLabel(item.reason ?? '')}
-                                    >{reportReasonLabel(item.reason ?? '')}</span>
+                                <span title={reportReasonLabel(item.reason ?? '')}>
+                                    {reportReasonLabel(item.reason ?? '')}
+                                </span>
                             {:else if key === 'score'}
                                 {majorityPercent(item.helpful ?? 0, item.unhelpful ?? 0)}
                             {:else if key === 'total'}

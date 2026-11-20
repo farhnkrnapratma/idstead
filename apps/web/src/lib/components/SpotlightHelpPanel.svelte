@@ -139,12 +139,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         <span class="text-xs font-medium text-fg">
                                             {cmd.command}{#if cmd.argHint}<span
                                                     class="ml-1 font-normal text-fg-muted">
-                                                    {cmd.argHint}</span
-                                                >{/if}
+                                                    {cmd.argHint}
+                                                </span>{/if}
                                         </span>
                                         <span
-                                            class="hidden text-2xs text-fg-muted/40 select-none sm:inline"
-                                            >—</span>
+                                            class="hidden text-2xs text-fg-muted/40 select-none sm:inline">
+                                            —
+                                        </span>
                                         <span
                                             class="min-w-0 basis-full font-sans text-2xs text-fg-muted sm:flex-1 sm:basis-auto">
                                             {cmd.description}
@@ -164,8 +165,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         class="flex flex-wrap items-center gap-1 pl-7.5 font-mono text-3xs">
                                         {#each cmd.validArgs as arg (arg)}
                                             <span
-                                                class="inline-flex items-center rounded bg-surface-hover px-1 py-0.5 leading-normal text-fg-secondary"
-                                                >{arg}</span>
+                                                class="inline-flex items-center rounded bg-surface-hover px-1 py-0.5 leading-normal text-fg-secondary">
+                                                {arg}
+                                            </span>
                                         {/each}
                                     </div>
                                 {/if}
@@ -187,8 +189,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             </div>
                             <span class="font-medium text-fg">Match case</span>
                             <span class="text-fg-muted/40 select-none">—</span>
-                            <span class="hidden font-sans text-fg-muted sm:inline"
-                                >Case-sensitive search toggle</span>
+                            <span class="hidden font-sans text-fg-muted sm:inline">
+                                Case-sensitive search toggle
+                            </span>
                         </div>
                         <span class="font-mono text-3xs text-fg-accent">Aa</span>
                     </div>
@@ -201,8 +204,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             </div>
                             <span class="font-medium text-fg">Whole word</span>
                             <span class="text-fg-muted/40 select-none">—</span>
-                            <span class="hidden font-sans text-fg-muted sm:inline"
-                                >Match exact whole words</span>
+                            <span class="hidden font-sans text-fg-muted sm:inline">
+                                Match exact whole words
+                            </span>
                         </div>
                         <span class="font-mono text-3xs text-fg-accent">ab</span>
                     </div>
@@ -215,8 +219,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             </div>
                             <span class="font-medium text-fg">Regex mode</span>
                             <span class="text-fg-muted/40 select-none">—</span>
-                            <span class="hidden font-sans text-fg-muted sm:inline"
-                                >Regular expression pattern matching</span>
+                            <span class="hidden font-sans text-fg-muted sm:inline">
+                                Regular expression pattern matching
+                            </span>
                         </div>
                         <span class="font-mono text-3xs text-fg-accent">.*</span>
                     </div>

@@ -101,7 +101,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         showTooltip={false}
         aria-haspopup="menu"
         aria-expanded={open}
-        onclick={toggle}><TriggerIcon class="size-4" /></IconButton>
+        onclick={toggle}>
+        <TriggerIcon class="size-4" />
+    </IconButton>
 </span>
 
 {#if open}

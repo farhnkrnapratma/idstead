@@ -162,7 +162,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 absoluteStrokeWidth={true} />
             <time
                 datetime={safeDate}
-                class="sm:hidden">{formatAbsoluteDate(safeDate, 'short')}</time>
+                class="sm:hidden">
+                {formatAbsoluteDate(safeDate, 'short')}
+            </time>
             <RelativeTime
                 date={safeDate}
                 tag="time"
@@ -178,11 +180,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                 absoluteStrokeWidth={true} />
             <time
                 datetime={safeUpdatedAt}
-                class="sm:hidden">{formatAbsoluteDate(safeUpdatedAt, 'short')}</time>
-            <span class="hidden sm:inline"
-                >Updated <RelativeTime
+                class="sm:hidden">
+                {formatAbsoluteDate(safeUpdatedAt, 'short')}
+            </time>
+            <span class="hidden sm:inline">
+                Updated <RelativeTime
                     date={safeUpdatedAt}
-                    tag="time" /></span>
+                    tag="time" />
+            </span>
         </span>
     {:else if part === 'readingTime'}
         <span

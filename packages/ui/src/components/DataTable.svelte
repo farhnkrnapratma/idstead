@@ -89,7 +89,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#if title && meta}
                 <span
                     class="text-fg-muted"
-                    aria-hidden="true">·</span>
+                    aria-hidden="true">
+                    ·
+                </span>
             {/if}
             {#if meta}{@render meta()}{/if}
             {#if header}{@render header()}{/if}
@@ -128,8 +130,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                     col.class
                                 )}>
                                 {#if col.header}{col.header}{:else if col.srHeader}<span
-                                        class="sr-only">{col.srHeader}</span
-                                    >{/if}
+                                        class="sr-only">
+                                        {col.srHeader}
+                                    </span>{/if}
                             </th>
                         {/each}
                     </tr>

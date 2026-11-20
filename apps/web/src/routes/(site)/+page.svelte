@@ -150,7 +150,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         variant="accent"
         href="/projects?tag={encodeURIComponent(tag)}"
         aria-label="Show projects tagged {decodeHtmlEntities(tag)}"
-        class="font-mono hover:bg-accent/15">{decodeHtmlEntities(tag)}</Tag>
+        class="font-mono hover:bg-accent/15">
+        {decodeHtmlEntities(tag)}
+    </Tag>
 {/snippet}
 
 <PageMain variant="site">

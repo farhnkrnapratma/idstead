@@ -213,6 +213,8 @@ SPDX-License-Identifier: AGPL-3.0-only
             htmlType="submit"
             size="md"
             isLoading={saving}
-            disabled={saving || loading || !!loadError}>Save</Button>
+            disabled={saving || loading || !!loadError}>
+            Save
+        </Button>
     {/snippet}
 </FormSection>

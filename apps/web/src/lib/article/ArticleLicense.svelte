@@ -43,8 +43,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                     target="_blank"
                     rel="license noopener noreferrer"
                     title={license.name}
-                    class={linkClass}>{license.label}</a
-                >.
+                    class={linkClass}>
+                    {license.label}
+                </a>.
             </p>
         {:else}
             <p>All rights reserved{exception}.</p>

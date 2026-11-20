@@ -826,8 +826,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         {:else if key === 'author'}
                             {item.author}
                         {:else if key === 'reason'}
-                            <span title={reportReasonLabel(item.reason ?? '')}
-                                >{reportReasonLabel(item.reason ?? '')}</span>
+                            <span title={reportReasonLabel(item.reason ?? '')}>
+                                {reportReasonLabel(item.reason ?? '')}
+                            </span>
                         {:else if key === 'score'}
                             {majorityPercent(item.helpful ?? 0, item.unhelpful ?? 0)}
                         {:else if key === 'total'}
@@ -870,8 +871,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {#if detail.loading && !detail.data}<LoadingState label="Loading details…" />
                 {:else if detail.data}
                     {#if detail.data.savedNotification?.report_status === 'resolved'}
-                        <Card density="compact"
-                            ><h2 class="mb-2 type-card-title">Resolved report · Saved context</h2>
+                        <Card density="compact">
+                            <h2 class="mb-2 type-card-title">Resolved report · Saved context</h2>
                             <ActivityRow
                                 item={detail.data.savedNotification}
                                 detail />
@@ -882,7 +883,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <p
                                 class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-fg-secondary">
                                 {detail.data.savedNotification.meta?.details}
-                            </p></Card>
+                            </p>
+                        </Card>
                     {/if}
                     {#if area === 'reports' && detail.data.context}
                         {@const commenter = detail.data.context.author || 'Anonymous'}
@@ -896,8 +898,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         class="inline-block max-w-full rounded-md border border-line-subtle bg-surface px-2 py-1 text-left">
                                         <div class="flex min-h-6.5 items-center">
                                             <span
-                                                class="truncate text-xs leading-none font-semibold text-fg"
-                                                >{commenter}</span>
+                                                class="truncate text-xs leading-none font-semibold text-fg">
+                                                {commenter}
+                                            </span>
                                         </div>
                                         <div
                                             class="mt-0.5 type-body wrap-break-word whitespace-pre-wrap text-fg-secondary">
@@ -914,22 +917,26 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 'report',
                                                 undefined,
                                                 formatCount
-                                            )}</span>
+                                            )}
+                                        </span>
                                         {#if detail.data.context.commentedAt}
-                                            <span class="inline-flex items-center gap-1"
-                                                ><Calendar
+                                            <span class="inline-flex items-center gap-1">
+                                                <Calendar
                                                     class="size-3 text-fg-muted"
                                                     aria-hidden="true" />
-                                                {date(detail.data.context.commentedAt)}</span>
+                                                {date(detail.data.context.commentedAt)}
+                                            </span>
                                         {/if}
-                                        <span class="inline-flex items-center gap-1"
-                                            ><Hash
+                                        <span class="inline-flex items-center gap-1">
+                                            <Hash
                                                 class="size-3 text-fg-muted"
                                                 aria-hidden="true" />
-                                            {detail.data.context.id}</span>
+                                            {detail.data.context.id}
+                                        </span>
                                     </div>
                                 </div>
-                            </div></Card>
+                            </div>
+                        </Card>
                     {:else if area === 'feedback'}
                         <Card density="compact">
                             <CategoryTrendChart
@@ -950,8 +957,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
                         {@render eventsHistory()}
                     {:else if area === 'notifications'}
-                        <Card density="compact"
-                            ><h2 class="type-card-title">
+                        <Card density="compact">
+                            <h2 class="type-card-title">
                                 {detail.data.items[0]?.title
                                     ?? (detailTitle || 'Notification group')}
                             </h2>
@@ -967,8 +974,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 <Button
                                     size="sm"
                                     disabled={busy}
-                                    onclick={() => groupAction()}>Mark group as read</Button
-                                ><Button
+                                    onclick={() => groupAction()}>
+                                    Mark group as read
+                                </Button><Button
                                     size="sm"
                                     type="ghost"
                                     disabled={busy}
@@ -980,8 +988,11 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             count: detail.data!.total ?? groupCount ?? 0
                                         };
                                         confirmation = 'group';
-                                    }}>Delete group</Button>
-                            </div></Card>
+                                    }}>
+                                    Delete group
+                                </Button>
+                            </div>
+                        </Card>
                     {/if}
                     {#if area !== 'feedback'}{@render eventsHistory()}{/if}
                 {/if}
@@ -991,8 +1002,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 </Section>
 
 {#snippet notificationActions()}
-    <span class="ml-auto text-xs leading-5 text-fg-muted"
-        >{pluralize(inbox.unreadCount, 'unread notification', undefined, formatCount)}</span>
+    <span class="ml-auto text-xs leading-5 text-fg-muted">
+        {pluralize(inbox.unreadCount, 'unread notification', undefined, formatCount)}
+    </span>
     <Button
         size="xs"
         type="ghost"
@@ -1034,8 +1046,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         {#if params.has('focus') && area !== 'reports'}<Button
                 size="sm"
                 type="outline"
-                onclick={() => updateDetail({})}>Showing one event · Show all</Button
-            >{/if}
+                onclick={() => updateDetail({})}>
+                Showing one event · Show all
+            </Button>{/if}
         {@const empty = !detail.data.items.length}
         {#if area === 'notifications'}
             <DataTable
@@ -1066,16 +1079,17 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 withAuthor />
                             {#if event.meta?.comment || event.meta?.details}
                                 <details>
-                                    <summary class="cursor-pointer text-fg-accent"
-                                        >View saved context</summary>
+                                    <summary class="cursor-pointer text-fg-accent">
+                                        View saved context
+                                    </summary>
                                     {#if event.meta.comment}<span
-                                            class="mt-1 block wrap-break-word whitespace-pre-wrap"
-                                            >{event.meta.comment}</span
-                                        >{/if}
+                                            class="mt-1 block wrap-break-word whitespace-pre-wrap">
+                                            {event.meta.comment}
+                                        </span>{/if}
                                     {#if event.meta.details}<span
-                                            class="mt-1 block wrap-break-word whitespace-pre-wrap text-fg-muted"
-                                            >{event.meta.details}</span
-                                        >{/if}
+                                            class="mt-1 block wrap-break-word whitespace-pre-wrap text-fg-muted">
+                                            {event.meta.details}
+                                        </span>{/if}
                                 </details>
                             {/if}
                         </span>
@@ -1162,8 +1176,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                     {:else if key === 'details'}
                         <span
                             title={item.details || undefined}
-                            class={item.details ? undefined : 'text-fg-muted italic'}
-                            >{item.details || 'No additional details provided.'}</span>
+                            class={item.details ? undefined : 'text-fg-muted italic'}>
+                            {item.details || 'No additional details provided.'}
+                        </span>
                     {:else}
                         <span class="whitespace-nowrap">{date(item.latest)}</span>
                     {/if}

@@ -123,13 +123,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                 class={chunk.match ?
                                                     'font-semibold text-fg-accent'
-                                                :   'font-medium text-fg'}>{chunk.text}</span
-                                            >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
+                                                :   'font-medium text-fg'}>
+                                                {chunk.text}
+                                            </span>{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                     class={chunk.match ?
                                                         'font-semibold text-fg-accent'
-                                                    :   'font-normal text-fg-muted/60'}
-                                                    >{chunk.text}</span
-                                                >{/each}{/if}
+                                                    :   'font-normal text-fg-muted/60'}>
+                                                    {chunk.text}
+                                                </span>{/each}{/if}
                                     </span>
                                     {#if historyDisplay.subtitle}
                                         <span class="text-2xs text-fg-muted/40 select-none">—</span>
@@ -137,8 +138,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                             {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                 {#if chunk.match}
-                                                    <span class="font-semibold text-fg-accent"
-                                                        >{chunk.text}</span>
+                                                    <span class="font-semibold text-fg-accent">
+                                                        {chunk.text}
+                                                    </span>
                                                 {:else}
                                                     <span>{chunk.text}</span>
                                                 {/if}
@@ -154,7 +156,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             <span
                                                 class={chunk.match ?
                                                     'font-semibold text-fg-accent'
-                                                :   ''}>{chunk.text}</span>
+                                                :   ''}>
+                                                {chunk.text}
+                                            </span>
                                         {/each}
                                     </span>
                                     {#if historyDisplay.subtitle}
@@ -163,8 +167,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                             {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                 {#if chunk.match}
-                                                    <span class="font-semibold text-fg-accent"
-                                                        >{chunk.text}</span>
+                                                    <span class="font-semibold text-fg-accent">
+                                                        {chunk.text}
+                                                    </span>
                                                 {:else}
                                                     <span>{chunk.text}</span>
                                                 {/if}
@@ -316,23 +321,26 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                     class={chunk.match ?
                                                         'font-semibold text-fg-accent'
-                                                    :   'font-medium text-fg'}>{chunk.text}</span
-                                                >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
+                                                    :   'font-medium text-fg'}>
+                                                    {chunk.text}
+                                                </span>{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                         class={chunk.match ?
                                                             'font-semibold text-fg-accent'
-                                                        :   'font-normal text-fg-muted/60'}
-                                                        >{chunk.text}</span
-                                                    >{/each}{/if}
+                                                        :   'font-normal text-fg-muted/60'}>
+                                                        {chunk.text}
+                                                    </span>{/each}{/if}
                                         </span>
                                         {#if item.subtitle}
-                                            <span class="text-2xs text-fg-muted/40 select-none"
-                                                >—</span>
+                                            <span class="text-2xs text-fg-muted/40 select-none">
+                                                —
+                                            </span>
                                             <span
                                                 class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                 {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                     {#if chunk.match}
-                                                        <span class="font-semibold text-fg-accent"
-                                                            >{chunk.text}</span>
+                                                        <span class="font-semibold text-fg-accent">
+                                                            {chunk.text}
+                                                        </span>
                                                     {:else}
                                                         <span>{chunk.text}</span>
                                                     {/if}
@@ -348,18 +356,22 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 <span
                                                     class={chunk.match ?
                                                         'font-semibold text-fg-accent'
-                                                    :   ''}>{chunk.text}</span>
+                                                    :   ''}>
+                                                    {chunk.text}
+                                                </span>
                                             {/each}
                                         </span>
                                         {#if item.subtitle}
-                                            <span class="text-2xs text-fg-muted/40 select-none"
-                                                >—</span>
+                                            <span class="text-2xs text-fg-muted/40 select-none">
+                                                —
+                                            </span>
                                             <span
                                                 class="min-w-0 flex-1 truncate font-sans text-2xs text-fg-muted">
                                                 {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                     {#if chunk.match}
-                                                        <span class="font-semibold text-fg-accent"
-                                                            >{chunk.text}</span>
+                                                        <span class="font-semibold text-fg-accent">
+                                                            {chunk.text}
+                                                        </span>
                                                     {:else}
                                                         <span>{chunk.text}</span>
                                                     {/if}

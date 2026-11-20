@@ -27,8 +27,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             href={credit.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            class={linkClass}>{credit.author}</a
-        >{suffix}.
+            class={linkClass}>
+            {credit.author}
+        </a>{suffix}.
     </p>
 {:else}
     <p>Banner by {credit.author}{suffix}.</p>
