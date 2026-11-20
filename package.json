@@ -22,7 +22,7 @@
         "coverage": "bun tooling/coverage.ts",
         "prepare": "bun run --filter './apps/*' prepare; bash tooling/git-hooks/install.sh",
         "lint": "prettier --write . && eslint . && bun run lint:deprecated",
-        "lint:deprecated": "eslint --config eslint.deprecated.config.ts apps/*/src packages/*/src packages/mdrs/*/src",
+        "lint:deprecated": "NODE_OPTIONS=--max-old-space-size=6144 eslint --config eslint.deprecated.config.ts apps/*/src packages/*/src packages/mdrs/*/src",
         "lint:fix": "eslint . --fix",
         "fmt": "prettier --write .",
         "fmt:check": "prettier --check ."
