@@ -9,40 +9,38 @@ import {
     arrayVal,
     boolVal,
     defineValuesEqual,
-    jsToDefineValue,
     numberVal,
     objectVal,
     stringVal,
     toDisplayString,
-    walkPath
+    walkPath,
+    type DefineValue
 } from '../packages/mdrs/core/src/define/values';
+
+function jsToDefineValue(x: unknown): DefineValue {
+    if (typeof x === 'number') return numberVal(x);
+    if (typeof x === 'boolean') return boolVal(x);
+    if (Array.isArray(x)) return arrayVal(x.map(jsToDefineValue));
+    if (x && typeof x === 'object')
+        return objectVal(
+            Object.fromEntries(Object.entries(x).map(([k, v]) => [k, jsToDefineValue(v)]))
+        );
+    return stringVal(String(x));
+}
 
 const prop = (name: string): PathSegment => ({ kind: 'prop', name });
 const index = (value: number | string): PathSegment => ({ kind: 'index', value });
-
-describe('jsToDefineValue', () => {
-    test('maps JavaScript values onto define values', () => {
-        expect(jsToDefineValue(null)).toEqual(stringVal(''));
-        expect(jsToDefineValue(undefined)).toEqual(stringVal(''));
-        expect(jsToDefineValue('a')).toEqual(stringVal('a'));
-        expect(jsToDefineValue(3)).toEqual(numberVal(3));
-        expect(jsToDefineValue(true)).toEqual(boolVal(true));
-        expect(jsToDefineValue([1, 'a'])).toEqual(arrayVal([numberVal(1), stringVal('a')]));
-        expect(jsToDefineValue({ k: [false] })).toEqual(
-            objectVal({ k: arrayVal([boolVal(false)]) })
-        );
-        expect(jsToDefineValue(10n)).toEqual(stringVal('10'));
-    });
-});
 
 describe('toDisplayString', () => {
     test('prints scalars plainly and containers as JSON', () => {
         expect(toDisplayString(stringVal('x'))).toBe('x');
         expect(toDisplayString(numberVal(2))).toBe('2');
         expect(toDisplayString(boolVal(false))).toBe('false');
-        expect(toDisplayString(jsToDefineValue({ a: [1, { b: true }] }))).toBe(
-            '{"a":[1,{"b":true}]}'
-        );
+        expect(
+            toDisplayString(
+                objectVal({ a: arrayVal([numberVal(1), objectVal({ b: boolVal(true) })]) })
+            )
+        ).toBe('{"a":[1,{"b":true}]}');
     });
 });
 

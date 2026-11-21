@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { expect, test } from 'bun:test';
-import { unavailableResolvers } from '@mdrs/core';
+import { unavailableFetcher } from '@mdrs/core';
 import { evaluateDefineBlock } from '../packages/mdrs/core/src/define/block.ts';
 import { createD1ActivityLog } from '../packages/data/src/d1/activity.ts';
 
 test('reports index expressions that are neither numbers nor strings, and unclosed brackets', async () => {
-    const badIndex = await evaluateDefineBlock('v: a[b]', unavailableResolvers());
+    const badIndex = await evaluateDefineBlock('v: a[b]', unavailableFetcher());
     expect(badIndex.errors.map(error => error.message).join(' ')).toContain(
         'Expected a number or string inside [...]'
     );
-    const unclosed = await evaluateDefineBlock('v: a[1 2]', unavailableResolvers());
+    const unclosed = await evaluateDefineBlock('v: a[1 2]', unavailableFetcher());
     expect(unclosed.errors.map(error => error.message).join(' ')).toContain("Expected ']'");
 });
 

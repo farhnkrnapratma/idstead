@@ -9,7 +9,8 @@ import {
     restoreAllPlaceholders
 } from '../placeholders';
 import type { DefineErrorInfo } from './errors';
-import { type ApiRegistry, evaluateExpr } from './evaluate';
+import { evaluateExpr } from './evaluate';
+import type { JsonFetcher } from './fetcher';
 import { findExpressionEnd, tokenize } from './lexer';
 import { Parser } from './parser';
 import { type DefineValue, toDisplayString } from './values';
@@ -67,14 +68,14 @@ export function renderDefineErrorMarker(message: string): string {
 async function interpolateText(
     text: string,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry
+    fetcher: JsonFetcher
 ): Promise<{ output: string; errors: DefineErrorInfo[] }> {
     const tokens = scanInterpolationTokens(text);
     const errors: DefineErrorInfo[] = [];
     let output = text;
     for (let i = tokens.length - 1; i >= 0; i--) {
         const token = tokens[i];
-        const result = await evaluateInterpolationToken(token, scope, apiRegistry);
+        const result = await evaluateInterpolationToken(token, scope, fetcher);
         errors.unshift(...result.errors);
         output = output.slice(0, token.start) + result.replacement + output.slice(token.end);
     }
@@ -84,11 +85,11 @@ async function interpolateText(
 async function evaluateInterpolationToken(
     token: InterpolationToken,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry
+    fetcher: JsonFetcher
 ): Promise<{ replacement: string; errors: DefineErrorInfo[] }> {
     try {
         const expr = new Parser(tokenize(token.exprSource)).parseCompleteExpression();
-        const value = await evaluateExpr(expr, { scope, allowThis: false, apiRegistry });
+        const value = await evaluateExpr(expr, { scope, allowThis: false, fetcher });
         return { replacement: toDisplayString(value), errors: [] };
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -99,7 +100,7 @@ async function evaluateInterpolationToken(
 export async function interpolateBody(
     bodyMarkdown: string,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry
+    fetcher: JsonFetcher
 ): Promise<{ output: string; errors: DefineErrorInfo[] }> {
     if (!bodyMarkdown) return { output: '', errors: [] };
 
@@ -107,7 +108,7 @@ export async function interpolateBody(
     let text = protectFencedCode(bodyMarkdown, 'FENCED_CODE', codePlaceholders);
     text = protectInlineCode(text, 'INLINE_CODE', codePlaceholders);
 
-    const { output, errors } = await interpolateText(text, scope, apiRegistry);
+    const { output, errors } = await interpolateText(text, scope, fetcher);
     return { output: restoreAllPlaceholders(output, codePlaceholders), errors };
 }
 
@@ -132,7 +133,7 @@ export async function resolveProtectedInterpolationTokens(
     text: string,
     store: Map<string, string>,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry
+    fetcher: JsonFetcher
 ): Promise<{ output: string; errors: DefineErrorInfo[] }> {
     let result = text;
     const errors: DefineErrorInfo[] = [];
@@ -141,7 +142,7 @@ export async function resolveProtectedInterpolationTokens(
         const tokens = scanInterpolationTokens(originalSpan);
         let replacement = originalSpan;
         if (tokens.length === 1 && tokens[0].start === 0) {
-            const result = await evaluateInterpolationToken(tokens[0], scope, apiRegistry);
+            const result = await evaluateInterpolationToken(tokens[0], scope, fetcher);
             replacement = result.replacement;
             errors.push(...result.errors);
         }

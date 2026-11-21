@@ -73,6 +73,7 @@ for (const [name, target] of [
     ['headingActions', 'tooling/headingActions.test.ts'],
     ['publicResumeDocument', 'tooling/publicResumeDocument.test.ts'],
     ['mdrsValidation', 'tooling/mdrsValidation.test.ts'],
+    ['mdrsPreview', 'tooling/mdrsPreview.test.ts'],
     ['dataExportRoute', 'tooling/dataExportRoute.test.ts'],
     ['oidcAdmin', 'tooling/oidcAdmin.test.ts'],
     ['webHome', 'tooling/webHome.test.ts'],

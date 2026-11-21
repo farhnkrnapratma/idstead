@@ -1,13 +1,13 @@
 # Conditionals
 
-Conditionals show or hide parts of a document depending on a boolean expression. Block conditionals choose whole paragraphs, lists or headings; inline conditionals choose text inside a line. Both use the expression language of [Variables](013-variables.md) and can read [live data](014-live-data.md).
+Conditionals show or hide parts of a document depending on a boolean expression. Block conditionals choose whole paragraphs, lists or headings; inline conditionals choose text inside a line. Both use the expression language of [Variables](013-variables.md) and can call [`get()`](014-live-data.md).
 
 ## Block conditionals: `:::if`
 
 ```mdrs
-:::if api.v1.analytics.enabled
-This site measures visits with ${api.v1.analytics.name}.
-:::elif api.v1.analytics.provider == "none"
+:::if get('https://api.my-site.example/v1/analytics', '.enabled')
+This site measures visits with ${get('https://api.my-site.example/v1/analytics', '.name')}.
+:::elif get('https://api.my-site.example/v1/analytics', '.provider') == "none"
 This site uses no analytics.
 :::else
 Analytics are being set up.
@@ -16,9 +16,9 @@ Analytics are being set up.
 
 - `:::if`, `:::elif`, `:::else` and `:::endif` each stand on their own line, indented by at most three spaces. The condition is the rest of the `:::if` or `:::elif` line.
 - The first branch whose condition is `true` renders; `:::else` renders when none is. `:::elif` and `:::else` are optional, and `:::else` comes last.
-- A condition must evaluate to a boolean. `:::if api.v1.blog.length` is an error; write `:::if api.v1.blog.length > 0`.
+- A condition must evaluate to a boolean. `:::if count` is an error when `count` is a number; write `:::if count > 0`.
 - Blocks nest up to 16 levels deep.
-- Block conditionals work without a `:::define` block, so a page can test `api.v1.*` without declaring variables. With a `:::define` block, conditions can also use its variables.
+- Block conditionals work without a `:::define` block, so a page can test `get()` values without declaring variables. With a `:::define` block, conditions can also use its variables.
 - The branches can hold any Markdown and MDRS, including directives, code blocks and `${…}`.
 
 ```mdrs
@@ -27,7 +27,7 @@ cookies: true
 :::
 
 :::if cookies
-:::if api.v1.analytics.provider == 'ga4'
+:::if get('https://api.my-site.example/v1/analytics', '.provider') == 'ga4'
 Google Analytics sets cookies only after you agree.
 :::else
 Cookies are set only after you agree.
@@ -59,14 +59,16 @@ For a short value, the ternary operator is often enough: `${stable ? "stable" : 
 
 ```mdrs
 :::define
-on: api.v1.analytics.enabled
+on: get('https://api.my-site.example/v1/analytics', '.enabled')
+name: get('https://api.my-site.example/v1/analytics', '.name')
+provider: get('https://api.my-site.example/v1/analytics', '.provider')
 :::
 
-Analytics: ${if on}**on** (${api.v1.analytics.name})${else}off${endif}.
+Analytics: ${if on}**on** (${name})${else}off${endif}.
 
-This site ${if api.v1.analytics.cookies}sets cookies only after you agree${else}sets no cookies${endif}.
+This site ${if get('https://api.my-site.example/v1/analytics', '.cookies')}sets cookies only after you agree${else}sets no cookies${endif}.
 
-Provider: ${if api.v1.analytics.provider == "ga4"}Google Analytics${elif api.v1.analytics.provider == "umami"}Umami${else}none${endif}.
+Provider: ${if provider == "ga4"}Google Analytics${elif provider == "umami"}Umami${else}none${endif}.
 ```
 
 ## What is not interpreted
@@ -77,7 +79,7 @@ Provider: ${if api.v1.analytics.provider == "ga4"}Google Analytics${elif api.v1.
 
 ## Rendering and exports
 
-Conditionals run on the server after the `:::define` block is evaluated and before interpolation and directives. The page, its `.md` and `.txt` exports and the admin preview all show the same branch. A document whose conditions read `api.*` is live data: its render refreshes like any other live-data page ([Live data](014-live-data.md)).
+Conditionals run on the server after the `:::define` block is evaluated and before interpolation and directives. The page, its `.md` and `.txt` exports and the admin preview all show the same branch. A document whose conditions call `get()` is live data: its render refreshes like any other live-data page ([Live data](014-live-data.md)).
 
 ## Errors
 

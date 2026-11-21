@@ -19,7 +19,7 @@ import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAsse
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@mdrs/core';
-import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { fetchJson } from '#lib/server/mdrsFetch.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
@@ -45,7 +45,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const stores = service.adminPosts;
     try {
         if (input.kind === 'save') {
-            const validation = await validateDefineForSave(input.markdown, mdrsResolvers(service));
+            const validation = await validateDefineForSave(input.markdown, fetchJson);
             if (!validation.ok)
                 return apiError(
                     422,
@@ -89,7 +89,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 render = JSON.stringify(
                     await buildPostRender(
                         input.markdown,
-                        mdrsResolvers(service),
+                        fetchJson,
                         siteRenderOptions(configuredSiteUrl(platform))
                     )
                 );

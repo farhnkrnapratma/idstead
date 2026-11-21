@@ -10,7 +10,7 @@ import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
-import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { fetchJson } from '#lib/server/mdrsFetch.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 import { writesFrozen } from '#lib/server/writeFreeze.ts';
 
@@ -64,7 +64,7 @@ async function refreshRenders(env: Env) {
     const service = dataStores({ env }).service;
     const result = await refreshPostRenders(
         service.renders,
-        mdrsResolvers(service),
+        fetchJson,
         siteRenderOptions(env.PUBLIC_SITE_URL)
     );
     if (result.failed)

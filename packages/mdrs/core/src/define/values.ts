@@ -30,22 +30,6 @@ export function objectVal(v: Record<string, DefineValue>): DefineValue {
     return { type: 'object', value: v };
 }
 
-export function jsToDefineValue(x: unknown): DefineValue {
-    if (x === null || x === undefined) return stringVal('');
-    if (typeof x === 'string') return stringVal(x);
-    if (typeof x === 'number') return numberVal(x);
-    if (typeof x === 'boolean') return boolVal(x);
-    if (Array.isArray(x)) return arrayVal(x.map(jsToDefineValue));
-    if (typeof x === 'object') {
-        const out: Record<string, DefineValue> = {};
-        for (const [k, v] of Object.entries(x as Record<string, unknown>)) {
-            out[k] = jsToDefineValue(v);
-        }
-        return objectVal(out);
-    }
-    return stringVal(String(x));
-}
-
 function defineValueToJs(v: DefineValue): unknown {
     if (v.type === 'array') return (v.value as DefineValue[]).map(defineValueToJs);
     if (v.type === 'object') {

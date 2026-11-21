@@ -7,7 +7,7 @@ import { prepareMarkdownPage } from '@mdrs/core';
 import type { LegalSlug } from '@idstead/domain/legal.ts';
 import type { LegalPageData } from '../legalDefaults';
 import { siteRenderOptions } from '../mdrsOptions';
-import { mdrsResolvers } from './mdrsData';
+import { fetchJson } from './mdrsFetch';
 import { publicRepositories } from './repositories';
 
 export type { LegalPageData };
@@ -26,7 +26,7 @@ export async function loadLegalPage(slug: LegalSlug, origin: string) {
     if (!pageData.content.trim()) error(404, 'Not found');
     const { html, headings } = await prepareMarkdownPage(
         pageData.content,
-        mdrsResolvers(publicRepositories()),
+        fetchJson,
         siteRenderOptions(origin)
     );
     return { pageData, html, headings };

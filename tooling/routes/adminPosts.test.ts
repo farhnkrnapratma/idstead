@@ -69,7 +69,6 @@ slot.syncPostAssets = async (options: unknown) => {
     if (state.syncError) throw new Error('sync');
     state.synced.push(options);
 };
-mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
 more.buildPostRender = async () => {
     if (state.renderError) throw new Error('render');
     return { html: '<p>x</p>' };

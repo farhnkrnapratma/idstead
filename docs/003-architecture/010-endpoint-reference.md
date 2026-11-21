@@ -124,7 +124,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/projects` | POST | same-origin + `requireAdminAuth`; `{pinned, excluded}` repository names for the projects section |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/mdrs-data` | POST | same-origin + `requireAdminAuth`; returns the `author`, `blog`, `analytics` or one `post` live-data tree for the editor preview |
+| `/api/internal/admin/mdrs-get` | POST | same-origin + `requireAdminAuth`; fetches one `get()` URL (`{ url }`, https only) with `fetchJson` and returns `{ data }` for the editor preview; `MDRS_GET_URL_INVALID` (400), `MDRS_GET_FAILED` (502) |
 | `/api/internal/admin/site-settings/analytics` | GET, POST | `blogAdmin`; reads or saves the analytics provider, logs `settings.analytics` ([Analytics and consent](013-analytics-and-consent.md)) |
 | `/api/internal/admin/site-settings/content-license` | GET, POST | `blogAdmin`; reads or saves the site content license, logs `settings.contentLicense` ([Content licensing](014-content-licensing.md)) |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |

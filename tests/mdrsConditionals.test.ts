@@ -4,23 +4,25 @@
 
 import { describe, expect, test } from 'bun:test';
 import { renderMarkdown, resolveDefines } from '../packages/mdrs/core/src/markdown';
-import {
-    jsToDefineValue,
-    validateDefineForSave,
-    walkPath,
-    type ApiRegistry
-} from '../packages/mdrs/core/src/define';
+import { validateDefineForSave, type JsonFetcher } from '../packages/mdrs/core/src/define';
 import { usesLiveData } from '../packages/mdrs/core/src/liveData';
 
-const analytics = jsToDefineValue({
+const ANALYTICS_URL = 'https://api.example.com/v1/analytics';
+
+const analytics = {
     enabled: true,
     provider: 'umami',
     name: 'Umami',
     cookies: false,
     consent: false
-});
+};
 
-const resolvers: ApiRegistry = { analytics: async path => walkPath(analytics, path) };
+const resolvers: JsonFetcher = async url => {
+    if (url !== ANALYTICS_URL) throw new Error(`unexpected ${url}`);
+    return analytics;
+};
+
+const a = (field: string) => `get('${ANALYTICS_URL}', '.${field}')`;
 
 const render = (markdown: string) => renderMarkdown(markdown, resolvers);
 
@@ -38,7 +40,7 @@ describe('MDRS strings', () => {
     test('double quotes expand $name and ${expr}', async () => {
         expect(await value('"Hai $nama"', "nama: 'Ada'\n")).toBe('Hai Ada');
         expect(await value('"${1 + 2} items"')).toBe('3 items');
-        expect(await value('"via ${api.v1.analytics.name}"')).toBe('via Umami');
+        expect(await value(`"via \${${a('name')}}"`)).toBe('via Umami');
         expect(await value('"say \\"hi\\" to `you`"')).toBe('say "hi" to `you`');
     });
 
@@ -61,7 +63,7 @@ describe('MDRS strings', () => {
 
 describe('MDRS ternary', () => {
     test('picks a branch from a boolean', async () => {
-        expect(await value('api.v1.analytics.enabled ? "on" : "off"')).toBe('on');
+        expect(await value(`${a('enabled')} ? "on" : "off"`)).toBe('on');
         expect(await value('false ? 1 : true ? 2 : 3')).toBe('2');
     });
 
@@ -77,10 +79,10 @@ describe('MDRS ternary', () => {
 
 describe(':::if blocks', () => {
     const policy = [
-        ':::if api.v1.analytics.enabled',
-        ':::if api.v1.analytics.provider == "ga4"',
+        `:::if ${a('enabled')}`,
+        `:::if ${a('provider')} == "ga4"`,
         'We use Google Analytics.',
-        ":::elif api.v1.analytics.provider == 'umami'",
+        `:::elif ${a('provider')} == 'umami'`,
         'We use Umami, without cookies.',
         ':::endif',
         ':::else',
@@ -130,32 +132,32 @@ describe(':::if blocks', () => {
         const stray = await validateDefineForSave('x\n:::endif\n', resolvers);
         expect(stray.errors[0].message).toBe("':::endif' has no matching :::if");
         const branch = await validateDefineForSave(
-            ':::if true\nok\n:::elif api.v1.nothing\nno\n:::endif',
+            `:::if true\nok\n:::elif ${a('nothing')}\nno\n:::endif`,
             resolvers
         );
         expect(branch.ok).toBe(false);
     });
 
-    test('conditions that read api.* make the document live', () => {
-        expect(usesLiveData(':::if api.v1.analytics.enabled\nx\n:::endif')).toBe(true);
+    test('conditions that call get() make the document live', () => {
+        expect(usesLiveData(`:::if ${a('enabled')}\nx\n:::endif`)).toBe(true);
         expect(usesLiveData(':::if true\nx\n:::endif')).toBe(false);
     });
 });
 
 describe('inline ${if}', () => {
-    const defines = ':::define\na: api.v1.analytics\n:::\n\n';
+    const defines = `:::define\nenabled: ${a('enabled')}\nname: ${a('name')}\nprovider: ${a('provider')}\ncookies: ${a('cookies')}\n:::\n\n`;
 
     test('chooses a branch inside a sentence, with Markdown and variables', async () => {
         expect(
             await resolveDefines(
-                `${defines}Analytics: \${if a.enabled}**on** (\${a.name})\${else}off\${endif}.`,
+                `${defines}Analytics: \${if enabled}**on** (\${name})\${else}off\${endif}.`,
                 resolvers
             )
         ).toBe('Analytics: **on** (Umami).');
     });
 
     test('supports elif and nesting', async () => {
-        const source = `${defines}\${if a.provider == "ga4"}GA\${elif a.provider == 'umami'}U\${if a.cookies}+c\${endif}\${else}-\${endif}`;
+        const source = `${defines}\${if provider == "ga4"}GA\${elif provider == 'umami'}U\${if cookies}+c\${endif}\${else}-\${endif}`;
         expect(await resolveDefines(source, resolvers)).toBe('U');
     });
 
@@ -171,12 +173,26 @@ describe('inline ${if}', () => {
     });
 });
 
-describe('api.v1 resources', () => {
-    test('an unknown resource lists the registered ones', async () => {
-        const { errors } = await validateDefineForSave(
-            ':::define\nv: api.v1.author\n:::\n',
-            resolvers
+describe('get()', () => {
+    test('a boolean drives an inline condition directly', async () => {
+        expect(
+            await resolveDefines(
+                `:::define\nn: 1\n:::\n\n\${if ${a('cookies')}}cookies\${else}none\${endif}`,
+                resolvers
+            )
+        ).toBe('none');
+    });
+
+    test('fetches each URL once per document', async () => {
+        let calls = 0;
+        const counting: JsonFetcher = async url => {
+            calls++;
+            return resolvers(url);
+        };
+        await resolveDefines(
+            `:::define\nx: ${a('name')}\ny: ${a('provider')}\n:::\n\n:::if ${a('enabled')}\n\${x} \${y}\n:::endif`,
+            counting
         );
-        expect(errors[0].message).toBe("Unknown api.v1 resource 'author' (supported: analytics)");
+        expect(calls).toBe(1);
     });
 });

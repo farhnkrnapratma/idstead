@@ -4,7 +4,8 @@
 
 import { protectFencedCode, protectInlineCode, restoreAllPlaceholders } from '../placeholders';
 import { DefineError, type DefineErrorInfo } from './errors';
-import { type ApiRegistry, evaluateExpr } from './evaluate';
+import { evaluateExpr } from './evaluate';
+import type { JsonFetcher } from './fetcher';
 import { renderDefineErrorMarker, scanInterpolationTokens } from './interpolation';
 import { tokenize } from './lexer';
 import { Parser } from './parser';
@@ -19,7 +20,7 @@ export interface ConditionalOptions {
 
 interface Context {
     scope: Map<string, DefineValue>;
-    apiRegistry: ApiRegistry;
+    fetcher: JsonFetcher;
     mode: ConditionalMode;
     errors: DefineErrorInfo[];
 }
@@ -111,7 +112,7 @@ async function evaluateCondition(source: string, ctx: Context): Promise<boolean>
     const value = await evaluateExpr(expr, {
         scope: ctx.scope,
         allowThis: false,
-        apiRegistry: ctx.apiRegistry
+        fetcher: ctx.fetcher
     });
     if (value.type !== 'boolean') {
         throw new DefineError(`Expected a boolean condition, got a ${value.type}: ${source}`);
@@ -249,10 +250,10 @@ async function renderInline(nodes: InlineNode[], ctx: Context): Promise<string> 
 export async function resolveConditionals(
     markdown: string,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry,
+    fetcher: JsonFetcher,
     options: ConditionalOptions
 ): Promise<{ output: string; errors: DefineErrorInfo[] }> {
-    const ctx: Context = { scope, apiRegistry, mode: options.mode ?? 'render', errors: [] };
+    const ctx: Context = { scope, fetcher, mode: options.mode ?? 'render', errors: [] };
     const code = new Map<string, string>();
     let text = protectFencedCode(markdown, 'CONDITIONAL_FENCE', code);
     text = protectInlineCode(text, 'CONDITIONAL_CODE', code);

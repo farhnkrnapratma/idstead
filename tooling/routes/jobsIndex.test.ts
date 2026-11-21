@@ -47,7 +47,6 @@ slot.notifyNewPost = async (...args: unknown[]) => {
     if (state.notifyError) throw new Error('send');
     return state.notify;
 };
-mock.module('../../packages/lib/src/server/mdrsData.ts', () => ({ mdrsResolvers: () => ({}) }));
 mock.module('../../packages/lib/src/mdrsOptions.ts', () => ({ siteRenderOptions: () => ({}) }));
 
 const target = '../../apps/jobs/src/index.ts';

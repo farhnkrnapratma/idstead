@@ -6,6 +6,7 @@ import type {
     ArrayLit,
     Assignment,
     Expr,
+    GetCall,
     ObjectLit,
     PathSegment,
     Reference,
@@ -186,8 +187,22 @@ export class Parser {
             this.expect('RPAREN', "Expected ')'");
             return expr;
         }
+        if (tok.type === 'IDENT' && this.tokens[this.pos + 1]?.type === 'LPAREN')
+            return this.parseCall();
         if (tok.type === 'IDENT') return this.parseReferenceChain();
         throw new DefineError(`Unexpected token '${tok.value || tok.type}' at position ${tok.pos}`);
+    }
+
+    private parseCall(): GetCall {
+        const nameTok = this.advance();
+        if (nameTok.value !== 'get')
+            throw new DefineError(`Unknown function '${nameTok.value}' (supported: get)`);
+        this.advance();
+        const url = this.parseExpression();
+        this.expect('COMMA', "Expected ',' between the get() arguments");
+        const path = this.parseExpression();
+        this.expect('RPAREN', "Expected ')' after the get() arguments");
+        return { kind: 'get', url, path };
     }
 
     private templateLiteral(tok: Token): TemplateLit {
