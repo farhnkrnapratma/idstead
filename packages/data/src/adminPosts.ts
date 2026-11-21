@@ -93,7 +93,8 @@ export interface PostOperationRequest {
 }
 
 export type PostOperationPreparation =
-    { status: 'prepared'; operation: PostOperation } | { status: 'reused' };
+    | { status: 'prepared'; operation: PostOperation }
+    | { status: 'reused' };
 
 export interface PostOperationStore {
     prepare(request: PostOperationRequest): Promise<PostOperationPreparation>;

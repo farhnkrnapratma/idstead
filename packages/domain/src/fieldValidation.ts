@@ -89,9 +89,9 @@ export class FieldValidation {
         };
         try {
             const result = field.validate(field.value());
-            return result instanceof Promise ?
-                    result.then(apply, () => apply('Validation is unavailable. Please retry.'))
-                :   apply(result);
+            return result instanceof Promise
+                ? result.then(apply, () => apply('Validation is unavailable. Please retry.'))
+                : apply(result);
         } catch {
             return apply('Validation is unavailable. Please retry.');
         }
@@ -140,12 +140,12 @@ export class FieldValidation {
 export const requiredText =
     (label: string, max = Infinity) =>
     (value: string) =>
-        !value.trim() ? `${label} is required.`
-        : value.trim().length > max ? `${label} must be ${max} characters or less.`
-        : '';
+        !value.trim()
+            ? `${label} is required.`
+            : value.trim().length > max
+              ? `${label} must be ${max} characters or less.`
+              : '';
 
 export const emailError = (value: string) =>
-    requiredText('Email')(value)
-    || (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? '' : (
-        'Please enter a valid email address.'
-    ));
+    requiredText('Email')(value) ||
+    (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? '' : 'Please enter a valid email address.');

@@ -13,8 +13,9 @@ mock.module('$app/env/public', () => ({}));
 
 const { parseSigningKey } = await import('../packages/lib/src/server/oidc/keys.ts');
 const { resolveAuthorization } = await import('../packages/lib/src/server/oidc/authorize.ts');
-const { handleRevoke, handleTokenRequest, handleUserinfo, pkceChallenge } =
-    await import('../packages/lib/src/server/oidc/endpoints.ts');
+const { handleRevoke, handleTokenRequest, handleUserinfo, pkceChallenge } = await import(
+    '../packages/lib/src/server/oidc/endpoints.ts'
+);
 const { generateSigningKey } = await import('../tooling/oidc-key.ts');
 
 const ISSUER = 'https://example.com';

@@ -43,9 +43,9 @@ bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (-
 ## Everyday commands
 
 ```sh
-bun run check        # svelte-check (web, admin) + tsc (api, jobs, mdrs, tests/tooling/scripts)
-bun run lint         # prettier --write . && eslint .
-bun run fmt:check    # prettier --check .
+bun run check        # biome check + svelte-check (web, admin) + tsc (api, jobs, mdrs, tests/tooling/scripts)
+bun run lint         # biome lint
+bun run format       # biome format --write
 bun run test         # bun test tests
 bun run build        # build every app (SvelteKit builds + wrangler dry-run bundles)
 ```

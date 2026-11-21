@@ -48,7 +48,8 @@ export function redirectUriError(value: string): string | null {
 }
 
 export type ClientInput =
-    { ok: true; name: string; redirectUris: string[] } | { ok: false; message: string };
+    | { ok: true; name: string; redirectUris: string[] }
+    | { ok: false; message: string };
 
 export function parseClientInput(name: unknown, redirectUris: unknown): ClientInput {
     const cleanName = typeof name === 'string' ? name.trim() : '';

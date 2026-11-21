@@ -6,25 +6,24 @@ import type { AuthorSeed } from '../contracts/authorRepository.contract.ts';
 
 export function authorFetch(seed: AuthorSeed) {
     return (async (input: string | URL) =>
-        String(input) in seed.files ?
-            new Response(seed.files[String(input)])
-        :   new Response('missing', { status: 404 })) as unknown as typeof fetch;
+        String(input) in seed.files
+            ? new Response(seed.files[String(input)])
+            : new Response('missing', { status: 404 })) as unknown as typeof fetch;
 }
 
 export function d1AuthorRows(seed: AuthorSeed): Record<string, Record<string, unknown>[]> {
     const authorId = seed.profile.uuid;
     return {
-        db_identity_versions:
-            seed.profile.avatarVersion ?
-                [
-                    {
-                        id: seed.profile.avatarVersion,
-                        source: 'custom',
-                        avatar_source: 'custom',
-                        banner_source: 'custom'
-                    }
-                ]
-            :   [],
+        db_identity_versions: seed.profile.avatarVersion
+            ? [
+                  {
+                      id: seed.profile.avatarVersion,
+                      source: 'custom',
+                      avatar_source: 'custom',
+                      banner_source: 'custom'
+                  }
+              ]
+            : [],
         db_profiles: [
             {
                 id: authorId,

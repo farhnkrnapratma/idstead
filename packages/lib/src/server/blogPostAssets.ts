@@ -77,9 +77,9 @@ function assetPattern(cdnBase: string, homes: string[]) {
 }
 
 function siblings(kind: string, file: string) {
-    return kind === 'images' && file.endsWith('.avif') ?
-            [file, file.replace(/\.avif$/, '.webp')]
-        :   [file];
+    return kind === 'images' && file.endsWith('.avif')
+        ? [file, file.replace(/\.avif$/, '.webp')]
+        : [file];
 }
 
 export function referencedAssets(markdown: string, cdnBase: string, home: string) {

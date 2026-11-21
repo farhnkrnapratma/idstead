@@ -109,9 +109,9 @@ export async function checkLockout(
 ): Promise<LockoutResult> {
     const shared = await sharedCall(store, keys, salt, (s, hashed) => s.retryAfter(hashed));
     if (!shared.ok) return memoryLockout(keys);
-    return shared.data > 0 ?
-            { allowed: false, retryAfterSeconds: shared.data }
-        :   { allowed: true, retryAfterSeconds: 0 };
+    return shared.data > 0
+        ? { allowed: false, retryAfterSeconds: shared.data }
+        : { allowed: true, retryAfterSeconds: 0 };
 }
 
 export async function recordLockoutFailure(

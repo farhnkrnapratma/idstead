@@ -60,10 +60,8 @@ jobs:
                   key: bun-v1-{{ checksum "bun.lock" }}
                   paths:
                       - ~/.bun/install/cache
-            - run: bun run fmt:check
-            - run: bunx eslint .
-            - run: bun run lint:deprecated
-            - run: bun run check
+            - run: bunx biome ci
+            - run: bun run typecheck
             - run: bun run test
             - run: bun run build
             - run: bun audit --audit-level=high

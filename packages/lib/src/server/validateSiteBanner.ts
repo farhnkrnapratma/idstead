@@ -45,9 +45,9 @@ function parseMeta(value: unknown): IdentityMeta {
     if (source === 'custom' && (fingerprint === null || fingerprint === undefined))
         return { source, fingerprint: null };
     if (
-        source === 'generated'
-        && typeof fingerprint === 'string'
-        && /^[0-9a-f]{64}$/.test(fingerprint)
+        source === 'generated' &&
+        typeof fingerprint === 'string' &&
+        /^[0-9a-f]{64}$/.test(fingerprint)
     )
         return { source, fingerprint };
     throw new Error('Invalid image metadata.');

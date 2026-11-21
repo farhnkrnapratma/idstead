@@ -55,8 +55,9 @@ export async function resumeDocumentWithHash(
     if (hash.length < 64 && data.file_url) {
         try {
             const response = await fetchFn(`${data.file_url}.sha256`);
-            const match =
-                response.ok ? (await response.text()).trim().match(/^[a-fA-F0-9]{64}/) : null;
+            const match = response.ok
+                ? (await response.text()).trim().match(/^[a-fA-F0-9]{64}/)
+                : null;
             if (match) hash = match[0];
         } catch {}
     }

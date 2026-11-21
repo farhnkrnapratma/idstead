@@ -40,10 +40,10 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
             const targetId =
                 target.type === 'article' ? sourceRecord(target.post.source).postId : target.page;
             if (
-                !UUID.test(feedback.operationId)
-                || targetId.length > 80
-                || !['yes', 'no'].includes(feedback.vote)
-                || !IP_HASH.test(feedback.ipHash)
+                !UUID.test(feedback.operationId) ||
+                targetId.length > 80 ||
+                !['yes', 'no'].includes(feedback.vote) ||
+                !IP_HASH.test(feedback.ipHash)
             )
                 throw new DataError('feedback.record', 'FEEDBACK_INVALID');
             try {
@@ -56,9 +56,9 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
                         .first();
                     if (!operation) return null;
                     if (
-                        operation.target_type !== target.type
-                        || operation.target_id !== targetId
-                        || operation.vote !== feedback.vote
+                        operation.target_type !== target.type ||
+                        operation.target_id !== targetId ||
+                        operation.vote !== feedback.vote
                     )
                         return { status: 'operation-conflict' } as const;
                     return {
@@ -70,19 +70,19 @@ export function createD1FeedbackRecorder(db: D1Like): FeedbackRecorder {
                 const earlier = await replay();
                 if (earlier) return earlier;
                 const page =
-                    target.type === 'article' ?
-                        await db
-                            .prepare(
-                                "SELECT id, title FROM db_posts WHERE id = ?1 AND published = 1 AND coalesce(slug, '') <> ''"
-                            )
-                            .bind(targetId)
-                            .first<{ id: string; title: string }>()
-                    :   await db
-                            .prepare(
-                                `SELECT NULL AS id, title FROM db_legals WHERE slug = ?1 AND length(trim(content)) > 0`
-                            )
-                            .bind(targetId)
-                            .first<{ id: null; title: string }>();
+                    target.type === 'article'
+                        ? await db
+                              .prepare(
+                                  "SELECT id, title FROM db_posts WHERE id = ?1 AND published = 1 AND coalesce(slug, '') <> ''"
+                              )
+                              .bind(targetId)
+                              .first<{ id: string; title: string }>()
+                        : await db
+                              .prepare(
+                                  `SELECT NULL AS id, title FROM db_legals WHERE slug = ?1 AND length(trim(content)) > 0`
+                              )
+                              .bind(targetId)
+                              .first<{ id: null; title: string }>();
                 if (!page || (target.type === 'legal' && !isLegalSlug(targetId)))
                     return { status: 'target-not-found' };
                 const eventId = crypto.randomUUID();
@@ -186,13 +186,13 @@ export function createD1ActivityLog(db: D1Like): ActivityLog {
         const from = timestamp(filter.from, operation);
         const to = timestamp(filter.to, operation);
         if (
-            (from && to && from > to)
-            || (filter.query ?? '').length > 250
-            || !Number.isInteger(limit)
-            || limit < 1
-            || limit > 5000
-            || !Number.isInteger(offset)
-            || offset < 0
+            (from && to && from > to) ||
+            (filter.query ?? '').length > 250 ||
+            !Number.isInteger(limit) ||
+            limit < 1 ||
+            limit > 5000 ||
+            !Number.isInteger(offset) ||
+            offset < 0
         )
             throw new DataError(operation, 'Invalid log query');
         const query = (filter.query ?? '').trim().toLowerCase();
@@ -200,9 +200,9 @@ export function createD1ActivityLog(db: D1Like): ActivityLog {
             AND (?4 = '' OR instr(lower(trim(coalesce(actor || ' ', '') || action || ' ' || summary)), ?4) > 0)`;
         const direction = filter.direction === 'asc' ? 'ASC' : 'DESC';
         const order =
-            filter.sort === 'created_at' ?
-                `created_at ${direction}, id ${direction}`
-            :   `lower(${filter.sort}) ${direction} NULLS LAST, created_at ${direction}, id ${direction}`;
+            filter.sort === 'created_at'
+                ? `created_at ${direction}, id ${direction}`
+                : `lower(${filter.sort}) ${direction} NULLS LAST, created_at ${direction}, id ${direction}`;
         try {
             const params = [filter.category, from, to, query];
             const [rows, count] = await db.batch([

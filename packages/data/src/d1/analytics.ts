@@ -59,16 +59,14 @@ export async function analyticsSeries(
     const from = Date.parse(fromIso);
     const to = Date.parse(toIso);
     const hourly = to - from <= 48 * HOUR_MS;
-    const starts =
-        hourly ?
-            hourSteps(from, to, timeZone)
-        :   daySteps(from, to, timeZone).map(day => localMidnight(day, timeZone));
+    const starts = hourly
+        ? hourSteps(from, to, timeZone)
+        : daySteps(from, to, timeZone).map(day => localMidnight(day, timeZone));
     const points = new Map<number, SeriesPoint>(
         starts.map(start => {
-            const end =
-                hourly ?
-                    start + HOUR_MS
-                :   localMidnight(addDays(localDate(start, timeZone), 1), timeZone);
+            const end = hourly
+                ? start + HOUR_MS
+                : localMidnight(addDays(localDate(start, timeZone), 1), timeZone);
             return [
                 start,
                 {
@@ -83,9 +81,9 @@ export async function analyticsSeries(
         })
     );
     const bucketOf = (instant: number) =>
-        hourly ?
-            localHourStart(instant, timeZone)
-        :   localMidnight(localDate(instant, timeZone), timeZone);
+        hourly
+            ? localHourStart(instant, timeZone)
+            : localMidnight(localDate(instant, timeZone), timeZone);
     const range = [iso(from), iso(to)];
     const [views, feedback, reports] = await Promise.all([
         target ? [] : slotCounts(db, 'db_views', 'viewed_at', {}, range),
@@ -93,14 +91,14 @@ export async function analyticsSeries(
             db,
             'db_feedback_events',
             'created_at',
-            target ?
-                { select: 'vote', where: "target_type || ':' || target_id = ?3" }
-            :   { select: 'vote' },
+            target
+                ? { select: 'vote', where: "target_type || ':' || target_id = ?3" }
+                : { select: 'vote' },
             target ? [...range, target] : range
         ),
-        target ?
-            []
-        :   slotCounts(db, 'db_comment_reports', 'created_at', { select: 'reason' }, range)
+        target
+            ? []
+            : slotCounts(db, 'db_comment_reports', 'created_at', { select: 'reason' }, range)
     ]);
     for (const row of views) {
         const point = points.get(bucketOf(slotInstant(String(row.slot))));
@@ -187,9 +185,9 @@ export async function topPages(db: D1Like) {
     const unhelpful = best(row => row.unhelpful / row.total);
     const responses = best(row => row.total);
     const metric = (name: string, row: D1Row | undefined, value: (row: D1Row) => string) =>
-        row ?
-            [{ metric: name, page: row.page ?? null, href: row.href ?? null, value: value(row) }]
-        :   [];
+        row
+            ? [{ metric: name, page: row.page ?? null, href: row.href ?? null, value: value(row) }]
+            : [];
     return [
         ...metric('Most viewed', read.results[0], row => String(row.value)),
         ...metric(

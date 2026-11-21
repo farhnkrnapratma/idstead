@@ -79,11 +79,9 @@ slot.queuePostEffects = async (_newsletter: unknown, _platform: unknown, effect:
     void state.effects.push(effect);
 slot.validateDefineForSave = async () => state.validation;
 
-const { POST, GET } =
-    (await import('../../apps/admin/src/routes/api/internal/admin/posts/+server.ts')) as {
-        POST: (event: any) => Promise<Response>;
-        GET: (event: any) => Promise<Response>;
-    };
+const { POST, GET } = (await import(
+    '../../apps/admin/src/routes/api/internal/admin/posts/+server.ts'
+)) as { POST: (event: any) => Promise<Response>; GET: (event: any) => Promise<Response> };
 
 function event(search = '') {
     return {

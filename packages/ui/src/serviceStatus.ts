@@ -17,7 +17,7 @@ export const SERVICE_STATUSES = {
 export type ServiceStatus = keyof typeof SERVICE_STATUSES;
 
 export function serviceStatus(value: unknown): ServiceStatus {
-    return typeof value === 'string' && Object.hasOwn(SERVICE_STATUSES, value) ?
-            (value as ServiceStatus)
-        :   'UNKNOWN';
+    return typeof value === 'string' && Object.hasOwn(SERVICE_STATUSES, value)
+        ? (value as ServiceStatus)
+        : 'UNKNOWN';
 }

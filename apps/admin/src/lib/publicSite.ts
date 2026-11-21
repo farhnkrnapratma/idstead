@@ -9,9 +9,9 @@ export function publicSiteUrl(
     fallback: string | undefined = publicEnv.PUBLIC_SITE_URL
 ): string {
     return (
-        (pageData as { author?: { siteUrl?: string } } | null)?.author?.siteUrl
-        || fallback
-        || ''
+        (pageData as { author?: { siteUrl?: string } } | null)?.author?.siteUrl ||
+        fallback ||
+        ''
     ).replace(/\/+$/, '');
 }
 

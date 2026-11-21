@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { type Assignment } from './ast';
-import { type DefineErrorInfo } from './errors';
+import type { Assignment } from './ast';
+import type { DefineErrorInfo } from './errors';
 import { type ApiRegistry, evaluateExpr } from './evaluate';
 import { isValidIdentifierName } from './identifiers';
 import { tokenize } from './lexer';
 import { Parser } from './parser';
-import { type DefineValue } from './values';
+import type { DefineValue } from './values';
 
 export async function evaluateDefineBlock(
     raw: string | null,

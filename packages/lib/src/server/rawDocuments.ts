@@ -41,9 +41,9 @@ export async function blogDocument(slug: string, format: DocumentFormat, fetchFn
     if (!post) return notFound();
     const markdown = (await repositories.blog.readMarkdown(post.source)) ?? '';
     const [body, siteLicense] = await Promise.all([
-        markdown ?
-            resolveDefines(markdown, mdrsResolvers(repositories))
-        :   Promise.resolve(post.excerpt || ''),
+        markdown
+            ? resolveDefines(markdown, mdrsResolvers(repositories))
+            : Promise.resolve(post.excerpt || ''),
         siteContentLicense(repositories)
     ]);
     const notice = [

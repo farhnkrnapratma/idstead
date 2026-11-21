@@ -120,9 +120,9 @@ describe('D1 repositories when the database is offline', () => {
             expect(outcomes.length).toBeGreaterThan(0);
             const leaked = outcomes.filter(
                 outcome =>
-                    outcome instanceof Error
-                    && !(outcome instanceof DataError)
-                    && outcome.message === 'database offline'
+                    outcome instanceof Error &&
+                    !(outcome instanceof DataError) &&
+                    outcome.message === 'database offline'
             );
             expect(leaked).toEqual([]);
         });

@@ -97,10 +97,7 @@ const noise = (...values: number[]) => {
     return (h >>> 0) / 4294967296;
 };
 
-const signed = (value: number) =>
-    value > 0 ? `+${value}`
-    : value < 0 ? `−${-value}`
-    : '0';
+const signed = (value: number) => (value > 0 ? `+${value}` : value < 0 ? `−${-value}` : '0');
 
 export function createTechText(
     container: HTMLElement,
@@ -256,9 +253,11 @@ export function createTechText(
         const inkHeight = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
         const margin = width * 0.05;
         const start =
-            s.align === 'left' ? margin
-            : s.align === 'right' ? width - margin - inkWidth
-            : (width - inkWidth) / 2;
+            s.align === 'left'
+                ? margin
+                : s.align === 'right'
+                  ? width - margin - inkWidth
+                  : (width - inkWidth) / 2;
         const x = start + m.actualBoundingBoxLeft;
         const baseline = (height - inkHeight) / 2 + m.actualBoundingBoxAscent;
         const xHeight = baseline - probe.measureText('x').actualBoundingBoxAscent;
@@ -280,9 +279,9 @@ export function createTechText(
                 { y: baseline, label: 'baseline' },
                 { y: xHeight, label: 'x-height' },
                 { y: capHeight, label: 'cap height' },
-                ...(capHeight - ascender > Math.max(11, size * 0.06) ?
-                    [{ y: ascender, label: 'ascender' }]
-                :   []),
+                ...(capHeight - ascender > Math.max(11, size * 0.06)
+                    ? [{ y: ascender, label: 'ascender' }]
+                    : []),
                 { y: descender, label: 'descender' }
             ],
             bands: [
@@ -339,10 +338,7 @@ export function createTechText(
         glyphs.forEach((glyph, i) => {
             const x1 = glyph.box.x1 + glyph.offset.x;
             const x2 = glyph.box.x2 + glyph.offset.x;
-            const d =
-                x < x1 ? x1 - x
-                : x > x2 ? x - x2
-                : 0;
+            const d = x < x1 ? x1 - x : x > x2 ? x - x2 : 0;
             if (d < bestDistance) {
                 bestDistance = d;
                 best = i;
@@ -462,12 +458,7 @@ export function createTechText(
             if (life > 0.7) continue;
             const [px, py, nx, ny] = perimeterPoint(noise(seed, k, cycle) * perimeter, w, h);
             const pick = noise(seed, k, cycle, 2);
-            const size =
-                pick < 0.46 ? 2
-                : pick < 0.7 ? 3
-                : pick < 0.84 ? 5
-                : pick < 0.94 ? 8
-                : 11;
+            const size = pick < 0.46 ? 2 : pick < 0.7 ? 3 : pick < 0.84 ? 5 : pick < 0.94 ? 8 : 11;
             const large = size >= 8;
             const out = (large ? 9 : 4) + Math.floor(noise(seed, k, cycle, 1) * 5) * grid;
             const x = frame.x1 + Math.round((px + nx * out - frame.x1) / grid) * grid;
@@ -555,9 +546,9 @@ export function createTechText(
         ctx.fillStyle = accent;
         ctx.globalAlpha = 0.62 * a;
         const label =
-            moved > 1 ?
-                `${signed(Math.round(glyph.offset.x))}, ${signed(Math.round(-glyph.offset.y))}`
-            :   `${glyph.char}  ${Math.round(glyph.box.x2 - glyph.box.x1)} × ${Math.round(glyph.box.y2 - glyph.box.y1)}`;
+            moved > 1
+                ? `${signed(Math.round(glyph.offset.x))}, ${signed(Math.round(-glyph.offset.y))}`
+                : `${glyph.char}  ${Math.round(glyph.box.x2 - glyph.box.x1)} × ${Math.round(glyph.box.y2 - glyph.box.y1)}`;
         ctx.fillText(label, Math.round(frame.x1), Math.round(frame.y1) - 7);
         ctx.globalAlpha = 1;
     };
@@ -755,8 +746,9 @@ export function createTechText(
         }
         const introOn = introKind !== 'none' && !still && glyphs.length > 0;
         if (introOn && fontsReady) introClock += dt;
-        const progress =
-            introOn ? clamp01((introClock - INTRO_DELAY) / Math.max(0.3, s.introDuration)) : 1;
+        const progress = introOn
+            ? clamp01((introClock - INTRO_DELAY) / Math.max(0.3, s.introDuration))
+            : 1;
         introducing = introOn && progress < 1;
 
         const sweeping = !introducing && s.sweep && !still && !pointer.inside && dragging < 0;
@@ -805,9 +797,9 @@ export function createTechText(
             }
             const { offset, velocity } = glyph;
             if (
-                Math.abs(offset.x) < 0.05
-                && Math.abs(offset.y) < 0.05
-                && Math.hypot(velocity.x, velocity.y) < 0.5
+                Math.abs(offset.x) < 0.05 &&
+                Math.abs(offset.y) < 0.05 &&
+                Math.hypot(velocity.x, velocity.y) < 0.5
             ) {
                 offset.x = 0;
                 offset.y = 0;
@@ -829,9 +821,11 @@ export function createTechText(
             typing = progress < 0.93 ? cursorAt : -1;
             glyphs.forEach((glyph, i) => {
                 glyph.shown =
-                    i < cursorAt ? 1
-                    : i === cursorAt ? smoothstep(0, step * 0.3, progress - i * step)
-                    : 0;
+                    i < cursorAt
+                        ? 1
+                        : i === cursorAt
+                          ? smoothstep(0, step * 0.3, progress - i * step)
+                          : 0;
             });
         } else {
             glyphs.forEach(glyph => {
@@ -839,11 +833,13 @@ export function createTechText(
             });
         }
 
-        const focus =
-            introducing ? typing
-            : dragging >= 0 ? dragging
-            : active ? glyphAt(lens.x, lens.y)
-            : -1;
+        const focus = introducing
+            ? typing
+            : dragging >= 0
+              ? dragging
+              : active
+                ? glyphAt(lens.x, lens.y)
+                : -1;
         if (focus >= 0 && s.selection) {
             const glyph = glyphs[focus];
             const bx1 = glyph.box.x1 + glyph.offset.x - 6;
@@ -866,13 +862,13 @@ export function createTechText(
         frame.alpha = approach(frame.alpha, focus >= 0 && s.selection ? 1 : 0, dt, 0.1);
 
         glyphs.forEach((glyph, i) => {
-            const target =
-                introducing ?
-                    introKind === 'type' && (i === typing || (typing >= 0 && i > typing)) ?
-                        1
-                    :   0
-                : s.reveal === 'letter' && i === focus && i !== dragging ? 1
-                : 0;
+            const target = introducing
+                ? introKind === 'type' && (i === typing || (typing >= 0 && i > typing))
+                    ? 1
+                    : 0
+                : s.reveal === 'letter' && i === focus && i !== dragging
+                  ? 1
+                  : 0;
             if (introducing && glyph.shown === 0) glyph.outline = target;
             glyph.outline = approach(glyph.outline, target, dt, 0.09);
             if (Math.abs(glyph.outline - target) > 0.002) moving = true;
@@ -888,10 +884,13 @@ export function createTechText(
 
         const hovering = !introducing && focus >= 0 && pointer.inside;
         const nextCursor =
-            dragging >= 0 ? 'grabbing'
-            : hovering && s.draggable ? 'grab'
-            : hovering && s.clickKick ? 'pointer'
-            : '';
+            dragging >= 0
+                ? 'grabbing'
+                : hovering && s.draggable
+                  ? 'grab'
+                  : hovering && s.clickKick
+                    ? 'pointer'
+                    : '';
         if (nextCursor !== cursor) {
             cursor = nextCursor;
             container.style.cursor = nextCursor;
@@ -946,12 +945,12 @@ export function createTechText(
         drawFrame(s, accent);
 
         const settling =
-            moving
-            || introducing
-            || kicks.length > 0
-            || (guideAlpha > 0.005 && guideAlpha < 0.995)
-            || Math.abs(presence - (s.reveal === 'area' && active && dragging < 0 ? 1 : 0)) > 0.002
-            || (frame.alpha > 0.01 && frame.alpha < 0.99);
+            moving ||
+            introducing ||
+            kicks.length > 0 ||
+            (guideAlpha > 0.005 && guideAlpha < 0.995) ||
+            Math.abs(presence - (s.reveal === 'area' && active && dragging < 0 ? 1 : 0)) > 0.002 ||
+            (frame.alpha > 0.01 && frame.alpha < 0.99);
         if ((active || settling) && visible && alive) raf = requestAnimationFrame(tick);
     };
 
@@ -1010,17 +1009,17 @@ export function createTechText(
             container.releasePointerCapture?.(e.pointerId);
             const rect = container.getBoundingClientRect();
             pointer.inside =
-                e.clientX >= rect.left
-                && e.clientX <= rect.right
-                && e.clientY >= rect.top
-                && e.clientY <= rect.bottom;
+                e.clientX >= rect.left &&
+                e.clientX <= rect.right &&
+                e.clientY >= rect.top &&
+                e.clientY <= rect.bottom;
         }
         if (
-            e.type === 'pointerup'
-            && press.index >= 0
-            && getSettings().clickKick
-            && !reducedMotion()
-            && performance.now() - press.time < 450
+            e.type === 'pointerup' &&
+            press.index >= 0 &&
+            getSettings().clickKick &&
+            !reducedMotion() &&
+            performance.now() - press.time < 450
         ) {
             const rect = container.getBoundingClientRect();
             if (Math.hypot(e.clientX - rect.left - press.x, e.clientY - rect.top - press.y) < 6)

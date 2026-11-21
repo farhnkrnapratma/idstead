@@ -56,9 +56,9 @@ function registerCommands() {
         .filter(([title]) => !isHiddenCommand(title))
         .map(([title, key]) =>
             shortcutStore.registerCommand(key, title, () =>
-                title === OPEN_COMMAND ?
-                    withDialog(dialog => dialog.open())
-                :   withDialog(dialog => dialog.runCommand(title))
+                title === OPEN_COMMAND
+                    ? withDialog(dialog => dialog.open())
+                    : withDialog(dialog => dialog.runCommand(title))
             )
         );
 }

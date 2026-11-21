@@ -5,9 +5,9 @@
 export async function publicResponse(request: Request, body: string, type: string, ttl = 60) {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
     const etag =
-        '"'
-        + Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
-        + '"';
+        '"' +
+        Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('') +
+        '"';
     const match = request.headers
         .get('if-none-match')
         ?.split(',')

@@ -22,9 +22,9 @@ export function slugifyTitle(title: string): string {
 
 export function isValidPostSlug(slug: string): boolean {
     return (
-        slug.length <= POST_SLUG_MAX_LENGTH
-        && POST_SLUG_PATTERN.test(slug)
-        && !RESERVED_POST_SLUGS.has(slug)
+        slug.length <= POST_SLUG_MAX_LENGTH &&
+        POST_SLUG_PATTERN.test(slug) &&
+        !RESERVED_POST_SLUGS.has(slug)
     );
 }
 

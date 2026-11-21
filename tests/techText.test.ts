@@ -28,9 +28,7 @@ function fakeContext(canvas: HTMLCanvasElement) {
                     return (text: string) => ({
                         width: String(text).length * 10,
                         actualBoundingBoxAscent:
-                            text === 'd' ? ascender
-                            : text === 'H' ? capital
-                            : 12,
+                            text === 'd' ? ascender : text === 'H' ? capital : 12,
                         actualBoundingBoxDescent: 4,
                         actualBoundingBoxLeft: 0,
                         actualBoundingBoxRight: String(text).length * 10

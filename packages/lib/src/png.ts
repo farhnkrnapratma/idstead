@@ -66,11 +66,11 @@ export function encodePng(
 function colorKey(pixels: Uint8Array | Uint8ClampedArray, offset: number): number {
     if (pixels[offset + 3] === 0) return 0;
     return (
-        ((pixels[offset] << 24)
-            | (pixels[offset + 1] << 16)
-            | (pixels[offset + 2] << 8)
-            | pixels[offset + 3])
-        >>> 0
+        ((pixels[offset] << 24) |
+            (pixels[offset + 1] << 16) |
+            (pixels[offset + 2] << 8) |
+            pixels[offset + 3]) >>>
+        0
     );
 }
 
@@ -158,10 +158,9 @@ export function encodeIndexedPng(
         let target = -1;
         for (let i = 0; i < boxes.length; i++)
             if (
-                boxes[i].keys.length > 1
-                && (target < 0
-                    || boxes[i].range * boxes[i].weight
-                        > boxes[target].range * boxes[target].weight)
+                boxes[i].keys.length > 1 &&
+                (target < 0 ||
+                    boxes[i].range * boxes[i].weight > boxes[target].range * boxes[target].weight)
             )
                 target = i;
         if (target < 0) break;

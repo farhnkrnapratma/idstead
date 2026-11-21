@@ -15,9 +15,9 @@ function d1FromSeed(seed: ContractSeed) {
         'db_posts',
         seed.posts.map(post => {
             const storagePath =
-                post.markdown || post.render ?
-                    `posts/${post.uuid}/${post.uuid.replace(/^0/, 'f')}.md`
-                :   `posts/${post.uuid}/missing.md`;
+                post.markdown || post.render
+                    ? `posts/${post.uuid}/${post.uuid.replace(/^0/, 'f')}.md`
+                    : `posts/${post.uuid}/missing.md`;
             if (post.markdown) bucket.objects[`content/${storagePath}`] = post.markdown;
             if (post.render)
                 bucket.objects[`content/${storagePath.replace(/\.md$/, '.render.json')}`] =

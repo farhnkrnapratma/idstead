@@ -2,12 +2,12 @@
 
 ```sh
 bun run test   # bun test tests
-bun run check                      # svelte-check (web, admin), tsc (api, jobs, mdrs, and tests/tooling/scripts through the root tsconfig.json)
-bun run lint                       # prettier --write . && eslint . && bun run lint:deprecated
-bun run lint:deprecated            # typed ESLint pass: fails on any @deprecated API
+bun run check                      # biome check, then bun run typecheck
+bun run typecheck                  # svelte-check (web, admin), tsc (api, jobs, mdrs, and tests/tooling/scripts through the root tsconfig.json)
+bun run lint                       # biome lint: recommended rules, import boundaries and deprecated imports
 ```
 
-CircleCI runs them on every push; run the first three locally before pushing. `lint:deprecated` uses its own config, `eslint.deprecated.config.ts`, because the rule needs type information: it builds a TypeScript program per workspace, which would make every editor lint slow if it lived in `eslint.config.ts`. The codebase uses no deprecated APIs, icons or packages; when a transitive dependency pulls in a deprecated release, pin it with `overrides` in the root `package.json`. Tests live in `tests/` at the repository root and import from `packages/lib/src` and `apps/*/src`.
+CircleCI runs them on every push; run the first three locally before pushing. Biome's `noDeprecatedImports` fails on any import marked `@deprecated`. The codebase uses no deprecated APIs, icons or packages; when a transitive dependency pulls in a deprecated release, pin it with `overrides` in the root `package.json`. Tests live in `tests/` at the repository root and import from `packages/lib/src` and `apps/*/src`.
 
 ## Live API suite
 

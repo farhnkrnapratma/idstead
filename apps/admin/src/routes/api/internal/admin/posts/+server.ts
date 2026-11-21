@@ -149,9 +149,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             cleanupPending = true;
         }
         const action =
-            input.kind === 'delete' ? 'blog.delete'
-            : operation.result?.published ? 'blog.publish'
-            : 'blog.update';
+            input.kind === 'delete'
+                ? 'blog.delete'
+                : operation.result?.published
+                  ? 'blog.publish'
+                  : 'blog.update';
         await logAdminActivity(
             request,
             platform,

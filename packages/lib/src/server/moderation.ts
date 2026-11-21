@@ -38,10 +38,9 @@ export function parseModeration(response: unknown): ModerationResult | null {
     if (response && typeof response === 'object') {
         const verdict = response as { safe?: unknown; categories?: unknown };
         if (typeof verdict.safe !== 'boolean') return null;
-        const categories =
-            Array.isArray(verdict.categories) ?
-                verdict.categories.filter((c): c is string => typeof c === 'string')
-            :   [];
+        const categories = Array.isArray(verdict.categories)
+            ? verdict.categories.filter((c): c is string => typeof c === 'string')
+            : [];
         return { safe: verdict.safe, categories, engine: 'llama-guard-3' };
     }
     if (typeof response !== 'string') return null;

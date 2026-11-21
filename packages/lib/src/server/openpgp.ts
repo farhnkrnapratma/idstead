@@ -68,8 +68,9 @@ export async function parsePublicKey(bytes: Uint8Array): Promise<ParsedPublicKey
         throw new OpenPgpError('This is a private key. Export the public key with gpg --export.');
     let key: Key;
     try {
-        key =
-            armored ? await readKey({ armoredKey: armored }) : await readKey({ binaryKey: bytes });
+        key = armored
+            ? await readKey({ armoredKey: armored })
+            : await readKey({ binaryKey: bytes });
     } catch {
         throw new OpenPgpError('This file is not an OpenPGP public key.');
     }
@@ -111,10 +112,9 @@ export async function parseDetachedSignature(bytes: Uint8Array) {
         throw new OpenPgpError(DETACHED_HINT);
     let signature: Signature;
     try {
-        signature =
-            armored ?
-                await readSignature({ armoredSignature: armored })
-            :   await readSignature({ binarySignature: bytes });
+        signature = armored
+            ? await readSignature({ armoredSignature: armored })
+            : await readSignature({ binarySignature: bytes });
     } catch {
         throw new OpenPgpError(DETACHED_HINT);
     }
@@ -210,10 +210,9 @@ export async function verifyKeyserver(
     let keys: Key[];
     try {
         const armored = armorText(bytes);
-        keys =
-            armored ?
-                await readKeys({ armoredKeys: armored })
-            :   await readKeys({ binaryKeys: bytes });
+        keys = armored
+            ? await readKeys({ armoredKeys: armored })
+            : await readKeys({ binaryKeys: bytes });
     } catch {
         keys = [];
     }

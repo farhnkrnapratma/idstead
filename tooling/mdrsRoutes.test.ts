@@ -6,8 +6,9 @@ import { beforeEach, describe, expect, test } from 'bun:test';
 import { admin, slot, slots } from './routes/support.ts';
 
 const mdrsData = await import('../apps/admin/src/routes/api/internal/admin/mdrs-data/+server.ts');
-const validateDefine =
-    await import('../apps/admin/src/routes/api/internal/blog/validate-define/+server.ts');
+const validateDefine = await import(
+    '../apps/admin/src/routes/api/internal/blog/validate-define/+server.ts'
+);
 
 function post(path: string, body: unknown) {
     const url = new URL(`https://admin.example.com/api/internal/${path}`);

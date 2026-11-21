@@ -10,8 +10,9 @@ import { d1Shim } from './support/d1.ts';
 mock.module('$app/env/private', () => ({}));
 mock.module('$app/env/public', () => ({}));
 
-const { checkAuthorizeRequest, resolveAuthorization } =
-    await import('../packages/lib/src/server/oidc/authorize.ts');
+const { checkAuthorizeRequest, resolveAuthorization } = await import(
+    '../packages/lib/src/server/oidc/authorize.ts'
+);
 
 const ISSUER = 'https://example.com';
 const CHALLENGE = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';

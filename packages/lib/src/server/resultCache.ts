@@ -17,9 +17,7 @@ export function workersResultCache(name = 'idstead-data'): ResultCache | null {
             return response ? response.json() : undefined;
         },
         async put(key, value, ttlSeconds) {
-            await (
-                await cache()
-            ).put(
+            await (await cache()).put(
                 key,
                 new Response(JSON.stringify(value), {
                     headers: {

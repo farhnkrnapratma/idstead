@@ -176,17 +176,16 @@ async function assembleBundle(
         'The verification bundle for this resume has not been built yet.'
     );
     const pdf = new Uint8Array(await readStored(ctx, document.fileUrl, null));
-    const signature =
-        signed ?
-            {
-                asc: new TextDecoder().decode(
-                    await readStored(ctx, `${document.fileUrl}.asc`, signatureMissing)
-                ),
-                sig: new Uint8Array(
-                    await readStored(ctx, `${document.fileUrl}.sig`, signatureMissing)
-                )
-            }
-        :   null;
+    const signature = signed
+        ? {
+              asc: new TextDecoder().decode(
+                  await readStored(ctx, `${document.fileUrl}.asc`, signatureMissing)
+              ),
+              sig: new Uint8Array(
+                  await readStored(ctx, `${document.fileUrl}.sig`, signatureMissing)
+              )
+          }
+        : null;
     const zip = buildResumeBundle({
         filename,
         pdf,
@@ -272,10 +271,9 @@ async function resumeFile(ctx: ApiContext, output: ResumeFileOutput, withChecksu
     } else {
         const ext = output as ResumeChecksumExt;
         const digest = document.checksums?.[ext];
-        body =
-            digest ?
-                `${digest}  ${filename}\n`
-            :   await readStored(ctx, `${document.fileUrl}.${ext}`, null);
+        body = digest
+            ? `${digest}  ${filename}\n`
+            : await readStored(ctx, `${document.fileUrl}.${ext}`, null);
         type = 'text/plain; charset=utf-8';
         name = `${filename}.${ext}`;
     }
@@ -307,8 +305,9 @@ async function resumeDocumentFor(ctx: ApiContext) {
 }
 
 export async function getAuthor(ctx: ApiContext, fixedFields?: readonly AuthorField[]) {
-    const allowed: ApiParam[] =
-        fixedFields ? ['output', 'checksum'] : ['field', 'output', 'checksum'];
+    const allowed: ApiParam[] = fixedFields
+        ? ['output', 'checksum']
+        : ['field', 'output', 'checksum'];
     const params = parseApiParams(ctx.url, allowed);
     const fields = fixedFields ? [...fixedFields] : requestedFields(params.getAll('field'));
     const resumeOnly = fields.length === 1 && fields[0] === 'resume';
@@ -359,8 +358,8 @@ export async function getAuthor(ctx: ApiContext, fixedFields?: readonly AuthorFi
 
     if (output === 'md')
         return textResponse(
-            generateAuthorMarkdown(data)
-                + (resumeDocument ? `\n${resumeDocumentMarkdown(resumeDocument)}` : ''),
+            generateAuthorMarkdown(data) +
+                (resumeDocument ? `\n${resumeDocumentMarkdown(resumeDocument)}` : ''),
             'md'
         );
     return jsonResponse(data);

@@ -44,9 +44,9 @@ function isHeading(value: unknown): value is HeadingItem {
     if (!value || typeof value !== 'object') return false;
     const heading = value as Record<string, unknown>;
     return (
-        typeof heading.id === 'string'
-        && typeof heading.text === 'string'
-        && typeof heading.level === 'number'
+        typeof heading.id === 'string' &&
+        typeof heading.text === 'string' &&
+        typeof heading.level === 'number'
     );
 }
 
@@ -61,12 +61,12 @@ export function parsePostRender(text: string): PostRender | null {
     if (!value || typeof value !== 'object') return null;
     const render = value as Record<string, unknown>;
     if (
-        render.version !== RENDER_VERSION
-        || typeof render.live !== 'boolean'
-        || typeof render.html !== 'string'
-        || typeof render.readTime !== 'string'
-        || !Array.isArray(render.headings)
-        || !render.headings.every(isHeading)
+        render.version !== RENDER_VERSION ||
+        typeof render.live !== 'boolean' ||
+        typeof render.html !== 'string' ||
+        typeof render.readTime !== 'string' ||
+        !Array.isArray(render.headings) ||
+        !render.headings.every(isHeading)
     )
         return null;
     return {

@@ -8,7 +8,7 @@ import { type ApiRegistry, evaluateExpr } from './evaluate';
 import { renderDefineErrorMarker, scanInterpolationTokens } from './interpolation';
 import { tokenize } from './lexer';
 import { Parser } from './parser';
-import { type DefineValue } from './values';
+import type { DefineValue } from './values';
 
 export type ConditionalMode = 'render' | 'validate';
 
@@ -44,7 +44,8 @@ const MAX_BLOCK_DEPTH = 16;
 const MAX_INLINE_DEPTH = 8;
 
 type Directive =
-    { kind: 'if' | 'elif'; condition: string } | { kind: 'else' | 'endif'; condition?: never };
+    | { kind: 'if' | 'elif'; condition: string }
+    | { kind: 'else' | 'endif'; condition?: never };
 
 const BLOCK_DIRECTIVE_LINE_RE = /^ {0,3}:::(if|elif|else|endif)(?:[ \t]+(\S.*?))?[ \t]*$/i;
 
@@ -193,9 +194,9 @@ async function renderBlocks(nodes: BlockNode[], ctx: Context): Promise<string[]>
 }
 
 function strayMessage(next: Directive): string {
-    return next.kind === 'if' ?
-            `\${if} is nested more than ${MAX_INLINE_DEPTH} levels deep`
-        :   `\${${next.kind}} has no matching \${if}`;
+    return next.kind === 'if'
+        ? `\${if} is nested more than ${MAX_INLINE_DEPTH} levels deep`
+        : `\${${next.kind}} has no matching \${if}`;
 }
 
 function closeInline(stack: BranchStack<InlineNode>, ctx: Context): void {

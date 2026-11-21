@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { type PathSegment } from './ast';
+import type { PathSegment } from './ast';
 import { DefineError } from './errors';
 
 export interface DefineValue {
@@ -78,8 +78,8 @@ export function defineValuesEqual(a: DefineValue, b: DefineValue): boolean {
         const aKeys = Object.keys(av);
         const bKeys = Object.keys(bv);
         return (
-            aKeys.length === bKeys.length
-            && aKeys.every(k => k in bv && defineValuesEqual(av[k], bv[k]))
+            aKeys.length === bKeys.length &&
+            aKeys.every(k => k in bv && defineValuesEqual(av[k], bv[k]))
         );
     }
     return a.value === b.value;

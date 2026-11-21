@@ -6,8 +6,9 @@ import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env/private', () => ({}));
 
-const { frozenWriteResponse, isFrozenWrite, writesFrozen } =
-    await import('../packages/lib/src/server/writeFreeze.ts');
+const { frozenWriteResponse, isFrozenWrite, writesFrozen } = await import(
+    '../packages/lib/src/server/writeFreeze.ts'
+);
 
 const { apiErrorEnvelope } = await import('../packages/lib/src/server/apiEnvelope.ts');
 

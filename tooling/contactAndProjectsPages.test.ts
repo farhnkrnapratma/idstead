@@ -8,10 +8,12 @@ import { page } from '$app/state';
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
 
-const { default: ContactPage } =
-    (await import('../apps/web/src/routes/(site)/contact/+page.svelte')) as { default: never };
-const { default: ProjectsPage } =
-    (await import('../apps/web/src/routes/(site)/projects/+page.svelte')) as { default: never };
+const { default: ContactPage } = (await import(
+    '../apps/web/src/routes/(site)/contact/+page.svelte'
+)) as { default: never };
+const { default: ProjectsPage } = (await import(
+    '../apps/web/src/routes/(site)/projects/+page.svelte'
+)) as { default: never };
 
 window.addEventListener('error', event => event.preventDefault());
 Element.prototype.animate = function () {
@@ -103,8 +105,8 @@ function driveControls() {
         'input, textarea'
     )) {
         if (
-            field instanceof HTMLInputElement
-            && (field.type === 'checkbox' || field.type === 'radio')
+            field instanceof HTMLInputElement &&
+            (field.type === 'checkbox' || field.type === 'radio')
         )
             continue;
         field.value = field.name === 'email' ? 'reader@example.com' : 'Sample text';

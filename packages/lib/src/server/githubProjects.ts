@@ -133,10 +133,10 @@ async function fetchRepoOpenGraphImages(
 
 export function githubToken(platform: unknown): string {
     return (
-        (platform as any)?.env?.GITHUB_PAT
-        ?? privateEnv.GITHUB_PAT
-        ?? process.env.GITHUB_PAT
-        ?? ''
+        (platform as any)?.env?.GITHUB_PAT ??
+        privateEnv.GITHUB_PAT ??
+        process.env.GITHUB_PAT ??
+        ''
     ).trim();
 }
 
@@ -153,11 +153,11 @@ export async function fetchProjects(
         list.filter(p => !excludedLower.has(p.name.toLowerCase()));
 
     if (
-        cachedProjects.length > 0
-        && cachedProjects.every(
+        cachedProjects.length > 0 &&
+        cachedProjects.every(
             p => p.latestCommitSha !== undefined && p.openGraphImageUrl !== undefined
-        )
-        && Date.now() - cacheTimestamp < CACHE_TTL_MS
+        ) &&
+        Date.now() - cacheTimestamp < CACHE_TTL_MS
     ) {
         return filterExcluded(cachedProjects);
     }
@@ -219,8 +219,8 @@ export async function fetchProjects(
                         licenseName: repo.license?.spdx_id ?? null,
                         licenseUrl: repo.license ? `${repo.html_url}/blob/main/LICENSE` : null,
                         openGraphImageUrl:
-                            ogImages.get(repo.name.toLowerCase())
-                            ?? `https://opengraph.githubassets.com/1/${repo.full_name}`
+                            ogImages.get(repo.name.toLowerCase()) ??
+                            `https://opengraph.githubassets.com/1/${repo.full_name}`
                     };
                 })
             );

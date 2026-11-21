@@ -275,7 +275,12 @@ export function shortcutKeyParts(spec: string, platform: Platform = 'other'): st
 }
 
 export type KeyIcon =
-    'Command' | 'Option' | 'ChevronUp' | 'CornerDownLeft' | 'ArrowRightToLine' | 'ArrowBigUpDash';
+    | 'Command'
+    | 'Option'
+    | 'ChevronUp'
+    | 'CornerDownLeft'
+    | 'ArrowRightToLine'
+    | 'ArrowBigUpDash';
 
 export interface KeyLabel {
     text: string;
@@ -401,7 +406,9 @@ export const TEXT_ENTRY_SELECTOR = [
 
 export function isTextEntryTarget(target: unknown): boolean {
     const el = target as
-        (Partial<HTMLInputElement> & { closest?: (s: string) => unknown }) | null | undefined;
+        | (Partial<HTMLInputElement> & { closest?: (s: string) => unknown })
+        | null
+        | undefined;
     if (!el) return false;
     if (typeof el.closest === 'function' && el.closest(TEXT_ENTRY_SELECTOR)) {
         return true;

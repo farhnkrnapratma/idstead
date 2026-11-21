@@ -8,7 +8,7 @@ import {
     protectInlineCode,
     restoreAllPlaceholders
 } from '../placeholders';
-import { type DefineErrorInfo } from './errors';
+import type { DefineErrorInfo } from './errors';
 import { type ApiRegistry, evaluateExpr } from './evaluate';
 import { findExpressionEnd, tokenize } from './lexer';
 import { Parser } from './parser';

@@ -63,9 +63,9 @@ async function resolveContactEmail(): Promise<string> {
     const emailItem = contactInfo.find(
         c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')
     );
-    return emailItem ?
-            (emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')).trim()
-        :   (authorProfile?.email || '').trim();
+    return emailItem
+        ? (emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')).trim()
+        : (authorProfile?.email || '').trim();
 }
 
 export const POST: RequestHandler = async event => {
@@ -75,9 +75,11 @@ export const POST: RequestHandler = async event => {
     const { body } = parsed;
 
     const kind: ContactKind =
-        body?.kind === 'feedback' ? 'feedback'
-        : body?.kind === 'message' ? 'message'
-        : ('' as ContactKind);
+        body?.kind === 'feedback'
+            ? 'feedback'
+            : body?.kind === 'message'
+              ? 'message'
+              : ('' as ContactKind);
 
     if (!kind) {
         return apiError(400, 'CONTACT_KIND_INVALID', 'kind must be "message" or "feedback".');

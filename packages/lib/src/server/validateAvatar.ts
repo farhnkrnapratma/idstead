@@ -14,13 +14,13 @@ export function validatePng(buffer: ArrayBuffer, size: number) {
     const bytes = new Uint8Array(buffer);
     const view = new DataView(buffer);
     if (
-        bytes.length < 45
-        || bytes.length > IMAGE_LIMIT
-        || [137, 80, 78, 71, 13, 10, 26, 10].some((byte, i) => bytes[i] !== byte)
-        || view.getUint32(16) !== size
-        || view.getUint32(20) !== size
-        || ![1, 2, 4, 8].includes(bytes[24])
-        || bytes[28] !== 0
+        bytes.length < 45 ||
+        bytes.length > IMAGE_LIMIT ||
+        [137, 80, 78, 71, 13, 10, 26, 10].some((byte, i) => bytes[i] !== byte) ||
+        view.getUint32(16) !== size ||
+        view.getUint32(20) !== size ||
+        ![1, 2, 4, 8].includes(bytes[24]) ||
+        bytes[28] !== 0
     )
         throw new Error('Invalid PNG dimensions or format.');
     const inflater = new Inflate();
@@ -32,7 +32,7 @@ export function validatePng(buffer: ArrayBuffer, size: number) {
         if (inflated > (size * 4 + 1) * size)
             throw new Error('Image decompression limit exceeded.');
     };
-    for (let pos = 8; pos < bytes.length;) {
+    for (let pos = 8; pos < bytes.length; ) {
         if (pos + 12 > bytes.length) throw new Error('Truncated PNG.');
         const length = view.getUint32(pos);
         if (pos + length + 12 > bytes.length) throw new Error('Truncated PNG.');
@@ -62,9 +62,9 @@ export function validateIco(buffer: ArrayBuffer) {
     if (buffer.byteLength < 54 || buffer.byteLength > IMAGE_LIMIT) throw new Error('Invalid ICO.');
     const view = new DataView(buffer);
     if (
-        view.getUint16(0, true) !== 0
-        || view.getUint16(2, true) !== 1
-        || view.getUint16(4, true) !== 3
+        view.getUint16(0, true) !== 0 ||
+        view.getUint16(2, true) !== 1 ||
+        view.getUint16(4, true) !== 3
     )
         throw new Error('Invalid ICO.');
     let position = 54;
@@ -72,10 +72,10 @@ export function validateIco(buffer: ArrayBuffer) {
         const entry = 6 + i * 16;
         const length = view.getUint32(entry + 8, true);
         if (
-            view.getUint8(entry) !== size
-            || view.getUint8(entry + 1) !== size
-            || view.getUint32(entry + 12, true) !== position
-            || position + length > buffer.byteLength
+            view.getUint8(entry) !== size ||
+            view.getUint8(entry + 1) !== size ||
+            view.getUint32(entry + 12, true) !== position ||
+            position + length > buffer.byteLength
         )
             throw new Error('Invalid ICO directory.');
         validatePng(buffer.slice(position, position + length), size);

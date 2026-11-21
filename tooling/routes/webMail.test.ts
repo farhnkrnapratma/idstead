@@ -57,9 +57,9 @@ const setup = () => {
     slot.publicRepositories = () => ({
         author: {
             contactLinks: () =>
-                state.contactError ?
-                    Promise.reject(new Error('x'))
-                :   Promise.resolve(state.contactLinks),
+                state.contactError
+                    ? Promise.reject(new Error('x'))
+                    : Promise.resolve(state.contactLinks),
             profile: () =>
                 state.profileError ? Promise.reject(new Error('x')) : Promise.resolve(state.profile)
         }
@@ -71,8 +71,9 @@ setup();
 
 const contact = await import('../../apps/web/src/routes/api/internal/contact/+server.ts');
 const subscribe = await import('../../apps/web/src/routes/api/internal/subscribe/+server.ts');
-const unsubscribeRequest =
-    await import('../../apps/web/src/routes/api/internal/subscribe/unsubscribe-request/+server.ts');
+const unsubscribeRequest = await import(
+    '../../apps/web/src/routes/api/internal/subscribe/unsubscribe-request/+server.ts'
+);
 const unsubscribePage = await import('../../apps/web/src/routes/unsubscribe/+page.server.ts');
 const { verifyTurnstileToken } = await import('../../packages/lib/src/server/turnstile.ts');
 

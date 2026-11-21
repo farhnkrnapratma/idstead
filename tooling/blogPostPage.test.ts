@@ -8,8 +8,9 @@ import { page, navigating } from '$app/state';
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
 
-const { default: BlogPostPage } =
-    (await import('../apps/web/src/routes/blog/[slug]/+page.svelte')) as { default: never };
+const { default: BlogPostPage } = (await import(
+    '../apps/web/src/routes/blog/[slug]/+page.svelte'
+)) as { default: never };
 
 window.addEventListener('error', event => event.preventDefault());
 Element.prototype.animate = function () {
@@ -132,8 +133,8 @@ test('renders a post with its comments, related posts and dialogs', async () => 
         'input, textarea'
     )) {
         if (
-            field instanceof HTMLInputElement
-            && (field.type === 'checkbox' || field.type === 'radio')
+            field instanceof HTMLInputElement &&
+            (field.type === 'checkbox' || field.type === 'radio')
         )
             continue;
         field.value = field.name === 'email' ? 'reader@example.com' : 'Sample text';

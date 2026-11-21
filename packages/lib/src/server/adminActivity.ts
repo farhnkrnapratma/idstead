@@ -81,11 +81,11 @@ export async function adminActivity(
                         throw new ActivityInputError('Invalid cursor.');
                     }
                     if (
-                        !cursor
-                        || typeof cursor.value !== 'string'
-                        || cursor.value.length > 1000
-                        || typeof cursor.date !== 'string'
-                        || !Number.isFinite(Date.parse(cursor.date))
+                        !cursor ||
+                        typeof cursor.value !== 'string' ||
+                        cursor.value.length > 1000 ||
+                        typeof cursor.date !== 'string' ||
+                        !Number.isFinite(Date.parse(cursor.date))
                     )
                         throw new ActivityInputError('Invalid cursor.');
                     cursor = {
@@ -133,20 +133,19 @@ export async function adminActivity(
                 else if (section === 'subscribers') {
                     result = await store.subscriberStats();
                 } else if (section === 'feedback' || section === 'feedback_history') {
-                    const target =
-                        params.has('targetId') ?
-                            activityTarget(params.get('targetType'), params.get('targetId'))
-                        :   null;
+                    const target = params.has('targetId')
+                        ? activityTarget(params.get('targetType'), params.get('targetId'))
+                        : null;
                     if (section === 'feedback_history' && !target)
                         throw new ActivityInputError('A page is required.');
                     result =
-                        section === 'feedback' || !target ?
-                            await store.feedbackGroups({ offset: pageOffset, page: target })
-                        :   await store.feedbackHistory({
-                                offset: pageOffset,
-                                page: target,
-                                focusId
-                            });
+                        section === 'feedback' || !target
+                            ? await store.feedbackGroups({ offset: pageOffset, page: target })
+                            : await store.feedbackHistory({
+                                  offset: pageOffset,
+                                  page: target,
+                                  focusId
+                              });
                 } else if (section === 'reports') {
                     result = await store.reportGroups({
                         offset: pageOffset,

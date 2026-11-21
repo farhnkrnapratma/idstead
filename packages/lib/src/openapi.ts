@@ -239,8 +239,8 @@ export const openapiSpec = {
         title: 'Public REST API',
         version: '1.0.0',
         description:
-            'Read-only public API served under /v1/. GET /v1 returns the human-readable reference. '
-            + 'Every parameter has a one-letter alias; unknown parameters are rejected.'
+            'Read-only public API served under /v1/. GET /v1 returns the human-readable reference. ' +
+            'Every parameter has a one-letter alias; unknown parameters are rejected.'
     },
     servers: [{ url: '/' }],
     components: {

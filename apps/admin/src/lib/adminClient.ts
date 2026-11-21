@@ -46,10 +46,10 @@ export async function adminRequest<T>(
     const result = await response.json().catch(() => null);
     if (!response.ok || result === null)
         throw new Error(
-            result?.error?.message
-                ?? result?.message
-                ?? fallbackMessage
-                ?? 'The admin service is temporarily unavailable.'
+            result?.error?.message ??
+                result?.message ??
+                fallbackMessage ??
+                'The admin service is temporarily unavailable.'
         );
     return result as T;
 }

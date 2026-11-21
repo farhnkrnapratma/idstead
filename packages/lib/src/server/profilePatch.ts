@@ -29,11 +29,11 @@ function hasControlChars(str: string): boolean {
     for (let i = 0; i < str.length; i++) {
         const code = str.charCodeAt(i);
         if (
-            code <= 0x08
-            || code === 0x0b
-            || code === 0x0c
-            || (code >= 0x0e && code <= 0x1f)
-            || code === 0x7f
+            code <= 0x08 ||
+            code === 0x0b ||
+            code === 0x0c ||
+            (code >= 0x0e && code <= 0x1f) ||
+            code === 0x7f
         ) {
             return true;
         }
@@ -60,10 +60,7 @@ export function profilePatch(
         }
         let value = field === 'pronunciation' ? rawValue : rawValue.trim();
         if (field === 'username') value = value.replace(/^@+/, '').replace(/\s+/g, '');
-        const max =
-            field === 'bio' ? 5000
-            : field === 'site_url' ? 2048
-            : 250;
+        const max = field === 'bio' ? 5000 : field === 'site_url' ? 2048 : 250;
 
         if ((!value && field !== 'pronunciation') || value.length > max || hasControlChars(value))
             errors[field] = `Invalid ${field.replaceAll('_', ' ')}.`;
@@ -73,12 +70,12 @@ export function profilePatch(
             try {
                 const site = new URL(value);
                 if (
-                    !['https:', 'http:'].includes(site.protocol)
-                    || site.username
-                    || site.password
-                    || site.pathname !== '/'
-                    || site.search
-                    || site.hash
+                    !['https:', 'http:'].includes(site.protocol) ||
+                    site.username ||
+                    site.password ||
+                    site.pathname !== '/' ||
+                    site.search ||
+                    site.hash
                 )
                     throw new Error();
                 value = site.origin;
@@ -91,13 +88,13 @@ export function profilePatch(
     if ('manifest_settings' in payload) {
         const settings = payload.manifest_settings;
         if (
-            !settings
-            || typeof settings !== 'object'
-            || Array.isArray(settings)
-            || Object.keys(settings).some(
+            !settings ||
+            typeof settings !== 'object' ||
+            Array.isArray(settings) ||
+            Object.keys(settings).some(
                 key => !['display', 'theme_color', 'background_color'].includes(key)
-            )
-            || !['standalone', 'minimal-ui', 'browser', 'fullscreen'].includes(
+            ) ||
+            !['standalone', 'minimal-ui', 'browser', 'fullscreen'].includes(
                 String((settings as Record<string, unknown>).display)
             )
         ) {
@@ -105,8 +102,8 @@ export function profilePatch(
         }
     }
     if (
-        (current?.manifest_settings as Record<string, unknown> | undefined)?.display
-        !== 'standalone'
+        (current?.manifest_settings as Record<string, unknown> | undefined)?.display !==
+        'standalone'
     )
         patch.manifest_settings = { display: 'standalone' };
     if (Object.keys(errors).length) throw new ProfileInputError(errors);

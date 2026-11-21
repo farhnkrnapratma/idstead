@@ -28,7 +28,7 @@ The design system is the `@idstead/ui` package (`packages/ui/src`): `components/
 
 6. **Layout width consistency**: page-level containers use `PageContainer`/`Section` rather than a locally redeclared `max-w-*` + `mx-auto`. Standalone admin pages (`/login`, `/oauth/authorize`) share one pattern: a centered `<main id="main">` with a `max-w-sm` content column.
 
-7. **Accessibility basics**: every page with `id="main"` renders exactly one `SkipLink` (`tests/skipLink.test.ts` fails otherwise), icon-only buttons have an `aria-label`, and icons come from `@lucide/svelte` without deprecated names (`bun run lint:deprecated` catches them).
+7. **Accessibility basics**: every page with `id="main"` renders exactly one `SkipLink` (`tests/skipLink.test.ts` fails otherwise), icon-only buttons have an `aria-label`, and icons come from `@lucide/svelte` without deprecated names (`bun run lint` catches them).
 
 8. **Svelte 5 runes**: `$state`, `$derived`, `$props` and `$effect` are used, not the Svelte 4 Options API or a store where a rune fits. Run the Svelte MCP `svelte-autofixer` on each changed file.
 

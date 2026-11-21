@@ -210,10 +210,11 @@ function renderEmbed(attrs: Record<string, string>): string {
 
     const youtube = url.match(YOUTUBE_EMBED_RE);
     const codepen = url.match(CODEPEN_EMBED_RE);
-    const embedUrl =
-        youtube ? `https://www.youtube.com/embed/${youtube[1]}`
-        : codepen ? `https://codepen.io/${codepen[1]}/embed/${codepen[2]}?default-tab=result`
-        : null;
+    const embedUrl = youtube
+        ? `https://www.youtube.com/embed/${youtube[1]}`
+        : codepen
+          ? `https://codepen.io/${codepen[1]}/embed/${codepen[2]}?default-tab=result`
+          : null;
 
     if (!embedUrl) {
         const href = sanitizeUrl(url);
@@ -292,9 +293,9 @@ export function parseContainers(markdown: string, icons: Map<string, string> = n
         const current = top();
 
         if (
-            quote === 0
-            && TAB_CONTAINERS.has(current.name)
-            && (TAB_OPEN_RE.test(rest) || (current.tab && TAB_CLOSE_RE.test(rest)))
+            quote === 0 &&
+            TAB_CONTAINERS.has(current.name) &&
+            (TAB_OPEN_RE.test(rest) || (current.tab && TAB_CLOSE_RE.test(rest)))
         ) {
             current.tab = null;
             const tabMatch = rest.match(TAB_OPEN_RE);

@@ -98,10 +98,13 @@ export async function enhanceMermaidBlocks(
     initMermaidThemeObserver();
 
     const isDark =
-        typeof forceTheme === 'boolean' ? forceTheme
-        : typeof forceTheme === 'string' ? forceTheme === 'dark'
-        : typeof document !== 'undefined' ? document.documentElement.classList.contains('dark')
-        : true;
+        typeof forceTheme === 'boolean'
+            ? forceTheme
+            : typeof forceTheme === 'string'
+              ? forceTheme === 'dark'
+              : typeof document !== 'undefined'
+                ? document.documentElement.classList.contains('dark')
+                : true;
 
     const themeName = isDark ? 'dark' : 'light';
     const mermaidBlocks = container.querySelectorAll<HTMLElement>('.mdrs-mermaid');

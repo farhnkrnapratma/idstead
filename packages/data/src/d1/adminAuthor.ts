@@ -151,9 +151,9 @@ export function createD1AdminAuthorStore(
         identity: Record<string, unknown> | null
     ): Promise<Record<string, unknown>> {
         const identityId =
-            identity && typeof identity.version === 'string' && identity.version ?
-                identity.version
-            :   null;
+            identity && typeof identity.version === 'string' && identity.version
+                ? identity.version
+                : null;
         if (!(typeof profile.id === 'string' && profile.id)) {
             const shell = await profileBy(
                 'WHERE avatar_version IS NULL AND banner_version IS NULL'
@@ -183,10 +183,9 @@ export function createD1AdminAuthorStore(
         const merged: Record<string, unknown> = { ...base, ...profile };
         if (identityId) {
             const assets = identity?.assets;
-            const names =
-                Array.isArray(assets) ?
-                    assets.map(asset => String((asset as Record<string, unknown>)?.name)).sort()
-                :   null;
+            const names = Array.isArray(assets)
+                ? assets.map(asset => String((asset as Record<string, unknown>)?.name)).sort()
+                : null;
             if (!names || names.join('\n') !== IDENTITY_ASSETS.join('\n'))
                 throw new ProfileFailure('P0001', 'Incomplete identity package');
         }
@@ -276,11 +275,11 @@ export function createD1AdminAuthorStore(
             if (message.includes('malformed JSON')) {
                 const latest = await profileBy('WHERE id = ?1', targetId);
                 if (
-                    (current
-                        && (!latest
-                            || Number(latest.profile_revision)
-                                !== Number(current.profile_revision)))
-                    || (!current && (await profileBy('')))
+                    (current &&
+                        (!latest ||
+                            Number(latest.profile_revision) !==
+                                Number(current.profile_revision))) ||
+                    (!current && (await profileBy('')))
                 )
                     throw new ProfileFailure('40001', 'Profile revision conflict');
                 throw new ProfileFailure('P0001', 'Identity version unavailable');
@@ -398,9 +397,9 @@ export function createD1AdminAuthorStore(
                     )
                     .bind(
                         ...columns.map(column =>
-                            column === 'assets' ?
-                                JSON.stringify(version.assets ?? [])
-                            :   (version[column] ?? null)
+                            column === 'assets'
+                                ? JSON.stringify(version.assets ?? [])
+                                : (version[column] ?? null)
                         )
                     )
                     .run();

@@ -32,9 +32,9 @@ export function popoverPosition(node: HTMLElement, options: PopoverPositionOptio
         if (!anchor) return;
 
         const effectiveParent =
-            (node.offsetParent as HTMLElement | null)
-            ?? (node.parentElement as HTMLElement | null)
-            ?? document.documentElement;
+            (node.offsetParent as HTMLElement | null) ??
+            (node.parentElement as HTMLElement | null) ??
+            document.documentElement;
 
         let zoom = 1;
         for (let element: HTMLElement | null = node; element; element = element.parentElement) {
@@ -51,9 +51,9 @@ export function popoverPosition(node: HTMLElement, options: PopoverPositionOptio
         };
         const parentBounds = effectiveParent.getBoundingClientRect();
         const parentRect =
-            opts.strategy === 'fixed' ?
-                { left: 0, top: 0 }
-            :   { left: parentBounds.left / zoom, top: parentBounds.top / zoom };
+            opts.strategy === 'fixed'
+                ? { left: 0, top: 0 }
+                : { left: parentBounds.left / zoom, top: parentBounds.top / zoom };
         const viewportWidth = (document.documentElement.clientWidth || window.innerWidth) / zoom;
         const viewportHeight = (document.documentElement.clientHeight || window.innerHeight) / zoom;
 

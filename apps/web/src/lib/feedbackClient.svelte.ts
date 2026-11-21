@@ -20,10 +20,10 @@ export function createFeedbackClient(target: () => { type: PageType; id: string 
         if (pending || confirmed === key()) return;
         const current = target();
         if (
-            !operation
-            || operation.targetType !== current.type
-            || operation.targetId !== current.id
-            || operation.vote !== value
+            !operation ||
+            operation.targetType !== current.type ||
+            operation.targetId !== current.id ||
+            operation.vote !== value
         )
             operation = {
                 id: crypto.randomUUID(),
@@ -49,9 +49,9 @@ export function createFeedbackClient(target: () => { type: PageType; id: string 
             });
             const result = await response.json();
             if (
-                !response.ok
-                || typeof result?.recorded !== 'boolean'
-                || typeof result?.replayed !== 'boolean'
+                !response.ok ||
+                typeof result?.recorded !== 'boolean' ||
+                typeof result?.replayed !== 'boolean'
             )
                 throw new Error('Your feedback could not be confirmed. Please try again.');
             confirmed = `${attempt.targetType}:${attempt.targetId}`;

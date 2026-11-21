@@ -130,9 +130,9 @@ describe('adminNotificationsStore', () => {
             throw new Error('listener');
         });
         route = (url: URL) =>
-            url.searchParams.get('section') === 'summary' ?
-                { unreadCount: 3, total: 9, revision: 'r1' }
-            :   {};
+            url.searchParams.get('section') === 'summary'
+                ? { unreadCount: 3, total: 9, revision: 'r1' }
+                : {};
         await store.load();
         expect(store.unreadCount).toBe(3);
         expect(store.total).toBe(9);
@@ -218,9 +218,9 @@ describe('adminNotificationsStore', () => {
     test('marks, dismisses and pins notifications and refreshes afterwards', async () => {
         route = (url: URL, body: unknown) => {
             if (body !== undefined) return operation;
-            return url.searchParams.has('section') ?
-                    { unreadCount: 0, total: 0, revision: 'x' }
-                :   inbox([]);
+            return url.searchParams.has('section')
+                ? { unreadCount: 0, total: 0, revision: 'x' }
+                : inbox([]);
         };
         expect(await store.markRead('a')).toBe(true);
         expect(await store.markAllRead()).toBe(true);

@@ -159,18 +159,16 @@ export function highlightChunks(
         const flags = options.caseSensitive ? 'g' : 'gi';
         const regex = new RegExp(`(${escapedTerms.join('|')})`, flags);
         const parts = text.split(regex);
-        const wordRegexes =
-            options.wholeWord ?
-                escapedTerms.map(et => new RegExp(`^${et}$`, options.caseSensitive ? '' : 'i'))
-            :   null;
+        const wordRegexes = options.wholeWord
+            ? escapedTerms.map(et => new RegExp(`^${et}$`, options.caseSensitive ? '' : 'i'))
+            : null;
         const result = parts
             .filter(part => part.length > 0)
             .map(part => {
                 const comp = options.caseSensitive ? part : part.toLowerCase();
-                const isMatch =
-                    wordRegexes ?
-                        wordRegexes.some(re => re.test(part))
-                    :   searchTerms.includes(comp);
+                const isMatch = wordRegexes
+                    ? wordRegexes.some(re => re.test(part))
+                    : searchTerms.includes(comp);
                 return { text: part, match: isMatch };
             });
         if (highlightCache.size >= MAX_HIGHLIGHT_CACHE) highlightCache.clear();

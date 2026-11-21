@@ -181,8 +181,8 @@ export async function readArdRequestJson(request: Request): Promise<unknown> {
 
     const contentLength = request.headers.get('content-length');
     if (
-        contentLength !== null
-        && (!/^\d+$/.test(contentLength) || Number(contentLength) > MAX_ARD_BODY_BYTES)
+        contentLength !== null &&
+        (!/^\d+$/.test(contentLength) || Number(contentLength) > MAX_ARD_BODY_BYTES)
     )
         throw new ArdRequestError(
             'INVALID_ARGUMENT',
@@ -240,8 +240,8 @@ function decodePageToken(token: unknown): number {
     let decoded: string;
     try {
         decoded = atob(
-            token.replaceAll('-', '+').replaceAll('_', '/')
-                + '='.repeat((4 - (token.length % 4)) % 4)
+            token.replaceAll('-', '+').replaceAll('_', '/') +
+                '='.repeat((4 - (token.length % 4)) % 4)
         );
     } catch {
         return invalid('pageToken must be a valid pagination token.');
@@ -260,9 +260,9 @@ function parseFilter(value: unknown): Record<string, string[]> | undefined {
 
     for (const [field, rawValues] of Object.entries(value)) {
         if (
-            !field.trim()
-            || field.length > 256
-            || field
+            !field.trim() ||
+            field.length > 256 ||
+            field
                 .split('.')
                 .some(segment => ['__proto__', 'prototype', 'constructor'].includes(segment))
         )
@@ -296,10 +296,10 @@ function parseQuery(value: unknown, requireText: boolean): ArdExploreRequest['qu
         return invalid('query contains an unsupported field.');
     const context = value['@context'];
     if (
-        context !== undefined
-        && typeof context !== 'string'
-        && !isRecord(context)
-        && !Array.isArray(context)
+        context !== undefined &&
+        typeof context !== 'string' &&
+        !isRecord(context) &&
+        !Array.isArray(context)
     )
         return invalid('query.@context must be a string, object, or array.');
     let text: string | undefined;
@@ -330,10 +330,10 @@ function parseSearchRequest(value: unknown): ArdSearchRequest {
 
     const pageSize = value.pageSize === undefined ? 10 : value.pageSize;
     if (
-        typeof pageSize !== 'number'
-        || !Number.isInteger(pageSize)
-        || pageSize < 1
-        || pageSize > MAX_PAGE_SIZE
+        typeof pageSize !== 'number' ||
+        !Number.isInteger(pageSize) ||
+        pageSize < 1 ||
+        pageSize > MAX_PAGE_SIZE
     )
         return invalid('pageSize must be an integer between 1 and 100.');
 
@@ -351,8 +351,8 @@ export function validateArdExploreRequest(value: unknown): ArdExploreRequest {
         return invalid('Request body contains an unsupported field.');
     if (!isRecord(value.resultType)) return invalid('resultType must be an object.');
     if (
-        Object.keys(value.resultType).some(field => field !== 'facets')
-        || !Array.isArray(value.resultType.facets)
+        Object.keys(value.resultType).some(field => field !== 'facets') ||
+        !Array.isArray(value.resultType.facets)
     )
         return invalid('resultType.facets must be an array.');
     const query = value.query === undefined ? {} : parseQuery(value.query, false);
@@ -394,8 +394,8 @@ function parseListFilter(filter: string | null): ArdListFilter[] {
     });
     for (const clause of clauses) {
         if (
-            ['createdAfter', 'updatedAfter'].includes(clause.field)
-            && !Number.isFinite(Date.parse(clause.value))
+            ['createdAfter', 'updatedAfter'].includes(clause.field) &&
+            !Number.isFinite(Date.parse(clause.value))
         )
             return invalid(`${clause.field} must be a valid ISO 8601 date.`);
         if (!['createdAfter', 'updatedAfter'].includes(clause.field) && clause.operator !== '=')
@@ -511,11 +511,11 @@ export function normalizeArdEntry(value: unknown): ArdEntry | undefined {
     if (!isRecord(value)) return undefined;
     const context = value['@context'];
     if (
-        context !== undefined
-        && context !== null
-        && typeof context !== 'string'
-        && !isRecord(context)
-        && !Array.isArray(context)
+        context !== undefined &&
+        context !== null &&
+        typeof context !== 'string' &&
+        !isRecord(context) &&
+        !Array.isArray(context)
     )
         return undefined;
 
@@ -526,9 +526,9 @@ export function normalizeArdEntry(value: unknown): ArdEntry | undefined {
         const matches = Object.entries(value).filter(
             ([key]) => !key.startsWith('@') && termIri(key, contexts) === iri
         );
-        return matches.length === 1 ?
-                { found: true, value: matches[0][1] }
-            :   { found: matches.length > 1, value: undefined };
+        return matches.length === 1
+            ? { found: true, value: matches[0][1] }
+            : { found: matches.length > 1, value: undefined };
     };
     const identifier = findTerm('identifier');
     const displayName = findTerm('displayName');
@@ -536,17 +536,17 @@ export function normalizeArdEntry(value: unknown): ArdEntry | undefined {
     const url = findTerm('url');
     const data = findTerm('data');
     if (
-        !identifier.found
-        || typeof identifier.value !== 'string'
-        || !/^urn:air:[^:\s]+:[^:\s]+:[^:\s]+$/.test(identifier.value)
-        || !displayName.found
-        || typeof displayName.value !== 'string'
-        || !displayName.value.trim()
-        || !type.found
-        || typeof type.value !== 'string'
-        || !type.value.includes('/')
-        || /\s/.test(type.value)
-        || url.found === data.found
+        !identifier.found ||
+        typeof identifier.value !== 'string' ||
+        !/^urn:air:[^:\s]+:[^:\s]+:[^:\s]+$/.test(identifier.value) ||
+        !displayName.found ||
+        typeof displayName.value !== 'string' ||
+        !displayName.value.trim() ||
+        !type.found ||
+        typeof type.value !== 'string' ||
+        !type.value.includes('/') ||
+        /\s/.test(type.value) ||
+        url.found === data.found
     )
         return undefined;
 
@@ -574,9 +574,9 @@ export function normalizeArdEntry(value: unknown): ArdEntry | undefined {
         if (!resolved.found) continue;
         if (term === 'description' && typeof resolved.value !== 'string') return undefined;
         if (
-            term !== 'description'
-            && (!Array.isArray(resolved.value)
-                || !resolved.value.every(item => typeof item === 'string'))
+            term !== 'description' &&
+            (!Array.isArray(resolved.value) ||
+                !resolved.value.every(item => typeof item === 'string'))
         )
             return undefined;
         Object.assign(normalized, { [term]: resolved.value });
@@ -644,11 +644,14 @@ function lexicalRelevanceScore(entry: ArdEntry, tokens: string[]): number {
     const descriptionTokens = new Set(queryTokens(entry.description ?? ''));
     const points = tokens.reduce(
         (score, token) =>
-            score
-            + (representativeTokens.has(token) ? 3
-            : prominentTokens.has(token) ? 2
-            : descriptionTokens.has(token) ? 1
-            : 0),
+            score +
+            (representativeTokens.has(token)
+                ? 3
+                : prominentTokens.has(token)
+                  ? 2
+                  : descriptionTokens.has(token)
+                    ? 1
+                    : 0),
         0
     );
     return Math.round((points / (tokens.length * 3)) * 100);
@@ -689,9 +692,9 @@ export function searchValidatedArdRequest(
 
     const results = entries
         .filter(entry =>
-            request.query.filter ?
-                entryMatchesFilter(entry, request.query.filter, request.query.context)
-            :   true
+            request.query.filter
+                ? entryMatchesFilter(entry, request.query.filter, request.query.context)
+                : true
         )
         .map(entry => ({
             ...entry,
@@ -725,25 +728,24 @@ function isArdAiBinding(value: unknown): value is ArdAiBinding {
 
 function isNumberArray(value: unknown): value is number[] {
     return (
-        Array.isArray(value)
-        && value.every(item => typeof item === 'number' && Number.isFinite(item))
+        Array.isArray(value) &&
+        value.every(item => typeof item === 'number' && Number.isFinite(item))
     );
 }
 
 async function createEmbeddings(ai: ArdAiBinding, texts: string[]): Promise<number[][]> {
     const response = await ai.run(EMBEDDING_MODEL, { text: texts });
     const data =
-        isRecord(response) && isRecord(response.result) ? response.result.data
-        : isRecord(response) ? response.data
-        : undefined;
+        isRecord(response) && isRecord(response.result)
+            ? response.result.data
+            : isRecord(response)
+              ? response.data
+              : undefined;
     if (!Array.isArray(data) || data.length !== texts.length)
         throw new Error('Workers AI returned an invalid ARD embedding response.');
 
     return data.map(item => {
-        const vector =
-            Array.isArray(item) ? item
-            : isRecord(item) ? item.embedding
-            : undefined;
+        const vector = Array.isArray(item) ? item : isRecord(item) ? item.embedding : undefined;
         if (!isNumberArray(vector) || vector.length === 0)
             throw new Error('Workers AI returned an invalid ARD embedding vector.');
         return vector;
@@ -835,8 +837,8 @@ export function exploreArdEntries(
     const tokens = request.query.text ? queryTokens(request.query.text) : undefined;
     const matched = entries.filter(entry => {
         if (
-            request.query.filter
-            && !entryMatchesFilter(entry, request.query.filter, request.query.context)
+            request.query.filter &&
+            !entryMatchesFilter(entry, request.query.filter, request.query.context)
         )
             return false;
         if (!tokens) return true;
@@ -855,9 +857,9 @@ export function exploreArdEntries(
                     valuesForPath(entry, field, request.query.context)
                         .filter(
                             value =>
-                                typeof value === 'string'
-                                || typeof value === 'number'
-                                || typeof value === 'boolean'
+                                typeof value === 'string' ||
+                                typeof value === 'number' ||
+                                typeof value === 'boolean'
                         )
                         .map(String)
                 );
@@ -933,16 +935,16 @@ export function listArdEntries(request: ArdListRequest, _base: string, entries: 
         .slice()
         .sort((left, right) => {
             const leftValue =
-                request.orderBy === 'publisherId' ?
-                    (left.identifier.split(':')[2] ?? '')
-                :   String(left[request.orderBy] ?? '');
+                request.orderBy === 'publisherId'
+                    ? (left.identifier.split(':')[2] ?? '')
+                    : String(left[request.orderBy] ?? '');
             const rightValue =
-                request.orderBy === 'publisherId' ?
-                    (right.identifier.split(':')[2] ?? '')
-                :   String(right[request.orderBy] ?? '');
+                request.orderBy === 'publisherId'
+                    ? (right.identifier.split(':')[2] ?? '')
+                    : String(right[request.orderBy] ?? '');
             const order =
-                leftValue.localeCompare(rightValue, undefined, { sensitivity: 'base' })
-                || left.identifier.localeCompare(right.identifier);
+                leftValue.localeCompare(rightValue, undefined, { sensitivity: 'base' }) ||
+                left.identifier.localeCompare(right.identifier);
             return request.descending ? -order : order;
         });
     const items = sorted.slice(request.offset, request.offset + request.pageSize);

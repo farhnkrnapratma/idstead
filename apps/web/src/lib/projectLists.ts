@@ -19,8 +19,8 @@ export function homeProjects(projects: Project[], pinnedNames: string[], count: 
     return [...projects]
         .sort(
             (a, b) =>
-                Number(isRepoPinned(b, pinnedNames)) - Number(isRepoPinned(a, pinnedNames))
-                || new Date(b.pushedAt || 0).getTime() - new Date(a.pushedAt || 0).getTime()
+                Number(isRepoPinned(b, pinnedNames)) - Number(isRepoPinned(a, pinnedNames)) ||
+                new Date(b.pushedAt || 0).getTime() - new Date(a.pushedAt || 0).getTime()
         )
         .slice(0, count);
 }

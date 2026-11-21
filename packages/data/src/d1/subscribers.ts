@@ -46,10 +46,10 @@ export function createD1SubscriberRepository(db: D1Like): SubscriberRepository {
                     }>();
                 if (existing?.status === 'active') return 'already-active';
                 if (
-                    existing?.status === 'pending'
-                    && existing.confirm_sent_at
-                    && Date.now() - new Date(existing.confirm_sent_at).getTime()
-                        < input.resendCooldownMs
+                    existing?.status === 'pending' &&
+                    existing.confirm_sent_at &&
+                    Date.now() - new Date(existing.confirm_sent_at).getTime() <
+                        input.resendCooldownMs
                 )
                     return 'cooling-down';
                 const now = new Date().toISOString();

@@ -26,12 +26,12 @@ function counted(repos: Repositories) {
         new Proxy(target, {
             get(object, key) {
                 const value = Reflect.get(object, key);
-                return typeof value === 'function' ?
-                        (...args: unknown[]) => {
-                            calls.push(`${name}.${String(key)}`);
-                            return value.apply(object, args);
-                        }
-                    :   value;
+                return typeof value === 'function'
+                    ? (...args: unknown[]) => {
+                          calls.push(`${name}.${String(key)}`);
+                          return value.apply(object, args);
+                      }
+                    : value;
             }
         });
     return {

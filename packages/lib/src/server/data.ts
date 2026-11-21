@@ -169,9 +169,9 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
 
 function cacheEnabled(platform: unknown) {
     const configured =
-        (platform as PlatformEnv)?.env?.DATA_CACHE
-        ?? (privateEnv as Record<string, string | undefined>).DATA_CACHE
-        ?? process.env.DATA_CACHE;
+        (platform as PlatformEnv)?.env?.DATA_CACHE ??
+        (privateEnv as Record<string, string | undefined>).DATA_CACHE ??
+        process.env.DATA_CACHE;
     return ['1', 'true'].includes(
         String(configured ?? '')
             .trim()

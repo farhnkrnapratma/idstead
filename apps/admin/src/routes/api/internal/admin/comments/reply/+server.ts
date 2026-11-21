@@ -31,9 +31,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const postId = typeof payload?.postId === 'string' ? payload.postId.trim() : '';
     const parentId = typeof payload?.parentId === 'string' ? payload.parentId.trim() : '';
     const authorName =
-        typeof payload?.authorName === 'string' && payload.authorName.trim() ?
-            sanitizeInput(payload.authorName.trim())
-        :   'Administrator';
+        typeof payload?.authorName === 'string' && payload.authorName.trim()
+            ? sanitizeInput(payload.authorName.trim())
+            : 'Administrator';
     const rawContent = typeof payload?.content === 'string' ? payload.content.trim() : '';
     const content = sanitizeInput(rawContent);
 

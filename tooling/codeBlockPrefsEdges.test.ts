@@ -6,8 +6,9 @@ import { afterEach, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env', () => ({ browser: true }));
 
-const { codeBlockPrefsStore } =
-    await import('../packages/mdrs/dom/src/codeBlockPrefsStore.svelte.ts');
+const { codeBlockPrefsStore } = await import(
+    '../packages/mdrs/dom/src/codeBlockPrefsStore.svelte.ts'
+);
 
 const realStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 

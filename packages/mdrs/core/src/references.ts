@@ -15,10 +15,10 @@ export function extractReferences(markdown: string) {
         const boundary = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
         if (fence) {
             if (
-                boundary
-                && boundary[1][0] === fence[0]
-                && boundary[1].length >= fence.length
-                && !boundary[2].trim()
+                boundary &&
+                boundary[1][0] === fence[0] &&
+                boundary[1].length >= fence.length &&
+                !boundary[2].trim()
             )
                 fence = '';
             (inside ? definitions : output).push(line);

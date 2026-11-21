@@ -50,9 +50,9 @@ function candidatesFor(placement: keyof typeof HINT_PLACEMENT, narrow: boolean):
     if (placement === 'inline') return ['inline'];
     if (placement === 'trailing') return ['trailing'];
     if (placement === 'after') return ['after', 'aboveEnd', 'topEnd'];
-    return narrow ?
-            ['topCenter', 'bottomCenter', 'topEnd', 'bottomEnd', 'aboveEnd', 'after']
-        :   ['topEnd', 'bottomEnd', 'topCenter', 'bottomCenter', 'aboveEnd', 'after'];
+    return narrow
+        ? ['topCenter', 'bottomCenter', 'topEnd', 'bottomEnd', 'aboveEnd', 'after']
+        : ['topEnd', 'bottomEnd', 'topCenter', 'bottomCenter', 'aboveEnd', 'after'];
 }
 
 function textAt(x: number, y: number) {
@@ -140,10 +140,10 @@ function inheritedScope(node: HTMLElement): string {
 function resolveLabel(node: HTMLElement, label?: string): string {
     if (label) return label;
     return (
-        node.getAttribute('aria-label')
-        || node.getAttribute('title')
-        || node.textContent?.trim().slice(0, 60)
-        || 'Action'
+        node.getAttribute('aria-label') ||
+        node.getAttribute('title') ||
+        node.textContent?.trim().slice(0, 60) ||
+        'Action'
     );
 }
 
@@ -229,9 +229,9 @@ export function shortcut(node: HTMLElement, params: ShortcutParams = {}) {
             current.className = `${HINT_BASE} ${HINT_POSITIONS[option]}`;
             const rect = current.getBoundingClientRect();
             const score =
-                (collides(current, rect) ? 1e6 : 0)
-                + clippedArea(current, rect) * 10
-                + (option === 'inline' ? 0 : coverage(current, rect));
+                (collides(current, rect) ? 1e6 : 0) +
+                clippedArea(current, rect) * 10 +
+                (option === 'inline' ? 0 : coverage(current, rect));
             if (score < best) {
                 best = score;
                 chosen = option;

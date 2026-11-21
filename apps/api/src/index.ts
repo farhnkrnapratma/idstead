@@ -107,9 +107,9 @@ app.use('*', async (c, next) => {
 
     const contentType = response.headers.get('content-type') ?? '';
     if (
-        response.status === 200
-        && !response.headers.has('ETag')
-        && !/application\/(pdf|zip|octet-stream)/.test(contentType)
+        response.status === 200 &&
+        !response.headers.has('ETag') &&
+        !/application\/(pdf|zip|octet-stream)/.test(contentType)
     ) {
         const conditional = await publicResponse(
             c.req.raw,

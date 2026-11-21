@@ -112,13 +112,13 @@ export function buildSvg(paths: SvgPath[]): string {
     const content = paths
         .map(path => {
             if (
-                typeof path.d !== 'string'
-                || path.d.length > 100_000
-                || !/^[MLQZCHVmlqzchv0-9.,\s-]+$/.test(path.d)
-                || !/^#[0-9a-f]{6}$/i.test(path.fill)
-                || !Number.isFinite(path.opacity)
-                || path.opacity < 0
-                || path.opacity > 1
+                typeof path.d !== 'string' ||
+                path.d.length > 100_000 ||
+                !/^[MLQZCHVmlqzchv0-9.,\s-]+$/.test(path.d) ||
+                !/^#[0-9a-f]{6}$/i.test(path.fill) ||
+                !Number.isFinite(path.opacity) ||
+                path.opacity < 0 ||
+                path.opacity > 1
             )
                 throw new Error('Invalid vector path.');
             return `<path fill="${path.fill}" opacity="${path.opacity}" d="${path.d}"/>`;

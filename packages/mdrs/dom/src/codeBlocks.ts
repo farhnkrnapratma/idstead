@@ -110,16 +110,16 @@ export function applyCodeThemeVariables(target: HTMLElement, source: HTMLElement
     const themed = target.closest<HTMLElement>('[data-mdrs-code-theme], [data-code-theme]');
     const theme = themed?.dataset.mdrsCodeTheme ?? themed?.dataset.codeTheme;
     const isDark =
-        theme === 'dark'
-        || (theme !== 'light'
-            && typeof document !== 'undefined'
-            && document.documentElement.classList.contains('dark'));
+        theme === 'dark' ||
+        (theme !== 'light' &&
+            typeof document !== 'undefined' &&
+            document.documentElement.classList.contains('dark'));
 
     target.style.setProperty(
         '--code-theme-border',
-        isDark ?
-            `color-mix(in srgb, ${themeForeground} 18%, ${themeBackground})`
-        :   `color-mix(in srgb, ${themeForeground} 20%, ${themeBackground})`
+        isDark
+            ? `color-mix(in srgb, ${themeForeground} 18%, ${themeBackground})`
+            : `color-mix(in srgb, ${themeForeground} 20%, ${themeBackground})`
     );
 }
 
@@ -696,8 +696,9 @@ export function enhanceCodeBlocks(
         if (isInsideTabs && rawLang) {
             const langBadge = document.createElement('span');
             langBadge.className = 'mdrs-code-badge';
-            langBadge.textContent =
-                customFilename ? `${customFilename} \u00b7 ${rawLang}` : rawLang;
+            langBadge.textContent = customFilename
+                ? `${customFilename} \u00b7 ${rawLang}`
+                : rawLang;
             langBadge.title = langBadge.textContent;
             codeContainer.appendChild(langBadge);
         }
@@ -787,9 +788,9 @@ export function enhanceCodeBlocks(
             reserve: isInsideTabs,
             bordered: !isInsideTabs,
             suppressed: () =>
-                codeBlockPrefsStore.current.wrap
-                || codeBlockPrefsStore.current.minimal
-                || readingModeStore.active,
+                codeBlockPrefsStore.current.wrap ||
+                codeBlockPrefsStore.current.minimal ||
+                readingModeStore.active,
             onResize: syncGutterRowHeights,
             onLayout: visible => {
                 codeBody.style.borderBottomLeftRadius = visible ? '0px' : '0.375rem';
@@ -806,8 +807,8 @@ export function enhanceCodeBlocks(
             const prefs = codeBlockPrefsStore.current;
 
             const isSiteDark =
-                typeof document !== 'undefined'
-                && document.documentElement.classList.contains('dark');
+                typeof document !== 'undefined' &&
+                document.documentElement.classList.contains('dark');
             const effectiveTheme = resolveHljsTheme(isSiteDark, prefs.colorScheme);
             codeContainer.setAttribute('data-mdrs-code-theme', effectiveTheme);
             codeBody.setAttribute('data-mdrs-code-theme', effectiveTheme);
@@ -842,9 +843,9 @@ export function enhanceCodeBlocks(
                 headerBar.setAttribute('data-mdrs-code-theme', effectiveTheme);
                 if (isMinimal) {
                     headerBar.className =
-                        lineCount === 1 ?
-                            HEADER_BAR_MINIMAL_CENTERED_CLASS
-                        :   HEADER_BAR_MINIMAL_CLASS;
+                        lineCount === 1
+                            ? HEADER_BAR_MINIMAL_CENTERED_CLASS
+                            : HEADER_BAR_MINIMAL_CLASS;
                     leftSpan.style.display = 'none';
                     codeBody.style.borderTopWidth = '1px';
                     codeBody.style.borderTopLeftRadius = '0.375rem';

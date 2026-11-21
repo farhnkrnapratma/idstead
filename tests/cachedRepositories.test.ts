@@ -28,9 +28,11 @@ function fakeRepositories(calls: Calls) {
     return {
         author: group('author', () => ({ name: 'A' })),
         blog: group('blog', method =>
-            method === 'readMarkdown' || method === 'readRender' ? null
-            : method === 'findPublished' ? { id: 'p1', source }
-            : [{ id: 'p1', source }]
+            method === 'readMarkdown' || method === 'readRender'
+                ? null
+                : method === 'findPublished'
+                  ? { id: 'p1', source }
+                  : [{ id: 'p1', source }]
         ),
         comments: group('comments', () => []),
         legal: group('legal', () => ({ slug: 'privacy' })),

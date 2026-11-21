@@ -62,16 +62,16 @@ export function staggerChildren(node: HTMLElement) {
 
 export function portal(node: HTMLElement, target: HTMLElement | string = 'body') {
     const targetEl =
-        (typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target)
-        ?? document.body;
+        (typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target) ??
+        document.body;
     targetEl.appendChild(node);
 
     return {
         update(newTarget: HTMLElement | string = 'body') {
             const nextTargetEl =
-                (typeof newTarget === 'string' ?
-                    document.querySelector<HTMLElement>(newTarget)
-                :   newTarget) ?? document.body;
+                (typeof newTarget === 'string'
+                    ? document.querySelector<HTMLElement>(newTarget)
+                    : newTarget) ?? document.body;
             if (nextTargetEl !== node.parentNode) {
                 nextTargetEl.appendChild(node);
             }

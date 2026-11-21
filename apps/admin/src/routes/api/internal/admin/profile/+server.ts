@@ -97,8 +97,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     for (const [key, expiry] of attempts) if (expiry < now) attempts.delete(key);
     const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
     if (
-        (limiter && !(await limiter.limit({ key: `profile-upload:${auth.actor}` })).success)
-        || (attempts.get(auth.actor) ?? 0) > now
+        (limiter && !(await limiter.limit({ key: `profile-upload:${auth.actor}` })).success) ||
+        (attempts.get(auth.actor) ?? 0) > now
     )
         return apiError(429, 'PROFILE_UPLOAD_RATE_LIMITED', 'Please wait before saving again.');
     attempts.set(auth.actor, now + 3000);
@@ -149,11 +149,9 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         if (!Number.isSafeInteger(payload.revision) || Number(payload.revision) < 0)
             throw new Error('Reload the profile before saving.');
         if (
-            payload.id !== null
-            && (typeof payload.id !== 'string'
-                || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-                    payload.id
-                ))
+            payload.id !== null &&
+            (typeof payload.id !== 'string' ||
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.id))
         )
             throw new Error('Invalid profile.');
         let current = null;
@@ -203,9 +201,9 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 if (!row || assets.length !== names.length)
                     throw new ProfileInputError({
                         [kind]:
-                            kind === 'avatar' ?
-                                'Upload the profile image again to complete its image package.'
-                            :   'Upload the website banner again to complete its image package.'
+                            kind === 'avatar'
+                                ? 'Upload the profile image again to complete its image package.'
+                                : 'Upload the website banner again to complete its image package.'
                     });
                 meta[kind] = groupMeta(row, kind);
                 kept.push({ kind, assets });
@@ -218,9 +216,9 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             400,
             'PROFILE_INVALID_INPUT',
             error instanceof Error ? error.message : 'Invalid profile or image data.',
-            error instanceof ProfileInputError ?
-                JSON.stringify({ fields: error.fields })
-            :   undefined
+            error instanceof ProfileInputError
+                ? JSON.stringify({ fields: error.fields })
+                : undefined
         );
     }
     const version = files || bannerFiles ? crypto.randomUUID() : null;
@@ -284,8 +282,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                     { headers: { 'Cache-Control': 'no-store' } }
                 );
             if (
-                !verifyFailed
-                && ['40001', '23505', '23502', '23503', '23514', '22P02', 'P0001'].includes(
+                !verifyFailed &&
+                ['40001', '23505', '23502', '23503', '23514', '22P02', 'P0001'].includes(
                     saved.code ?? ''
                 )
             )
@@ -312,10 +310,9 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         {
             action: version ? 'profile.avatar_update' : 'profile.update',
             category: 'profile',
-            summary:
-                version ?
-                    `Updated profile ${[files && 'image', bannerFiles && 'banner'].filter(Boolean).join(' and ')}${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
-                :   `Updated ${changedFields.join(', ') || 'profile'}.`,
+            summary: version
+                ? `Updated profile ${[files && 'image', bannerFiles && 'banner'].filter(Boolean).join(' and ')}${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
+                : `Updated ${changedFields.join(', ') || 'profile'}.`,
             details: {
                 fields: changedFields,
                 avatarUpdated: Boolean(files),

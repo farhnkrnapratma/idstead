@@ -181,7 +181,7 @@ const realMdrs = await import('@mdrs/core');
 mock.module('@mdrs/core', () => ({
     ...realMdrs,
     validateDefineForSave: (...args: unknown[]) =>
-        slot.validateDefineForSave ?
-            slot.validateDefineForSave(...args)
-        :   (realMdrs.validateDefineForSave as (...args: unknown[]) => unknown)(...args)
+        slot.validateDefineForSave
+            ? slot.validateDefineForSave(...args)
+            : (realMdrs.validateDefineForSave as (...args: unknown[]) => unknown)(...args)
 }));

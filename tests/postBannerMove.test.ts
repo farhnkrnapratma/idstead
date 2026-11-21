@@ -8,8 +8,9 @@ import { memoryPlatform } from './support/assets.ts';
 mock.module('$app/env/private', () => ({}));
 mock.module('$app/env/public', () => ({}));
 
-const { movePostBanner, syncPostAssets } =
-    await import('../packages/lib/src/server/blogPostAssets.ts');
+const { movePostBanner, syncPostAssets } = await import(
+    '../packages/lib/src/server/blogPostAssets.ts'
+);
 
 const ID = '11111111-1111-4111-8111-111111111111';
 const VERSION = '22222222-2222-4222-8222-222222222222';

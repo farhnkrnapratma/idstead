@@ -127,9 +127,8 @@ async function authenticateClient(
     });
     if (basic === 'invalid') return invalidClient(true);
     if (
-        basic
-        && (form.has('client_secret')
-            || (form.has('client_id') && form.get('client_id') !== basic.id))
+        basic &&
+        (form.has('client_secret') || (form.has('client_id') && form.get('client_id') !== basic.id))
     )
         return {
             ok: false,
@@ -152,10 +151,10 @@ async function authenticateClient(
 
     const client = await deps.clients.get(clientId);
     const valid =
-        client !== null
-        && (client.secretHash === null ?
-            secret === null
-        :   secret !== null && constantTimeEqual(await sha256Hex(secret), client.secretHash));
+        client !== null &&
+        (client.secretHash === null
+            ? secret === null
+            : secret !== null && constantTimeEqual(await sha256Hex(secret), client.secretHash));
     if (!valid) {
         await deps.lockout.fail(keys);
         return invalidClient(Boolean(basic));
@@ -223,9 +222,9 @@ export async function handleTokenRequest(request: Request, deps: OidcEndpointDep
             return oauthError(400, 'invalid_grant', 'The code is invalid, expired or used.');
         const stored = result.code;
         if (
-            stored.clientId !== client.clientId
-            || stored.redirectUri !== redirectUri
-            || (await pkceChallenge(verifier)) !== stored.codeChallenge
+            stored.clientId !== client.clientId ||
+            stored.redirectUri !== redirectUri ||
+            (await pkceChallenge(verifier)) !== stored.codeChallenge
         ) {
             await deps.auth.revokeGrant(stored.grantId);
             return oauthError(400, 'invalid_grant', 'The code does not match this request.');

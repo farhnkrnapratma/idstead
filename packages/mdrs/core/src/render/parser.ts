@@ -95,9 +95,9 @@ markdownParser.use({
             const totalLines = token.text.replace(/\n$/, '').split('\n').length;
             const highlightedLines = parseHighlightedLines(mark, totalLines);
             const preAttrs =
-                (highlightedLines.length ?
-                    ` data-mdrs-highlight-lines="${highlightedLines.join(',')}"`
-                :   '') + (filename ? ` data-mdrs-filename="${escapeAttr(filename)}"` : '');
+                (highlightedLines.length
+                    ? ` data-mdrs-highlight-lines="${highlightedLines.join(',')}"`
+                    : '') + (filename ? ` data-mdrs-filename="${escapeAttr(filename)}"` : '');
             if (!preAttrs) return html;
 
             return html.replace(/^<pre>/, () => `<pre${preAttrs}>`);
@@ -139,9 +139,9 @@ markdownParser.use({
         },
         image(token) {
             const alt = escapeAttr(
-                token.tokens ?
-                    this.parser.parseInline(token.tokens, this.parser.textRenderer)
-                :   token.text || ''
+                token.tokens
+                    ? this.parser.parseInline(token.tokens, this.parser.textRenderer)
+                    : token.text || ''
             );
             const href = sanitizeUrl(token.href || '');
             if (!href) return alt;

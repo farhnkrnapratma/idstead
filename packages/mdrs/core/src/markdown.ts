@@ -51,8 +51,9 @@ export async function resolveDefines(
     const bodyAfterDefine =
         defineRaw === null ? body : withDefineGap.replace(/^(?:[ \t]*\r?\n)+/, '');
     const interpolate = hasDefineEntries(defineRaw);
-    const { scope } =
-        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
+    const { scope } = interpolate
+        ? await evaluateDefineBlock(defineRaw, resolvers)
+        : { scope: new Map() };
     const verbatimBlocks = new Map<string, string>();
     const { output: withConditionals } = await resolveConditionals(
         protectVerbatimBlocks(bodyAfterDefine, verbatimBlocks),
@@ -86,8 +87,9 @@ export async function renderMarkdownUnsafe(
     const { body: bodyAfterFrontmatter } = extractFrontmatter(stripPlaceholderChars(markdown));
     const { raw: defineRaw, body: bodyAfterDefine } = extractDefineBlock(bodyAfterFrontmatter);
     const interpolate = hasDefineEntries(defineRaw);
-    const { scope } =
-        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
+    const { scope } = interpolate
+        ? await evaluateDefineBlock(defineRaw, resolvers)
+        : { scope: new Map() };
     const verbatimPlaceholders = new Map<string, string>();
     const { output: withConditionals } = await resolveConditionals(
         extractVerbatimBlocks(bodyAfterDefine, verbatimPlaceholders),
@@ -96,10 +98,9 @@ export async function renderMarkdownUnsafe(
         { inline: interpolate }
     );
     const interpolationPlaceholders = new Map<string, string>();
-    const withInterpolationProtected =
-        interpolate ?
-            protectInterpolationTokens(withConditionals, interpolationPlaceholders)
-        :   withConditionals;
+    const withInterpolationProtected = interpolate
+        ? protectInterpolationTokens(withConditionals, interpolationPlaceholders)
+        : withConditionals;
     const mathSources = new Map<string, MathSource>();
     const withMathExtracted = extractMath(withInterpolationProtected, mathSources);
     const { output: withInterpolated } = await resolveProtectedInterpolationTokens(
@@ -109,16 +110,16 @@ export async function renderMarkdownUnsafe(
         resolvers
     );
     const mathPlaceholders = await renderMathSources(mathSources, async source =>
-        source.includes(placeholderPrefix('INTERPOLATION')) ?
-            (
-                await resolveProtectedInterpolationTokens(
-                    source,
-                    interpolationPlaceholders,
-                    scope,
-                    resolvers
-                )
-            ).output
-        :   source
+        source.includes(placeholderPrefix('INTERPOLATION'))
+            ? (
+                  await resolveProtectedInterpolationTokens(
+                      source,
+                      interpolationPlaceholders,
+                      scope,
+                      resolvers
+                  )
+              ).output
+            : source
     );
     const references = extractReferences(withInterpolated);
     const icons = await loadIcons(references.markdown);

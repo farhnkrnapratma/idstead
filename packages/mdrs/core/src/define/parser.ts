@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import {
-    type ArrayLit,
-    type Assignment,
-    type Expr,
-    type ObjectLit,
-    type PathSegment,
-    type Reference,
-    type TemplateLit
+import type {
+    ArrayLit,
+    Assignment,
+    Expr,
+    ObjectLit,
+    PathSegment,
+    Reference,
+    TemplateLit
 } from './ast';
 import { DefineError } from './errors';
 import { type Token, type TokenType, tokenize } from './lexer';
@@ -194,12 +194,12 @@ export class Parser {
         return {
             kind: 'template',
             parts: (tok.parts ?? []).map(part =>
-                part.kind === 'expression' ?
-                    {
-                        kind: 'expression',
-                        expr: new Parser(tokenize(part.source)).parseCompleteExpression()
-                    }
-                :   part
+                part.kind === 'expression'
+                    ? {
+                          kind: 'expression',
+                          expr: new Parser(tokenize(part.source)).parseCompleteExpression()
+                      }
+                    : part
             )
         };
     }

@@ -8,7 +8,7 @@
         theme = localStorage.getItem('theme') || 'auto';
     } catch {}
     const dark =
-        theme === 'dark'
-        || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        theme === 'dark' ||
+        (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', dark);
 })();

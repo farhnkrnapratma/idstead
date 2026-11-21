@@ -8,8 +8,9 @@ import { page } from '$app/state';
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
 
-const { default: FeedbackPage } =
-    (await import('../apps/web/src/routes/feedback/+page.svelte')) as { default: never };
+const { default: FeedbackPage } = (await import(
+    '../apps/web/src/routes/feedback/+page.svelte'
+)) as { default: never };
 
 const realFetch = globalThis.fetch;
 const mounted: object[] = [];

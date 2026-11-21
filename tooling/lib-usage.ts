@@ -33,8 +33,8 @@ function walk(dir: string): string[] {
     if (!existsSync(dir)) return [];
     return [...sourceFiles.scanSync({ cwd: dir, absolute: true })].filter(
         file =>
-            !file.endsWith('.d.ts')
-            && !path.relative(dir, file).split(path.sep).includes('node_modules')
+            !file.endsWith('.d.ts') &&
+            !path.relative(dir, file).split(path.sep).includes('node_modules')
     );
 }
 
@@ -119,10 +119,9 @@ for (const match of readFileSync(barrel, 'utf8').matchAll(specifierPattern)) {
     if (!match[1]) continue;
     const target = resolveLibImport(match[1].replace(/\?.*$/, ''), barrel);
     if (!target) continue;
-    const names =
-        /^export\s+\*/.test(match[0]) ?
-            declaredExports(target)
-        :   [...exportedNames(match[0]).keys()];
+    const names = /^export\s+\*/.test(match[0])
+        ? declaredExports(target)
+        : [...exportedNames(match[0]).keys()];
     for (const name of names) barrelExports.set(name, target);
 }
 

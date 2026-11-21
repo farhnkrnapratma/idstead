@@ -63,16 +63,17 @@ function matchCommands(
             }
         }
         if (
-            isRegexQuery
-            && regex
-            && (regex.test(cmd.title) || (cmd.subtitle && regex.test(cmd.subtitle)))
+            isRegexQuery &&
+            regex &&
+            (regex.test(cmd.title) || (cmd.subtitle && regex.test(cmd.subtitle)))
         ) {
             out.push({ item: cmd, score: REGEX_COMMAND_SCORE });
             continue;
         }
         const title = matcher.fuzzy(cmd.title, query);
-        const subtitle =
-            cmd.subtitle ? matcher.fuzzy(cmd.subtitle, query) : { matched: false, score: 0 };
+        const subtitle = cmd.subtitle
+            ? matcher.fuzzy(cmd.subtitle, query)
+            : { matched: false, score: 0 };
         if (title.matched || subtitle.matched) {
             out.push({ item: cmd, score: scoreBest(title, subtitle) });
         }
@@ -97,11 +98,11 @@ function matchProjects(
         let score = scoreBest(matchName, matchDesc);
 
         if (
-            isRegexQuery
-            && regex
-            && (regex.test(p.name)
-                || (p.desc && regex.test(p.desc))
-                || projectTags.some(t => regex.test(t)))
+            isRegexQuery &&
+            regex &&
+            (regex.test(p.name) ||
+                (p.desc && regex.test(p.desc)) ||
+                projectTags.some(t => regex.test(t)))
         ) {
             isMatch = true;
             score = REGEX_SCORE;
@@ -173,8 +174,8 @@ export function searchLocalItems(
     if (isCommandQuery) {
         for (const dyn of source.dynamicCommands(query)) {
             if (
-                !isRegex
-                || (regex && (regex.test(dyn.title) || (dyn.subtitle && regex.test(dyn.subtitle))))
+                !isRegex ||
+                (regex && (regex.test(dyn.title) || (dyn.subtitle && regex.test(dyn.subtitle))))
             ) {
                 matched.push({ item: dyn, score: DYNAMIC_SCORE });
             }
@@ -209,9 +210,9 @@ export function dedupeItems(candidates: SpotlightItem[]): SpotlightItem[] {
     for (const item of candidates) {
         const lowerTitle = item.title.toLowerCase();
         if (
-            seenIds.has(item.id)
-            || seenTitles.has(lowerTitle)
-            || (item.url && seenUrls.has(item.url))
+            seenIds.has(item.id) ||
+            seenTitles.has(lowerTitle) ||
+            (item.url && seenUrls.has(item.url))
         ) {
             continue;
         }

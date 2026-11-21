@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import {
-    type ArrayLit,
-    type BinaryExpr,
-    type Expr,
-    type ObjectLit,
-    type PathSegment,
-    type Reference,
-    type TemplateLit,
-    type TernaryExpr,
-    type UnaryExpr
+import type {
+    ArrayLit,
+    BinaryExpr,
+    Expr,
+    ObjectLit,
+    PathSegment,
+    Reference,
+    TemplateLit,
+    TernaryExpr,
+    UnaryExpr
 } from './ast';
 import { DefineError } from './errors';
 import { isValidIdentifierName } from './identifiers';
@@ -41,9 +41,9 @@ function scopeValue(name: string, ctx: EvalContext): DefineValue {
     const value = ctx.scope.get(name);
     if (value === undefined) {
         throw new DefineError(
-            ctx.allowThis ?
-                `'${name}' is undefined, or referenced before it was defined`
-            :   `'${name}' is undefined`,
+            ctx.allowThis
+                ? `'${name}' is undefined, or referenced before it was defined`
+                : `'${name}' is undefined`,
             name
         );
     }
@@ -81,8 +81,9 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
             throw new DefineError('api.v1 must be followed by a resource name, e.g. api.v1.author');
         }
         const resource = node.path[1].name as string;
-        const resolver =
-            Object.hasOwn(ctx.apiRegistry, resource) ? ctx.apiRegistry[resource] : null;
+        const resolver = Object.hasOwn(ctx.apiRegistry, resource)
+            ? ctx.apiRegistry[resource]
+            : null;
         if (!resolver) {
             throw new DefineError(
                 `Unknown api.v1 resource '${resource}' (supported: ${Object.keys(ctx.apiRegistry).join(', ')})`

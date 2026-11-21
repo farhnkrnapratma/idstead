@@ -44,8 +44,8 @@ describe('ARD manifest', () => {
         expect(
             manifest.entries.some(
                 entry =>
-                    entry.type === 'application/ai-skill+md'
-                    && entry.url?.includes('/.well-known/agent-skills/')
+                    entry.type === 'application/ai-skill+md' &&
+                    entry.url?.includes('/.well-known/agent-skills/')
             )
         ).toBe(true);
         expect(manifest.entries.find(entry => entry.url?.endsWith('/v1'))?.type).toBe(
@@ -264,9 +264,9 @@ describe('ARD search', () => {
                     result: {
                         data: input.text.map(text => ({
                             embedding:
-                                text === 'weather forecast' || /weather|forecast/i.test(text) ?
-                                    [1, 0]
-                                :   [0, 1]
+                                text === 'weather forecast' || /weather|forecast/i.test(text)
+                                    ? [1, 0]
+                                    : [0, 1]
                         }))
                     }
                 };

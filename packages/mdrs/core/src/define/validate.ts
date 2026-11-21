@@ -5,8 +5,8 @@
 import { extractFrontmatter } from '../frontmatter';
 import { extractReferences } from '../references';
 import { evaluateDefineBlock, extractDefineBlock, hasDefineEntries } from './block';
-import { type DefineErrorInfo } from './errors';
-import { type ApiRegistry } from './evaluate';
+import type { DefineErrorInfo } from './errors';
+import type { ApiRegistry } from './evaluate';
 import { resolveConditionals } from './conditionals';
 import { interpolateBody } from './interpolation';
 import { MAX_DOCUMENT_LENGTH } from '../limits';
@@ -19,8 +19,9 @@ export async function validateDefineForSave(
         return { ok: false, errors: [{ message: 'Markdown document is too large to render.' }] };
     }
     const frontmatter = extractFrontmatter(markdown);
-    const frontmatterErrors: DefineErrorInfo[] =
-        frontmatter.error ? [{ message: frontmatter.error }] : [];
+    const frontmatterErrors: DefineErrorInfo[] = frontmatter.error
+        ? [{ message: frontmatter.error }]
+        : [];
     const {
         raw: defineRaw,
         body: bodyAfterDefine,
@@ -34,8 +35,9 @@ export async function validateDefineForSave(
         apiRegistry,
         { inline: interpolate, mode: 'validate' }
     );
-    const { errors: interpolationErrors } =
-        interpolate ? await interpolateBody(allBranches, scope, apiRegistry) : { errors: [] };
+    const { errors: interpolationErrors } = interpolate
+        ? await interpolateBody(allBranches, scope, apiRegistry)
+        : { errors: [] };
     const structureErrors: DefineErrorInfo[] = [];
     try {
         extractReferences(bodyAfterDefine);

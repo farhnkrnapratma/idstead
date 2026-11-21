@@ -7,10 +7,10 @@ import { type Tokens } from 'marked';
 export function cleanListItemHtml(html: string, loose: boolean): string {
     let cleaned = html.trim();
     if (
-        !loose
-        && cleaned.startsWith('<p>')
-        && cleaned.endsWith('</p>')
-        && !cleaned.slice(3, -4).includes('<p>')
+        !loose &&
+        cleaned.startsWith('<p>') &&
+        cleaned.endsWith('</p>') &&
+        !cleaned.slice(3, -4).includes('<p>')
     ) {
         cleaned = cleaned.slice(3, -4).trim();
     }
