@@ -6,6 +6,7 @@ import {
     type ActivityLog,
     type AdminActivityStore,
     type AdminAuthorStore,
+    type AdminSubscriberStore,
     type AdminPostStores,
     type AdminSettingsStore,
     type ArdIndexStore,
@@ -26,6 +27,7 @@ import {
     createD1ActivityLog,
     createD1AdminActivityStore,
     createD1AdminAuthorStore,
+    createD1AdminSubscriberStore,
     createD1AdminNotifier,
     createD1AdminPostStore,
     createD1AdminSettingsStore,
@@ -80,6 +82,7 @@ export interface ServiceStores extends Repositories {
     adminActivity: AdminActivityStore;
     adminSettings: AdminSettingsStore;
     adminAuthor: AdminAuthorStore;
+    adminSubscribers: AdminSubscriberStore;
     adminPosts: AdminPostStores;
     resumeDocuments: ResumeDocumentStore;
     openPgpKeys: OpenPgpKeyStore;
@@ -151,6 +154,7 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
         adminActivity: createD1AdminActivityStore(db),
         adminSettings: createD1AdminSettingsStore(db),
         adminAuthor: createD1AdminAuthorStore(db),
+        adminSubscribers: createD1AdminSubscriberStore(db),
         adminPosts: {
             posts: createD1AdminPostStore(db, bucket),
             operations: createD1PostOperationStore(db, bucket),

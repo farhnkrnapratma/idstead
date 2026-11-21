@@ -7,6 +7,7 @@ import {
     type SubscriberSeed
 } from './contracts/subscriberRepository.contract.ts';
 import {
+    createD1AdminSubscriberStore,
     createD1NewsletterStore,
     createD1SubscriberRepository
 } from '../packages/data/src/d1/subscribers.ts';
@@ -22,7 +23,9 @@ function d1FromSeed(seed: SubscriberSeed) {
             status: subscriber.status,
             unsubscribe_token: subscriber.unsubscribeToken,
             confirm_token_hash: subscriber.confirmTokenHash ?? null,
-            confirm_sent_at: subscriber.confirmSentAt ?? null
+            confirm_sent_at: subscriber.confirmSentAt ?? null,
+            confirmed_at: subscriber.confirmedAt ?? null,
+            created_at: subscriber.createdAt
         }))
     );
     insertRows(
@@ -40,7 +43,8 @@ function d1FromSeed(seed: SubscriberSeed) {
     );
     return {
         subscribers: createD1SubscriberRepository(db),
-        newsletter: createD1NewsletterStore(db)
+        newsletter: createD1NewsletterStore(db),
+        admin: createD1AdminSubscriberStore(db)
     };
 }
 

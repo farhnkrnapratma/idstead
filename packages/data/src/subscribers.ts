@@ -44,3 +44,26 @@ export interface NewsletterStore {
     claim(postId: string, force: boolean): Promise<BroadcastClaim>;
     recipients(): Promise<NewsletterRecipient[]>;
 }
+
+export interface AdminSubscriber {
+    id: string;
+    email: string;
+    status: SubscriberStatus;
+    created_at: string;
+    confirmed_at: string | null;
+    unsubscribed_at: string | null;
+}
+
+export interface AdminSubscriberQuery {
+    query?: string;
+    status?: SubscriberStatus;
+    page: number;
+    limit: number;
+}
+
+export interface AdminSubscriberStore {
+    list(query: AdminSubscriberQuery): Promise<{ items: AdminSubscriber[]; total: number }>;
+    byId(id: string): Promise<AdminSubscriber | null>;
+    setStatus(id: string, status: 'active' | 'unsubscribed'): Promise<AdminSubscriber | null>;
+    delete(id: string): Promise<'deleted' | 'not-found'>;
+}

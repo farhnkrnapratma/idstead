@@ -96,6 +96,7 @@ for (const [name, target] of [
     ['markdownChart', 'tooling/markdownChart.test.ts'],
     ['activityWorkspace', 'tooling/activityWorkspace.test.ts'],
     ['activityLogWorkspace', 'tooling/activityLogWorkspace.test.ts'],
+    ['subscribersWorkspace', 'tooling/subscribersWorkspace.test.ts'],
     ['identityProviderSettings', 'tooling/identityProviderSettings.test.ts'],
     ['postEditor', 'tooling/postEditor.test.ts'],
     ['resumeDownloadMenuFull', 'tooling/resumeDownloadMenuFull.test.ts'],

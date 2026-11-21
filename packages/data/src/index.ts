@@ -35,7 +35,11 @@ export { createD1AuthorRepository } from './d1/author';
 export { createD1AdminAuthorStore, createD1AuthorWriter } from './d1/adminAuthor';
 export { createD1ResumeDocumentStore, createD1OpenPgpKeyStore } from './d1/resumeDocuments';
 export { createD1SiteDataStore } from './d1/siteData';
-export { createD1NewsletterStore, createD1SubscriberRepository } from './d1/subscribers';
+export {
+    createD1AdminSubscriberStore,
+    createD1NewsletterStore,
+    createD1SubscriberRepository
+} from './d1/subscribers';
 export {
     createD1ActivityLog,
     createD1AdminNotifier,
