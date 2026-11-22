@@ -45,8 +45,7 @@ const IDENTITY_ASSETS = [
     'banner.webp',
     'favicon-16x16.png',
     'favicon-32x32.png',
-    'favicon.ico',
-    'favicon.svg'
+    'favicon.ico'
 ];
 const IDENTITY_COLUMNS = [
     'id',

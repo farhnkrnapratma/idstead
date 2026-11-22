@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { describe, expect, test } from 'bun:test';
-import { blobatar } from 'blobatar';
 import {
     BANNER_SAFE_WIDTH,
     avatarSeed,
     bannerLayout,
-    blobatarVector,
     displaySiteUrl,
     fallbackFingerprint,
     socialHandle,
     type BannerInput,
     type Measure
 } from '../apps/admin/src/lib/identityFallbackLayout.ts';
-import { buildSvg } from '../packages/lib/src/siteIdentity.ts';
 
 const measure: Measure = (text, font, size) =>
     Array.from(text).length * size * (font === 'mono' ? 0.6 : 0.58);
@@ -147,17 +144,4 @@ describe('fingerprints and seeds', () => {
         expect(avatarSeed('', 'id-1')).toBe('id-1');
         expect(avatarSeed('', null)).toMatch(/^[0-9a-f-]{36}$/);
     });
-});
-
-describe('blobatarVector', () => {
-    test.each(['John Doe', 'x', 'Farhan Kurnia Pratama'])(
-        '%s converts to a valid favicon vector',
-        seed => {
-            const paths = blobatarVector(blobatar(seed, { background: 'square' }));
-            expect(paths.length).toBeGreaterThan(1);
-            const svg = buildSvg(paths);
-            expect(svg).toContain('viewBox="0 0 128 128"');
-            expect(svg).not.toMatch(/<script|on\w+=/i);
-        }
-    );
 });

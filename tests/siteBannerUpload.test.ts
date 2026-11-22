@@ -184,9 +184,9 @@ describe('inspectAvif', () => {
 });
 
 describe('shared identity folder', () => {
-    test('avatar and banner assets partition one 13-file package', () => {
-        expect(identityAssetNames).toHaveLength(13);
-        expect(new Set(identityAssetNames).size).toBe(13);
+    test('avatar and banner assets partition one 12-file package', () => {
+        expect(identityAssetNames).toHaveLength(12);
+        expect(new Set(identityAssetNames).size).toBe(12);
         expect(avatarAssetNames.filter(name => bannerAssetNames.includes(name))).toEqual([]);
         expect([...avatarAssetNames, ...bannerAssetNames].sort()).toEqual(
             [...identityAssetNames].sort()
@@ -214,7 +214,6 @@ describe('shared identity folder', () => {
         const form = new FormData();
         for (const name of [...Object.keys(iconSizes), 'favicon.ico'])
             form.set(name, new File([new Uint8Array(8)], name));
-        form.set('vector', '[]');
         form.set('avatar.webp', new File([webp(512, 512)], 'avatar.webp'));
         await expect(validateAvatar(form)).rejects.toThrow('Upload the complete icon package.');
     });

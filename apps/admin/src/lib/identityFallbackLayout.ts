@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';
-import type { SvgPath } from '#lib/siteIdentity.ts';
 
 const FALLBACK_LAYOUT_VERSION = 1;
 export const BANNER_SAFE_WIDTH = 1040;
@@ -193,20 +192,4 @@ export async function fallbackFingerprint(
     );
     const digest = await crypto.subtle.digest('SHA-256', bytes);
     return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-export function blobatarVector(svg: string): SvgPath[] {
-    const scale = (d: string) =>
-        d.replace(/-?\d*\.?\d+/g, value => String(Math.round(Number(value) * 128) / 100));
-    const paths: SvgPath[] = [];
-    for (const match of svg.matchAll(
-        /<g fill="(#[0-9a-f]{6})">(.*?)<\/g>|<path d="([^"]+)" fill="(#[0-9a-f]{6})"\/>/gi
-    )) {
-        if (match[1])
-            for (const inner of match[2].matchAll(/<path d="([^"]+)"\/>/g))
-                paths.push({ d: scale(inner[1]), fill: match[1], opacity: 1 });
-        else paths.push({ d: scale(match[3]), fill: match[4], opacity: 1 });
-    }
-    if (!paths.length) throw new Error('Invalid generated avatar.');
-    return paths;
 }

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import tracer from 'imagetracerjs';
 import { encodeIndexedPng, encodePng } from '#lib/png.ts';
 import { IMAGE_LIMIT, iconSizes, makeIco } from '#lib/siteIdentity.ts';
 
@@ -67,21 +66,9 @@ self.onmessage = async (event: MessageEvent<{ bitmap: ImageBitmap; background: s
         const avif = await encodeAvif(avatarPixels);
         if (avif.byteLength > IMAGE_LIMIT) throw new Error('AVIF profile image exceeds 500 KB.');
         files['avatar.avif'] = avif;
-
-        const svg = tracer.imagedataToSVG(raster(128), {
-            numberofcolors: 128,
-            colorsampling: 1,
-            pathomit: 2,
-            ltres: 0.5,
-            qtres: 0.5,
-            roundcoords: 1,
-            strokewidth: 0,
-            desc: false,
-            viewbox: true
-        });
         (
             self as unknown as { postMessage(value: unknown, transfer: Transferable[]): void }
-        ).postMessage({ files, svg }, Object.values(files));
+        ).postMessage({ files }, Object.values(files));
     } catch (error) {
         self.postMessage({
             error: error instanceof Error ? error.message : 'Image processing failed.'
