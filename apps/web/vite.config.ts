@@ -16,7 +16,11 @@ export default defineConfig({
     envDir: ENV_DIR,
     plugins: [
         webpWasmPlugin(),
-        sentrySvelteKit({ authToken: process.env.SENTRY_AUTH_TOKEN, telemetry: false }),
+        sentrySvelteKit({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            telemetry: false,
+            sourcemaps: { filesToDeleteAfterUpload: ['./.svelte-kit/*/client/**/*.map'] }
+        }),
         tailwindcss(),
         sveltekit({
             compilerOptions: {
