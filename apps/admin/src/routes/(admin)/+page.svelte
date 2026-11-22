@@ -1171,7 +1171,6 @@ SPDX-License-Identifier: AGPL-3.0-only
         if (plan.avatar) {
             for (const [name, bytes] of Object.entries(plan.avatar.files.files))
                 form.set(name, new Blob([bytes]), name);
-            form.set('vector', JSON.stringify(plan.avatar.files.paths));
         }
         if (plan.banner) {
             form.set('banner.webp', plan.banner.files.wide.webp, 'banner.webp');

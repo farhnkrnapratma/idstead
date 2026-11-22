@@ -21,7 +21,6 @@ export const IMAGE_CACHE_CONTROL = 'public, max-age=300';
 export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const contentTypes: Record<string, string> = {
-    svg: 'image/svg+xml',
     ico: 'image/x-icon',
     webp: 'image/webp',
     avif: 'image/avif',
@@ -35,8 +34,7 @@ function isBanner(name: string) {
 function assetDimensions(name: string) {
     if (name in bannerSizes) return bannerSizes[name as keyof typeof bannerSizes];
     const size =
-        iconSizes[name as keyof typeof iconSizes] ??
-        (name.startsWith('avatar.') ? 512 : name.endsWith('.svg') ? 128 : 48);
+        iconSizes[name as keyof typeof iconSizes] ?? (name.startsWith('avatar.') ? 512 : 48);
     return { width: size, height: size };
 }
 
@@ -174,12 +172,7 @@ export async function serveIdentityAsset(
         const base = String(
             platform?.env?.PUBLIC_CDN_BASE_URL ?? publicEnv.PUBLIC_CDN_BASE_URL ?? ''
         ).replace(/\/+$/, '');
-        if (
-            !base ||
-            isBanner(name) ||
-            name === 'favicon.svg' ||
-            (name === 'avatar.png' && url.pathname !== '/hero.png')
-        )
+        if (!base || isBanner(name) || (name === 'avatar.png' && url.pathname !== '/hero.png'))
             return missing();
         const upstream = await fetch(`${base}/${url.pathname === '/hero.png' ? 'hero.png' : name}`);
         return new Response(request.method === 'HEAD' ? null : upstream.body, {
@@ -201,8 +194,6 @@ export async function serveIdentityAsset(
                 : IMAGE_CACHE_CONTROL,
         ETag: object.httpEtag
     });
-    if (name.endsWith('.svg'))
-        headers.set('Content-Security-Policy', "default-src 'none'; style-src 'none'; sandbox");
     const matched = request.headers
         .get('if-none-match')
         ?.split(',')

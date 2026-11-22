@@ -7,7 +7,6 @@ import { normalizeIconInput } from '#lib/author.ts';
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';
 import {
     bannerLayout,
-    blobatarVector,
     fallbackFingerprint,
     socialHandle,
     type BannerFont,
@@ -74,7 +73,7 @@ export async function generateAvatarPackage(
     ctx.drawImage(image, 0, 0, 512, 512);
     const file = new File([await canvasBlob(canvas)], 'avatar.png', { type: 'image/png' });
     const output = await processAvatar(file, signal);
-    return { files: output.files, paths: blobatarVector(blobatar(seed, { background: 'square' })) };
+    return { files: output.files };
 }
 
 function iconGlyph(social: BannerSocial): string | null {

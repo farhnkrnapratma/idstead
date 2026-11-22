@@ -4,26 +4,8 @@
 
 import { isSupportedRasterImage } from './imageFormat';
 import { runImageWorker } from './imageWorker';
-import { UPLOAD_LIMIT, buildSvg, type ImagePackage } from '#lib/siteIdentity.ts';
+import { UPLOAD_LIMIT, type ImagePackage } from '#lib/siteIdentity.ts';
 import { themeColors } from '@idstead/ui/themeColors.ts';
-
-function vectorPaths(svg: string) {
-    const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
-    return Array.from(doc.querySelectorAll('path')).map(path => {
-        const rgb = path.getAttribute('fill')?.match(/^rgb\((\d+),(\d+),(\d+)\)$/);
-        if (!rgb) throw new Error('Invalid vector color.');
-        return {
-            d: path.getAttribute('d') || '',
-            fill:
-                '#' +
-                rgb
-                    .slice(1)
-                    .map(value => Number(value).toString(16).padStart(2, '0'))
-                    .join(''),
-            opacity: Number(path.getAttribute('opacity') ?? 1)
-        };
-    });
-}
 
 export async function processAvatar(file: File, signal: AbortSignal): Promise<ImagePackage> {
     if (file.size > UPLOAD_LIMIT) throw new Error('Choose an image no larger than 10 MB.');
@@ -46,13 +28,11 @@ export async function processAvatar(file: File, signal: AbortSignal): Promise<Im
             'Choose an image at least 512 × 512 pixels and no larger than 40 megapixels.'
         );
     }
-    const result = await runImageWorker<{ files: ImagePackage['files']; svg: string }>(
+    const result = await runImageWorker<ImagePackage>(
         () =>
             new Worker(new URL('./workers/avatar.worker.ts', import.meta.url), { type: 'module' }),
         { bitmap, background: themeColors('light').background_color },
         { signal, transfer: [bitmap] }
     );
-    const paths = vectorPaths(result.svg);
-    buildSvg(paths);
-    return { files: result.files, paths };
+    return { files: result.files };
 }

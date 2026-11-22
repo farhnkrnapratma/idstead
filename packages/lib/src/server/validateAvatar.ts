@@ -5,7 +5,7 @@
 import UPNG from 'upng-js';
 import { Inflate } from 'pako';
 import { crc32 } from '#lib/png.ts';
-import { IMAGE_LIMIT, iconSizes, buildSvg, type SvgPath } from '#lib/siteIdentity.ts';
+import { IMAGE_LIMIT, iconSizes } from '#lib/siteIdentity.ts';
 import { identityFields } from './validateSiteBanner.ts';
 import { inspectAvif } from '#lib/avif.ts';
 import { inspectWebp } from '#lib/webp.ts';
@@ -86,7 +86,7 @@ export function validateIco(buffer: ArrayBuffer) {
 
 export async function validateAvatar(form: FormData): Promise<Record<string, ArrayBuffer> | null> {
     const formats = ['avatar.webp', 'avatar.avif'];
-    const required = [...Object.keys(iconSizes), 'favicon.ico', 'vector', ...formats];
+    const required = [...Object.keys(iconSizes), 'favicon.ico', ...formats];
     const entries = Array.from(new Set(form.keys())).filter(key => !identityFields.has(key));
     if (!entries.length) return null;
     const missingRequired = required.filter(key => form.getAll(key).length !== 1);
@@ -106,12 +106,6 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
     if (!(ico instanceof File)) throw new Error('Missing ICO.');
     files['favicon.ico'] = await ico.arrayBuffer();
     validateIco(files['favicon.ico']);
-    const vector = form.get('vector');
-    if (typeof vector !== 'string' || vector.length > IMAGE_LIMIT)
-        throw new Error('Invalid vector icon.');
-    files['favicon.svg'] = new TextEncoder().encode(
-        buildSvg(JSON.parse(vector) as SvgPath[])
-    ).buffer;
     for (const name of formats) {
         const file = form.get(name);
         if (!(file instanceof File) || file.size > IMAGE_LIMIT)
