@@ -17,7 +17,7 @@ const MATH_OPEN_RE = /^((?: {0,3}>[ ]?)* {0,3}):::math[ \t]*$/i;
 
 const MATH_CLOSE_RE = /^(?: {0,3}>[ ]?)* {0,3}:::[ \t]*$/;
 
-export function replaceMathBlocks(
+function replaceMathBlocks(
     text: string,
     render: (prefix: string, source: string, block: string) => string
 ): string {
@@ -30,7 +30,7 @@ export function replaceMathBlocks(
     );
 }
 
-export const MATH_INLINE_RE =
+const MATH_INLINE_RE =
     /(?<!\\)\$\$(?:[ \t]+((?:(?!\$\$)[^\n])*?[^\s$])[ \t]+|([^\s$](?:(?:(?!\$\$)[^\n])*?[^\s\\])?))\$\$(?!\d)/g;
 
 function decodeMathEntities(str: string): string {

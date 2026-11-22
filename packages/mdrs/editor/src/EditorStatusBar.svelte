@@ -71,7 +71,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                     {/if}
                 </button>
             </Tooltip>
-            <Tooltip content="Styling with Markdown is supported">
+            <Tooltip content="Styling with MDRS is supported">
                 <button
                     type="button"
                     onclick={onFocusEditor}
@@ -79,7 +79,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                     <i
                         class="bi bi-markdown-fill inline-flex size-3 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
                         aria-hidden="true"></i>
-                    <span class="hidden sm:inline">Markdown</span>
+                    <span class="hidden sm:inline">MDRS</span>
                 </button>
             </Tooltip>
         </div>
