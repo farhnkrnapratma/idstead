@@ -17,7 +17,6 @@ import {
     sizes,
     solidPng,
     u32,
-    vector,
     vp8,
     vp8l,
     vp8x
@@ -370,15 +369,8 @@ describe('validateAvatar', () => {
     test('returns the validated package', async () => {
         const files = await validateAvatar(avatarForm());
         expect(Object.keys(files ?? {}).sort()).toEqual(
-            [
-                ...Object.keys(iconSizes),
-                'avatar.avif',
-                'avatar.webp',
-                'favicon.ico',
-                'favicon.svg'
-            ].sort()
+            [...Object.keys(iconSizes), 'avatar.avif', 'avatar.webp', 'favicon.ico'].sort()
         );
-        expect(new TextDecoder().decode(files!['favicon.svg'])).toContain('<svg');
     });
 
     test('ignores identity fields and skips empty uploads', async () => {
@@ -408,12 +400,6 @@ describe('validateAvatar', () => {
         ).rejects.toThrow('Invalid image file.');
         await expect(validateAvatar(avatarForm({ 'favicon.ico': text('x') }))).rejects.toThrow(
             'Missing ICO.'
-        );
-        await expect(
-            validateAvatar(avatarForm({ vector: new File([vector], 'vector') }))
-        ).rejects.toThrow('Invalid vector icon.');
-        await expect(validateAvatar(avatarForm({ vector: 'x'.repeat(500_001) }))).rejects.toThrow(
-            'Invalid vector icon.'
         );
         await expect(validateAvatar(avatarForm({ 'avatar.webp': text('x') }))).rejects.toThrow(
             'avatar.webp must be no larger'

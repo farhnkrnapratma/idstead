@@ -126,11 +126,6 @@ SPDX-License-Identifier: AGPL-3.0-only
             sizes="32x32"
             href={identityAssetUrl('favicon-32x32.png', data.author.avatarVersion)} />
         <link
-            rel="icon"
-            type="image/svg+xml"
-            sizes="any"
-            href={identityAssetUrl('favicon.svg', data.author.avatarVersion)} />
-        <link
             rel="apple-touch-icon"
             sizes="180x180"
             href={identityAssetUrl('apple-touch-icon.png', data.author.avatarVersion)} />

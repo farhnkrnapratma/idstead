@@ -37,7 +37,7 @@ Links can be [inline](https://commonmark.org "CommonMark"), [by reference][gfm],
 
 [gfm]: https://github.github.com/gfm/ "GitHub Flavored Markdown"
 
-![The site icon](/favicon.svg "Images are lazy-loaded")
+![The site icon](/apple-touch-icon.png "Images are lazy-loaded")
 
 ### Definitions
 

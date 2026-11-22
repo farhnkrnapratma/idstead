@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { describe, expect, test } from 'bun:test';
-import { buildSvg, makeIco } from '../packages/lib/src/siteIdentity.ts';
+import { makeIco } from '../packages/lib/src/siteIdentity.ts';
 import { apiIndex } from '../packages/lib/src/server/api/root.ts';
 import { putBanner } from '../packages/lib/src/server/blogBannerStorage.ts';
 import { memoryPlatform } from './support/assets.ts';
@@ -24,27 +24,6 @@ describe('site icon helpers', () => {
         expect(view.getUint32(14, true)).toBe(3);
         expect(view.getUint32(30, true)).toBe(2);
         expect(Array.from(ico.slice(-5))).toEqual([1, 2, 3, 4, 5]);
-    });
-
-    test('builds an SVG from valid paths and rejects invalid ones', () => {
-        const svg = buildSvg([{ d: 'M0 0L10 10Z', fill: '#00aa11', opacity: 0.5 }]);
-        expect(svg).toContain('<path fill="#00aa11" opacity="0.5" d="M0 0L10 10Z"/>');
-        expect(() => buildSvg([])).toThrow('Invalid vector paths.');
-        expect(() => buildSvg([{ d: '<script>', fill: '#000000', opacity: 1 }])).toThrow(
-            'Invalid vector path.'
-        );
-        expect(() => buildSvg([{ d: 'M0 0', fill: 'red', opacity: 1 }])).toThrow(
-            'Invalid vector path.'
-        );
-        expect(() => buildSvg([{ d: 'M0 0', fill: '#000000', opacity: 2 }])).toThrow(
-            'Invalid vector path.'
-        );
-    });
-
-    test('rejects icons larger than 500 KB', () => {
-        const big = 'M0 0 '.repeat(19000).slice(0, 99000);
-        const paths = Array.from({ length: 6 }, () => ({ d: big, fill: '#000000', opacity: 1 }));
-        expect(() => buildSvg(paths)).toThrow('Vector icon exceeds 500 KB.');
     });
 });
 

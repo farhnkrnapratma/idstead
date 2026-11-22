@@ -75,7 +75,6 @@ describe('writeAssets', () => {
         const files = {
             'avatar.png': new Uint8Array([1, 2, 3]).buffer,
             'banner.webp': new Uint8Array([4]).buffer,
-            'favicon.svg': new Uint8Array([5]).buffer,
             'favicon.ico': new Uint8Array([6]).buffer,
             'avatar.avif': new Uint8Array([7]).buffer,
             'avatar.webp': new Uint8Array([8]).buffer,
@@ -93,7 +92,6 @@ describe('writeAssets', () => {
         });
         expect(byName['avatar.png'].sha256).toHaveLength(64);
         expect(byName['banner.webp']).toMatchObject({ width: 1280, height: 640 });
-        expect(byName['favicon.svg']).toMatchObject({ type: 'image/svg+xml', width: 128 });
         expect(byName['favicon.ico']).toMatchObject({ type: 'image/x-icon', width: 48 });
         expect(byName['avatar.avif']).toMatchObject({ type: 'image/avif', width: 512 });
         expect(byName['avatar.webp']).toMatchObject({ type: 'image/webp', width: 512 });
@@ -236,7 +234,6 @@ describe('serveIdentityAsset', () => {
     test('404s fallbacks that must not be proxied', async () => {
         const pf = { env: { PUBLIC_CDN_BASE_URL: 'https://cdn.test/' } };
         expect((await serve('/banner.webp', {}, pf)).status).toBe(404);
-        expect((await serve('/favicon.svg', {}, pf)).status).toBe(404);
         expect((await serve('/avatar.png', {}, pf)).status).toBe(404);
     });
 
@@ -301,11 +298,10 @@ describe('serveIdentityAsset', () => {
         );
     });
 
-    test('sandboxes svg and misses absent objects', async () => {
+    test('misses unknown and absent objects', async () => {
         state.current = async () => ({ avatar: VERSION, banner: null });
         seed(`identity/${VERSION}/favicon.svg`, '<svg/>', 'image/svg+xml');
-        const svg = await serve('/favicon.svg');
-        expect(svg.headers.get('content-security-policy')).toContain('sandbox');
+        expect((await serve('/favicon.svg')).status).toBe(404);
         expect((await serve('/avatar.webp')).status).toBe(404);
     });
 

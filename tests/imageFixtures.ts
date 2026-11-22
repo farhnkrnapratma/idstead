@@ -127,7 +127,6 @@ export const avatarAvif = await Bun.file(
     new URL('./fixtures/avatar-512.avif', import.meta.url)
 ).bytes();
 export const webp512 = riff([['VP8L', vp8l(512, 512)]]);
-export const vector = JSON.stringify([{ d: 'M0 0L10 10Z', fill: '#112233', opacity: 1 }]);
 
 export function avatarForm(overrides: Record<string, FormDataEntryValue | null> = {}) {
     const form = new FormData();
@@ -135,7 +134,6 @@ export function avatarForm(overrides: Record<string, FormDataEntryValue | null> 
     for (const [name, size] of Object.entries(iconSizes))
         entries[name] = new File([solidPng(size)], name);
     entries['favicon.ico'] = new File([ico(sizes)], 'favicon.ico');
-    entries.vector = vector;
     entries['avatar.webp'] = new File([webp512], 'avatar.webp');
     entries['avatar.avif'] = new File([avatarAvif], 'avatar.avif');
     for (const [name, value] of Object.entries({ ...entries, ...overrides }))

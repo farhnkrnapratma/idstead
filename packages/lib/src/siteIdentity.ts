@@ -73,7 +73,6 @@ export const iconSizes = {
 export const avatarAssetNames = [
     ...Object.keys(iconSizes),
     'favicon.ico',
-    'favicon.svg',
     'avatar.avif',
     'avatar.webp'
 ];
@@ -94,40 +93,8 @@ export interface IdentityAsset {
     sha256: string;
 }
 
-export interface SvgPath {
-    d: string;
-    fill: string;
-    opacity: number;
-}
-
 export interface ImagePackage {
     files: Record<string, ArrayBuffer>;
-    paths: SvgPath[];
-}
-
-export function buildSvg(paths: SvgPath[]): string {
-    if (!Array.isArray(paths) || !paths.length || paths.length > 10_000) {
-        throw new Error('Invalid vector paths.');
-    }
-    const content = paths
-        .map(path => {
-            if (
-                typeof path.d !== 'string' ||
-                path.d.length > 100_000 ||
-                !/^[MLQZCHVmlqzchv0-9.,\s-]+$/.test(path.d) ||
-                !/^#[0-9a-f]{6}$/i.test(path.fill) ||
-                !Number.isFinite(path.opacity) ||
-                path.opacity < 0 ||
-                path.opacity > 1
-            )
-                throw new Error('Invalid vector path.');
-            return `<path fill="${path.fill}" opacity="${path.opacity}" d="${path.d}"/>`;
-        })
-        .join('');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${content}</svg>`;
-    if (new TextEncoder().encode(svg).length > IMAGE_LIMIT)
-        throw new Error('Vector icon exceeds 500 KB.');
-    return svg;
 }
 
 export function makeIco(images: { size: number; data: ArrayBuffer }[]): ArrayBuffer {
