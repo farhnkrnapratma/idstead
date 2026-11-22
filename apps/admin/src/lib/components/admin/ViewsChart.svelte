@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import ErrorState from '@idstead/ui/components/ErrorState.svelte';
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
-    import { hasChartActivity } from '#lib/adminWorkspace.ts';
+    import { formatCount, hasChartActivity, integerTicks } from '#lib/adminWorkspace.ts';
     import { activityDate, activityTimestamp } from '#lib/adminActivity.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
     import {
@@ -52,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         range,
         timeZone = 'UTC',
         title = 'Article views',
-        description = 'Cumulative visits across all pages.',
+        description = 'Visits across all pages in the selected range.',
         data = [],
         isLoading = false,
         error = '',
@@ -73,7 +73,10 @@ SPDX-License-Identifier: AGPL-3.0-only
     const hasActivity = $derived(hasChartActivity(series.map(row => row.views)));
     const showControls = $derived(hasActivity && !isLoading && !error);
     const maxViews = $derived(Math.max(ceiling, ...series.map(d => d.views)));
-    const tickCount = $derived(Math.min(6, series.length));
+    let chartWidth = $state(0);
+    const tickCount = $derived(
+        Math.min(6, series.length, Math.max(2, Math.floor(chartWidth / 110)))
+    );
     let chartType = $state<'spline' | 'bar'>('spline');
 
     onMount(() => {
@@ -102,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {description}
             </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             {#if showControls}
                 <div
                     class="flex items-center gap-1"
@@ -162,6 +165,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     {:else}
         <div
             class="h-65 w-full"
+            bind:clientWidth={chartWidth}
             role="img"
             aria-label={`${title} over time. Hover a point for its exact value.`}>
             <Chart
@@ -184,6 +188,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                         classes={ADMIN_CHART_AXIS_CLASSES} />
                     <Axis
                         placement="left"
+                        format={(value: number) => formatCount(value)}
+                        ticks={integerTicks(maxViews)}
                         grid={{
                             stroke: 'var(--color-line-subtle)',
                             dashArray: '3 3',

@@ -59,16 +59,18 @@ SPDX-License-Identifier: AGPL-3.0-only
         : []
     );
 
-    const footerGroups = $derived([
-        { label: 'Pages', items: PAGE_LINKS },
-        ...OTHER_GROUPS.map(group => ({
-            label: group.label,
-            items: [
-                ...group.items.filter(item => !isHiddenLegalPath(item.href)),
-                ...(group.label === 'Legal' && page.data.cookieConsent ? [COOKIES_ACTION] : [])
-            ]
-        }))
-    ]);
+    const footerGroups = $derived(
+        [
+            { label: 'Pages', items: PAGE_LINKS },
+            ...OTHER_GROUPS.map(group => ({
+                label: group.label,
+                items: [
+                    ...group.items.filter(item => !isHiddenLegalPath(item.href)),
+                    ...(group.label === 'Legal' && page.data.cookieConsent ? [COOKIES_ACTION] : [])
+                ]
+            }))
+        ].filter(group => group.items.length > 0)
+    );
 
     const headingId = $props.id();
 </script>

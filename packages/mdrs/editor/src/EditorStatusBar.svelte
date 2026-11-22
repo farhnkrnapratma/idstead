@@ -15,16 +15,18 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         column: number;
         lineEnding: 'LF' | 'CRLF';
         showAutosave: boolean;
+        stickyClass: string;
         onFocusEditor: () => void;
     }
 
-    let { preferences, line, column, lineEnding, showAutosave, onFocusEditor }: Props = $props();
+    let { preferences, line, column, lineEnding, showAutosave, stickyClass, onFocusEditor }: Props =
+        $props();
 
     const autosaveState = $derived(preferences.autosaveEnabled ? 'on' : 'off');
 </script>
 
 <div
-    class="editor-chrome editor-status-bar sticky bottom-0 z-20 flex min-h-8 items-center justify-between gap-3 rounded-b-md border-t px-3 font-mono text-xxs select-none sm:px-4">
+    class="editor-chrome editor-status-bar sticky {stickyClass} z-20 flex min-h-8 items-center justify-between gap-3 rounded-b-md border-t px-3 font-mono text-xxs select-none sm:px-4">
     <div class="flex min-w-0 items-center gap-3 overflow-x-auto">
         <span class="editor-theme-foreground shrink-0">Ln {line}, Col {column}</span>
         <span class="flex shrink-0 items-center gap-1">

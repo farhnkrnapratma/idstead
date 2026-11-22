@@ -312,43 +312,51 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="mt-4" />
                 </div>
 
-                <div>
-                    <h2 class="mb-4 type-section-title">Experience</h2>
-                    <ResumeEntryList
-                        kind="experience"
-                        entries={data.experience} />
-                </div>
-
-                <div>
-                    <h2 class="mb-4 type-section-title">Education</h2>
-                    <ResumeEntryList
-                        kind="education"
-                        entries={data.education} />
-                    {#if hasResumeEntries}
-                        <div class="mt-4 flex justify-end">
-                            <Button
-                                type="ghost"
-                                size="sm"
-                                href="/resume"
-                                keyboardShortcut={buttonKey('viewFullResume')}
-                                shortcutLabel="View full resume"
-                                aria-label="View full resume including education and experience">
-                                <span class="leading-none">View full resume</span>
-                                {#snippet trailing()}
-                                    <ArrowRight
-                                        class="size-3"
-                                        strokeWidth={1.5} />
-                                {/snippet}
-                            </Button>
-                        </div>
-                    {/if}
-                </div>
+                {@render resumeSections()}
             {/if}
         </PageContainer>
     </Section>
 
     <FooterSection />
 </PageMain>
+
+{#snippet resumeSections()}
+    {#if data.experience.length > 0}
+        <div>
+            <h2 class="mb-4 type-section-title">Experience</h2>
+            <ResumeEntryList
+                kind="experience"
+                entries={data.experience} />
+        </div>
+    {/if}
+
+    {#if hasResumeEntries}
+        <div>
+            {#if data.education.length > 0}
+                <h2 class="mb-4 type-section-title">Education</h2>
+                <ResumeEntryList
+                    kind="education"
+                    entries={data.education} />
+            {/if}
+            <div class="mt-4 flex justify-end">
+                <Button
+                    type="ghost"
+                    size="sm"
+                    href="/resume"
+                    keyboardShortcut={buttonKey('viewFullResume')}
+                    shortcutLabel="View full resume"
+                    aria-label="View full resume including education and experience">
+                    <span class="leading-none">View full resume</span>
+                    {#snippet trailing()}
+                        <ArrowRight
+                            class="size-3"
+                            strokeWidth={1.5} />
+                    {/snippet}
+                </Button>
+            </div>
+        </div>
+    {/if}
+{/snippet}
 
 <QrCodeDialog
     bind:isOpen={isQrOpen}

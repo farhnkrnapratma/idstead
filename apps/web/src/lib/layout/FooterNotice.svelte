@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </script>
 
 <ul
-    class="flex flex-col gap-1 border-t border-line-subtle pt-4 text-xs font-medium text-fg-muted sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:pt-5">
+    class="flex flex-col gap-1 border-t border-line-subtle pt-4 text-xs font-medium text-fg-muted sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pt-5">
     {#if contentLicense?.url}
         <li>
             Except where otherwise noted, original content on this site is licensed under

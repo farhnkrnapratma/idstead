@@ -76,10 +76,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="flex min-w-0 flex-col gap-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-col gap-0.5">
-            <h2 class="type-card-title">Article views</h2>
-            <p class="text-xs text-fg-muted">
-                Cumulative visits across all pages over the past year.
-            </p>
+            <h2 class="type-card-title">Daily views</h2>
+            <p class="text-xs text-fg-muted">Visits across all pages on each day of {data.year}.</p>
         </div>
         <div class="flex items-center gap-3">
             {#if hasActivity}

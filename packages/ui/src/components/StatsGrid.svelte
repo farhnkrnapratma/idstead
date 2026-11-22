@@ -57,7 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <Icon class="size-4" />
                         </span>
                     {/if}
-                    <span class="min-w-0 truncate text-xs font-bold text-fg-secondary">
+                    <span class="min-w-0 line-clamp-2 text-xs font-bold text-fg-secondary">
                         {item.label}
                     </span>
                     {#if item.onclick}
@@ -72,7 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="block text-3xl leading-none font-extrabold tracking-tight text-fg tabular-nums">
                         {item.value}
                     </span>
-                    <span class="block min-h-lh truncate text-xs text-fg-muted">
+                    <span class="line-clamp-2 min-h-lh text-xs text-fg-muted">
                         {item.description ?? ''}
                     </span>
                 </span>
