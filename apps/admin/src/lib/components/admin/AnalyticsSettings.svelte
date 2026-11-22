@@ -77,8 +77,8 @@ SPDX-License-Identifier: AGPL-3.0-only
     });
     let fieldError = $state<{ field: string; message: string } | null>(null);
 
-    const fields = $derived(FIELDS[provider]);
-    const cookies = $derived(ANALYTICS_PROVIDER_INFO[provider].cookies);
+    const fields = $derived(FIELDS[provider] ?? []);
+    const cookies = $derived(ANALYTICS_PROVIDER_INFO[provider]?.cookies ?? false);
 
     function apply(settings: AnalyticsSettings) {
         provider = settings.provider;

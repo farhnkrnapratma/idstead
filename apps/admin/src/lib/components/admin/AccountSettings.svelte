@@ -10,15 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '../../adminUrl.ts';
     import { ACCESS_LOGOUT_URL } from '../../adminClient.ts';
-    import {
-        ArrowUpRight,
-        ChartColumn,
-        Copyright,
-        Database,
-        Eye,
-        LogOut,
-        ShieldCheck
-    } from '@lucide/svelte';
+    import { ArrowUpRight, Database, Globe, LogOut, ShieldCheck, SlidersHorizontal } from '@lucide/svelte';
     import { Button, Card } from '@idstead/ui';
     import FormSection from '@idstead/ui/layout/FormSection.svelte';
     import Section from '@idstead/ui/layout/Section.svelte';
@@ -36,11 +28,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     const activeTab = $derived(resolveAdminSettings(adminUrl().searchParams.get('settings')));
 
     const tabs = [
-        { id: 'appearance' as const, label: 'Appearance', icon: Eye },
-        { id: 'security' as const, label: 'Account & Security', icon: ShieldCheck },
-        { id: 'analytics' as const, label: 'Analytics & cookies', icon: ChartColumn },
-        { id: 'content' as const, label: 'Content license', icon: Copyright },
-        { id: 'data' as const, label: 'Data Management', icon: Database }
+        { id: 'general' as const, label: 'General', icon: SlidersHorizontal },
+        { id: 'site' as const, label: 'Site', icon: Globe },
+        { id: 'data' as const, label: 'Data', icon: Database }
     ];
 
     function selectSection(event: MouseEvent, section: AdminSettingsSection) {
@@ -60,7 +50,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     <div>
         <h1 class="type-page-title">Settings</h1>
         <p class="mt-1 type-body text-fg-secondary">
-            Manage appearance, account security, analytics, content license, and site data.
+            Appearance and sign-in, site-wide analytics and licensing, and your site data.
         </p>
     </div>
 
@@ -85,10 +75,8 @@ SPDX-License-Identifier: AGPL-3.0-only
         {/each}
     </nav>
 
-    {#if activeTab === 'appearance'}
+    {#if activeTab === 'general'}
         <DisplaySettings />
-    {/if}
-    {#if activeTab === 'security'}
         <Card
             variant="bordered"
             class="border-line-subtle! bg-surface!">
@@ -142,14 +130,12 @@ SPDX-License-Identifier: AGPL-3.0-only
             </FormSection>
         </Card>
     {/if}
-    {#if activeTab === 'analytics'}
+    {#if activeTab === 'site'}
         <Card
             variant="bordered"
             class="border-line-subtle! bg-surface!">
             <AnalyticsSettings />
         </Card>
-    {/if}
-    {#if activeTab === 'content'}
         <Card
             variant="bordered"
             class="border-line-subtle! bg-surface!">

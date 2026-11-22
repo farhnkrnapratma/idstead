@@ -218,9 +218,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </script>
 
 <FormSection
-    title="Sign in with Idstead"
-    titleClass="type-card-title"
-    description="Apps you register here can let you sign in with this site's identity through OpenID Connect."
+    title="Connected apps"
+    titleTag="h1"
+    titleClass="type-page-title"
+    description="Apps you register here can offer Sign in with Idstead, using this site's identity through OpenID Connect."
     bare>
     {#if loading && !data}
         <LoadingState

@@ -146,7 +146,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 class="flex flex-col justify-center gap-y-1.5 border-t border-line-subtle p-3 text-xs sm:border-t-0 sm:border-l">
                 {#each previews as row (row.label)}
                     <div class="flex items-baseline gap-2">
-                        <dt class="w-20 shrink-0 text-fg-muted">{row.label}</dt>
+                        <dt class="w-24 shrink-0 whitespace-nowrap text-fg-muted">{row.label}</dt>
                         <dd class="truncate font-semibold text-fg">{row.text}</dd>
                     </div>
                 {/each}
