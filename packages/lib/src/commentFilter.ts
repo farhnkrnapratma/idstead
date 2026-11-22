@@ -40,8 +40,8 @@ export function commentMatchesQuery<T extends FilterableComment>(
     const needle = normalize(query);
     if (!needle) return true;
     return (
-        normalize(decodeHtmlEntities(comment.content)).includes(needle)
-        || normalize(nameOf(comment)).includes(needle)
+        normalize(decodeHtmlEntities(comment.content)).includes(needle) ||
+        normalize(nameOf(comment)).includes(needle)
     );
 }
 
@@ -67,14 +67,16 @@ export function arrangeThreads<T extends FilterableComment, N extends Thread<T>>
     return threads
         .filter(
             thread =>
-                matchesFilter(thread, filter)
-                && members(thread).some(item => commentMatchesQuery(item, query, nameOf))
+                matchesFilter(thread, filter) &&
+                members(thread).some(item => commentMatchesQuery(item, query, nameOf))
         )
         .sort((a, b) => {
             const primary =
-                sort === 'replies' ? a.children.length - b.children.length
-                : sort === 'author' ? nameOf(a.comment).localeCompare(nameOf(b.comment))
-                : byDate(a, b);
+                sort === 'replies'
+                    ? a.children.length - b.children.length
+                    : sort === 'author'
+                      ? nameOf(a.comment).localeCompare(nameOf(b.comment))
+                      : byDate(a, b);
             return primary !== 0 ? sign * primary : byDate(a, b);
         });
 }

@@ -288,9 +288,10 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <Badge
                     variant={row.category === 'security' ? 'warning'
                     : row.category === 'settings' ? 'default'
-                    : 'accent'}
-                    >{activityCategories.find(item => item.value === row.category)?.label
-                        ?? row.category}</Badge>
+                    : 'accent'}>
+                    {activityCategories.find(item => item.value === row.category)?.label
+                        ?? row.category}
+                </Badge>
             {:else if key === 'created_at'}
                 <ActivityTimestamp date={row.created_at as string} />
             {:else}

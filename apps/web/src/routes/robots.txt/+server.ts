@@ -8,9 +8,9 @@ import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     if (
-        env.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
-        || url.hostname.endsWith('.pages.dev')
-        || url.hostname.endsWith('.workers.dev')
+        env.PUBLIC_SENTRY_ENVIRONMENT === 'preview' ||
+        url.hostname.endsWith('.pages.dev') ||
+        url.hostname.endsWith('.workers.dev')
     ) {
         return publicResponse(request, 'User-agent: *\nDisallow: /\n', 'text/plain; charset=utf-8');
     }

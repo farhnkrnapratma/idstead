@@ -68,8 +68,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     {onClose}>
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-1.5">
-            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
-                >Direct link</span>
+            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
+                Direct link
+            </span>
             <div
                 class="flex items-center gap-2 rounded-md border border-line-subtle bg-canvas p-1.5 pr-2 pl-3 shadow-2xs">
                 <span
@@ -91,8 +92,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         </div>
 
         <div class="flex flex-col gap-2">
-            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase"
-                >Share to platform</span>
+            <span class="text-2xs font-semibold tracking-wider text-fg-muted uppercase">
+                Share to platform
+            </span>
             <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
                 <Button
                     href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"

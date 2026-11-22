@@ -16,6 +16,7 @@ dev = 'phase run --env dev -- bun run build'
 
 [check]
 default = 'bun run check'
+types = 'bun run typecheck'
 
 [test]
 default = 'phase run --env $PHASE_ENV -- bun run test'
@@ -23,11 +24,11 @@ only = 'phase run --env $PHASE_ENV -- bun test'
 
 [lint]
 default = 'bun run lint'
-fix = 'bun run lint:fix'
+fix = 'bunx biome check --write'
 
 [fmt]
-default = 'bun run fmt'
-check = 'bun run fmt:check'
+default = 'bun run format'
+check = 'bunx biome format'
 
 [install]
 default = 'bun install'

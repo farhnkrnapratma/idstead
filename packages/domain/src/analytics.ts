@@ -82,12 +82,12 @@ function scriptUrl(input: Record<string, unknown>, fallback: string): string {
         throw new AnalyticsSettingsError('scriptUrl', 'Enter a full https:// URL.');
     }
     if (
-        url.protocol !== 'https:'
-        || url.username
-        || url.password
-        || url.hash
-        || !url.pathname.endsWith('.js')
-        || url.href.length > MAX_URL_LENGTH
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        url.hash ||
+        !url.pathname.endsWith('.js') ||
+        url.href.length > MAX_URL_LENGTH
     )
         throw new AnalyticsSettingsError(
             'scriptUrl',

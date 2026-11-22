@@ -64,12 +64,13 @@ function isAlignmentCenter(types: QrCodeDataType[][], data: boolean[][], x: numb
 
 export function renderQrSvg(text: string, options: QrSvgOptions = {}) {
     const color = COLOR_PATTERN.test(options.color ?? '') ? options.color! : QR_COLOR;
-    const background =
-        BACKGROUND_PATTERN.test(options.background ?? '') ? options.background! : QR_BACKGROUND;
+    const background = BACKGROUND_PATTERN.test(options.background ?? '')
+        ? options.background!
+        : QR_BACKGROUND;
     const logo =
-        options.logoDataUrl && DATA_URL_PATTERN.test(options.logoDataUrl) ?
-            options.logoDataUrl
-        :   undefined;
+        options.logoDataUrl && DATA_URL_PATTERN.test(options.logoDataUrl)
+            ? options.logoDataUrl
+            : undefined;
 
     const qr = encode(text, { ecc: 'H', border: 0 });
     const size = qr.size;
@@ -104,20 +105,20 @@ export function renderQrSvg(text: string, options: QrSvgOptions = {}) {
         const plate = zone.span / 2;
         const image = zone.span - 1;
         logoMarkup =
-            `<circle cx="${center}" cy="${center}" r="${plate}" fill="${background}"/>`
-            + `<image href="${logo}" x="${round(center - image / 2)}" y="${round(center - image / 2)}" width="${image}" height="${image}" preserveAspectRatio="xMidYMid slice"/>`;
+            `<circle cx="${center}" cy="${center}" r="${plate}" fill="${background}"/>` +
+            `<image href="${logo}" x="${round(center - image / 2)}" y="${round(center - image / 2)}" width="${image}" height="${image}" preserveAspectRatio="xMidYMid slice"/>`;
     }
 
     const total = size + QUIET_ZONE * 2;
     const px = total * MODULE_PX;
     return (
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${px}" height="${px}" shape-rendering="geometricPrecision">`
-        + `<rect width="${total}" height="${total}" rx="${QUIET_ZONE}" fill="${background}"/>`
-        + `<g transform="translate(${QUIET_ZONE} ${QUIET_ZONE})">`
-        + `<path fill="${color}" d="${dots}"/>`
-        + finders
-        + alignments
-        + logoMarkup
-        + `</g></svg>`
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${px}" height="${px}" shape-rendering="geometricPrecision">` +
+        `<rect width="${total}" height="${total}" rx="${QUIET_ZONE}" fill="${background}"/>` +
+        `<g transform="translate(${QUIET_ZONE} ${QUIET_ZONE})">` +
+        `<path fill="${color}" d="${dots}"/>` +
+        finders +
+        alignments +
+        logoMarkup +
+        `</g></svg>`
     );
 }

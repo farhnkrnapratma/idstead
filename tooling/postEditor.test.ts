@@ -19,10 +19,9 @@ import { flushSync, mount, tick, unmount } from 'svelte';
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
 
-const { default: PostEditor } =
-    (await import('../apps/admin/src/lib/components/admin/PostEditor.svelte')) as {
-        default: never;
-    };
+const { default: PostEditor } = (await import(
+    '../apps/admin/src/lib/components/admin/PostEditor.svelte'
+)) as { default: never };
 
 const POST_ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const realFetch = globalThis.fetch;
@@ -108,8 +107,8 @@ test('starts a new post with empty fields and cancels', async () => {
         'input, textarea'
     )) {
         if (
-            field instanceof HTMLInputElement
-            && (field.type === 'checkbox' || field.type === 'radio' || field.type === 'file')
+            field instanceof HTMLInputElement &&
+            (field.type === 'checkbox' || field.type === 'radio' || field.type === 'file')
         )
             continue;
         field.value = field.name === 'excerpt' ? 'An excerpt' : 'Sample text';

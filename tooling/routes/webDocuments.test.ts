@@ -16,8 +16,9 @@ const state = {
     legalError: false
 };
 
-const blogRoute =
-    await import('../../apps/web/src/routes/blog/[slug].[format=textformat]/+server.ts');
+const blogRoute = await import(
+    '../../apps/web/src/routes/blog/[slug].[format=textformat]/+server.ts'
+);
 const loaders = await Promise.all(
     ['privacy', 'terms', 'security', 'ai-disclosure'].map(
         async name =>
@@ -27,8 +28,9 @@ const loaders = await Promise.all(
             ] as const
     )
 );
-const legalRoute =
-    await import('../../apps/web/src/routes/[page=legal].[format=textformat]/+server.ts');
+const legalRoute = await import(
+    '../../apps/web/src/routes/[page=legal].[format=textformat]/+server.ts'
+);
 
 function post(extra: Record<string, unknown> = {}) {
     return {

@@ -129,10 +129,10 @@ export function voteFile(events: { vote: string; created_at: string }[]) {
 }
 
 const isEmpty = (value: unknown) =>
-    value === null
-    || value === undefined
-    || value === ''
-    || (typeof value === 'object' && Object.keys(value).length === 0);
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    (typeof value === 'object' && Object.keys(value).length === 0);
 
 export function compact(value: unknown): unknown {
     if (Array.isArray(value)) return value.map(compact).filter(item => !isEmpty(item));

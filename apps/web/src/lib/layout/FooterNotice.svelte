@@ -26,8 +26,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 target="_blank"
                 rel={postNoticeShown ? 'noopener noreferrer' : 'license noopener noreferrer'}
                 title={contentLicense.name}
-                class={linkClass}>{contentLicense.label}</a
-            >.
+                class={linkClass}>
+                {contentLicense.label}
+            </a>.
         </li>
     {:else if contentLicense}
         <li>{contentLicense.label}, except where otherwise noted.</li>
@@ -39,7 +40,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Idstead source code, AGPL-3.0"
-                class={linkClass}>Source</a>
+                class={linkClass}>
+                Source
+            </a>
             (AGPL-3.0)
         </li>
     {/if}

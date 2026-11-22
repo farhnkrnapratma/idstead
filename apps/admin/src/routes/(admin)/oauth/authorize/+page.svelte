@@ -77,8 +77,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                     {outcome.client.name} wants to sign you in
                 </h1>
                 <p class="type-body text-fg-secondary">
-                    You will be sent back to <span class="font-mono text-fg"
-                        >{outcome.client.host}</span>
+                    You will be sent back to <span class="font-mono text-fg">
+                        {outcome.client.host}
+                    </span>
                     with the details below.
                 </p>
             </div>

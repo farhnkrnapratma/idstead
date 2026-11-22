@@ -73,7 +73,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         variant="accent"
         href={tagHref?.(tag)}
         aria-label={tagAriaLabel?.(tag)}
-        class={tagHref ? 'font-mono hover:bg-accent/15' : 'font-mono'}>{tag}</Tag>
+        class={tagHref ? 'font-mono hover:bg-accent/15' : 'font-mono'}>
+        {tag}
+    </Tag>
 {/snippet}
 
 <div

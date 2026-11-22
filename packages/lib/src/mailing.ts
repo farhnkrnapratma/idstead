@@ -9,17 +9,17 @@ export type MailingCommand = { action: MailingAction; email: string };
 
 export function parseMailingCommand(query: string): MailingCommand | null {
     const match = /^\/mailing\s+(subscribe|unsubscribe)(?:\s+(.+))?$/i.exec(query.trim());
-    return match ?
-            { action: match[1].toLowerCase() as MailingAction, email: match[2]?.trim() ?? '' }
-        :   null;
+    return match
+        ? { action: match[1].toLowerCase() as MailingAction, email: match[2]?.trim() ?? '' }
+        : null;
 }
 
 export function mailingEmailError(email: string) {
-    return (
-        !email.trim() ? 'Enter your email address.'
-        : email.trim().length > 254 ? 'Use an email address of at most 254 characters.'
-        : emailError(email.trim())
-    );
+    return !email.trim()
+        ? 'Enter your email address.'
+        : email.trim().length > 254
+          ? 'Use an email address of at most 254 characters.'
+          : emailError(email.trim());
 }
 
 export async function submitMailing(
@@ -36,9 +36,9 @@ export async function submitMailing(
     if (!turnstileToken) throw new Error('Verification failed. Please try again.');
     const fallback = `Could not ${action} right now. Please try again.`;
     const response = await request(
-        action === 'subscribe' ? '/api/internal/subscribe' : (
-            '/api/internal/subscribe/unsubscribe-request'
-        ),
+        action === 'subscribe'
+            ? '/api/internal/subscribe'
+            : '/api/internal/subscribe/unsubscribe-request',
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

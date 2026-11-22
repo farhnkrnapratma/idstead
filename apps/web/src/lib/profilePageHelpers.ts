@@ -20,26 +20,22 @@ export function normalizeSkillGroups(rawSkills: unknown): SkillGroup[] {
             }
 
             const category =
-                (
-                    typeof skill === 'object'
-                    && skill !== null
-                    && 'category' in skill
-                    && typeof skill.category === 'string'
-                ) ?
-                    skill.category
-                :   'General';
+                typeof skill === 'object' &&
+                skill !== null &&
+                'category' in skill &&
+                typeof skill.category === 'string'
+                    ? skill.category
+                    : 'General';
 
             const items =
-                (
-                    typeof skill === 'object'
-                    && skill !== null
-                    && 'items' in skill
-                    && Array.isArray(skill.items)
-                ) ?
-                    skill.items
-                        .filter((item: unknown): item is string => typeof item === 'string')
-                        .map((item: string) => decodeHtmlEntities(item))
-                :   [];
+                typeof skill === 'object' &&
+                skill !== null &&
+                'items' in skill &&
+                Array.isArray(skill.items)
+                    ? skill.items
+                          .filter((item: unknown): item is string => typeof item === 'string')
+                          .map((item: string) => decodeHtmlEntities(item))
+                    : [];
 
             return { category: decodeHtmlEntities(category), items };
         })

@@ -44,10 +44,12 @@ slot.oidcEnabled = () => state.enabled;
 slot.oidcEndpoints = () => ({ issuer: 'https://admin.example.com' });
 
 const legal = await import('../../apps/admin/src/routes/api/internal/admin/legal/+server.ts');
-const exportRoute =
-    await import('../../apps/admin/src/routes/api/internal/admin/activity-log/export/+server.ts');
-const authorize =
-    await import('../../apps/admin/src/routes/api/internal/admin/oidc/authorize/+server.ts');
+const exportRoute = await import(
+    '../../apps/admin/src/routes/api/internal/admin/activity-log/export/+server.ts'
+);
+const authorize = await import(
+    '../../apps/admin/src/routes/api/internal/admin/oidc/authorize/+server.ts'
+);
 
 function event(init: { path?: string; method?: string; body?: unknown; raw?: string } = {}) {
     const url = new URL(`https://admin.example.com/api/internal/admin/${init.path ?? 'x'}`);

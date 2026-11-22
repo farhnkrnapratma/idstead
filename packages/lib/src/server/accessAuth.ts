@@ -32,9 +32,9 @@ export interface AccessOptions {
 
 function setting(platform: unknown, name: string): string {
     const value =
-        (platform as { env?: Record<string, unknown> } | undefined)?.env?.[name]
-        ?? (privateEnv as Record<string, string | undefined>)[name]
-        ?? process.env[name];
+        (platform as { env?: Record<string, unknown> } | undefined)?.env?.[name] ??
+        (privateEnv as Record<string, string | undefined>)[name] ??
+        process.env[name];
     return typeof value === 'string' ? value.trim() : '';
 }
 

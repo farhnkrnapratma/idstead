@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
+or {
+    `import $_ from $source`,
+    `import $source`,
+    `export { $_ } from $source`,
+    `export * from $source`
+} as $import where {
+    not $import <: r"import\s+type\s[\s\S]*",
+    $source <: r"['\"](?:(?:[^'\"]*/)?server/[^'\"]*|#lib[^'\"]*|@idstead/(?:lib|editor)|@idstead/(?:lib|editor)/[^'\"]*)['\"]",
+    register_diagnostic(span=$source, message="@mdrs/dom is the browser side of MDRS: it may depend on @idstead/ui, @idstead/domain and @mdrs/core only.")
+}

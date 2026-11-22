@@ -52,9 +52,9 @@ export function themeToken(name: string, theme: EffectiveTheme = 'light'): strin
     const value = declaration(themeBlock(theme), name) ?? declaration(themeBlock('light'), name);
     const reference = value?.match(/^var\((--color-[a-z0-9-]+)\)$/)?.[1];
     if (reference) {
-        return declaration(tokens, reference) ?
-                themeToken(reference, theme)
-            :   (toHex(declaration(palette, reference) ?? '') ?? missing(reference, theme));
+        return declaration(tokens, reference)
+            ? themeToken(reference, theme)
+            : (toHex(declaration(palette, reference) ?? '') ?? missing(reference, theme));
     }
     return (value && toHex(value)) ?? missing(name, theme);
 }

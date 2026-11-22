@@ -34,10 +34,10 @@ export interface ArdCrawlResult {
 function siteOrigin(value: string): URL {
     const origin = new URL(value);
     if (
-        origin.username
-        || origin.password
-        || origin.origin !== value
-        || origin.protocol !== 'https:'
+        origin.username ||
+        origin.password ||
+        origin.origin !== value ||
+        origin.protocol !== 'https:'
     )
         throw new Error('ARD ingestion requires a canonical HTTPS site origin.');
     return origin;
@@ -47,10 +47,10 @@ function sameOriginUrl(value: string, origin: URL): URL | undefined {
     try {
         const url = new URL(value, origin);
         if (
-            url.origin !== origin.origin
-            || url.username
-            || url.password
-            || url.protocol !== origin.protocol
+            url.origin !== origin.origin ||
+            url.username ||
+            url.password ||
+            url.protocol !== origin.protocol
         )
             return undefined;
         url.hash = '';
@@ -160,9 +160,9 @@ function jsonNodes(value: unknown): unknown[] {
     if (Array.isArray(record['@graph'])) nodes.push(...record['@graph']);
     if (Array.isArray(record['@included'])) nodes.push(...record['@included']);
     if (
-        !Array.isArray(record.entries)
-        && !Array.isArray(record['@graph'])
-        && !Array.isArray(record['@included'])
+        !Array.isArray(record.entries) &&
+        !Array.isArray(record['@graph']) &&
+        !Array.isArray(record['@included'])
     )
         nodes.push(record);
     return nodes;
@@ -205,8 +205,8 @@ function parseDocument(
     if (source.robots) return { entryNodes: [], sources: parseRobots(document.text), warnings: [] };
 
     if (
-        document.contentType.includes('text/html')
-        || /^\s*(?:<!doctype\s+html|<html\b)/i.test(document.text)
+        document.contentType.includes('text/html') ||
+        /^\s*(?:<!doctype\s+html|<html\b)/i.test(document.text)
     )
         return parseHtml(document.text);
 

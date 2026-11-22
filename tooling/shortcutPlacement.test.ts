@@ -132,9 +132,11 @@ test('badge in a clipping container is penalised by the clipped area', () => {
     withLayout(
         {
             rect: element =>
-                element === clip ? rect(0, 0, 100, 40)
-                : element === host ? rect(0, 0, 100, 40)
-                : rect(90, 30, 40, 20)
+                element === clip
+                    ? rect(0, 0, 100, 40)
+                    : element === host
+                      ? rect(0, 0, 100, 40)
+                      : rect(90, 30, 40, 20)
         },
         () => {
             const handle = shortcutWithAlt(host, { combo: 'a', label: 'Open' } as never);

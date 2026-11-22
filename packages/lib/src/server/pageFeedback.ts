@@ -19,8 +19,8 @@ export async function recordPageFeedback(input: {
     const { request, url, secret, data } = input;
     const fail = apiError;
     if (
-        !isSameOriginRequest(request, url)
-        || request.headers.get('sec-fetch-site') === 'cross-site'
+        !isSameOriginRequest(request, url) ||
+        request.headers.get('sec-fetch-site') === 'cross-site'
     )
         return fail(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are not allowed.');
     try {
@@ -39,9 +39,9 @@ export async function recordPageFeedback(input: {
         let target: FeedbackTarget;
         if (targetType === 'article') {
             const found =
-                typeof targetId === 'string' && PUBLIC_ID_PATTERN.test(targetId) ?
-                    await data.blog.findPublished(targetId)
-                :   null;
+                typeof targetId === 'string' && PUBLIC_ID_PATTERN.test(targetId)
+                    ? await data.blog.findPublished(targetId)
+                    : null;
             if (found?.status !== 'found')
                 return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
             target = { type: 'article', post: found.post };
@@ -76,8 +76,8 @@ export async function recordPageFeedback(input: {
             { status: result.recorded && !result.replayed ? 201 : 200 }
         );
     } catch (error) {
-        return error instanceof ActivityInputError ?
-                fail(error.status, 'FEEDBACK_INVALID', error.message)
-            :   fail(503, 'FEEDBACK_UNAVAILABLE', 'Feedback could not be saved. Please try again.');
+        return error instanceof ActivityInputError
+            ? fail(error.status, 'FEEDBACK_INVALID', error.message)
+            : fail(503, 'FEEDBACK_UNAVAILABLE', 'Feedback could not be saved. Please try again.');
     }
 }

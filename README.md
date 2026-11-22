@@ -74,8 +74,8 @@ bun install
 
 ```sh
 bun run test     # regression and contract tests
-bun run check    # instance config, svelte-check and tsc
-bun run lint     # prettier, eslint and the deprecated-API check
+bun run check    # biome check, instance config, svelte-check and tsc
+bun run lint     # biome lint: import boundaries, deprecated imports and recommended rules
 bun run build    # every app
 ```
 

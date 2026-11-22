@@ -12,10 +12,10 @@ const records = new Map<string, number[]>();
 export function clientIp(request: Request, fallback?: () => string): string {
     try {
         return (
-            request.headers.get('cf-connecting-ip')
-            || request.headers.get('x-forwarded-for')?.split(',')[0].trim()
-            || fallback?.()
-            || '127.0.0.1'
+            request.headers.get('cf-connecting-ip') ||
+            request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+            fallback?.() ||
+            '127.0.0.1'
         );
     } catch {
         return '127.0.0.1';
@@ -34,8 +34,9 @@ export async function checkRateLimit(key: string): Promise<RateLimitResult> {
     const times = (records.get(key) ?? []).filter(time => now - time < RATE_LIMIT_WINDOW_MS);
 
     const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
-    const limited =
-        limiter ? !(await limiter.limit({ key })).success : times.length >= MAX_REQUESTS_PER_WINDOW;
+    const limited = limiter
+        ? !(await limiter.limit({ key })).success
+        : times.length >= MAX_REQUESTS_PER_WINDOW;
 
     if (limited) {
         const resetSeconds = Math.max(

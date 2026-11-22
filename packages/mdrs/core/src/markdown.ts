@@ -12,8 +12,9 @@ import {
     protectInterpolationTokens,
     resolveConditionals,
     resolveProtectedInterpolationTokens,
-    unavailableResolvers,
-    type ApiRegistry
+    documentFetcher,
+    unavailableFetcher,
+    type JsonFetcher
 } from './define';
 import { loadIcons } from './icons';
 import { sanitizeHtml } from './sanitize';
@@ -42,8 +43,9 @@ export type { RenderOptions };
 
 export async function resolveDefines(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers()
+    fetcher: JsonFetcher = unavailableFetcher()
 ): Promise<string> {
+    const get = documentFetcher(fetcher);
     const source = stripPlaceholderChars(markdown);
     const { body } = extractFrontmatter(source);
     const frontmatter = source.slice(0, source.length - body.length);
@@ -51,13 +53,14 @@ export async function resolveDefines(
     const bodyAfterDefine =
         defineRaw === null ? body : withDefineGap.replace(/^(?:[ \t]*\r?\n)+/, '');
     const interpolate = hasDefineEntries(defineRaw);
-    const { scope } =
-        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
+    const { scope } = interpolate
+        ? await evaluateDefineBlock(defineRaw, get)
+        : { scope: new Map() };
     const verbatimBlocks = new Map<string, string>();
     const { output: withConditionals } = await resolveConditionals(
         protectVerbatimBlocks(bodyAfterDefine, verbatimBlocks),
         scope,
-        resolvers,
+        get,
         { inline: interpolate }
     );
     if (!interpolate) return frontmatter + restoreAllPlaceholders(withConditionals, verbatimBlocks);
@@ -70,55 +73,56 @@ export async function resolveDefines(
         withTokensProtected,
         interpolationPlaceholders,
         scope,
-        resolvers
+        get
     );
     return frontmatter + restoreAllPlaceholders(output, verbatimBlocks);
 }
 
 export async function renderMarkdownUnsafe(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers(),
+    fetcher: JsonFetcher = unavailableFetcher(),
     options: RenderOptions = {}
 ): Promise<string> {
     if (markdown.length > MAX_DOCUMENT_LENGTH) {
         throw new Error('Markdown document is too large to render.');
     }
+    const get = documentFetcher(fetcher);
     const { body: bodyAfterFrontmatter } = extractFrontmatter(stripPlaceholderChars(markdown));
     const { raw: defineRaw, body: bodyAfterDefine } = extractDefineBlock(bodyAfterFrontmatter);
     const interpolate = hasDefineEntries(defineRaw);
-    const { scope } =
-        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
+    const { scope } = interpolate
+        ? await evaluateDefineBlock(defineRaw, get)
+        : { scope: new Map() };
     const verbatimPlaceholders = new Map<string, string>();
     const { output: withConditionals } = await resolveConditionals(
         extractVerbatimBlocks(bodyAfterDefine, verbatimPlaceholders),
         scope,
-        resolvers,
+        get,
         { inline: interpolate }
     );
     const interpolationPlaceholders = new Map<string, string>();
-    const withInterpolationProtected =
-        interpolate ?
-            protectInterpolationTokens(withConditionals, interpolationPlaceholders)
-        :   withConditionals;
+    const withInterpolationProtected = interpolate
+        ? protectInterpolationTokens(withConditionals, interpolationPlaceholders)
+        : withConditionals;
     const mathSources = new Map<string, MathSource>();
     const withMathExtracted = extractMath(withInterpolationProtected, mathSources);
     const { output: withInterpolated } = await resolveProtectedInterpolationTokens(
         withMathExtracted,
         interpolationPlaceholders,
         scope,
-        resolvers
+        get
     );
     const mathPlaceholders = await renderMathSources(mathSources, async source =>
-        source.includes(placeholderPrefix('INTERPOLATION')) ?
-            (
-                await resolveProtectedInterpolationTokens(
-                    source,
-                    interpolationPlaceholders,
-                    scope,
-                    resolvers
-                )
-            ).output
-        :   source
+        source.includes(placeholderPrefix('INTERPOLATION'))
+            ? (
+                  await resolveProtectedInterpolationTokens(
+                      source,
+                      interpolationPlaceholders,
+                      scope,
+                      get
+                  )
+              ).output
+            : source
     );
     const references = extractReferences(withInterpolated);
     const icons = await loadIcons(references.markdown);
@@ -136,18 +140,18 @@ export async function renderMarkdownUnsafe(
 
 export async function renderMarkdown(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers(),
+    fetcher: JsonFetcher = unavailableFetcher(),
     options: RenderOptions = {}
 ): Promise<string> {
-    return sanitizeHtml(await renderMarkdownUnsafe(markdown, resolvers, options));
+    return sanitizeHtml(await renderMarkdownUnsafe(markdown, fetcher, options));
 }
 
 export async function prepareMarkdownPage(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers(),
+    fetcher: JsonFetcher = unavailableFetcher(),
     options: RenderOptions = {}
 ): Promise<{ html: string; headings: HeadingItem[] }> {
-    const rawHtml = await renderMarkdown(markdown, resolvers, options);
+    const rawHtml = await renderMarkdown(markdown, fetcher, options);
     const html = prefixHashLinks(injectHeadingIds(rawHtml));
     const headings = extractHeadings(html);
     return { html, headings };

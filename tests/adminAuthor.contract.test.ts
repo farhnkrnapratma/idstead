@@ -15,13 +15,13 @@ function d1FromSeed(seed: AdminAuthorSeed) {
     const rows = d1AuthorRows(seed.author);
     rows.db_identity_versions = rows.db_identity_versions.map(row => {
         const version = seed.identityVersions.find(item => item.uuid === row.id);
-        return version ?
-                {
-                    ...row,
-                    avatar_source: version.source,
-                    avatar_fingerprint: version.source === 'generated' ? version.fingerprint : null
-                }
-            :   row;
+        return version
+            ? {
+                  ...row,
+                  avatar_source: version.source,
+                  avatar_fingerprint: version.source === 'generated' ? version.fingerprint : null
+              }
+            : row;
     });
     for (const [table, list] of Object.entries(rows)) insertRows(shim.sqlite, table, list);
     return {

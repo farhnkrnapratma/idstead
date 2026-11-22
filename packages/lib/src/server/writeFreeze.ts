@@ -10,9 +10,9 @@ const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 export function writesFrozen(platform?: unknown): boolean {
     const value =
-        (platform as { env?: Record<string, unknown> } | undefined)?.env?.WRITES_FROZEN
-        ?? (privateEnv as Record<string, string | undefined>).WRITES_FROZEN
-        ?? process.env.WRITES_FROZEN;
+        (platform as { env?: Record<string, unknown> } | undefined)?.env?.WRITES_FROZEN ??
+        (privateEnv as Record<string, string | undefined>).WRITES_FROZEN ??
+        process.env.WRITES_FROZEN;
     return ['1', 'true'].includes(
         String(value ?? '')
             .trim()
@@ -22,9 +22,9 @@ export function writesFrozen(platform?: unknown): boolean {
 
 export function isFrozenWrite(request: Request, url: URL, platform?: unknown): boolean {
     return (
-        !READ_METHODS.has(request.method)
-        && url.pathname.startsWith('/api/internal/')
-        && writesFrozen(platform)
+        !READ_METHODS.has(request.method) &&
+        url.pathname.startsWith('/api/internal/') &&
+        writesFrozen(platform)
     );
 }
 
@@ -40,6 +40,6 @@ export function frozenWriteResponse(): Response {
 }
 
 export const writeFreezeHandle: Handle = ({ event, resolve }) =>
-    isFrozenWrite(event.request, event.url, event.platform) ? frozenWriteResponse() : (
-        resolve(event)
-    );
+    isFrozenWrite(event.request, event.url, event.platform)
+        ? frozenWriteResponse()
+        : resolve(event);

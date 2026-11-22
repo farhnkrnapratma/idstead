@@ -70,9 +70,9 @@ export function avif(
     const ispe = box('ispe', concat([new Uint8Array(4), u32(width), u32(height)]));
     const parts = [
         box('ftyp', concat([ascii(overrides.brand ?? 'avif'), new Uint8Array(4)])),
-        overrides.skip === 'meta' ?
-            new Uint8Array(0)
-        :   box('meta', concat([new Uint8Array(4), box('iprp', box('ipco', ispe))])),
+        overrides.skip === 'meta'
+            ? new Uint8Array(0)
+            : box('meta', concat([new Uint8Array(4), box('iprp', box('ipco', ispe))])),
         overrides.skip === 'mdat' ? new Uint8Array(0) : box('mdat', new Uint8Array(4))
     ];
     return concat(parts);
@@ -90,7 +90,7 @@ export function pngChunk(name: string, data: Uint8Array) {
 export function rebuildPng(png: Uint8Array, edit: (chunks: Array<[string, Uint8Array]>) => void) {
     const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
     const chunks: Array<[string, Uint8Array]> = [];
-    for (let pos = 8; pos < png.length;) {
+    for (let pos = 8; pos < png.length; ) {
         const length = view.getUint32(pos);
         chunks.push([
             String.fromCharCode(...png.subarray(pos + 4, pos + 8)),

@@ -23,5 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         rel="noopener noreferrer"
         {title}
         class={`pointer-events-auto relative underline decoration-fg-muted underline-offset-2 hover:text-fg-accent hover:decoration-current focus-visible:text-fg-accent focus-visible:outline-2 focus-visible:outline-focus-ring ${className}`}
-        onclick={event => event.stopPropagation()}>{title}</a>
+        onclick={event => event.stopPropagation()}>
+        {title}
+    </a>
 {:else}<span class={className}>{title}</span>{/if}

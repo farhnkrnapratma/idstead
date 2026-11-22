@@ -35,12 +35,12 @@ function createSearchHistoryStore() {
                 current = stored
                     .filter(
                         (entry): entry is SearchHistoryEntry =>
-                            entry
-                            && typeof entry === 'object'
-                            && typeof entry.id === 'string'
-                            && typeof entry.title === 'string'
-                            && entry.id !== 'cmd-history'
-                            && entry.id !== 'dyn-history-clear'
+                            entry &&
+                            typeof entry === 'object' &&
+                            typeof entry.id === 'string' &&
+                            typeof entry.title === 'string' &&
+                            entry.id !== 'cmd-history' &&
+                            entry.id !== 'dyn-history-clear'
                     )
                     .slice(0, MAX_ENTRIES);
             }

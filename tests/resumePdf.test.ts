@@ -73,9 +73,9 @@ describe('resume pdf', () => {
         const baseFonts = doc.context
             .enumerateIndirectObjects()
             .flatMap(([, object]) =>
-                object instanceof PDFDict ?
-                    [object.get(PDFName.of('BaseFont'))?.toString() ?? '']
-                :   []
+                object instanceof PDFDict
+                    ? [object.get(PDFName.of('BaseFont'))?.toString() ?? '']
+                    : []
             )
             .join(' ');
         expect(baseFonts).toContain('iAWriterQuattro');
@@ -127,8 +127,8 @@ describe('resume pdf', () => {
                 .enumerateIndirectObjects()
                 .filter(
                     ([, object]) =>
-                        object instanceof PDFDict
-                        && object.get(PDFName.of('Subtype'))?.toString() === '/Link'
+                        object instanceof PDFDict &&
+                        object.get(PDFName.of('Subtype'))?.toString() === '/Link'
                 ).length;
         };
         const safe = await countLinks('https://example.com');

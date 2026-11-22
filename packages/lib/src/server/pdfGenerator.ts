@@ -169,8 +169,8 @@ function displayUrl(url: string): string {
 
 function isSafeLink(url: string): boolean {
     return (
-        /^(https?:\/\/|mailto:)[^\s()<>\\]+$/i.test(url)
-        && ![...url].some(char => {
+        /^(https?:\/\/|mailto:)[^\s()<>\\]+$/i.test(url) &&
+        ![...url].some(char => {
             const code = char.charCodeAt(0);
             return code < 32 || code === 127;
         })
@@ -480,9 +480,9 @@ export async function generateResumePdfBuffer(
             );
             const gpa = gpaDisplay(edu.grade);
             const fieldRedundant =
-                !!edu.field
-                && !!edu.degree
-                && edu.degree.toLowerCase().includes(edu.field.toLowerCase());
+                !!edu.field &&
+                !!edu.degree &&
+                edu.degree.toLowerCase().includes(edu.field.toLowerCase());
             const meta = [edu.degree, fieldRedundant ? '' : edu.field, gpa ? `GPA ${gpa}` : '']
                 .map(part => fit(sansItalic, part))
                 .filter(Boolean)

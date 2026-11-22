@@ -236,8 +236,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                     <span class="inline-flex max-w-full min-w-0 items-center overflow-x-clip">
                         <span class={cn(labelText, 'shrink')}>{splitLabel.prefix}</span>
                         {#if splitLabel.suffix}
-                            <span class={labelSuffix}
-                                >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
+                            <span class={labelSuffix}>
+                                {#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}
+                            </span>
                         {/if}
                     </span>
                 {:else}
@@ -248,8 +249,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             <span class="inline-flex max-w-full min-w-0 items-center overflow-x-clip">
                 <span class={cn(labelText, 'shrink')}>{splitLabel.prefix}</span>
                 {#if splitLabel.suffix}
-                    <span class={labelSuffix}
-                        >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
+                    <span class={labelSuffix}>
+                        {#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}
+                    </span>
                 {/if}
             </span>
         {:else}

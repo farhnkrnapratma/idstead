@@ -35,10 +35,8 @@ function isBanner(name: string) {
 function assetDimensions(name: string) {
     if (name in bannerSizes) return bannerSizes[name as keyof typeof bannerSizes];
     const size =
-        iconSizes[name as keyof typeof iconSizes]
-        ?? (name.startsWith('avatar.') ? 512
-        : name.endsWith('.svg') ? 128
-        : 48);
+        iconSizes[name as keyof typeof iconSizes] ??
+        (name.startsWith('avatar.') ? 512 : name.endsWith('.svg') ? 128 : 48);
     return { width: size, height: size };
 }
 
@@ -177,10 +175,10 @@ export async function serveIdentityAsset(
             platform?.env?.PUBLIC_CDN_BASE_URL ?? publicEnv.PUBLIC_CDN_BASE_URL ?? ''
         ).replace(/\/+$/, '');
         if (
-            !base
-            || isBanner(name)
-            || name === 'favicon.svg'
-            || (name === 'avatar.png' && url.pathname !== '/hero.png')
+            !base ||
+            isBanner(name) ||
+            name === 'favicon.svg' ||
+            (name === 'avatar.png' && url.pathname !== '/hero.png')
         )
             return missing();
         const upstream = await fetch(`${base}/${url.pathname === '/hero.png' ? 'hero.png' : name}`);
@@ -198,9 +196,9 @@ export async function serveIdentityAsset(
         'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream',
         'X-Content-Type-Options': 'nosniff',
         'Cache-Control':
-            url.searchParams.get('v') === (await identityVersionToken(version)) ?
-                IMMUTABLE_CACHE_CONTROL
-            :   IMAGE_CACHE_CONTROL,
+            url.searchParams.get('v') === (await identityVersionToken(version))
+                ? IMMUTABLE_CACHE_CONTROL
+                : IMAGE_CACHE_CONTROL,
         ETag: object.httpEtag
     });
     if (name.endsWith('.svg'))

@@ -26,8 +26,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         className
     )}>
     <code
-        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums"
-        >{command}</code>
+        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums">
+        {command}
+    </code>
     <IconButton
         ariaLabel="Copy {label.toLowerCase()}"
         variant="ghost"

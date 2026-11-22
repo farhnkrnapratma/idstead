@@ -9,10 +9,12 @@ mock.module('$app/env/private', () => ({}));
 mock.module('$app/env/public', () => ({}));
 
 const { parseSigningKey, OIDC_ALG } = await import('../packages/lib/src/server/oidc/keys.ts');
-const { discoveryDocument, oidcEndpoints } =
-    await import('../packages/lib/src/server/oidc/config.ts');
-const { webfingerDocument, matchesResource, WEBFINGER_RELS } =
-    await import('../packages/lib/src/server/oidc/webfinger.ts');
+const { discoveryDocument, oidcEndpoints } = await import(
+    '../packages/lib/src/server/oidc/config.ts'
+);
+const { webfingerDocument, matchesResource, WEBFINGER_RELS } = await import(
+    '../packages/lib/src/server/oidc/webfinger.ts'
+);
 const { generateSigningKey } = await import('../tooling/oidc-key.ts');
 
 const platform = {

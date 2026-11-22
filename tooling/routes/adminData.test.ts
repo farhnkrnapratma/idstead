@@ -47,10 +47,12 @@ slot.oidcAdmin = async () => state.oidc;
 slot.oidcEnabled = () => state.enabled;
 slot.oidcEndpoints = () => ({ issuer: 'https://admin.example.com' });
 
-const deleteAll =
-    await import('../../apps/admin/src/routes/api/internal/admin/data/delete-all/+server.ts');
-const clients =
-    await import('../../apps/admin/src/routes/api/internal/admin/oidc/clients/+server.ts');
+const deleteAll = await import(
+    '../../apps/admin/src/routes/api/internal/admin/data/delete-all/+server.ts'
+);
+const clients = await import(
+    '../../apps/admin/src/routes/api/internal/admin/oidc/clients/+server.ts'
+);
 
 function event(init: { body?: unknown; raw?: string; origin?: string } = {}) {
     const url = new URL('https://admin.example.com/api/internal/admin/x');

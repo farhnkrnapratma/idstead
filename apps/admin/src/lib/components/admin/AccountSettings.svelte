@@ -100,9 +100,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <div
                     class="flex flex-col gap-3 rounded-md border border-line-subtle bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <span class="min-w-0 text-xs text-fg-secondary">
-                        Signed in as <span class="font-semibold break-all text-fg"
-                            >{admin?.email ?? 'unknown'}</span
-                        >{#if admin?.signedInAt}, <ActivityTimestamp
+                        Signed in as <span class="font-semibold break-all text-fg">
+                            {admin?.email ?? 'unknown'}
+                        </span>{#if admin?.signedInAt}, <ActivityTimestamp
                                 date={admin.signedInAt}
                                 class="font-semibold" />{/if}.
                     </span>

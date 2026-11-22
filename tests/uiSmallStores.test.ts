@@ -223,12 +223,10 @@ describe('focusScope', () => {
         const push = shortcutStore.pushScope;
         const pop = shortcutStore.popScope;
         shortcutStore.pushScope = (scope: string) => (
-            pushed.push(scope),
-            push.call(shortcutStore, scope)
+            pushed.push(scope), push.call(shortcutStore, scope)
         );
         shortcutStore.popScope = (scope: string) => (
-            popped.push(scope),
-            pop.call(shortcutStore, scope)
+            popped.push(scope), pop.call(shortcutStore, scope)
         );
         try {
             node.dispatchEvent(new window.Event('pointerenter'));

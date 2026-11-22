@@ -111,8 +111,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         <div class="flex shrink-0 justify-end gap-2">
             {#if onCancel}<Button
                     size="sm"
-                    onclick={onCancel}>Cancel</Button
-                >{/if}
+                    onclick={onCancel}>
+                    Cancel
+                </Button>{/if}
             <Button
                 type="primary"
                 htmlType="submit"

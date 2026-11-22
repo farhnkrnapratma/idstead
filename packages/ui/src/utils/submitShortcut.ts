@@ -49,21 +49,21 @@ const IGNORED_TARGETS = [
 
 export function isSubmitChord(e: SubmitKeyEvent) {
     return (
-        e.key === 'Enter'
-        && (e.ctrlKey || e.metaKey)
-        && !e.altKey
-        && !e.shiftKey
-        && !e.repeat
-        && !e.isComposing
-        && e.keyCode !== 229
+        e.key === 'Enter' &&
+        (e.ctrlKey || e.metaKey) &&
+        !e.altKey &&
+        !e.shiftKey &&
+        !e.repeat &&
+        !e.isComposing &&
+        e.keyCode !== 229
     );
 }
 
 export function findSubmitter<T extends SubmitControl>(form: { elements: ArrayLike<T> }) {
     return Array.from(form.elements).find(control => {
         const submits =
-            (control.tagName === 'BUTTON' || control.tagName === 'INPUT')
-            && control.type === 'submit';
+            (control.tagName === 'BUTTON' || control.tagName === 'INPUT') &&
+            control.type === 'submit';
         return submits && !control.disabled;
     });
 }

@@ -10,7 +10,8 @@ export type FeedbackVote = 'yes' | 'no';
 export type LegalPageId = LegalSlug;
 
 export type FeedbackTarget =
-    { type: 'article'; post: PublishedPost } | { type: 'legal'; page: LegalPageId };
+    | { type: 'article'; post: PublishedPost }
+    | { type: 'legal'; page: LegalPageId };
 
 export interface PageFeedback {
     operationId: string;
@@ -137,7 +138,8 @@ export interface AdminReply {
 }
 
 export type AdminReplyResult =
-    { status: 'created'; comment: Record<string, unknown> } | { status: 'invalid-parent' };
+    | { status: 'created'; comment: Record<string, unknown> }
+    | { status: 'invalid-parent' };
 
 export interface SubscriberStats {
     active: number;

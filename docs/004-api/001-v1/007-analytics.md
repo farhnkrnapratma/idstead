@@ -21,7 +21,7 @@ The analytics the site loads, as chosen in the admin ([Analytics and consent](..
 curl "https://api.example.com/v1/analytics"
 ```
 
-MDRS pages read the same object as `api.v1.analytics` ([Live data](../../008-mdrs/002-extensions/014-live-data.md#apiv1analytics)).
+MDRS pages read its fields with `get('https://api.example.com/v1/analytics', '.provider')` and similar calls ([Live data](../../008-mdrs/002-extensions/014-live-data.md)).
 
 ## Errors
 

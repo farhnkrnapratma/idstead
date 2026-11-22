@@ -81,7 +81,8 @@ export interface SavedComment extends PublicComment {
 }
 
 export type CommentCreation =
-    { status: 'created'; comment: SavedComment } | { status: 'invalid-parent' };
+    | { status: 'created'; comment: SavedComment }
+    | { status: 'invalid-parent' };
 
 export interface CommentReport {
     reason: string;

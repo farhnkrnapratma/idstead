@@ -25,8 +25,9 @@ mock.module('../packages/lib/src/server/activityLog.ts', () => ({
 }));
 mock.module('../packages/lib/src/server/ipSalt.ts', () => ({ ipSalt: () => 'salt' }));
 
-const { adminWorkspace, workspaceOptions } =
-    await import('../packages/lib/src/server/adminWorkspace.ts');
+const { adminWorkspace, workspaceOptions } = await import(
+    '../packages/lib/src/server/adminWorkspace.ts'
+);
 
 const NOW = new Date('2026-06-15T12:00:00.000Z');
 const UUID = '0f8fad5b-d9cb-469f-a165-70867728950e';

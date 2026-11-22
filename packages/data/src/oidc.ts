@@ -65,7 +65,9 @@ export interface OidcCodeRecord {
 }
 
 export type OidcCodeResult =
-    { status: 'ok'; code: OidcCodeRecord } | { status: 'reused' } | { status: 'invalid' };
+    | { status: 'ok'; code: OidcCodeRecord }
+    | { status: 'reused' }
+    | { status: 'invalid' };
 
 export interface OidcRefreshInput {
     tokenHash: string;

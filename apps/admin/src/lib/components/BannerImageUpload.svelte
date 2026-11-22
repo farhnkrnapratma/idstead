@@ -172,8 +172,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                 type="ghost"
                 size="xs"
                 {disabled}
-                onclick={() => select(null)}
-                >{busy ? 'Cancel processing' : 'Discard banner change'}</Button
-            >{/if}
+                onclick={() => select(null)}>
+                {busy ? 'Cancel processing' : 'Discard banner change'}
+            </Button>{/if}
     </div>
 </section>

@@ -5,7 +5,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
     RENDER_VERSION,
-    unavailableResolvers,
+    unavailableFetcher,
     usesLiveData
 } from '../packages/mdrs/core/src/index.ts';
 import {
@@ -33,18 +33,32 @@ describe('postRenderPath', () => {
 });
 
 describe('usesLiveData', () => {
-    test('is false without a :::define block, even when prose mentions api.v1', () => {
-        expect(usesLiveData('Call api.v1.author to read the profile.')).toBe(false);
+    test('is false without a :::define block, even when prose mentions get()', () => {
+        expect(usesLiveData('Call get() to read the profile.')).toBe(false);
     });
 
-    test('is true when the define block reads api.*', () => {
-        expect(usesLiveData(':::define\nname: api.v1.author.profile.name\n:::\n\nHi ${name}')).toBe(
-            true
-        );
+    test('is true when the define block calls get()', () => {
+        expect(
+            usesLiveData(
+                ":::define\nname: get('https://api.example.com/v1/author', '.profile.name')\n:::\n\nHi ${name}"
+            )
+        ).toBe(true);
     });
 
-    test('is true when the body interpolates api.* next to a define block', () => {
-        expect(usesLiveData(':::define\nn: 2\n:::\n\n${api.v1.blog[0].title}')).toBe(true);
+    test('is true when the body interpolates get() next to a define block', () => {
+        expect(
+            usesLiveData(
+                ":::define\nn: 2\n:::\n\n${get('https://api.example.com/v1/author', '.profile.name')}"
+            )
+        ).toBe(true);
+    });
+
+    test('is true when a conditional calls get() without a define block', () => {
+        expect(
+            usesLiveData(
+                ":::if get('https://api.example.com/v1/analytics', '.enabled')\nOn\n:::endif"
+            )
+        ).toBe(true);
     });
 
     test('is false for define blocks with only local values', () => {
@@ -56,7 +70,7 @@ describe('buildPostRender and parsePostRender', () => {
     test('a static post renders once with headings and read time', async () => {
         const render = await buildPostRender(
             '## Setup\n\nSee [setup](#setup).',
-            unavailableResolvers()
+            unavailableFetcher()
         );
         expect(render.version).toBe(RENDER_VERSION);
         expect(render.live).toBe(false);
@@ -69,14 +83,14 @@ describe('buildPostRender and parsePostRender', () => {
 
     test('a live-data post is flagged so pages render it per request', async () => {
         const render = await buildPostRender(
-            ':::define\nname: api.v1.author.profile.name\n:::\n\nHi ${name}',
-            unavailableResolvers()
+            ":::define\nname: get('https://api.example.com/v1/author', '.profile.name')\n:::\n\nHi ${name}",
+            unavailableFetcher()
         );
         expect(render.live).toBe(true);
     });
 
     test('renders from another engine version are ignored', async () => {
-        const render = await buildPostRender('Text', unavailableResolvers());
+        const render = await buildPostRender('Text', unavailableFetcher());
         expect(parsePostRender(JSON.stringify({ ...render, version: RENDER_VERSION + 1 }))).toBe(
             null
         );

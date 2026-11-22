@@ -95,9 +95,9 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
             database: {
                 name: text(database.name, 'cloudflare.database.name', RESOURCE_NAME, 'idstead'),
                 id:
-                    database.id === undefined ?
-                        null
-                    :   text(database.id, 'cloudflare.database.id', UUID)
+                    database.id === undefined
+                        ? null
+                        : text(database.id, 'cloudflare.database.id', UUID)
             },
             rateLimitNamespaces: {
                 web: namespace(namespaces.web, 'cloudflare.rateLimitNamespaces.web', 1001),

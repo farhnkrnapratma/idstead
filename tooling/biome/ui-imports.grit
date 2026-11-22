@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
+or {
+    `import $_ from $source`,
+    `import $source`,
+    `export { $_ } from $source`,
+    `export * from $source`
+} as $import where {
+    not $import <: r"import\s+type\s[\s\S]*",
+    $source <: r"['\"](?:(?:[^'\"]*/)?server/[^'\"]*|#lib[^'\"]*|@idstead/(?:lib|mdrs|ui)|@idstead/(?:lib|mdrs|ui)/[^'\"]*)['\"]",
+    register_diagnostic(span=$source, message="@idstead/ui is the design system: browser-safe, and it may only depend on @idstead/domain.")
+}

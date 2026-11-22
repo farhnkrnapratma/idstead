@@ -26,7 +26,7 @@ Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lo
 
 ```sh
 bun install              # install every workspace
-bun run configure        # render apps/*/wrangler.jsonc from idstead.jsonc (bun run check verifies them)
+bun run configure        # render apps/*/wrangler.jsonc from idstead.jsonc (bun run typecheck verifies them)
 bun run setup [apply]    # set up an instance: config, Cloudflare resources, admin user, legal pages, deploy (dry run by default)
 bun run dev [--host]     # web dev server (apps/web, mode: development)
 bun run dev:admin        # admin dev server on :5174
@@ -34,10 +34,10 @@ bun run --filter @idstead/api dev   # API worker via wrangler dev on :8787
 bun run --filter @idstead/jobs dev  # jobs worker via wrangler dev --test-scheduled on :8788
 bun run build            # build every app (SvelteKit builds + wrangler dry-run bundles)
 bun run test             # Bun regression tests in tests/
-bun run check            # svelte-check for web/admin, tsc for api/jobs/mdrs and for tests/tooling (root tsconfig.json)
-bun run lint             # prettier --write . && eslint . && bun run lint:deprecated
-bun run lint:deprecated  # typed ESLint pass (eslint.deprecated.config.ts) that fails on any @deprecated API, icon or option
-bun run fmt / fmt:check  # prettier
+bun run check            # biome check (format + lint), then bun run typecheck
+bun run typecheck        # configure --check, svelte-check for web/admin, tsc for api/jobs/mdrs and for tests/tooling (root tsconfig.json)
+bun run lint             # biome lint, including the import boundaries and deprecated imports
+bun run format           # biome format --write
 ```
 
 Run tests, `bun run check` and `bun run lint` after non-trivial changes; CircleCI (`.circleci/config.yml`) runs the same checks on every push but does not gate Workers Builds, so run them locally before merging to `main`. Repository changes must keep the suites in `tests/contracts/` passing. `tests/` stays at the repository root and imports from `packages/*/src` and `apps/*/src`.
@@ -54,7 +54,7 @@ Where the instance runs (domains, Worker, bucket and queue names, cron) lives in
 - **No comments in code.** Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead. The only exception is the SPDX header every file starts with (`SPDX-FileCopyrightText` and `SPDX-License-Identifier`: `AGPL-3.0-only`, or `MIT OR Apache-2.0` under `packages/mdrs/`); files that cannot hold comments are covered in `REUSE.toml`, and `uvx reuse lint` must pass ([LICENSING.md](LICENSING.md)).
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it, and reuse the shared components and layout primitives instead of page-local one-offs; run the `ui-consistency-check` skill after touching a page or component.
 - **Always write security-aware code.** Validate/sanitize untrusted input at every boundary, avoid injection/XSS/auth-bypass-shaped patterns, and default to the same scrutiny the `security-audit` skill and `security-reviewer` agent apply.
-- Formatting is enforced by `prettier.config.ts` + `eslint.config.ts` (`bun run fmt`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout.
+- Formatting and linting are enforced by Biome (`biome.jsonc`, import-boundary plugins in `tooling/biome/`; `bun run format`, `bun run lint`). Biome does not format `.svelte` or Markdown files. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout.
 
 ## Where details live
 

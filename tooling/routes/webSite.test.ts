@@ -114,9 +114,9 @@ beforeEach(() => {
 
 function fetchOf(repos: () => unknown[]) {
     return (async (input: unknown) =>
-        String(input).includes('/user/repos') ?
-            Response.json(repos())
-        :   new Response('{}', { status: 500 })) as unknown as typeof fetch;
+        String(input).includes('/user/repos')
+            ? Response.json(repos())
+            : new Response('{}', { status: 500 })) as unknown as typeof fetch;
 }
 
 describe('layout load', () => {

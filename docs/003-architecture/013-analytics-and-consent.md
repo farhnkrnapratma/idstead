@@ -37,7 +37,7 @@ sequenceDiagram
 - **Table:** `db_site_settings` (`key` = `analytics`, `value` = JSON up to 2048 bytes). No row means None. Saving bumps the `site` generation in `db_cache_generations`, so cached reads refresh at once.
 - **Admin endpoint:** `GET`/`POST /api/internal/admin/site-settings/analytics`, behind `blogAdmin`. A rejected field answers `400 SITE_SETTINGS_INVALID` with the field name in `details`. Saving writes the activity log entry `settings.analytics` (category `settings`).
 - **Public API:** `GET /v1/analytics` returns `{ enabled, provider, name, cookies }` without IDs, tokens or URLs ([API](../004-api/001-v1/README.md)).
-- **MDRS:** `api.v1.analytics` reads the same facts, so legal pages can describe the active provider with `:::if` and `${if}` ([Live data](../008-mdrs/002-extensions/014-live-data.md#apiv1analytics)).
+- **MDRS:** legal pages read the same facts from `GET /v1/analytics` with `get()`, so they can describe the active provider with `:::if` and `${if}` ([Live data](../008-mdrs/002-extensions/014-live-data.md)).
 - The data export includes the setting, and delete-all clears it.
 
 ## Web request
@@ -54,10 +54,10 @@ Legal pages live in D1 and are edited in the admin. This section keeps a privacy
 ```mdrs
 ## Analytics and cookies
 
-:::if api.v1.analytics.cookies
-This site measures visits with ${api.v1.analytics.name}. It sets analytics cookies only after you agree in the cookie banner, and you can change your choice at any time from the Cookies link in the footer.
-:::elif api.v1.analytics.enabled
-This site measures visits with ${api.v1.analytics.name}, which sets no cookies and stores no personal data in your browser.
+:::if get('https://api.example.com/v1/analytics', '.cookies')
+This site measures visits with ${get('https://api.example.com/v1/analytics', '.name')}. It sets analytics cookies only after you agree in the cookie banner, and you can change your choice at any time from the Cookies link in the footer.
+:::elif get('https://api.example.com/v1/analytics', '.enabled')
+This site measures visits with ${get('https://api.example.com/v1/analytics', '.name')}, which sets no cookies and stores no personal data in your browser.
 :::else
 This site uses no analytics and sets no analytics cookies.
 :::endif

@@ -25,10 +25,7 @@ function mapExperience(items: any[]): any[] {
         company: s(item?.company),
         start_month: s(item?.startMonth),
         start_year: Number(item?.startYear) || new Date().getFullYear(),
-        end_month:
-            item?.currentlyIn ? null
-            : item?.endMonth ? s(item.endMonth)
-            : null,
+        end_month: item?.currentlyIn ? null : item?.endMonth ? s(item.endMonth) : null,
         end_year: item?.currentlyIn ? null : Number(item?.endYear) || null,
         currently_in: Boolean(item?.currentlyIn),
         location: s(item?.location),
@@ -45,10 +42,7 @@ function mapEducation(items: any[]): any[] {
         field: s(item?.field),
         start_month: s(item?.startMonth) || 'September',
         start_year: Number(item?.startYear) || new Date().getFullYear(),
-        end_month:
-            item?.currentlyIn ? null
-            : item?.endMonth ? s(item.endMonth)
-            : null,
+        end_month: item?.currentlyIn ? null : item?.endMonth ? s(item.endMonth) : null,
         end_year: item?.currentlyIn ? null : Number(item?.endYear) || null,
         currently_in: Boolean(item?.currentlyIn),
         grade: s(item?.grade),
@@ -112,9 +106,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             applied.push('profile');
         } catch (err) {
             errors.profile =
-                err instanceof ProfileInputError ? Object.values(err.fields)[0]
-                : err instanceof Error ? err.message
-                : 'Invalid profile data.';
+                err instanceof ProfileInputError
+                    ? Object.values(err.fields)[0]
+                    : err instanceof Error
+                      ? err.message
+                      : 'Invalid profile data.';
         }
     }
 
@@ -142,10 +138,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             const categories = body.skills.map((item: any, idx: number) => ({
                 category: s(item?.category),
                 sort_order: idx + 1,
-                skills:
-                    Array.isArray(item?.items) ?
-                        item.items.map((skill: unknown) => s(skill)).filter(Boolean)
-                    :   []
+                skills: Array.isArray(item?.items)
+                    ? item.items.map((skill: unknown) => s(skill)).filter(Boolean)
+                    : []
             }));
             const result = await writer.saveSkills(authorId, categories);
             if (result.status === 'rejected') throw new Error(result.message);

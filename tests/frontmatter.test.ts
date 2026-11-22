@@ -5,9 +5,9 @@
 import { describe, expect, test } from 'bun:test';
 import { extractFrontmatter } from '../packages/mdrs/core/src/frontmatter';
 import { renderMarkdown } from '../packages/mdrs/core/src/markdown';
-import { unavailableResolvers, validateDefineForSave } from '../packages/mdrs/core/src/define';
+import { unavailableFetcher, validateDefineForSave } from '../packages/mdrs/core/src/define';
 
-const validate = (markdown: string) => validateDefineForSave(markdown, unavailableResolvers());
+const validate = (markdown: string) => validateDefineForSave(markdown, unavailableFetcher());
 
 describe('frontmatter', () => {
     test('a leading YAML block is parsed and removed', () => {

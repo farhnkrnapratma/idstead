@@ -140,9 +140,9 @@ function safeClass(value: string, inKatex: boolean): string {
     return value
         .split(/\s+/)
         .filter(token =>
-            inKatex ?
-                KATEX_CLASS_TOKEN_RE.test(token) && !CLASS_FORBIDDEN_RE.test(token)
-            :   CLASS_TOKEN_RE.test(token)
+            inKatex
+                ? KATEX_CLASS_TOKEN_RE.test(token) && !CLASS_FORBIDDEN_RE.test(token)
+                : CLASS_TOKEN_RE.test(token)
         )
         .join(' ');
 }

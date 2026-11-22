@@ -171,8 +171,9 @@ SPDX-License-Identifier: AGPL-3.0-only
             id={`${id}-title`}
             class="text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none">
             {title}
-            {#if useGenerated && !preview}<span class="font-normal text-fg-muted">(generated)</span
-                >{/if}
+            {#if useGenerated && !preview}<span class="font-normal text-fg-muted">
+                    (generated)
+                </span>{/if}
         </h3>
         {#if canRemove && !preview}
             <Button

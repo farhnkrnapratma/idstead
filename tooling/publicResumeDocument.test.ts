@@ -38,8 +38,9 @@ mock.module('../packages/lib/src/server/repositories.ts', () => ({
     }
 }));
 
-const { loadPublicResumeDocument } =
-    await import('../packages/lib/src/server/publicResumeDocument.ts');
+const { loadPublicResumeDocument } = await import(
+    '../packages/lib/src/server/publicResumeDocument.ts'
+);
 
 const fetchFn = globalThis.fetch;
 const document = {

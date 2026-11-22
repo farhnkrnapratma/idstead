@@ -90,29 +90,32 @@ export function createD1AdminPostStore(db: D1Like, bucket: ContentBucket): Admin
                          ORDER BY p.created_at DESC`
                     )
                     .all();
-                return results.map((row): AdminPost => ({
-                    id: String(row.id),
-                    title: String(row.title),
-                    slug: String(row.slug),
-                    published: flag(row.published),
-                    pinned: flag(row.pinned),
-                    storage_path: typeof row.storage_path === 'string' ? row.storage_path : null,
-                    created_at: String(row.created_at),
-                    updated_at: typeof row.updated_at === 'string' ? row.updated_at : null,
-                    banner_version:
-                        typeof row.banner_version === 'string' ? row.banner_version : null,
-                    post_revision: Number(row.post_revision),
-                    excerpt: typeof row.excerpt === 'string' ? row.excerpt : null,
-                    tags: jsonStrings(row.tags),
-                    helpful_yes: Number(row.helpful_yes),
-                    helpful_no: Number(row.helpful_no),
-                    read_minutes:
-                        typeof row.read_time === 'number' && row.read_time > 0 ?
-                            row.read_time
-                        :   null,
-                    views_count: Number(row.view_count),
-                    comment_count: Number(row.comment_count)
-                }));
+                return results.map(
+                    (row): AdminPost => ({
+                        id: String(row.id),
+                        title: String(row.title),
+                        slug: String(row.slug),
+                        published: flag(row.published),
+                        pinned: flag(row.pinned),
+                        storage_path:
+                            typeof row.storage_path === 'string' ? row.storage_path : null,
+                        created_at: String(row.created_at),
+                        updated_at: typeof row.updated_at === 'string' ? row.updated_at : null,
+                        banner_version:
+                            typeof row.banner_version === 'string' ? row.banner_version : null,
+                        post_revision: Number(row.post_revision),
+                        excerpt: typeof row.excerpt === 'string' ? row.excerpt : null,
+                        tags: jsonStrings(row.tags),
+                        helpful_yes: Number(row.helpful_yes),
+                        helpful_no: Number(row.helpful_no),
+                        read_minutes:
+                            typeof row.read_time === 'number' && row.read_time > 0
+                                ? row.read_time
+                                : null,
+                        views_count: Number(row.view_count),
+                        comment_count: Number(row.comment_count)
+                    })
+                );
             }),
 
         get: (id: string) =>
@@ -280,8 +283,8 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
             .first();
         const expected = op.expected_revision === null ? null : Number(op.expected_revision);
         if (
-            (expected === null && current)
-            || (expected !== null && (!current || Number(current.post_revision) !== expected))
+            (expected === null && current) ||
+            (expected !== null && (!current || Number(current.post_revision) !== expected))
         ) {
             const statements: D1Statement[] = [
                 db
@@ -333,9 +336,11 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
             );
         } else {
             const version =
-                op.banner_operation === 'keep' ? currentVersion
-                : op.banner_operation === 'replace' ? op.id
-                : null;
+                op.banner_operation === 'keep'
+                    ? currentVersion
+                    : op.banner_operation === 'replace'
+                      ? op.id
+                      : null;
             if (op.banner_operation === 'replace') {
                 const pending = await db
                     .prepare(
@@ -346,8 +351,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                 if (!pending)
                     throw new DataError('postOperations.commit', 'Banner version unavailable');
             }
-            const references =
-                Array.isArray(data.banner_references) ? data.banner_references.map(String) : [];
+            const references = Array.isArray(data.banner_references)
+                ? data.banner_references.map(String)
+                : [];
             if (references.length) {
                 const { results } = await db
                     .prepare(
@@ -473,9 +479,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
     return {
         async prepare(request: PostOperationRequest): Promise<PostOperationPreparation> {
             if (
-                !request.actor
-                || !['save', 'delete'].includes(request.kind)
-                || !['keep', 'replace', 'remove'].includes(String(request.banner.operation))
+                !request.actor ||
+                !['save', 'delete'].includes(request.kind) ||
+                !['keep', 'replace', 'remove'].includes(String(request.banner.operation))
             )
                 throw new DataError('postOperations.prepare', 'Invalid post operation');
             try {
@@ -524,9 +530,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                         .bind(
                             request.operationId,
                             request.postId,
-                            typeof request.banner.sha256 === 'string' ?
-                                request.banner.sha256
-                            :   null,
+                            typeof request.banner.sha256 === 'string'
+                                ? request.banner.sha256
+                                : null,
                             Number.isFinite(bytes) ? Math.trunc(bytes) : null,
                             request.kind,
                             request.banner.operation,
@@ -540,9 +546,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                     return { status: 'reused' };
                 return { status: 'prepared', operation: op };
             } catch (error) {
-                throw error instanceof DataError ? error : (
-                        new DataError('postOperations.prepare', error)
-                    );
+                throw error instanceof DataError
+                    ? error
+                    : new DataError('postOperations.prepare', error);
             }
         },
 
@@ -572,9 +578,9 @@ export function createD1PostOperationStore(db: D1Like, bucket: ContentBucket): P
                 }
                 await bucket.put(key, markdown, { httpMetadata: { contentType: 'text/markdown' } });
             } catch (error) {
-                throw error instanceof DataError ? error : (
-                        new DataError('postOperations.writeMarkdown', error)
-                    );
+                throw error instanceof DataError
+                    ? error
+                    : new DataError('postOperations.writeMarkdown', error);
             }
         },
 

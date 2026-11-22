@@ -97,9 +97,9 @@ function renderMathSource({ source, display }: MathSource): string {
         const html = katex.renderToString(source, { displayMode: display, throwOnError: false });
         return display ? `<div class="mdrs-math mdrs-math--block">${html}</div>` : html;
     } catch {
-        return display ?
-                `<div class="mdrs-math-error">${escapeAttr(source)}</div>`
-            :   `$$${escapeAttr(source)}$$`;
+        return display
+            ? `<div class="mdrs-math-error">${escapeAttr(source)}</div>`
+            : `$$${escapeAttr(source)}$$`;
     }
 }
 

@@ -69,7 +69,14 @@ export interface BinaryExpr {
     right: Expr;
 }
 
+export interface GetCall {
+    kind: 'get';
+    url: Expr;
+    path: Expr;
+}
+
 export type Expr =
+    | GetCall
     | NumberLit
     | StringLit
     | TemplateLit

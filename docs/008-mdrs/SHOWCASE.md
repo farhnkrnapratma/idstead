@@ -5,8 +5,8 @@ tags: [mdrs, markdown, writing, showcase]
 ---
 :::define
 site: "my-site.example"
-author: api.v1.author.profile.name
-posts: api.v1.blog.length
+author: get('https://api.my-site.example/v1/author', '.profile.name')
+city: get('https://api.my-site.example/v1/author', '.profile.city')
 version: "1.0"
 year: 2026
 stable: true
@@ -289,7 +289,7 @@ data:
 
 ## Variables and live data
 
-This post's `:::define` block mixes literals, expressions and live data. ${author} has published ${posts} posts on ${site} so far, and this one was written in ${year}.
+This post's `:::define` block mixes literals, expressions and live data from `get()`. ${author} writes ${site} from ${city}, and this post was written in ${year}.
 
 - The second headline feature is ${features[1]}.
 - The engine's file extension is `${engine.extension}`, and it ships ${engine.directives} directives.
@@ -299,7 +299,7 @@ Inline conditionals choose text inside a sentence, and can hold their own expres
 
 ${if stable}This is a stable build of ${engine.language} ${version}.${else}This is a preview build.${endif}
 
-${if posts > 0}The newest post is [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug}).${else}No posts are published yet.${endif}
+${if city == ""}The author's city is not set.${else}The author lives in ${city}.${endif}
 
 Short values fit a ternary: this build is ${stable ? "stable" : "a preview"}.
 

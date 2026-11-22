@@ -53,11 +53,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                     {#if item.componentIcon}
                         {@const Icon = item.componentIcon}
                         <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent"
-                            ><Icon class="size-4" /></span>
+                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
+                            <Icon class="size-4" />
+                        </span>
                     {/if}
-                    <span class="min-w-0 truncate text-xs font-bold text-fg-secondary"
-                        >{item.label}</span>
+                    <span class="min-w-0 truncate text-xs font-bold text-fg-secondary">
+                        {item.label}
+                    </span>
                     {#if item.onclick}
                         <ArrowRight
                             strokeWidth={1.5}
@@ -67,10 +69,12 @@ SPDX-License-Identifier: AGPL-3.0-only
                 </span>
                 <span class="flex min-w-0 flex-col gap-1.5">
                     <span
-                        class="block text-3xl leading-none font-extrabold tracking-tight text-fg tabular-nums"
-                        >{item.value}</span>
-                    <span class="block min-h-lh truncate text-xs text-fg-muted"
-                        >{item.description ?? ''}</span>
+                        class="block text-3xl leading-none font-extrabold tracking-tight text-fg tabular-nums">
+                        {item.value}
+                    </span>
+                    <span class="block min-h-lh truncate text-xs text-fg-muted">
+                        {item.description ?? ''}
+                    </span>
                 </span>
                 {#if item.ratio !== undefined}
                     <span
@@ -90,14 +94,15 @@ SPDX-License-Identifier: AGPL-3.0-only
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
-                        class="flex size-8 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent"
-                        ><Icon class="size-4" /></span>
+                        class="flex size-8 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
+                        <Icon class="size-4" />
+                    </span>
                 {/if}
                 <span class="text-2xl font-extrabold tracking-tight text-fg">{item.value}</span>
                 <span class="text-xs font-bold text-fg">{item.label}</span>
-                {#if item.description}<span class="text-2xs text-fg-secondary"
-                        >{item.description}</span
-                    >{/if}
+                {#if item.description}<span class="text-2xs text-fg-secondary">
+                        {item.description}
+                    </span>{/if}
             </button>
         {:else}
             <div
@@ -107,8 +112,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         class="bi {item.icon} mb-1 text-lg text-fg-accent"
                         aria-hidden="true"></i>
                 {/if}
-                <span class="font-mono text-2xl font-extrabold tracking-tight text-fg"
-                    >{item.value}</span>
+                <span class="font-mono text-2xl font-extrabold tracking-tight text-fg">
+                    {item.value}
+                </span>
                 <span class="mt-0.5 text-xs font-bold text-fg-secondary">{item.label}</span>
                 {#if item.description}
                     <span class="mt-0.5 text-2xs text-fg-muted">{item.description}</span>

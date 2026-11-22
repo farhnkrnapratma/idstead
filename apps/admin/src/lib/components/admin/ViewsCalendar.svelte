@@ -100,12 +100,16 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <IconButton
                     ariaLabel={`Show ${data.year - 1}`}
                     size="xs"
-                    onclick={onPrevYear}><ChevronLeft class="size-3.5" /></IconButton>
+                    onclick={onPrevYear}>
+                    <ChevronLeft class="size-3.5" />
+                </IconButton>
                 <IconButton
                     ariaLabel={`Show ${data.year + 1}`}
                     size="xs"
                     disabled={!canGoNext}
-                    onclick={onNextYear}><ChevronRight class="size-3.5" /></IconButton>
+                    onclick={onNextYear}>
+                    <ChevronRight class="size-3.5" />
+                </IconButton>
             </div>
         </div>
     </div>
@@ -139,7 +143,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         fill="var(--color-fg-muted)"
                                         font-size="12"
                                         text-anchor="end"
-                                        dominant-baseline="middle">{label}</text>
+                                        dominant-baseline="middle">
+                                        {label}
+                                    </text>
                                 {/each}
                                 {#each cells as cell (cell)}
                                     {@const padding = 2}

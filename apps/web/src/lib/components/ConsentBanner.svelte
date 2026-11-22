@@ -151,8 +151,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 at any time.{#if !isHiddenLegalPath('/privacy')}
                     See our <a
                         href="/privacy"
-                        class="font-semibold text-fg-accent underline hover:text-accent-hover"
-                        >Privacy Policy</a> for full details.{/if}
+                        class="font-semibold text-fg-accent underline hover:text-accent-hover">
+                        Privacy Policy
+                    </a> for full details.{/if}
             </p>
 
             <div class="grid grid-cols-2 gap-2 pt-1 sm:flex sm:flex-wrap sm:items-center">

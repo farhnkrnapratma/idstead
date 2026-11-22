@@ -13,9 +13,5 @@ export function segmentRounding(
     const top = keys.slice(index + 1).every(empty);
     const bottom = keys.slice(0, index).every(empty);
     if (top && bottom) return 'all';
-    return (
-        top ? 'top'
-        : bottom ? 'bottom'
-        : 'none'
-    );
+    return top ? 'top' : bottom ? 'bottom' : 'none';
 }

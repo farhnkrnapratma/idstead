@@ -31,9 +31,9 @@ export function assetFileName(original: string, fallback: 'image' | 'video' = 'i
 
 export function assetAltText(original: string, fallback = 'Image') {
     const parts = words(original).map(word =>
-        word.length > 1 && word === word.toUpperCase() && /\p{L}/u.test(word) ?
-            word
-        :   word.toLowerCase()
+        word.length > 1 && word === word.toUpperCase() && /\p{L}/u.test(word)
+            ? word
+            : word.toLowerCase()
     );
     if (!parts.length) return fallback;
     const [first, ...rest] = parts;

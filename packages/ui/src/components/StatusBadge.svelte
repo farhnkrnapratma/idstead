@@ -79,12 +79,14 @@ SPDX-License-Identifier: AGPL-3.0-only
             <StatusIcon
                 aria-hidden="true"
                 class={cn('size-3.5 shrink-0', tones[current.tone])} />
-            <span class="sr-only @min-[14rem]:not-sr-only @min-[14rem]:truncate"
-                >{current.label}</span>
+            <span class="sr-only @min-[14rem]:not-sr-only @min-[14rem]:truncate">
+                {current.label}
+            </span>
             <span
                 aria-hidden="true"
-                class="hidden truncate @min-[8rem]:inline @min-[14rem]:hidden"
-                >{current.short}</span>
+                class="hidden truncate @min-[8rem]:inline @min-[14rem]:hidden">
+                {current.short}
+            </span>
         </a>
     </div>
 {/if}

@@ -38,7 +38,7 @@ export function bannerUrl(
     post: PostAssetOwner & { banner_version?: string | null },
     cdnBase: string
 ) {
-    return post.banner_version ?
-            `${cdnBase}/${bannerObjectKey(post)}?v=${versionToken(post.banner_version)}`
-        :   null;
+    return post.banner_version
+        ? `${cdnBase}/${bannerObjectKey(post)}?v=${versionToken(post.banner_version)}`
+        : null;
 }

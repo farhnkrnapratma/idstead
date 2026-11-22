@@ -2,19 +2,21 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import {
-    type ArrayLit,
-    type BinaryExpr,
-    type Expr,
-    type ObjectLit,
-    type PathSegment,
-    type Reference,
-    type TemplateLit,
-    type TernaryExpr,
-    type UnaryExpr
+import type {
+    ArrayLit,
+    BinaryExpr,
+    Expr,
+    GetCall,
+    ObjectLit,
+    Reference,
+    TemplateLit,
+    TernaryExpr,
+    UnaryExpr
 } from './ast';
 import { DefineError } from './errors';
+import type { JsonFetcher } from './fetcher';
 import { isValidIdentifierName } from './identifiers';
+import { selectJson } from './jsonPath';
 import {
     type DefineValue,
     arrayVal,
@@ -27,23 +29,19 @@ import {
     walkPath
 } from './values';
 
-export type ApiResolver = (path: PathSegment[]) => Promise<DefineValue>;
-
-export type ApiRegistry = Readonly<Record<string, ApiResolver>>;
-
 export interface EvalContext {
     scope: Map<string, DefineValue>;
     allowThis: boolean;
-    apiRegistry: ApiRegistry;
+    fetcher: JsonFetcher;
 }
 
 function scopeValue(name: string, ctx: EvalContext): DefineValue {
     const value = ctx.scope.get(name);
     if (value === undefined) {
         throw new DefineError(
-            ctx.allowThis ?
-                `'${name}' is undefined, or referenced before it was defined`
-            :   `'${name}' is undefined`,
+            ctx.allowThis
+                ? `'${name}' is undefined, or referenced before it was defined`
+                : `'${name}' is undefined`,
             name
         );
     }
@@ -69,26 +67,8 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
         return walkPath(base, node.path.slice(1));
     }
 
-    if (node.root === 'api') {
-        if (node.path.length === 0 || node.path[0].kind !== 'prop') {
-            throw new DefineError('api must be followed by a version, e.g. api.v1.author');
-        }
-        const version = node.path[0].name as string;
-        if (version !== 'v1') {
-            throw new DefineError(`Unknown API version '${version}' (supported: v1)`);
-        }
-        if (node.path.length < 2 || node.path[1].kind !== 'prop') {
-            throw new DefineError('api.v1 must be followed by a resource name, e.g. api.v1.author');
-        }
-        const resource = node.path[1].name as string;
-        const resolver =
-            Object.hasOwn(ctx.apiRegistry, resource) ? ctx.apiRegistry[resource] : null;
-        if (!resolver) {
-            throw new DefineError(
-                `Unknown api.v1 resource '${resource}' (supported: ${Object.keys(ctx.apiRegistry).join(', ')})`
-            );
-        }
-        return resolver(node.path.slice(2));
+    if (node.root === 'get') {
+        throw new DefineError("get must be called as get('https://…', '.path')");
     }
 
     if (ctx.allowThis) {
@@ -101,6 +81,21 @@ async function evaluateReference(node: Reference, ctx: EvalContext): Promise<Def
         throw new DefineError(`'${node.root}' is undefined`);
     }
     return walkPath(base, node.path);
+}
+
+async function evaluateGet(node: GetCall, ctx: EvalContext): Promise<DefineValue> {
+    const url = await evaluateExpr(node.url, ctx);
+    const path = await evaluateExpr(node.path, ctx);
+    if (url.type !== 'string' || path.type !== 'string') {
+        throw new DefineError('get() takes a URL string and a path string');
+    }
+    const value = selectJson(await ctx.fetcher(url.value as string), path.value as string);
+    if (typeof value === 'string') return stringVal(value);
+    if (typeof value === 'number') return numberVal(value);
+    if (typeof value === 'boolean') return boolVal(value);
+    throw new DefineError(
+        `get('${url.value as string}', '${path.value as string}') must resolve to a string, number or boolean`
+    );
 }
 
 async function evaluateBinary(node: BinaryExpr, ctx: EvalContext): Promise<DefineValue> {
@@ -232,25 +227,11 @@ export async function evaluateExpr(node: Expr, ctx: EvalContext): Promise<Define
             return evaluateObject(node, ctx);
         case 'reference':
             return evaluateReference(node, ctx);
+        case 'get':
+            return evaluateGet(node, ctx);
         case 'unary':
             return evaluateUnary(node, ctx);
         case 'binary':
             return evaluateBinary(node, ctx);
     }
-}
-
-export function unavailableResolvers(): ApiRegistry {
-    const unavailable: ApiResolver = async () => {
-        throw new DefineError('Database access is unavailable in this context.');
-    };
-    return new Proxy({} as Record<string, ApiResolver>, {
-        get: () => unavailable,
-        has: () => true,
-        ownKeys: () => [],
-        getOwnPropertyDescriptor: () => ({
-            configurable: true,
-            enumerable: false,
-            value: unavailable
-        })
-    });
 }

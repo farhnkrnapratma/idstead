@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import type {
+    AdminSubscriber,
+    AdminSubscriberQuery,
+    AdminSubscriberStore,
     BroadcastClaim,
     NewsletterStore,
     SubscriberRepository,
@@ -46,10 +49,10 @@ export function createD1SubscriberRepository(db: D1Like): SubscriberRepository {
                     }>();
                 if (existing?.status === 'active') return 'already-active';
                 if (
-                    existing?.status === 'pending'
-                    && existing.confirm_sent_at
-                    && Date.now() - new Date(existing.confirm_sent_at).getTime()
-                        < input.resendCooldownMs
+                    existing?.status === 'pending' &&
+                    existing.confirm_sent_at &&
+                    Date.now() - new Date(existing.confirm_sent_at).getTime() <
+                        input.resendCooldownMs
                 )
                     return 'cooling-down';
                 const now = new Date().toISOString();
@@ -57,7 +60,7 @@ export function createD1SubscriberRepository(db: D1Like): SubscriberRepository {
                     await db
                         .prepare(
                             `UPDATE db_subscribers SET status = 'pending', confirm_token_hash = ?2, confirm_sent_at = ?3,
-                             updated_at = ?3, user_agent = ?4, ip_hash = coalesce(?5, ip_hash),
+                             updated_at = ?3, user_agent = coalesce(nullif(?4, ''), user_agent), ip_hash = coalesce(?5, ip_hash),
                              unsubscribe_token = CASE WHEN status = 'unsubscribed' THEN ?6 ELSE unsubscribe_token END
                              WHERE id = ?1`
                         )
@@ -219,6 +222,78 @@ export function createD1NewsletterStore(db: D1Like): NewsletterStore {
                     email: row.email,
                     unsubscribeToken: row.unsubscribe_token
                 }));
+            });
+        }
+    };
+}
+
+const ADMIN_COLUMNS = 'id, email, status, created_at, confirmed_at, unsubscribed_at';
+
+function likePattern(query: string): string {
+    return `%${query.toLowerCase().replace(/[\\%_]/g, char => `\\${char}`)}%`;
+}
+
+export function createD1AdminSubscriberStore(db: D1Like): AdminSubscriberStore {
+    function byId(id: string) {
+        return guarded('adminSubscribers.byId', async () => {
+            const row = await db
+                .prepare(`SELECT ${ADMIN_COLUMNS} FROM db_subscribers WHERE id = ?1`)
+                .bind(id)
+                .first<AdminSubscriber>();
+            return row ?? null;
+        });
+    }
+
+    return {
+        list({ query, status, page, limit }: AdminSubscriberQuery) {
+            return guarded('adminSubscribers.list', async () => {
+                const where = `WHERE (?1 IS NULL OR lower(email) LIKE ?1 ESCAPE '\\')
+                               AND (?2 IS NULL OR status = ?2)`;
+                const pattern = query?.trim() ? likePattern(query.trim()) : null;
+                const [rows, count] = await Promise.all([
+                    db
+                        .prepare(
+                            `SELECT ${ADMIN_COLUMNS} FROM db_subscribers ${where}
+                             ORDER BY created_at DESC, id LIMIT ?3 OFFSET ?4`
+                        )
+                        .bind(pattern, status ?? null, limit, (page - 1) * limit)
+                        .all<AdminSubscriber>(),
+                    db
+                        .prepare(`SELECT count(*) AS total FROM db_subscribers ${where}`)
+                        .bind(pattern, status ?? null)
+                        .first<{ total: number }>()
+                ]);
+                return { items: rows.results, total: count?.total ?? 0 };
+            });
+        },
+
+        byId,
+
+        setStatus(id: string, status: 'active' | 'unsubscribed') {
+            return guarded('adminSubscribers.setStatus', async () => {
+                const now = new Date().toISOString();
+                const { meta } = await db
+                    .prepare(
+                        status === 'active'
+                            ? `UPDATE db_subscribers SET status = 'active', confirm_token_hash = NULL,
+                               unsubscribed_at = NULL, updated_at = ?2
+                               WHERE id = ?1 AND status = 'unsubscribed' AND confirmed_at IS NOT NULL`
+                            : `UPDATE db_subscribers SET status = 'unsubscribed', unsubscribed_at = ?2,
+                               confirm_token_hash = NULL, updated_at = ?2 WHERE id = ?1 AND status = 'active'`
+                    )
+                    .bind(id, now)
+                    .run();
+                return meta.changes > 0 ? byId(id) : null;
+            });
+        },
+
+        delete(id: string) {
+            return guarded('adminSubscribers.delete', async () => {
+                const { meta } = await db
+                    .prepare('DELETE FROM db_subscribers WHERE id = ?1')
+                    .bind(id)
+                    .run();
+                return meta.changes > 0 ? 'deleted' : 'not-found';
             });
         }
     };

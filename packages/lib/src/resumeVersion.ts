@@ -165,10 +165,10 @@ export function resumeVersionBump(
     const { profile: after } = next;
     if (before.bio !== after.bio) minor.push('Bio changed');
     if (
-        before.email !== after.email
-        || before.website !== after.website
-        || before.location !== after.location
-        || !same(previous.links, next.links)
+        before.email !== after.email ||
+        before.website !== after.website ||
+        before.location !== after.location ||
+        !same(previous.links, next.links)
     )
         minor.push('Contact details or links changed');
     if (before.avatar !== after.avatar) minor.push('Profile photo changed');
@@ -187,9 +187,9 @@ export function parseResumeVersion(filename?: string | null): ResumeVersion | nu
 
 export function nextResumeVersion(current: ResumeVersion | null, level: 'major' | 'minor') {
     if (!current) return { major: 1, minor: 0 };
-    return level === 'major' ?
-            { major: current.major + 1, minor: 0 }
-        :   { major: current.major, minor: current.minor + 1 };
+    return level === 'major'
+        ? { major: current.major + 1, minor: 0 }
+        : { major: current.major, minor: current.minor + 1 };
 }
 
 export function formatResumeVersion(version: ResumeVersion) {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { publicRepositories } from './repositories';
-import { mdrsResolvers } from './mdrsData';
+import { fetchJson } from './mdrsFetch';
 import { getLegalPage } from '#lib/server/legalPages.ts';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';
 import { markdownToPlainText, resolveDefines } from '@mdrs/core';
@@ -41,9 +41,7 @@ export async function blogDocument(slug: string, format: DocumentFormat, fetchFn
     if (!post) return notFound();
     const markdown = (await repositories.blog.readMarkdown(post.source)) ?? '';
     const [body, siteLicense] = await Promise.all([
-        markdown ?
-            resolveDefines(markdown, mdrsResolvers(repositories))
-        :   Promise.resolve(post.excerpt || ''),
+        markdown ? resolveDefines(markdown, fetchJson) : Promise.resolve(post.excerpt || ''),
         siteContentLicense(repositories)
     ]);
     const notice = [
@@ -64,7 +62,7 @@ export async function blogDocument(slug: string, format: DocumentFormat, fetchFn
 export async function legalDocument(slug: string, format: DocumentFormat) {
     const page = await getLegalPage(slug);
     if (!page.content) return notFound();
-    const content = await resolveDefines(page.content, mdrsResolvers(publicRepositories()));
+    const content = await resolveDefines(page.content, fetchJson);
     if (format === 'txt') {
         const text = markdownToPlainText(content);
         return documentResponse(page.title ? `${page.title}\n\n${text}` : text, 'txt');

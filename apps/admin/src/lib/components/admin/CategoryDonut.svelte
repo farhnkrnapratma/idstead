@@ -82,7 +82,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                         style:background={row.color}
                         aria-hidden="true"></span
                     ><span>{row.label}:</span><strong>{formatCount(row.value)}</strong><span
-                        class="text-fg-secondary">({Math.round((row.value / total) * 100)}%)</span>
+                        class="text-fg-secondary">
+                        ({Math.round((row.value / total) * 100)}%)
+                    </span>
                 </li>
             {/each}
         </ul>

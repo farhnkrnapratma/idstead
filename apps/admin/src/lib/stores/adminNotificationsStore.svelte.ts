@@ -46,10 +46,10 @@ function restore() {
     try {
         const saved = JSON.parse(sessionStorage.getItem('admin-inbox-preferences') ?? 'null');
         if (
-            saved
-            && typeof saved.query === 'string'
-            && saved.query.length <= 200
-            && [
+            saved &&
+            typeof saved.query === 'string' &&
+            saved.query.length <= 200 &&
+            [
                 'all',
                 'comment_new',
                 'comment_report',
@@ -57,10 +57,10 @@ function restore() {
                 'unhelpful',
                 'contact_message',
                 'feedback_report'
-            ].includes(saved.type)
-            && ['all', 'unread', 'read'].includes(saved.read)
-            && ['date', 'type', 'page'].includes(saved.sort)
-            && ['asc', 'desc'].includes(saved.direction)
+            ].includes(saved.type) &&
+            ['all', 'unread', 'read'].includes(saved.read) &&
+            ['date', 'type', 'page'].includes(saved.sort) &&
+            ['asc', 'desc'].includes(saved.direction)
         )
             preferences = saved;
     } catch {}

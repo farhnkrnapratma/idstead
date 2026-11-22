@@ -118,8 +118,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <div class="flex min-w-0 items-center gap-2">
                     <Search class="size-4 shrink-0 sm:text-fg-muted" />
                     <span class="sr-only sm:hidden">Search</span>
-                    <span class="hidden truncate font-sans text-xs text-fg-muted sm:inline"
-                        >Search...</span>
+                    <span class="hidden truncate font-sans text-xs text-fg-muted sm:inline">
+                        Search...
+                    </span>
                 </div>
                 <div class="ml-1.5 hidden items-center gap-1 sm:flex">
                     <ShortcutBadge combo="Mod+K" />
@@ -130,8 +131,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <div class="flex min-w-0 items-center gap-2">
                     <Search class="size-4 shrink-0 lg:text-fg-muted" />
                     <span class="sr-only lg:hidden">Search</span>
-                    <span class="hidden truncate font-sans text-xs text-fg-muted lg:inline"
-                        >Search...</span>
+                    <span class="hidden truncate font-sans text-xs text-fg-muted lg:inline">
+                        Search...
+                    </span>
                 </div>
                 <div class="ml-1.5 hidden items-center gap-1 lg:flex">
                     <ShortcutBadge combo="Mod+K" />

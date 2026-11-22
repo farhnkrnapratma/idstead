@@ -414,9 +414,9 @@ export function resumeChecksumsFrom(value: unknown): ResumeChecksums | null {
     if (!value || typeof value !== 'object') return null;
     const record = value as Record<string, unknown>;
     const entries = RESUME_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, record[ext]] as const);
-    return entries.every(([, digest]) => typeof digest === 'string' && /^[0-9a-f]+$/.test(digest)) ?
-            (Object.fromEntries(entries) as ResumeChecksums)
-        :   null;
+    return entries.every(([, digest]) => typeof digest === 'string' && /^[0-9a-f]+$/.test(digest))
+        ? (Object.fromEntries(entries) as ResumeChecksums)
+        : null;
 }
 
 export function resumeDocumentFromRow(data: Row, hash: string): ResumeDocument {
@@ -458,9 +458,9 @@ export function openPgpKeyFromRow(data: Row): PublicOpenPgpKey | null {
         })),
         keyservers: openPgpList(data.keyservers, item => {
             const url = safeKeyserverUrl(item.url);
-            return url ?
-                    { label: typeof item.label === 'string' ? item.label : new URL(url).host, url }
-                :   null;
+            return url
+                ? { label: typeof item.label === 'string' ? item.label : new URL(url).host, url }
+                : null;
         })
     };
 }

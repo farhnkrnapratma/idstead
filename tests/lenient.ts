@@ -8,9 +8,7 @@ export function lenient(width = 0): unknown {
         get(_, key) {
             if (key === Symbol.toPrimitive)
                 return (hint: string) =>
-                    width === 0 ? ''
-                    : hint === 'number' ? 0
-                    : '2026-01-01T00:00:00.000Z';
+                    width === 0 ? '' : hint === 'number' ? 0 : '2026-01-01T00:00:00.000Z';
             if (key === Symbol.iterator)
                 return function* () {
                     for (let index = 0; index < width; index++) yield lenient(width);

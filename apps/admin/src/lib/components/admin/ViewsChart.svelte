@@ -134,8 +134,9 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <Chip
                                 size="sm"
                                 active={range === id}
-                                onclick={() => onRangeChange?.(id as ViewsRange)}
-                                >{config.label}</Chip>
+                                onclick={() => onRangeChange?.(id as ViewsRange)}>
+                                {config.label}
+                            </Chip>
                         {/each}
                     </div>
                 {/if}

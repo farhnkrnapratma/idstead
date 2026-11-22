@@ -159,9 +159,11 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
     function render() {
         if (destroyed) return;
         const key =
-            typeof options?.sitekey === 'string' ? options.sitekey.trim()
-            : typeof turnstileSiteKey === 'string' ? turnstileSiteKey.trim()
-            : '';
+            typeof options?.sitekey === 'string'
+                ? options.sitekey.trim()
+                : typeof turnstileSiteKey === 'string'
+                  ? turnstileSiteKey.trim()
+                  : '';
 
         if (!key) return;
 

@@ -5,12 +5,15 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import { admin } from './support.ts';
 
-const activityLog =
-    await import('../../apps/admin/src/routes/api/internal/admin/activity-log/+server.ts');
-const postDraft =
-    await import('../../apps/admin/src/routes/api/internal/admin/posts/draft/+server.ts');
-const postList =
-    await import('../../apps/admin/src/routes/api/internal/admin/posts/list/+server.ts');
+const activityLog = await import(
+    '../../apps/admin/src/routes/api/internal/admin/activity-log/+server.ts'
+);
+const postDraft = await import(
+    '../../apps/admin/src/routes/api/internal/admin/posts/draft/+server.ts'
+);
+const postList = await import(
+    '../../apps/admin/src/routes/api/internal/admin/posts/list/+server.ts'
+);
 const author = await import('../../apps/admin/src/routes/api/internal/admin/author/+server.ts');
 
 const POST_ID = '0f8fad5b-d9cb-469f-a165-70867728950e';

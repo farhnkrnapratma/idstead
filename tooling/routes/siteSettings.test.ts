@@ -27,7 +27,9 @@ const cases = [
         limit: 512,
         action: 'settings.contentLicense',
         entityId: 'CC0-1.0',
-        route: await import('../../apps/admin/src/routes/api/internal/admin/site-settings/content-license/+server.ts')
+        route: await import(
+            '../../apps/admin/src/routes/api/internal/admin/site-settings/content-license/+server.ts'
+        )
     },
     {
         name: 'analytics',
@@ -39,7 +41,9 @@ const cases = [
         limit: 2048,
         action: 'settings.analytics',
         entityId: 'ga4',
-        route: await import('../../apps/admin/src/routes/api/internal/admin/site-settings/analytics/+server.ts')
+        route: await import(
+            '../../apps/admin/src/routes/api/internal/admin/site-settings/analytics/+server.ts'
+        )
     }
 ];
 

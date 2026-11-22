@@ -24,10 +24,10 @@ export function isForbiddenCrossSiteForm(request: Request, url: URL): boolean {
 export const csrfHandle: Handle = ({ event, resolve }) => {
     if (!isForbiddenCrossSiteForm(event.request, event.url)) return resolve(event);
     const message = `Cross-site ${event.request.method} form submissions are forbidden`;
-    return event.request.headers.get('accept') === 'application/json' ?
-            Response.json({ message }, { status: 403 })
-        :   new Response(message, {
-                status: 403,
-                headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-            });
+    return event.request.headers.get('accept') === 'application/json'
+        ? Response.json({ message }, { status: 403 })
+        : new Response(message, {
+              status: 403,
+              headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+          });
 };

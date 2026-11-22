@@ -24,20 +24,19 @@ export async function readSite(platform?: unknown) {
     }
     const siteUrl = siteOrigin(profile?.siteUrl) ?? siteOrigin(configuredOrigin(platform));
     if (!siteUrl) error(503, 'Site metadata is temporarily unavailable.');
-    const site =
-        profile ?
-            {
-                name: profile.name,
-                username: profile.username,
-                bio: profile.bio,
-                headline: profile.headline,
-                email: profile.email,
-                manifest_settings: profile.manifestSettings,
-                avatar_version: profile.avatarVersion ?? null,
-                created_at: profile.createdAt,
-                updated_at: profile.updatedAt
-            }
-        :   null;
+    const site = profile
+        ? {
+              name: profile.name,
+              username: profile.username,
+              bio: profile.bio,
+              headline: profile.headline,
+              email: profile.email,
+              manifest_settings: profile.manifestSettings,
+              avatar_version: profile.avatarVersion ?? null,
+              created_at: profile.createdAt,
+              updated_at: profile.updatedAt
+          }
+        : null;
     return { siteUrl, profile: site };
 }
 

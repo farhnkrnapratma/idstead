@@ -26,9 +26,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(400, 'OIDC_AUTHORIZE_INVALID_INPUT', 'Invalid JSON body.');
     }
     if (
-        typeof body.query !== 'string'
-        || !body.query.startsWith('?')
-        || (body.decision !== 'allow' && body.decision !== 'deny')
+        typeof body.query !== 'string' ||
+        !body.query.startsWith('?') ||
+        (body.decision !== 'allow' && body.decision !== 'deny')
     )
         return apiError(400, 'OIDC_AUTHORIZE_INVALID_INPUT', 'Invalid authorization decision.');
 

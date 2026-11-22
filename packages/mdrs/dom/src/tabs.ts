@@ -36,10 +36,9 @@ export function enhanceMarkdownTabs(
     container: HTMLElement = document.body,
     triggerToast?: (message: string) => void
 ) {
-    const root =
-        container.classList.contains('mdrs') ?
-            container
-        :   (container.querySelector('.mdrs') as HTMLElement) || container;
+    const root = container.classList.contains('mdrs')
+        ? container
+        : (container.querySelector('.mdrs') as HTMLElement) || container;
     if (!root) return;
 
     const tabContainers = root.querySelectorAll<HTMLElement>('.mdrs-snippets, .mdrs-tabs');

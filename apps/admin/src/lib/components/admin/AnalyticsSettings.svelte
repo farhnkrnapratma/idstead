@@ -205,7 +205,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             <StatusBanner
                 variant="info"
                 title="Keep the privacy policy in sync"
-                message="Legal pages can read api.v1.analytics (enabled, provider, name, cookies) in :::if blocks, so their text follows this setting." />
+                message="Legal pages can read this setting from the public API's /v1/analytics with get(), for example in an :::if block, so their text follows it." />
         </div>
     {/if}
     {#snippet actions()}
@@ -213,6 +213,8 @@ SPDX-License-Identifier: AGPL-3.0-only
             htmlType="submit"
             size="md"
             isLoading={saving}
-            disabled={saving || loading || !!loadError}>Save</Button>
+            disabled={saving || loading || !!loadError}>
+            Save
+        </Button>
     {/snippet}
 </FormSection>

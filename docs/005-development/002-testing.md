@@ -2,12 +2,12 @@
 
 ```sh
 bun run test   # bun test tests
-bun run check                      # svelte-check (web, admin), tsc (api, jobs, mdrs, and tests/tooling/scripts through the root tsconfig.json)
-bun run lint                       # prettier --write . && eslint . && bun run lint:deprecated
-bun run lint:deprecated            # typed ESLint pass: fails on any @deprecated API
+bun run check                      # biome check, then bun run typecheck
+bun run typecheck                  # svelte-check (web, admin), tsc (api, jobs, mdrs, and tests/tooling/scripts through the root tsconfig.json)
+bun run lint                       # biome lint: recommended rules, import boundaries and deprecated imports
 ```
 
-CircleCI runs them on every push; run the first three locally before pushing. `lint:deprecated` uses its own config, `eslint.deprecated.config.ts`, because the rule needs type information: it builds a TypeScript program per workspace, which would make every editor lint slow if it lived in `eslint.config.ts`. The codebase uses no deprecated APIs, icons or packages; when a transitive dependency pulls in a deprecated release, pin it with `overrides` in the root `package.json`. Tests live in `tests/` at the repository root and import from `packages/lib/src` and `apps/*/src`.
+CircleCI runs them on every push; run the first three locally before pushing. Biome's `noDeprecatedImports` fails on any import marked `@deprecated`. The codebase uses no deprecated APIs, icons or packages; when a transitive dependency pulls in a deprecated release, pin it with `overrides` in the root `package.json`. Tests live in `tests/` at the repository root and import from `packages/lib/src` and `apps/*/src`.
 
 ## Live API suite
 
@@ -34,7 +34,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `markdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
 | `mdrsDocsSnapshot.test.ts` | Snapshot of the rendered HTML for every ` ```mdrs ` example in `docs/008-mdrs/` and for `fixtures/markdown-demo.md`. After an intended engine change, review the diff and refresh it with `bun test tests/mdrsDocsSnapshot.test.ts --update-snapshots` |
 | `mdrsRenderVersion.test.ts`, `postRender.test.ts`, `blogPostSave.test.ts` | `RENDER_VERSION` is bumped whenever the MDRS snapshot changes; render file paths, live-data detection and render file validation; the save stores the render next to the markdown and survives a failed render upload |
-| `postRenderRefresh.test.ts` | The render refresh re-renders live, missing and outdated renders within its budget; resolvers fetch each live-data list once per render |
+| `postRenderRefresh.test.ts` | The render refresh re-renders live, missing and outdated renders within its budget |
 | `spotlightMatch.test.ts` | Spotlight search ranking, case-sensitive, whole-word and regex modes, and match highlighting |
 | `editorTextEdits.test.ts` | Markdown editor helpers: selection wrapping, Tab indent, list and quote continuation, cursor position, asset markdown, and highlighting that keeps every `$` so the overlay lines up |
 | `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |

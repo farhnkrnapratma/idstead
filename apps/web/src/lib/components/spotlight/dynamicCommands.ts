@@ -63,9 +63,9 @@ export function createDynamicCommandItems(
                     category: 'actions',
                     title: `/mailing ${action}${email ? ` ${email}` : ''}`,
                     subtitle:
-                        action === 'subscribe' ?
-                            'Confirm your subscription by email.'
-                        :   'Receive a link to confirm unsubscribing.',
+                        action === 'subscribe'
+                            ? 'Confirm your subscription by email.'
+                            : 'Receive a link to confirm unsubscribing.',
                     action: () => {
                         void tick().then(() => {
                             ctx.requestMailing({ action, email });
@@ -88,9 +88,9 @@ export function createDynamicCommandItems(
                     category: 'pages',
                     title: `/api ${candidate}`,
                     subtitle:
-                        candidate === LATEST_API_VERSION ?
-                            `Open the ${candidate} REST API documentation (latest).`
-                        :   `Open the ${candidate} REST API documentation.`,
+                        candidate === LATEST_API_VERSION
+                            ? `Open the ${candidate} REST API documentation (latest).`
+                            : `Open the ${candidate} REST API documentation.`,
                     url: apiVersionUrl(candidate, publicEnv.PUBLIC_API_BASE_URL),
                     icon: Braces,
                     badge: 'API'
@@ -183,9 +183,9 @@ export function createDynamicCommandItems(
 
             for (const feat of a11yFeatures) {
                 if (
-                    !subCmd
-                    || feat.key.includes(subCmd)
-                    || feat.name.toLowerCase().includes(subCmd)
+                    !subCmd ||
+                    feat.key.includes(subCmd) ||
+                    feat.name.toLowerCase().includes(subCmd)
                 ) {
                     const isCurrentlyOn = feat.state();
                     let targetAction = feat.toggle;
@@ -223,10 +223,10 @@ export function createDynamicCommandItems(
             }
 
             if (
-                !subCmd
-                || 'text-size'.includes(subCmd)
-                || 'font-scale'.includes(subCmd)
-                || 'size'.includes(subCmd)
+                !subCmd ||
+                'text-size'.includes(subCmd) ||
+                'font-scale'.includes(subCmd) ||
+                'size'.includes(subCmd)
             ) {
                 const scales: FontScale[] = [100, 110, 120, 130, 140, 150];
                 const parsedScale = parseInt(val.replace('%', ''), 10);
@@ -412,10 +412,9 @@ export function createDynamicCommandItems(
             const pathname = page?.url?.pathname || '';
             const isBlogPage = pathname.startsWith('/blog/') && pathname.length > 6;
             const isLegalPage = isLegalSlug(pathname.slice(1));
-            const currentSlug =
-                isBlogPage ?
-                    pathname.replace('/blog/', '').split('/')[0]
-                :   pathname.replace('/', '');
+            const currentSlug = isBlogPage
+                ? pathname.replace('/blog/', '').split('/')[0]
+                : pathname.replace('/', '');
 
             if (!arg || 'url'.startsWith(arg) || 'link'.startsWith(arg)) {
                 items.push({
@@ -435,10 +434,10 @@ export function createDynamicCommandItems(
             }
 
             if (
-                !arg
-                || 'pid'.startsWith(arg)
-                || 'page-id'.startsWith(arg)
-                || 'id'.startsWith(arg)
+                !arg ||
+                'pid'.startsWith(arg) ||
+                'page-id'.startsWith(arg) ||
+                'id'.startsWith(arg)
             ) {
                 items.push({
                     id: 'dyn-copy-pid',

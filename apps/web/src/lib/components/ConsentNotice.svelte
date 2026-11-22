@@ -23,7 +23,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         {#if showTerms}
             <a
                 href="/terms"
-                class="text-fg-accent underline hover:text-accent-hover">Terms of Service</a>
+                class="text-fg-accent underline hover:text-accent-hover">
+                Terms of Service
+            </a>
         {/if}
         {#if showTerms && showPrivacy}
             and
@@ -31,7 +33,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         {#if showPrivacy}
             <a
                 href="/privacy"
-                class="text-fg-accent underline hover:text-accent-hover">Privacy Policy</a>
+                class="text-fg-accent underline hover:text-accent-hover">
+                Privacy Policy
+            </a>
         {/if}.
     </p>
 {/if}

@@ -19,7 +19,8 @@ export const BANNER_PIXEL_LIMIT = 40_000_000;
 export const BANNER_QUALITIES = [0.8, 0.7, 0.6, 0.5, 0.4] as const;
 
 export type BannerChange =
-    { operation: 'keep' | 'remove' } | { operation: 'replace'; webp: Blob; avif: Blob };
+    | { operation: 'keep' | 'remove' }
+    | { operation: 'replace'; webp: Blob; avif: Blob };
 
 export function blogBannerAlt(title: string, excerpt?: string | null) {
     const description = excerpt?.trim();
@@ -51,11 +52,11 @@ export function bannerSources(
 
 export function bannerCrop(width: number, height: number, allowUpscale = false) {
     if (
-        !Number.isSafeInteger(width)
-        || !Number.isSafeInteger(height)
-        || width < 1
-        || height < 1
-        || width * height > BANNER_PIXEL_LIMIT
+        !Number.isSafeInteger(width) ||
+        !Number.isSafeInteger(height) ||
+        width < 1 ||
+        height < 1 ||
+        width * height > BANNER_PIXEL_LIMIT
     )
         throw new Error('Choose an image no larger than 40 megapixels.');
     if (!allowUpscale && (width < BANNER_WIDTH || height < BANNER_HEIGHT))

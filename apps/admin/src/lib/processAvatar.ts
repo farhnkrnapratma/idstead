@@ -15,8 +15,8 @@ function vectorPaths(svg: string) {
         return {
             d: path.getAttribute('d') || '',
             fill:
-                '#'
-                + rgb
+                '#' +
+                rgb
                     .slice(1)
                     .map(value => Number(value).toString(16).padStart(2, '0'))
                     .join(''),

@@ -16,7 +16,7 @@ import { estimateReadTime } from '@idstead/domain/readTime.ts';
 import { parsePostRender } from '#lib/server/postRender.ts';
 import { postReadTime } from '#lib/server/blogPosts.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
-import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { fetchJson } from '#lib/server/mdrsFetch.ts';
 import type { PageServerLoad } from './$types';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 import { siteContentLicense } from '#lib/server/siteLicense.ts';
@@ -82,7 +82,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
             readTime = estimateReadTime(markdown);
             const rawHtml = await renderMarkdown(
                 markdown,
-                mdrsResolvers(repositories),
+                fetchJson,
                 siteRenderOptions(url.origin)
             );
             html = prefixHashLinks(injectHeadingIds(rawHtml));

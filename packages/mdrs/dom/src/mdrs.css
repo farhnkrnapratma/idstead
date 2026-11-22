@@ -644,10 +644,10 @@
         position: absolute;
         top: calc(
             (
-                    var(--mdrs-step-title-line-height, var(--mdrs-step-badge-size)) -
-                        var(--mdrs-step-badge-size)
-                ) /
-                2
+                var(--mdrs-step-title-line-height, var(--mdrs-step-badge-size)) -
+                var(--mdrs-step-badge-size)
+            ) /
+            2
         );
         left: 0;
         width: var(--mdrs-step-badge-size);
