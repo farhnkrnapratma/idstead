@@ -71,9 +71,9 @@ function stubFetch(failingChunks: Set<number>) {
         const body = JSON.parse(String(init?.body));
         const index =
             batchCalls.push({ key: headers.get('Idempotency-Key'), size: body.length, body }) - 1;
-        return failingChunks.has(index) ?
-                new Response('{"message":"down"}', { status: 500 })
-            :   new Response('{"data":[]}', { status: 200 });
+        return failingChunks.has(index)
+            ? new Response('{"message":"down"}', { status: 500 })
+            : new Response('{"data":[]}', { status: 200 });
     }) as typeof fetch;
 }
 

@@ -9,8 +9,9 @@ import { spotlightStore } from '../apps/web/src/lib/stores/spotlightStore.svelte
 
 mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.example.com' }));
 
-const { default: SpotlightDialog } =
-    (await import('../apps/web/src/lib/components/SpotlightDialog.svelte')) as { default: never };
+const { default: SpotlightDialog } = (await import(
+    '../apps/web/src/lib/components/SpotlightDialog.svelte'
+)) as { default: never };
 
 const mounted: object[] = [];
 const realFetch = globalThis.fetch;
@@ -173,7 +174,7 @@ test('runs the palette commands for sharing, mailing, navigation and code blocks
     spotlightStore.open('');
     await settle();
     expect(
-        document.querySelector('#spotlight-search-input') !== null
-            || document.body.textContent !== null
+        document.querySelector('#spotlight-search-input') !== null ||
+            document.body.textContent !== null
     ).toBe(true);
 }, 120000);

@@ -28,8 +28,9 @@ mock.module('../packages/lib/src/server/blogPostAssets.ts', () => ({
     cleanupOrphanedStaging: async () => 0
 }));
 
-const { putBanner, cleanupBlogAssets } =
-    await import('../packages/lib/src/server/blogBannerStorage.ts');
+const { putBanner, cleanupBlogAssets } = await import(
+    '../packages/lib/src/server/blogBannerStorage.ts'
+);
 
 import { bannerKey } from '../packages/lib/src/blogBanner.ts';
 

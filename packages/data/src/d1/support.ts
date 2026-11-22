@@ -151,7 +151,7 @@ export function createD1MaintenanceStore(db: D1Like): MaintenanceStore {
         pruneStaleSubscriptions: () =>
             prune(
                 'db_prune_stale_subscriptions',
-                "DELETE FROM db_subscribers WHERE status = 'pending' AND created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-7 days')"
+                "DELETE FROM db_subscribers WHERE status = 'pending' AND confirmed_at IS NULL AND unsubscribed_at IS NULL AND coalesce(confirm_sent_at, created_at) < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-7 days')"
             ),
         pruneActivityLog: () =>
             prune(

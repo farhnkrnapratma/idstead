@@ -127,30 +127,29 @@ export function resumeDocumentInfo(
         version: document.version ?? null,
         updatedAt: document.updatedAt ?? null,
         checksums: document.checksums ?? null,
-        signature:
-            signer ?
-                { signedAt: document.signedAt, fingerprint: key.fingerprint, signer: key.userIds }
-            :   null,
+        signature: signer
+            ? { signedAt: document.signedAt, fingerprint: key.fingerprint, signer: key.userIds }
+            : null,
         files: {
             pdf: resumeFileUrl('pdf', apiBase),
             ...(Object.fromEntries(
                 RESUME_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, resumeFileUrl(ext, apiBase)])
             ) as Record<ResumeChecksumExt, string>),
-            ...(signer ?
-                { asc: resumeFileUrl('asc', apiBase), sig: resumeFileUrl('sig', apiBase) }
-            :   {}),
+            ...(signer
+                ? { asc: resumeFileUrl('asc', apiBase), sig: resumeFileUrl('sig', apiBase) }
+                : {}),
             zip: resumeFileUrl('zip', apiBase)
-        } as Record<'pdf' | 'zip' | ResumeChecksumExt, string>
-            & Partial<Record<ResumeSignatureExt, string>>,
+        } as Record<'pdf' | 'zip' | ResumeChecksumExt, string> &
+            Partial<Record<ResumeSignatureExt, string>>,
         publicKey:
-            key && sources ?
-                {
-                    fingerprint: key.fingerprint,
-                    url: sources.url || null,
-                    wkd: sources.wkd,
-                    keyservers: key.keyservers
-                }
-            :   null
+            key && sources
+                ? {
+                      fingerprint: key.fingerprint,
+                      url: sources.url || null,
+                      wkd: sources.wkd,
+                      keyservers: key.keyservers
+                  }
+                : null
     };
 }
 

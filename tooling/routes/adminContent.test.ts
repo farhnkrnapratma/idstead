@@ -39,10 +39,12 @@ slot.notifyNewPost = async (...args: unknown[]) => {
 slots.dataStores = () => ({ service: state.service });
 
 const flags = await import('../../apps/admin/src/routes/api/internal/admin/posts/flags/+server.ts');
-const notify =
-    await import('../../apps/admin/src/routes/api/internal/admin/posts/notify/+server.ts');
-const reply =
-    await import('../../apps/admin/src/routes/api/internal/admin/comments/reply/+server.ts');
+const notify = await import(
+    '../../apps/admin/src/routes/api/internal/admin/posts/notify/+server.ts'
+);
+const reply = await import(
+    '../../apps/admin/src/routes/api/internal/admin/comments/reply/+server.ts'
+);
 const projects = await import('../../apps/admin/src/routes/api/internal/admin/projects/+server.ts');
 
 function event(body: unknown, raw?: string) {

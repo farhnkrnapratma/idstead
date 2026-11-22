@@ -106,10 +106,10 @@ export async function verifyAccessToken(
             algorithms: [OIDC_ALG]
         });
         if (
-            typeof payload.sub !== 'string'
-            || typeof payload.client_id !== 'string'
-            || typeof payload.gid !== 'string'
-            || typeof payload.scope !== 'string'
+            typeof payload.sub !== 'string' ||
+            typeof payload.client_id !== 'string' ||
+            typeof payload.gid !== 'string' ||
+            typeof payload.scope !== 'string'
         )
             return null;
         return {

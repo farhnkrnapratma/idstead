@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
+or {
+    `import $_ from $source`,
+    `import $source`,
+    `export { $_ } from $source`,
+    `export * from $source`
+} as $import where {
+    not $import <: r"import\s+type\s[\s\S]*",
+    $source <: r"['\"](?:#lib[^'\"]*|@idstead/[^'\"]*|\$app/[^'\"]*|\$lib[^'\"]*|svelte|svelte/[^'\"]*)['\"]",
+    register_diagnostic(span=$source, message="@mdrs/core is a standalone engine: no app, lib, Svelte or data-access imports; inject resolvers instead.")
+}

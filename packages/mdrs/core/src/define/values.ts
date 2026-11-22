@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { type PathSegment } from './ast';
+import type { PathSegment } from './ast';
 import { DefineError } from './errors';
 
 export interface DefineValue {
@@ -28,22 +28,6 @@ export function arrayVal(v: DefineValue[]): DefineValue {
 
 export function objectVal(v: Record<string, DefineValue>): DefineValue {
     return { type: 'object', value: v };
-}
-
-export function jsToDefineValue(x: unknown): DefineValue {
-    if (x === null || x === undefined) return stringVal('');
-    if (typeof x === 'string') return stringVal(x);
-    if (typeof x === 'number') return numberVal(x);
-    if (typeof x === 'boolean') return boolVal(x);
-    if (Array.isArray(x)) return arrayVal(x.map(jsToDefineValue));
-    if (typeof x === 'object') {
-        const out: Record<string, DefineValue> = {};
-        for (const [k, v] of Object.entries(x as Record<string, unknown>)) {
-            out[k] = jsToDefineValue(v);
-        }
-        return objectVal(out);
-    }
-    return stringVal(String(x));
 }
 
 function defineValueToJs(v: DefineValue): unknown {
@@ -78,8 +62,8 @@ export function defineValuesEqual(a: DefineValue, b: DefineValue): boolean {
         const aKeys = Object.keys(av);
         const bKeys = Object.keys(bv);
         return (
-            aKeys.length === bKeys.length
-            && aKeys.every(k => k in bv && defineValuesEqual(av[k], bv[k]))
+            aKeys.length === bKeys.length &&
+            aKeys.every(k => k in bv && defineValuesEqual(av[k], bv[k]))
         );
     }
     return a.value === b.value;

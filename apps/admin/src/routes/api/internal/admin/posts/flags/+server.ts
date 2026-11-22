@@ -28,9 +28,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (!UUID_PATTERN.test(id)) return apiError(400, 'BLOG_POST_INVALID', 'Invalid post id.');
     const flags = Object.keys(body).filter(key => key !== 'id');
     if (
-        flags.length !== 1
-        || !['published', 'pinned'].includes(flags[0])
-        || typeof body[flags[0] as 'published' | 'pinned'] !== 'boolean'
+        flags.length !== 1 ||
+        !['published', 'pinned'].includes(flags[0]) ||
+        typeof body[flags[0] as 'published' | 'pinned'] !== 'boolean'
     )
         return apiError(
             400,
@@ -72,11 +72,13 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             wasPublished: previous.published
         });
     const action =
-        flag === 'published' ?
-            value ? 'blog.publish'
-            :   'blog.unpublish'
-        : value ? 'blog.pin'
-        : 'blog.unpin';
+        flag === 'published'
+            ? value
+                ? 'blog.publish'
+                : 'blog.unpublish'
+            : value
+              ? 'blog.pin'
+              : 'blog.unpin';
     await logAdminActivity(
         request,
         platform,

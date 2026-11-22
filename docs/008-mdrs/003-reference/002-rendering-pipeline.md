@@ -50,23 +50,22 @@ Pages also call `hljs.highlightElement` on code blocks before enhancing them, an
 
 ## Public functions
 
-The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry point, `@mdrs/core` (`src/index.ts`). Everything else in `packages/mdrs/core/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*` or `#lib`.
+The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import it only through its entry point, `@mdrs/core` (`src/index.ts`). Everything else in `packages/mdrs/core/src` is internal. A Biome lint plugin keeps the package standalone: it may not import Svelte, SvelteKit, `@idstead/*` or `#lib`.
 
 | Function | Entry | Purpose |
 | --- | --- | --- |
-| `renderMarkdown(markdown, resolvers?)` | `@mdrs/core` | Full server render, sanitized |
-| `renderMarkdownUnsafe(markdown, resolvers?)` | `@mdrs/core` | The same without `sanitizeHtml`; only for trusted post-processing |
-| `prepareMarkdownPage(markdown, resolvers?)` | `@mdrs/core` | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings`, returns `{ html, headings }` |
+| `renderMarkdown(markdown, fetcher?)` | `@mdrs/core` | Full server render, sanitized |
+| `renderMarkdownUnsafe(markdown, fetcher?)` | `@mdrs/core` | The same without `sanitizeHtml`; only for trusted post-processing |
+| `prepareMarkdownPage(markdown, fetcher?)` | `@mdrs/core` | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings`, returns `{ html, headings }` |
 | `injectHeadingIds(html)`, `prefixHashLinks(html)`, `extractHeadings(html)` | `@mdrs/core` | Heading IDs, same-document links and table of contents |
 | `replaceMathBlocks`, `MATH_INLINE_RE` | `@mdrs/core` | Math helpers for the editor's syntax highlighting |
 | `extractFrontmatter(markdown)`, `importPostDocument(text)` | `@mdrs/core` | YAML frontmatter and the admin file import |
 | `sanitizeHtml(html)`, `sanitizeUrl(href)` | `@mdrs/core` | The allowlist sanitizer and URL check |
 | `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation (including conditionals) and the size limit |
-| `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@mdrs/core` | Building blocks for live-data resolvers |
-| `resolveDefines(markdown, resolvers?)` | `@mdrs/core` | Markdown source with the `:::define` block removed and its conditionals resolved and its variables filled in; code, escaped variables and `:::verbatim` stay literal |
+| `unavailableFetcher()`, `checkGetUrl(url)`, `DefineError`, `JsonFetcher` | `@mdrs/core` | Building blocks for a `get()` fetcher |
+| `resolveDefines(markdown, fetcher?)` | `@mdrs/core` | Markdown source with the `:::define` block removed and its conditionals resolved and its variables filled in; code, escaped variables and `:::verbatim` stay literal |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
-| `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author`, `api.v1.blog` and `api.v1.analytics` resolvers on the server |
-| `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
+| `fetchJson(url)` | `packages/lib/src/server/mdrsFetch.ts` | The site's `get()` fetcher on the server: https only, JSON only, 256 KB, 5 s, no redirects |
 | `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
@@ -74,7 +73,7 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `activateHeadingAnchor(anchor)` | `packages/mdrs/dom/src/headingAnchors.ts` | Marks a heading's ¶ anchor as the active permalink |
 | `mdrsFragment(id)` | `packages/mdrs/dom/src/headingAnchors.ts` | Strips the `mdrs-` prefix for URLs |
 
-Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `mdrsResolvers(repositories)` on the server. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
+Pass a `JsonFetcher` to enable [`get()`](../002-extensions/014-live-data.md): the site uses `fetchJson` on the server. Without one, the default `unavailableFetcher()` makes `get()` render an error marker. The engine checks each URL with `checkGetUrl`, fetches each URL once per render and allows at most 10 different URLs per document before it calls the fetcher.
 
 ## Where MDRS is used
 
@@ -83,7 +82,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 | Admin post save | `buildPostRender` → `prepareMarkdownPage`, stored as `{operationId}.render.json` |
 | Blog post page (`apps/web/src/routes/blog/[slug]`) | The stored render; `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` only when it is missing, outdated or `live` |
 | Legal pages (`/privacy`, `/terms`, `/security`, `/ai-disclosure`) | `prepareMarkdownPage` |
-| Admin editor preview (`packages/mdrs/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with resolvers that fetch live data from `/api/internal/admin/mdrs-data`) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
+| Admin editor preview (`packages/mdrs/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with a fetcher that calls `get()` URLs through `/api/internal/admin/mdrs-get`) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
 | Admin post save (validation) | `validateDefineForSave` |
 | `.md` and `.txt` variants of posts and legal pages | `resolveDefines`, then the source as is or `markdownToPlainText` for text output |
@@ -93,7 +92,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 
 Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/mdrs/core/src/version.ts`). Pages ignore a stored render with another version and render the post again, so bump `RENDER_VERSION` whenever the engine's output changes. `tests/mdrsRenderVersion.test.ts` enforces this: it pins the hash of the MDRS snapshot file to the current version and fails until both are updated together.
 
-`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define` or in a `:::if` condition. Pages still serve the stored render of such a post; the jobs worker re-renders it after every publish and once a day, together with any stored render from an older `RENDER_VERSION`.
+`usesLiveData(markdown)` reports whether a document calls `get()` inside an active `:::define` or in a `:::if` condition. Pages still serve the stored render of such a post; the jobs worker re-renders it after every publish and once a day, together with any stored render from an older `RENDER_VERSION`.
 
 ## Limits
 
@@ -102,7 +101,8 @@ Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/m
 | Document size | 500,000 characters | `renderMarkdown` throws `Markdown document is too large to render.` |
 | Directive nesting | 16 levels | Deeper opening lines are plain text |
 | Placeholder expansion | 5,000 per document | Further placeholders are left unexpanded |
-| `api.v1.blog` list | 20 newest published posts |  |
+| `get()` URLs | 10 different URLs per document | Further URLs render a `[define error]` marker |
+| `get()` response | 256 KB, 5 seconds | The call renders a `[define error]` marker |
 | `:::if` nesting | 16 levels | Deeper `:::if` lines are plain text |
 | `${if}` nesting | 8 levels | Deeper `${if}` renders a `[define error]` marker |
 | Frontmatter nesting | 16 levels | Deeper YAML is a parse error |

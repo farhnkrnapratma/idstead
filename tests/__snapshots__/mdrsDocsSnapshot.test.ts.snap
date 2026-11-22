@@ -332,7 +332,7 @@ exports[`MDRS docs examples render unchanged 002-extensions/001-frontmatter.md #
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/001-frontmatter.md #2 1`] = `
-"<p>There are <span class="mdrs-define-error" title="&#39;posts&#39; is undefined">[define error]</span> published posts.</p>
+"<p>Written in <span class="mdrs-define-error" title="&#39;city&#39; is undefined">[define error]</span>.</p>
 "
 `;
 
@@ -802,24 +802,12 @@ exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #4 
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #1 1`] = `
-"<p>Written by <strong><span class="mdrs-define-error" title="&#39;author&#39; is undefined">[define error]</span></strong>. <span class="mdrs-define-error" title="&#39;post_count&#39; is undefined">[define error]</span> posts published so far.</p>
-<p><span class="mdrs-define-error" title="&#39;post_count&#39; is undefined">[define error]</span></p>
+"<p>Written by <strong><span class="mdrs-define-error" title="&#39;author&#39; is undefined">[define error]</span></strong> in <span class="mdrs-define-error" title="&#39;city&#39; is undefined">[define error]</span>.</p>
 "
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #2 1`] = `
-"<p>Contact me at <span class="mdrs-define-error" title="&#39;profile&#39; is undefined">[define error]</span>.
-I list <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span> social profiles.</p>
-"
-`;
-
-exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #3 1`] = `
-"<p>Read <a href="/blog/hello-world"><span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span></a>, first published <span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span>.</p>
-"
-`;
-
-exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #4 1`] = `
-"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
+"<p><span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span></p>
 "
 `;
 
@@ -850,12 +838,12 @@ exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #4 1
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #1 1`] = `
-"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
+"<p><span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span></p>
 "
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #2 1`] = `
-"<p><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></p>
+"<p><span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span></p>
 "
 `;
 
@@ -866,8 +854,8 @@ exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md 
 
 exports[`MDRS docs examples render unchanged 002-extensions/016-conditionals.md #4 1`] = `
 "<p>Analytics: <span class="mdrs-define-error" title="&#39;on&#39; is undefined">[define error]</span>.</p>
-<p>This site <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span>.</p>
-<p>Provider: <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span>.</p>
+<p>This site <span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span>.</p>
+<p>Provider: <span class="mdrs-define-error" title="&#39;provider&#39; is undefined">[define error]</span>.</p>
 "
 `;
 
@@ -1103,7 +1091,7 @@ Content with **Markdown**.
   <div class="mdrs-callout-title">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-list" aria-hidden="true"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg><span>Changelog</span>
   </div>
-  <div class="mdrs-callout-content"><p><strong>v2.1.0</strong>: Added <code>:::define</code> variable interpolation with live <code>api.v1.*</code> data binding, rich media embeds, and custom callouts.</p>
+  <div class="mdrs-callout-content"><p><strong>v2.1.0</strong>: Added <code>:::define</code> variable interpolation with live <code>get()</code> data binding, rich media embeds, and custom callouts.</p>
 </div>
 </div><div class="mdrs-callout">
   <div class="mdrs-callout-title">
@@ -1358,12 +1346,12 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 </ul>
 <hr>
 <h2>Live Data Binding</h2>
-<p>The <code>api.v1.*</code> prefix fetches real data from this site&#39;s own API at render time, with no manual <code>curl</code> and no hardcoded values. The engine resolves paths like <code>api.v1.author.profile.name</code> against the live database during server-side rendering.</p>
+<p><code>get(url, path)</code> fetches real data from a JSON API at render time, with no manual <code>curl</code> and no hardcoded values. The engine selects one value with a jq-style path like <code>.profile.name</code> during server-side rendering.</p>
 <ul class="mdrs-list mdrs-list--unordered">
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Author: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Published posts: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Author: <strong><span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span></strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">City: <strong><span class="mdrs-define-error" title="Network access is unavailable in this context.">[define error]</span></strong></div></li>
 </ul>
-<p>This is the same data you would get from <code>GET /api/v1/author?fields=profile</code> and <code>GET /api/v1/blog</code>, but inlined directly into the markdown body at compile time. No client-side fetch, no loading spinner, no layout shift.</p>
+<p>This is the same data you would get from <code>GET /v1/author</code>, but inlined directly into the markdown body at compile time. No client-side fetch, no loading spinner, no layout shift.</p>
 <hr>
 <h2>Images and Videos</h2>
 <p>Images and videos share one syntax: <code>![alt](source &quot;title&quot;)</code>. The source extension decides the element: <code>.mp4</code> and <code>.webm</code> render a <code>&lt;video&gt;</code> with controls, anything else renders an <code>&lt;img&gt;</code>. The alt text is the accessible label and the optional title is the tooltip.</p>
@@ -1439,7 +1427,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 </tr>
 <tr>
 <td align="left"><strong>Data Binding</strong></td>
-<td align="center"><code>api.v1.*</code> Resolver</td>
+<td align="center"><code>get()</code> Fetcher</td>
 <td align="center">Server SSR</td>
 <td align="left">Live Data</td>
 </tr>
@@ -1490,7 +1478,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
  </div>
 </details><hr>
 <h2>Footnotes</h2>
-<p>The engine compiles <code>[^label]</code> markers into superscript links with numbered back-references<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>. KaTeX math runs entirely at build time<sup><a id="mdrs-fn-ref-math" href="#mdrs-fn-math" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>, and the <code>api.v1.*</code> resolver demonstrated above fetches data from the same database that powers the REST API<sup><a id="mdrs-fn-ref-api" href="#mdrs-fn-api" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[3]</a></sup>.</p>
+<p>The engine compiles <code>[^label]</code> markers into superscript links with numbered back-references<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>. KaTeX math runs entirely at build time<sup><a id="mdrs-fn-ref-math" href="#mdrs-fn-math" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>, and the <code>get()</code> call demonstrated above reads the same JSON as the REST API<sup><a id="mdrs-fn-ref-api" href="#mdrs-fn-api" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[3]</a></sup>.</p>
 <section class="mdrs-footnotes mdrs-references" data-mdrs-footnotes="">
 <h2 id="mdrs-fn-label">References</h2>
 <ol>
@@ -1501,7 +1489,7 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 <p><a href="#mdrs-fn-ref-math" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>KaTeX renders <strong>server-side during SSR</strong>, so no client JavaScript is required to display formulas. Mermaid diagrams, by contrast, hydrate lazily in the browser.</p>
 </li>
 <li id="mdrs-fn-api">
-<p><a href="#mdrs-fn-ref-api" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>The <code>api.v1.*</code> resolver calls the same data queries as <code>GET /api/v1/author</code> and <code>GET /api/v1/blog</code>, but at compile time rather than via HTTP.</p>
+<p><a href="#mdrs-fn-ref-api" class="mdrs-footnote-backref" aria-label="Back to reference">^</a><code>get()</code> requests <code>GET /v1/author</code> once per render, however often the page calls it, and inlines the selected value.</p>
 </li>
 </ol>
 </section>

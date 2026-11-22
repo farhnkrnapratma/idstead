@@ -7,8 +7,8 @@ import path from 'node:path';
 import { RENDER_VERSION } from '../packages/mdrs/core/src/version.ts';
 
 const pinned = {
-    renderVersion: 6,
-    snapshotSha256: 'a268436593e208d29bbe5238fc3754b0d36b9c3bf5a283fd663defe13725a19f'
+    renderVersion: 7,
+    snapshotSha256: '968b0b1db6e728dae93a34b928951b559298d46a2f814e916739c9b873afdaf4'
 };
 
 test('RENDER_VERSION changes whenever MDRS output changes', async () => {

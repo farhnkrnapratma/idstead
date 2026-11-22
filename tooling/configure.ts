@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import path from 'node:path';
-import { format, resolveConfig } from 'prettier';
 import {
     InstanceConfigError,
     instanceVariables,
@@ -48,22 +47,35 @@ function substitute(value: Value, variables: Record<string, Value>, file: string
 function databases(config: InstanceConfig): Record<string, Value> {
     const { name, id } = config.cloudflare.database;
     return {
-        d1Databases:
-            id ?
-                [
-                    {
-                        binding: 'DB',
-                        database_name: name,
-                        database_id: id,
-                        migrations_dir: '../../packages/data/d1/migrations'
-                    }
-                ]
-            :   []
+        d1Databases: id
+            ? [
+                  {
+                      binding: 'DB',
+                      database_name: name,
+                      database_id: id,
+                      migrations_dir: '../../packages/data/d1/migrations'
+                  }
+              ]
+            : []
     };
 }
 
 export async function readInstanceConfig(file = path.join(ROOT, 'idstead.jsonc')) {
     return resolveInstanceConfig(Bun.JSONC.parse(await Bun.file(file).text()));
+}
+
+export async function formatJson(text: string, filepath: string) {
+    const biome = Bun.spawn(
+        [path.join(ROOT, 'node_modules/.bin/biome'), 'format', `--stdin-file-path=${filepath}`],
+        { cwd: ROOT, stdin: new Blob([text]), stdout: 'pipe', stderr: 'pipe' }
+    );
+    const [output, errors, code] = await Promise.all([
+        new Response(biome.stdout).text(),
+        new Response(biome.stderr).text(),
+        biome.exited
+    ]);
+    if (code !== 0) throw new Error(`biome format ${filepath} failed: ${errors}`);
+    return output;
 }
 
 export async function renderWranglerConfigs(config: InstanceConfig) {
@@ -78,8 +90,7 @@ export async function renderWranglerConfigs(config: InstanceConfig) {
         const target = path.join(ROOT, 'apps', app, 'wrangler.jsonc');
         const parsed = Bun.JSONC.parse(await Bun.file(template).text()) as Value;
         const output = JSON.stringify(substitute(parsed, variables, template));
-        const options = await resolveConfig(target);
-        rendered[target] = await format(output, { ...options, filepath: target });
+        rendered[target] = await formatJson(output, target);
     }
     return rendered;
 }

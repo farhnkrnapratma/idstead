@@ -31,14 +31,16 @@ slot.oidcAdmin = async () => state.oidc;
 slot.verifyAdminRequest = async () => state.auth;
 slots.dataStores = () => ({ service: state.dataService });
 
-const grants =
-    await import('../../apps/admin/src/routes/api/internal/admin/oidc/grants/+server.ts');
+const grants = await import(
+    '../../apps/admin/src/routes/api/internal/admin/oidc/grants/+server.ts'
+);
 const settings = await import('../../apps/admin/src/routes/api/internal/admin/settings/+server.ts');
 const links = await import('../../apps/admin/src/routes/api/internal/admin/links/+server.ts');
 const skills = await import('../../apps/admin/src/routes/api/internal/admin/skills/+server.ts');
 const resume = await import('../../apps/admin/src/routes/api/internal/admin/resume/+server.ts');
-const dismiss =
-    await import('../../apps/admin/src/routes/api/internal/admin/comments/dismiss-reports/+server.ts');
+const dismiss = await import(
+    '../../apps/admin/src/routes/api/internal/admin/comments/dismiss-reports/+server.ts'
+);
 
 function event(init: { method?: string; body?: unknown; raw?: string; origin?: string } = {}) {
     const url = new URL('https://admin.example.com/api/internal/admin/x');

@@ -65,10 +65,9 @@ mock.module('../../packages/lib/src/server/profilePatch.ts', () => ({
     }
 }));
 
-const { POST } =
-    (await import('../../apps/admin/src/routes/api/internal/admin/profile/import/+server.ts')) as {
-        POST: (event: any) => Promise<Response>;
-    };
+const { POST } = (await import(
+    '../../apps/admin/src/routes/api/internal/admin/profile/import/+server.ts'
+)) as { POST: (event: any) => Promise<Response> };
 
 async function send(body: unknown, raw = false) {
     const response = await POST({

@@ -39,8 +39,9 @@ slot.ipSalt = () => state.salt;
 slot.serviceData = () => state.data;
 
 const comments = await import('../../apps/web/src/routes/api/internal/blog/comments/+server.ts');
-const report =
-    await import('../../apps/web/src/routes/api/internal/blog/comments/report/+server.ts');
+const report = await import(
+    '../../apps/web/src/routes/api/internal/blog/comments/report/+server.ts'
+);
 
 const event = {
     platform: {},

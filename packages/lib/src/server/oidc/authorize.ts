@@ -229,9 +229,9 @@ export async function resolveAuthorization(
     });
 
     if (options.authTime === null)
-        return request.prompt.includes('none') ?
-                deny('login_required', 'The owner is not signed in.')
-            :   { kind: 'login' };
+        return request.prompt.includes('none')
+            ? deny('login_required', 'The owner is not signed in.')
+            : { kind: 'login' };
     const authTime = options.authTime;
     if (options.decision === 'deny')
         return deny('access_denied', 'The owner declined the request.');
@@ -242,9 +242,9 @@ export async function resolveAuthorization(
 
     const existing = await stores.auth.activeGrant(request.clientId);
     const covered =
-        existing !== null
-        && scopesCovered(existing.scopes, request.scopes)
-        && !request.prompt.includes('consent');
+        existing !== null &&
+        scopesCovered(existing.scopes, request.scopes) &&
+        !request.prompt.includes('consent');
 
     if (!covered && options.decision !== 'allow') {
         if (request.prompt.includes('none'))

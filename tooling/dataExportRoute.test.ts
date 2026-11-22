@@ -15,8 +15,9 @@ mock.module('../packages/lib/src/server/dataExport.ts', () => ({
     })
 }));
 
-const dataExport =
-    await import('../apps/admin/src/routes/api/internal/admin/data/export/+server.ts');
+const dataExport = await import(
+    '../apps/admin/src/routes/api/internal/admin/data/export/+server.ts'
+);
 
 function get(path: string) {
     const url = new URL(`https://admin.example.com/api/internal/admin/${path}`);

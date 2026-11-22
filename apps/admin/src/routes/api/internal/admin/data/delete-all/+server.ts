@@ -126,9 +126,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     );
 
     await audit(
-        sweepPending ?
-            'Deleted all site data; some blog files still need cleanup.'
-        :   'Deleted all site data.'
+        sweepPending
+            ? 'Deleted all site data; some blog files still need cleanup.'
+            : 'Deleted all site data.'
     );
 
     return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });

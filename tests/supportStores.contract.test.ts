@@ -77,7 +77,19 @@ describe('D1 support stores', () => {
                 unsubscribe_token: 't1',
                 created_at: '2020-01-01T00:00:00.000Z'
             },
-            { email: 'new@example.com', unsubscribe_token: 't2' }
+            { email: 'new@example.com', unsubscribe_token: 't2' },
+            {
+                email: 'resent@example.com',
+                unsubscribe_token: 't3',
+                created_at: '2020-01-01T00:00:00.000Z',
+                confirm_sent_at: new Date().toISOString()
+            },
+            {
+                email: 'returning@example.com',
+                unsubscribe_token: 't4',
+                created_at: '2020-01-01T00:00:00.000Z',
+                unsubscribed_at: '2020-02-01T00:00:00.000Z'
+            }
         ]);
         const maintenance = createD1MaintenanceStore(db);
         expect(await maintenance.pruneLockoutFailures()).toBe(1);

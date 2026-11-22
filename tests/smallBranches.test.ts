@@ -17,7 +17,10 @@ import { ApiRequestError } from '../packages/lib/src/server/api/params.ts';
 
 describe('small branches', () => {
     test('rejects markdown above the render limit before parsing it', async () => {
-        const result = await validateDefineForSave('x'.repeat(MAX_DOCUMENT_LENGTH + 1), {});
+        const result = await validateDefineForSave(
+            'x'.repeat(MAX_DOCUMENT_LENGTH + 1),
+            async () => null
+        );
         expect(result).toEqual({
             ok: false,
             errors: [{ message: 'Markdown document is too large to render.' }]

@@ -2,25 +2,14 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
+import { serviceData } from '#lib/server/repositories.ts';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
-import {
-    confirmEmail,
-    createToken,
-    hashIp,
-    hashToken,
-    isValidEmail,
-    normalizeEmail,
-    resendApiKey,
-    sendEmail,
-    senderAddress
-} from '#lib/server/subscribers.ts';
+import { hashIp, isValidEmail, normalizeEmail } from '#lib/server/subscribers.ts';
+import { requestSubscription } from '#lib/server/subscriptionRequest.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-
-const CONFIRM_RESEND_COOLDOWN_MS = 5 * 60 * 1000;
 
 const ACCEPTED = { ok: true, message: 'Check your inbox to confirm the subscription.' };
 
@@ -60,55 +49,26 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (!subscribers)
         return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
 
-    const apiKey = resendApiKey(platform);
-    const from = senderAddress(platform);
-    if (!apiKey || !from)
-        return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
-
     const salt = ipSalt(platform);
-    const confirmToken = createToken();
-    const confirmTokenHash = await hashToken(confirmToken);
-
-    let result;
-    try {
-        result = await subscribers.request({
-            email,
-            confirmTokenHash,
-            unsubscribeToken: createToken(),
-            userAgent: (request.headers.get('user-agent') ?? '').slice(0, 300),
-            ipHash: salt ? await hashIp(getClientAddress(), salt) : null,
-            resendCooldownMs: CONFIRM_RESEND_COOLDOWN_MS
-        });
-    } catch (error) {
-        console.error('Failed to record subscriber:', error);
+    const outcome = await requestSubscription(subscribers, platform, {
+        email,
+        siteOrigin: url.origin,
+        userAgent: request.headers.get('user-agent') ?? '',
+        ipHash: salt ? await hashIp(getClientAddress(), salt) : null
+    });
+    if (outcome === 'unavailable')
+        return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
+    if (outcome === 'record-failed')
         return apiError(
             503,
             'SUBSCRIBE_UNAVAILABLE',
             'Could not record the subscription right now.'
         );
-    }
-    if (result !== 'requested') return Response.json(ACCEPTED);
-
-    const profile = await publicRepositories()
-        .author.profile()
-        .catch(() => null);
-    const siteName = profile?.name?.trim() || url.hostname;
-    const confirmUrl = `${url.origin}/subscribe/confirm?token=${confirmToken}`;
-
-    const sent = await sendEmail(apiKey, from, {
-        to: email,
-        ...confirmEmail(siteName, confirmUrl)
-    });
-    if (!sent) {
-        await subscribers.cancelConfirmation(email, confirmTokenHash).catch(error => {
-            console.error('Failed to reset the confirmation cooldown:', error);
-        });
+    if (outcome === 'send-failed')
         return apiError(
             502,
             'SUBSCRIBE_EMAIL_FAILED',
             'The confirmation email could not be sent. Please try again.'
         );
-    }
-
     return Response.json(ACCEPTED);
 };

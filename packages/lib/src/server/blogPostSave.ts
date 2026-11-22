@@ -40,9 +40,9 @@ export async function savePostOperation(
     if (prepared.status === 'reused') throw new OperationReusedError();
     let operation = prepared.operation;
     if (
-        operation.state === 'committed'
-        || operation.state === 'conflict'
-        || operation.state === 'rejected'
+        operation.state === 'committed' ||
+        operation.state === 'conflict' ||
+        operation.state === 'rejected'
     )
         return operation;
     if (input.kind === 'save' && input.banner.operation === 'keep') {

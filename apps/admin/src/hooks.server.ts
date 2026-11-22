@@ -16,14 +16,14 @@ import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { persistAcrossHmr } from '#lib/server/hmrCache.ts';
 
 const sentryInitHandle = persistAcrossHmr<Handle>(import.meta.hot, 'sentryInitHandle', () =>
-    Sentry.getClient() ?
-        ({ event, resolve }) => resolve(event)
-    :   Sentry.initCloudflareSentryHandle({
-            dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
-            environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
-            tracesSampleRate: dev ? 0 : 1.0,
-            integrations: privateRequestIntegrations()
-        })
+    Sentry.getClient()
+        ? ({ event, resolve }) => resolve(event)
+        : Sentry.initCloudflareSentryHandle({
+              dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
+              environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+              tracesSampleRate: dev ? 0 : 1.0,
+              integrations: privateRequestIntegrations()
+          })
 );
 
 const PUBLIC_PATHS = new Set(['/robots.txt']);
@@ -38,10 +38,10 @@ const authHandle: Handle = async ({ event, resolve }) => {
 
     const path = event.url.pathname;
     const guarded =
-        !PUBLIC_PATHS.has(path)
-        && !path.startsWith('/api/')
-        && !path.startsWith('/_app/')
-        && !isIdentityAsset(path);
+        !PUBLIC_PATHS.has(path) &&
+        !path.startsWith('/api/') &&
+        !path.startsWith('/_app/') &&
+        !isIdentityAsset(path);
     if (guarded && !(await event.locals.getAdmin()))
         return new Response('Sign in through Cloudflare Access to open the admin.', {
             status: 401,

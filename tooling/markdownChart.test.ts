@@ -5,8 +5,9 @@
 import { afterEach, expect, test } from 'bun:test';
 import { flushSync, mount, tick, unmount } from 'svelte';
 
-const { default: MarkdownChart } =
-    (await import('../packages/mdrs/dom/src/MarkdownChart.svelte')) as { default: never };
+const { default: MarkdownChart } = (await import(
+    '../packages/mdrs/dom/src/MarkdownChart.svelte'
+)) as { default: never };
 
 const mounted: object[] = [];
 

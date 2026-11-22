@@ -61,18 +61,18 @@ function postFromRow(row: D1Row, cdnBase: string | undefined): PublishedPost {
         tags: jsonStrings(row.tags),
         collaborators: jsonStrings(row.collaborators),
         banner_url:
-            cdnBase === undefined ? null : (
-                bannerUrl(
-                    {
-                        id,
-                        slug,
-                        published: true,
-                        banner_version:
-                            typeof row.banner_version === 'string' ? row.banner_version : null
-                    },
-                    cdnBase
-                )
-            ),
+            cdnBase === undefined
+                ? null
+                : bannerUrl(
+                      {
+                          id,
+                          slug,
+                          published: true,
+                          banner_version:
+                              typeof row.banner_version === 'string' ? row.banner_version : null
+                      },
+                      cdnBase
+                  ),
         read_minutes: typeof row.read_time === 'number' && row.read_time > 0 ? row.read_time : null,
         content_license: storedPostLicense(row.content_license),
         banner_credit: storedBannerCredit(row.banner_credit),
@@ -119,9 +119,11 @@ export function createD1BlogRepository(
         const where = `p.published = 1${term ? ` AND ${SEARCH}` : ''}`;
         const params = term ? [likePattern(term)] : [];
         const window =
-            limit !== undefined ? ` LIMIT ${Math.max(0, limit)} OFFSET ${Math.max(0, offset)}`
-            : offset ? ` LIMIT -1 OFFSET ${Math.max(0, offset)}`
-            : '';
+            limit !== undefined
+                ? ` LIMIT ${Math.max(0, limit)} OFFSET ${Math.max(0, offset)}`
+                : offset
+                  ? ` LIMIT -1 OFFSET ${Math.max(0, offset)}`
+                  : '';
         try {
             const [rows, count] = await db.batch([
                 db

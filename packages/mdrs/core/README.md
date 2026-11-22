@@ -6,11 +6,11 @@ The MDRS (Markdown Rich Syntax) engine. It turns MDRS source into sanitized HTML
 import { prepareMarkdownPage, renderMarkdown, validateDefineForSave } from '@mdrs/core';
 
 const html = await renderMarkdown(source);
-const { html: page, headings } = await prepareMarkdownPage(source, resolvers);
-const { ok, errors } = await validateDefineForSave(source, resolvers);
+const { html: page, headings } = await prepareMarkdownPage(source, fetcher);
+const { ok, errors } = await validateDefineForSave(source, fetcher);
 ```
 
-`resolvers` (an `ApiRegistry`, one resolver per `api.v1` resource) supplies the live data behind `api.v1.*` in expressions and conditions; the engine itself names no resource. Without it, `unavailableResolvers()` is used and those references render an error marker. The site builds its resolvers with `mdrsResolvers(repositories)` (`packages/lib/src/server/mdrsData.ts`) on the server and `createMdrsResolvers(loaders)` (`packages/lib/src/mdrsResolvers.ts`) in the browser.
+`fetcher` (a `JsonFetcher`, `(url) => Promise<unknown>`) returns the parsed JSON behind `get(url, path)` in expressions and conditions. The engine checks each URL with `checkGetUrl` (https, no credentials), fetches each URL once per render, allows at most 10 different URLs per document, and selects one string, number or boolean with the jq-style path. Without a fetcher, `unavailableFetcher()` is used and `get()` renders an error marker. The site passes `fetchJson` (`packages/lib/src/server/mdrsFetch.ts`) on the server, and the admin preview proxies through `/api/internal/admin/mdrs-get`.
 
 ## Entry points
 

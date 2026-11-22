@@ -20,15 +20,11 @@ export {
     MAX_DOCUMENT_LENGTH,
     DefineError,
     extractDefineBlock,
-    jsToDefineValue,
-    unavailableResolvers,
+    checkGetUrl,
+    unavailableFetcher,
     validateDefineForSave,
-    walkPath,
-    type ApiRegistry,
-    type ApiResolver,
     type DefineErrorInfo,
-    type DefineValue,
-    type PathSegment
+    type JsonFetcher
 } from './define';
 export {
     extractFrontmatter,

@@ -171,16 +171,16 @@ function matchEntry(key: string): ShortcutEntry | undefined {
 
 function matchEntryInForm(key: string, target: EventTarget | null): ShortcutEntry | undefined {
     const form =
-        target instanceof Element ?
-            (target.closest('form') ?? target.closest('[data-shortcut-scope]'))
-        :   null;
+        target instanceof Element
+            ? (target.closest('form') ?? target.closest('[data-shortcut-scope]'))
+            : null;
     if (!form) return undefined;
     return [...entries.values()].find(
         entry =>
-            entryInScope(entry)
-            && form.contains(entry.element)
-            && isVisible(entry)
-            && entry.combos.some(c => normalizeKey(c) === key)
+            entryInScope(entry) &&
+            form.contains(entry.element) &&
+            isVisible(entry) &&
+            entry.combos.some(c => normalizeKey(c) === key)
     );
 }
 
@@ -189,9 +189,9 @@ function resolveChord(e: KeyboardEvent, group: string) {
     if (!chordKey) return;
     const matches = [...entries.values()].filter(
         entry =>
-            entry.group === group
-            && entryInScope(entry)
-            && chordAssignments.get(entry.id) === chordKey
+            entry.group === group &&
+            entryInScope(entry) &&
+            chordAssignments.get(entry.id) === chordKey
     );
     const match = matches.find(isVisible) ?? matches[0];
     disarm();
@@ -238,8 +238,9 @@ function handleKeydown(e: KeyboardEvent) {
         case 'entry': {
             disarm();
             if (!action.key) return;
-            const match =
-                action.inForm ? matchEntryInForm(action.key, e.target) : matchEntry(action.key);
+            const match = action.inForm
+                ? matchEntryInForm(action.key, e.target)
+                : matchEntry(action.key);
             if (match) trigger(match);
             return;
         }
@@ -285,16 +286,16 @@ function update(id: string, patch: Partial<Omit<ShortcutEntry, 'id'>>) {
     const existing = entries.get(id);
     if (!existing) return;
     const sameCombos =
-        !patch.combos
-        || (existing.combos.length === patch.combos.length
-            && existing.combos.every((c, i) => c === patch.combos![i]));
+        !patch.combos ||
+        (existing.combos.length === patch.combos.length &&
+            existing.combos.every((c, i) => c === patch.combos![i]));
     if (
-        sameCombos
-        && (patch.group === undefined || existing.group === patch.group)
-        && (patch.chordKey === undefined || existing.chordKey === patch.chordKey)
-        && (patch.label === undefined || existing.label === patch.label)
-        && (patch.scope === undefined || existing.scope === patch.scope)
-        && (patch.element === undefined || existing.element === patch.element)
+        sameCombos &&
+        (patch.group === undefined || existing.group === patch.group) &&
+        (patch.chordKey === undefined || existing.chordKey === patch.chordKey) &&
+        (patch.label === undefined || existing.label === patch.label) &&
+        (patch.scope === undefined || existing.scope === patch.scope) &&
+        (patch.element === undefined || existing.element === patch.element)
     ) {
         return;
     }

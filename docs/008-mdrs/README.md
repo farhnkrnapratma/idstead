@@ -76,7 +76,7 @@ The docs start with the Markdown you already know, then cover what MDRS adds.
 | [Diagrams and charts](002-extensions/011-diagrams-and-charts.md) | Mermaid and chart fences |
 | [References](002-extensions/012-references.md) | A bibliography block for footnotes |
 | [Variables](002-extensions/013-variables.md) | `:::define`, strings, expressions, the ternary and `${…}` |
-| [Live data](002-extensions/014-live-data.md) | `api.v1.author`, `api.v1.blog` and `api.v1.analytics` in expressions |
+| [Live data](002-extensions/014-live-data.md) | `get(url, path)`: one value from a JSON API in any expression |
 | [Conditionals](002-extensions/016-conditionals.md) | `:::if` blocks and inline `${if}` |
 | [Escaping](002-extensions/015-escaping.md) | Writing MDRS syntax literally, `\${`, `:::verbatim` |
 

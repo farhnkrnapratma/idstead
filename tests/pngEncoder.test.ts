@@ -27,7 +27,7 @@ function noise(size: number, seed = 1) {
 function paletteSize(png: ArrayBuffer) {
     const bytes = new Uint8Array(png);
     const view = new DataView(png);
-    for (let pos = 8; pos < bytes.length;) {
+    for (let pos = 8; pos < bytes.length; ) {
         const length = view.getUint32(pos);
         if (String.fromCharCode(...bytes.subarray(pos + 4, pos + 8)) === 'PLTE') return length / 3;
         pos += length + 12;

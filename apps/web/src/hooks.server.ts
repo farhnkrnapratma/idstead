@@ -33,14 +33,14 @@ import { publicRepositories } from '#lib/server/repositories.ts';
 import { persistAcrossHmr } from '#lib/server/hmrCache.ts';
 
 const sentryInitHandle = persistAcrossHmr<Handle>(import.meta.hot, 'sentryInitHandle', () =>
-    Sentry.getClient() ?
-        ({ event, resolve }) => resolve(event)
-    :   Sentry.initCloudflareSentryHandle({
-            dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
-            environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
-            tracesSampleRate: dev ? 0 : 1.0,
-            integrations: privateRequestIntegrations()
-        })
+    Sentry.getClient()
+        ? ({ event, resolve }) => resolve(event)
+        : Sentry.initCloudflareSentryHandle({
+              dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
+              environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+              tracesSampleRate: dev ? 0 : 1.0,
+              integrations: privateRequestIntegrations()
+          })
 );
 
 function getCdnBaseUrl(): string {
@@ -54,9 +54,9 @@ const PUBLIC_API_EXPOSED_HEADERS =
 const markdownHandle: Handle = async ({ event, resolve }) => {
     const method = event.request.method;
     if (
-        (method !== 'GET' && method !== 'HEAD')
-        || !negotiablePath(event.url.pathname)
-        || !prefersMarkdown(event.request.headers.get('accept'))
+        (method !== 'GET' && method !== 'HEAD') ||
+        !negotiablePath(event.url.pathname) ||
+        !prefersMarkdown(event.request.headers.get('accept'))
     )
         return varyOnAccept(await resolve(event));
     const source = markdownSourcePath(event.url.pathname);
@@ -86,8 +86,8 @@ export const handle: Handle = sequence(
         }
 
         if (
-            assetNames.includes(event.url.pathname.slice(1))
-            || event.url.pathname === '/hero.png'
+            assetNames.includes(event.url.pathname.slice(1)) ||
+            event.url.pathname === '/hero.png'
         ) {
             if (!['GET', 'HEAD'].includes(event.request.method))
                 return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
@@ -105,8 +105,8 @@ export const handle: Handle = sequence(
         const isApiRequest =
             event.url.pathname.startsWith('/api/') || event.url.pathname === '/api';
         const isInternalApi =
-            event.url.pathname === '/api/internal'
-            || event.url.pathname.startsWith('/api/internal/');
+            event.url.pathname === '/api/internal' ||
+            event.url.pathname.startsWith('/api/internal/');
         const isArdRequest =
             event.url.pathname === '/api/ard' || event.url.pathname.startsWith('/api/ard/');
         const ardPath = event.url.pathname.replace(/\/$/, '');
@@ -124,8 +124,9 @@ export const handle: Handle = sequence(
                 status: 204,
                 headers: {
                     ...(isInternalApi ? {} : { 'Access-Control-Allow-Origin': '*' }),
-                    'Access-Control-Allow-Methods':
-                        isInternalApi ? 'GET, HEAD, POST, OPTIONS' : publicAllow,
+                    'Access-Control-Allow-Methods': isInternalApi
+                        ? 'GET, HEAD, POST, OPTIONS'
+                        : publicAllow,
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
                     'Access-Control-Max-Age': '86400',
                     'X-Request-ID': requestId
@@ -141,17 +142,17 @@ export const handle: Handle = sequence(
             if (limit.limited)
                 return new Response(
                     JSON.stringify(
-                        isArdRequest ?
-                            {
-                                errorCode: 'RATE_LIMIT_EXCEEDED',
-                                message: 'Rate limit exceeded. Please wait before retrying.'
-                            }
-                        :   {
-                                error: {
-                                    code: 'RATE_LIMITED',
-                                    message: 'Rate limit exceeded. Please wait before retrying.'
-                                }
-                            }
+                        isArdRequest
+                            ? {
+                                  errorCode: 'RATE_LIMIT_EXCEEDED',
+                                  message: 'Rate limit exceeded. Please wait before retrying.'
+                              }
+                            : {
+                                  error: {
+                                      code: 'RATE_LIMITED',
+                                      message: 'Rate limit exceeded. Please wait before retrying.'
+                                  }
+                              }
                     ),
                     {
                         status: 429,
@@ -159,20 +160,21 @@ export const handle: Handle = sequence(
                             'Content-Type': 'application/json; charset=utf-8',
                             'Cache-Control': 'no-store',
                             'X-Request-ID': requestId,
-                            ...(isInternalApi ?
-                                {}
-                            :   {
-                                    'Access-Control-Allow-Origin': '*',
-                                    'Access-Control-Expose-Headers': PUBLIC_API_EXPOSED_HEADERS
-                                }),
+                            ...(isInternalApi
+                                ? {}
+                                : {
+                                      'Access-Control-Allow-Origin': '*',
+                                      'Access-Control-Expose-Headers': PUBLIC_API_EXPOSED_HEADERS
+                                  }),
                             ...limit.headers
                         }
                     }
                 );
         }
 
-        const analytics =
-            isApiRequest ? null : await siteAnalytics(publicRepositories(event.fetch));
+        const analytics = isApiRequest
+            ? null
+            : await siteAnalytics(publicRepositories(event.fetch));
         const head = analytics ? analyticsHead(analytics.settings, event.url.hostname) : '';
         const analyticsHashes = await inlineScriptHashes(head);
         let response = await resolve(event, {
@@ -184,9 +186,9 @@ export const handle: Handle = sequence(
         });
         const contentType = response.headers.get('content-type') ?? '';
         const preview =
-            publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
-            || event.url.hostname.endsWith('.pages.dev')
-            || event.url.hostname.endsWith('.workers.dev');
+            publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview' ||
+            event.url.hostname.endsWith('.pages.dev') ||
+            event.url.hostname.endsWith('.workers.dev');
         if (contentType.includes('text/html')) {
             response.headers.set(
                 'Content-Security-Policy',
@@ -235,12 +237,12 @@ export const handle: Handle = sequence(
         }
 
         if (
-            response.status === 200
-            && ['GET', 'HEAD'].includes(event.request.method)
-            && ((isApiRequest && !isInternalApi) || event.url.pathname.startsWith('/.well-known/'))
-            && !response.headers.has('ETag')
-            && !contentType.includes('application/pdf')
-            && !contentType.includes('application/octet-stream')
+            response.status === 200 &&
+            ['GET', 'HEAD'].includes(event.request.method) &&
+            ((isApiRequest && !isInternalApi) || event.url.pathname.startsWith('/.well-known/')) &&
+            !response.headers.has('ETag') &&
+            !contentType.includes('application/pdf') &&
+            !contentType.includes('application/octet-stream')
         ) {
             const conditional = await publicResponse(
                 event.request,

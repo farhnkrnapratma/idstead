@@ -6,13 +6,12 @@ import { chmod, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
-import { format, resolveConfig } from 'prettier';
 import {
     InstanceConfigError,
     resolveInstanceConfig,
     type InstanceConfig
 } from '../packages/domain/src/instance.ts';
-import { renderWranglerConfigs } from './configure.ts';
+import { formatJson, renderWranglerConfigs } from './configure.ts';
 import { isSigningKey } from './oidc-key.ts';
 import {
     APPS,
@@ -101,10 +100,7 @@ async function instanceConfig(answers: SetupAnswers): Promise<InstanceConfig> {
             throw new SetupStop(`idstead.jsonc: ${error.message}`);
         throw error;
     }
-    const content = await format(JSON.stringify(source), {
-        ...(await resolveConfig(CONFIG_FILE)),
-        filepath: CONFIG_FILE
-    });
+    const content = await formatJson(JSON.stringify(source), CONFIG_FILE);
     if (existing && JSON.stringify(Bun.JSONC.parse(existing)) === JSON.stringify(source))
         note(`idstead.jsonc is up to date (site ${config.domains.site}).`);
     else {
@@ -212,13 +208,7 @@ async function saveInstance(
     const source = update(
         Bun.JSONC.parse(await Bun.file(CONFIG_FILE).text()) as Record<string, unknown>
     );
-    await Bun.write(
-        CONFIG_FILE,
-        await format(JSON.stringify(source), {
-            ...(await resolveConfig(CONFIG_FILE)),
-            filepath: CONFIG_FILE
-        })
-    );
+    await Bun.write(CONFIG_FILE, await formatJson(JSON.stringify(source), CONFIG_FILE));
     const updated = resolveInstanceConfig(source);
     for (const [file, text] of Object.entries(await renderWranglerConfigs(updated)))
         await Bun.write(file, text);
@@ -298,9 +288,9 @@ async function adminAccess(
     step('Admin sign-in (Cloudflare Access)');
     const admin = config.domains.admin;
     const email =
-        answers.adminEmail
-        ?? values.ADMIN_EMAILS?.split(',')[0]?.trim()
-        ?? ask('Email address that may sign in to the admin:');
+        answers.adminEmail ??
+        values.ADMIN_EMAILS?.split(',')[0]?.trim() ??
+        ask('Email address that may sign in to the admin:');
     if (!email && !apply && !config.access) {
         planned(`create the Access application for ${admin} once the admin email is known`);
         return config;
@@ -396,9 +386,9 @@ async function deploy(config: InstanceConfig, secrets: Record<App, Record<string
 async function main() {
     if (!['dry-run', 'apply'].includes(mode)) throw new SetupStop(USAGE);
     console.log(
-        apply ? 'Setting up Idstead.' : (
-            'Dry run: nothing is changed. Run with "apply" to make these changes.'
-        )
+        apply
+            ? 'Setting up Idstead.'
+            : 'Dry run: nothing is changed. Run with "apply" to make these changes.'
     );
     const answers = await readAnswers();
     const config = await instanceConfig(answers);

@@ -16,9 +16,9 @@ export async function validateBanner(bytes: Uint8Array<ArrayBuffer>, module: Web
             bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
         );
         if (
-            image.width !== metadata.width
-            || image.height !== metadata.height
-            || image.data.length !== metadata.width * metadata.height * 4
+            image.width !== metadata.width ||
+            image.height !== metadata.height ||
+            image.data.length !== metadata.width * metadata.height * 4
         )
             throw new Error('Invalid WebP pixels.');
     } catch {

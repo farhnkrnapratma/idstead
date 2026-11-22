@@ -4,9 +4,21 @@
 
 export type AdminDateMode = 'absolute' | 'relative' | 'smart';
 export type AdminDateFormat =
-    'mon-d-y' | 'dd/mm/yyyy' | 'dd/mm/yy' | 'month-d-y' | 'wd-mon-d' | 'wd-mon-d-y' | 'iso';
+    | 'mon-d-y'
+    | 'dd/mm/yyyy'
+    | 'dd/mm/yy'
+    | 'month-d-y'
+    | 'wd-mon-d'
+    | 'wd-mon-d-y'
+    | 'iso';
 export type AdminTimeFormat =
-    'HH:mm' | 'H:mm' | 'hh:mm a' | 'h:mm a' | 'HH:mm:ss' | 'hh:mm:ss a' | 'h[:mm]a';
+    | 'HH:mm'
+    | 'H:mm'
+    | 'hh:mm a'
+    | 'h:mm a'
+    | 'HH:mm:ss'
+    | 'hh:mm:ss a'
+    | 'h[:mm]a';
 
 export interface AdminDisplayPrefs {
     mode: AdminDateMode;

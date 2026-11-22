@@ -24,7 +24,8 @@ export interface BannerInput {
 }
 
 type BannerSegment =
-    { kind: 'text'; text: string; x: number } | { kind: 'icon'; x: number; size: number };
+    | { kind: 'text'; text: string; x: number }
+    | { kind: 'icon'; x: number; size: number };
 
 export interface BannerRow {
     font: BannerFont;
@@ -47,11 +48,13 @@ export function socialHandle(url: string): string | null {
     const segments = parsed.pathname.split('/').filter(Boolean).map(decodeURIComponent);
     const first = segments[0];
     if (!first) return null;
-    const handle =
-        first.startsWith('@') ? first.slice(1)
-        : handlePrefixes.has(first.toLowerCase()) ? segments[1]
-        : segments.length === 1 ? first
-        : null;
+    const handle = first.startsWith('@')
+        ? first.slice(1)
+        : handlePrefixes.has(first.toLowerCase())
+          ? segments[1]
+          : segments.length === 1
+            ? first
+            : null;
     if (!handle || !/^[\p{L}\p{N}._-]{1,64}$/u.test(handle)) return null;
     return `@${handle}`;
 }
@@ -94,10 +97,12 @@ interface RowSpec {
 function rowWidth(spec: RowSpec, size: number, measure: Measure) {
     return spec.parts.reduce(
         (sum, part) =>
-            sum
-            + (part.kind === 'text' ? measure(part.text, spec.font, size)
-            : part.kind === 'icon' ? size
-            : part.em * size),
+            sum +
+            (part.kind === 'text'
+                ? measure(part.text, spec.font, size)
+                : part.kind === 'icon'
+                  ? size
+                  : part.em * size),
         0
     );
 }

@@ -1,0 +1,161 @@
+// SPDX-FileCopyrightText: 2026 Farhan Kurnia Pratama
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+{
+    "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true,
+        "defaultBranch": "develop"
+    },
+    "files": {
+        "ignoreUnknown": true,
+        "includes": [
+            "**",
+            "!**/.svelte-kit",
+            "!**/*.md",
+            "!tests/fixtures",
+            "!tests/__snapshots__",
+            "!**/skills-lock.json",
+            "!.claude/skills/graphify",
+            "!.agents/skills"
+        ]
+    },
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineEnding": "lf",
+        "lineWidth": 100,
+        "bracketSameLine": true,
+        "expand": "never"
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single",
+            "jsxQuoteStyle": "single",
+            "trailingCommas": "none",
+            "arrowParentheses": "asNeeded"
+        }
+    },
+    "json": { "formatter": { "expand": "auto" } },
+    "css": { "parser": { "tailwindDirectives": true }, "formatter": { "quoteStyle": "single" } },
+    "html": {
+        "experimentalFullSupportEnabled": true,
+        "formatter": { "enabled": true, "selfCloseVoidElements": "always" }
+    },
+    "assist": { "enabled": false },
+    "plugins": [
+        {
+            "path": "./tooling/biome/browser-imports.grit",
+            "includes": [
+                "**/*.svelte",
+                "**/*.svelte.ts",
+                "packages/lib/src/components/**",
+                "packages/lib/src/layout/**",
+                "packages/lib/src/article/**",
+                "packages/lib/src/stores/**",
+                "packages/lib/src/utils/**",
+                "apps/web/src/lib/**",
+                "apps/admin/src/lib/**"
+            ]
+        },
+        { "path": "./tooling/biome/mdrs-core-imports.grit", "includes": ["packages/mdrs/core/**"] },
+        { "path": "./tooling/biome/ui-imports.grit", "includes": ["packages/ui/**"] },
+        { "path": "./tooling/biome/mdrs-dom-imports.grit", "includes": ["packages/mdrs/dom/**"] },
+        {
+            "path": "./tooling/biome/mdrs-editor-imports.grit",
+            "includes": ["packages/mdrs/editor/**"]
+        },
+        { "path": "./tooling/biome/data-imports.grit", "includes": ["packages/data/**"] },
+        { "path": "./tooling/biome/domain-imports.grit", "includes": ["packages/domain/**"] }
+    ],
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "preset": "recommended",
+            "a11y": {
+                "noHeaderScope": "warn",
+                "noLabelWithoutControl": "warn",
+                "noNoninteractiveTabindex": "warn",
+                "noRedundantRoles": "warn",
+                "noStaticElementInteractions": "warn",
+                "useAriaPropsSupportedByRole": "warn",
+                "useSemanticElements": "warn"
+            },
+            "correctness": {
+                "noInvalidPositionAtImportRule": "warn",
+                "noVoidTypeReturn": "warn"
+            },
+            "style": {
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noAssignInExpressions": "warn",
+                "noDeprecatedImports": "error",
+                "noExplicitAny": "off",
+                "noImplicitAnyLet": "warn",
+                "noShadowRestrictedNames": "warn",
+                "useIterableCallbackReturn": "warn"
+            }
+        }
+    },
+    "overrides": [
+        { "includes": [".fallowrc.json"], "json": { "parser": { "allowComments": true } } },
+        { "includes": ["**/*.svelte"], "formatter": { "enabled": false } },
+        {
+            "includes": ["apps/**", "packages/**", "tooling/**", "tests/**"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "patterns": [
+                                    {
+                                        "group": ["@supabase/*"],
+                                        "message": "Idstead does not use Supabase: admin sign-in goes through Cloudflare Access and data through dataStores()."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "includes": [
+                "apps/*/src/routes/**/*.ts",
+                "apps/*/src/hooks.server.ts",
+                "apps/api/src/**/*.ts",
+                "apps/jobs/src/**/*.ts",
+                "packages/lib/src/server/**/*.ts",
+                "!packages/lib/src/server/data.ts",
+                "!**/*.svelte.ts"
+            ],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "patterns": [
+                                    {
+                                        "group": ["@supabase/*"],
+                                        "message": "Idstead does not use Supabase: admin sign-in goes through Cloudflare Access and data through dataStores()."
+                                    },
+                                    {
+                                        "group": ["@idstead/data"],
+                                        "importNamePattern": "createD1.*",
+                                        "message": "Build data stores through dataStores() in packages/lib/src/server/data.ts, the only place that picks a data adapter."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

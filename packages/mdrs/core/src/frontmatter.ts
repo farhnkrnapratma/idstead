@@ -44,10 +44,11 @@ export interface ImportedPost {
 const POST_FIELDS = new Set(['title', 'excerpt', 'tags']);
 
 function readTags(value: unknown): string[] | undefined {
-    const items =
-        Array.isArray(value) ? value
-        : typeof value === 'string' ? value.split(',')
-        : null;
+    const items = Array.isArray(value)
+        ? value
+        : typeof value === 'string'
+          ? value.split(',')
+          : null;
     if (!items) return undefined;
     return items
         .filter(item => typeof item === 'string' || typeof item === 'number')

@@ -4,6 +4,7 @@
 
 import { describe, expect, test } from 'bun:test';
 import type {
+    AdminSubscriberStore,
     NewsletterStore,
     SubscriberRepository,
     SubscriberStatus
@@ -15,6 +16,8 @@ interface SeedSubscriber {
     unsubscribeToken: string;
     confirmTokenHash?: string | null;
     confirmSentAt?: string | null;
+    confirmedAt?: string | null;
+    createdAt: string;
 }
 
 interface SeedBroadcastPost {
@@ -34,6 +37,7 @@ export interface SubscriberSeed {
 export type SubscriberStoresFactory = (seed: SubscriberSeed) => {
     subscribers: SubscriberRepository;
     newsletter: NewsletterStore;
+    admin: AdminSubscriberStore;
 };
 
 const token = (char: string) => char.repeat(64);
@@ -42,16 +46,35 @@ const MINUTE = 60 * 1000;
 
 const SUBSCRIBER_SEED: SubscriberSeed = {
     subscribers: [
-        { email: 'zed@example.com', status: 'active', unsubscribeToken: token('a') },
-        { email: 'amy@example.com', status: 'active', unsubscribeToken: token('b') },
+        {
+            email: 'zed@example.com',
+            status: 'active',
+            unsubscribeToken: token('a'),
+            confirmedAt: '2026-10-01T01:00:00.000Z',
+            createdAt: '2026-10-01T00:00:00.000Z'
+        },
+        {
+            email: 'amy@example.com',
+            status: 'active',
+            unsubscribeToken: token('b'),
+            confirmedAt: '2026-10-02T01:00:00.000Z',
+            createdAt: '2026-10-02T00:00:00.000Z'
+        },
         {
             email: 'pending@example.com',
             status: 'pending',
             unsubscribeToken: token('c'),
             confirmTokenHash: token('1'),
-            confirmSentAt: new Date(Date.now() - MINUTE).toISOString()
+            confirmSentAt: new Date(Date.now() - MINUTE).toISOString(),
+            createdAt: '2026-10-03T00:00:00.000Z'
         },
-        { email: 'gone@example.com', status: 'unsubscribed', unsubscribeToken: token('d') }
+        {
+            email: 'gone_100%@example.com',
+            status: 'unsubscribed',
+            unsubscribeToken: token('d'),
+            confirmedAt: '2026-10-04T01:00:00.000Z',
+            createdAt: '2026-10-04T00:00:00.000Z'
+        }
     ],
     posts: [
         {
@@ -131,7 +154,7 @@ export function subscriberRepositoryContract(name: string, factory: SubscriberSt
 
         test('gives a returning subscriber a fresh unsubscribe token', async () => {
             const { subscribers } = factory(SUBSCRIBER_SEED);
-            expect(await subscribers.request(request('gone@example.com', token('2')))).toBe(
+            expect(await subscribers.request(request('gone_100%@example.com', token('2')))).toBe(
                 'requested'
             );
             expect(await subscribers.statusByUnsubscribeToken(token('d'))).toBeNull();
@@ -152,8 +175,93 @@ export function subscriberRepositoryContract(name: string, factory: SubscriberSt
             const { subscribers } = factory(SUBSCRIBER_SEED);
             expect(await subscribers.unsubscribeTokenFor('zed@example.com')).toBe(token('a'));
             expect(await subscribers.unsubscribeTokenFor('pending@example.com')).toBe(token('c'));
-            expect(await subscribers.unsubscribeTokenFor('gone@example.com')).toBeNull();
+            expect(await subscribers.unsubscribeTokenFor('gone_100%@example.com')).toBeNull();
             expect(await subscribers.unsubscribeTokenFor('nobody@example.com')).toBeNull();
+        });
+    });
+
+    describe(`${name}: AdminSubscriberStore contract`, () => {
+        test('lists newest first with search, status filter and pages', async () => {
+            const { admin } = factory(SUBSCRIBER_SEED);
+            const all = await admin.list({ page: 1, limit: 10 });
+            expect(all.total).toBe(4);
+            expect(all.items.map(item => item.email)).toEqual([
+                'gone_100%@example.com',
+                'pending@example.com',
+                'amy@example.com',
+                'zed@example.com'
+            ]);
+            expect(Object.keys(all.items[0]).sort()).toEqual([
+                'confirmed_at',
+                'created_at',
+                'email',
+                'id',
+                'status',
+                'unsubscribed_at'
+            ]);
+            const second = await admin.list({ page: 2, limit: 3 });
+            expect(second).toMatchObject({ total: 4, items: [{ email: 'zed@example.com' }] });
+            const active = await admin.list({ status: 'active', page: 1, limit: 10 });
+            expect(active.items.map(item => item.email)).toEqual([
+                'amy@example.com',
+                'zed@example.com'
+            ]);
+            const search = await admin.list({ query: ' AMY ', page: 1, limit: 10 });
+            expect(search.items.map(item => item.email)).toEqual(['amy@example.com']);
+        });
+
+        test('treats % and _ in a search as literal characters', async () => {
+            const { admin } = factory(SUBSCRIBER_SEED);
+            const literal = await admin.list({ query: '_100%', page: 1, limit: 10 });
+            expect(literal.items.map(item => item.email)).toEqual(['gone_100%@example.com']);
+            expect((await admin.list({ query: '%', page: 1, limit: 10 })).total).toBe(1);
+            expect((await admin.list({ query: 'a_y', page: 1, limit: 10 })).total).toBe(0);
+        });
+
+        test('switches between active and unsubscribed only', async () => {
+            const { admin, newsletter } = factory(SUBSCRIBER_SEED);
+            const ids = Object.fromEntries(
+                (await admin.list({ page: 1, limit: 10 })).items.map(item => [item.email, item.id])
+            );
+            const off = await admin.setStatus(ids['amy@example.com'], 'unsubscribed');
+            expect(off).toMatchObject({ status: 'unsubscribed' });
+            expect(off?.unsubscribed_at).not.toBeNull();
+            expect(await admin.setStatus(ids['amy@example.com'], 'unsubscribed')).toBeNull();
+            const on = await admin.setStatus(ids['gone_100%@example.com'], 'active');
+            expect(on).toMatchObject({
+                status: 'active',
+                unsubscribed_at: null,
+                confirmed_at: '2026-10-04T01:00:00.000Z'
+            });
+            expect(await admin.setStatus(ids['pending@example.com'], 'active')).toBeNull();
+            expect(await admin.setStatus(ids['pending@example.com'], 'unsubscribed')).toBeNull();
+            expect((await newsletter.recipients()).map(r => r.email)).toEqual([
+                'gone_100%@example.com',
+                'zed@example.com'
+            ]);
+        });
+
+        test('reads and deletes by id', async () => {
+            const { admin } = factory(SUBSCRIBER_SEED);
+            const [first] = (await admin.list({ page: 1, limit: 1 })).items;
+            expect(await admin.byId(first.id)).toEqual(first);
+            expect(await admin.delete(first.id)).toBe('deleted');
+            expect(await admin.delete(first.id)).toBe('not-found');
+            expect(await admin.byId(first.id)).toBeNull();
+            expect((await admin.list({ page: 1, limit: 10 })).total).toBe(3);
+        });
+    });
+
+    describe(`${name}: AdminSubscriberStore consent`, () => {
+        test('never reactivates an address that unsubscribed before confirming', async () => {
+            const { admin, subscribers, newsletter } = factory(SUBSCRIBER_SEED);
+            expect(await subscribers.unsubscribe(token('c'))).toBe('unsubscribed');
+            const [row] = (await admin.list({ query: 'pending@', page: 1, limit: 1 })).items;
+            expect(row).toMatchObject({ status: 'unsubscribed', confirmed_at: null });
+            expect(await admin.setStatus(row.id, 'active')).toBeNull();
+            expect((await newsletter.recipients()).map(r => r.email)).not.toContain(
+                'pending@example.com'
+            );
         });
     });
 

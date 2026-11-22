@@ -173,13 +173,13 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
         for (const [key, val] of url.searchParams.entries()) {
             if (key === 'q' || key === 'sort' || key === 'dir' || key === 'id') continue;
             if (
-                key.startsWith('_')
-                || key.startsWith('utm_')
-                || key === 'gclid'
-                || key === 'fbclid'
-                || key === 'ref'
-                || key === 'source'
-                || key === 'via'
+                key.startsWith('_') ||
+                key.startsWith('utm_') ||
+                key === 'gclid' ||
+                key === 'fbclid' ||
+                key === 'ref' ||
+                key === 'source' ||
+                key === 'via'
             )
                 continue;
             if (val) {

@@ -52,10 +52,10 @@ export async function boundedBody(request: Request, limit = POST_PAYLOAD_LIMIT) 
 function text(value: unknown, max: number, required = false): string | null {
     if (value == null && !required) return null;
     if (
-        typeof value !== 'string'
-        || value.trim().length > max
-        || (required && !value.trim())
-        || value.includes('\0')
+        typeof value !== 'string' ||
+        value.trim().length > max ||
+        (required && !value.trim()) ||
+        value.includes('\0')
     )
         throw new Error('Invalid post text.');
     return value.trim() || null;
@@ -79,10 +79,10 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
     if (typeof raw !== 'string') throw new Error('Post metadata is required.');
     const input = JSON.parse(raw);
     if (
-        !input
-        || typeof input !== 'object'
-        || !UUID_PATTERN.test(input.operationId)
-        || !UUID_PATTERN.test(input.id)
+        !input ||
+        typeof input !== 'object' ||
+        !UUID_PATTERN.test(input.operationId) ||
+        !UUID_PATTERN.test(input.id)
     )
         throw new Error('Invalid operation or post ID.');
     if (input.revision !== null && (!Number.isSafeInteger(input.revision) || input.revision < 0))
@@ -124,18 +124,18 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
             throw new Error('Invalid collaborator username.');
         const body = form.get('markdown');
         if (
-            typeof body !== 'string'
-            || !body.trim()
-            || new TextEncoder().encode(body).length > MARKDOWN_LIMIT
-            || body.includes('\0')
+            typeof body !== 'string' ||
+            !body.trim() ||
+            new TextEncoder().encode(body).length > MARKDOWN_LIMIT ||
+            body.includes('\0')
         )
             throw new Error('Markdown is required and must be no larger than 2 MiB.');
         markdown = body;
         if (!['keep', 'replace', 'remove'].includes(input.bannerOperation))
             throw new Error('Invalid banner operation.');
         if (
-            input.bannerOperation === 'remove'
-            || (input.revision === null && input.bannerOperation !== 'replace')
+            input.bannerOperation === 'remove' ||
+            (input.revision === null && input.bannerOperation !== 'replace')
         )
             throw new Error('Banner image is required.');
         banner = { operation: input.bannerOperation };

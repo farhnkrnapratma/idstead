@@ -4,20 +4,16 @@
 
 import { describe, expect, test } from 'bun:test';
 import { resolveDefines } from '../packages/mdrs/core/src/markdown';
-import { jsToDefineValue, walkPath, type ApiRegistry } from '../packages/mdrs/core/src/define';
+import type { JsonFetcher } from '../packages/mdrs/core/src/define';
 import { markdownToPlainText } from '../packages/mdrs/core/src/plainText';
 
-const author = jsToDefineValue({
+const resolvers: JsonFetcher = async () => ({
     profile: { name: 'Ann Example', siteUrl: 'https://example.com' }
 });
-const resolvers: ApiRegistry = {
-    author: async path => walkPath(author, path),
-    blog: async path => walkPath(jsToDefineValue({}), path)
-};
 
 const legal = `:::define
-name: api.v1.author.profile.name
-site: api.v1.author.profile.siteUrl
+name: get('https://api.example.com/v1/author', '.profile.name')
+site: get('https://api.example.com/v1/author', '.profile.siteUrl')
 :::
 
 This policy covers **\${site}**, run by **\${name}**.`;
@@ -32,13 +28,13 @@ describe('resolveDefines', () => {
     test('gives plain text without the define block or variable names', async () => {
         const text = markdownToPlainText(await resolveDefines(legal, resolvers));
         expect(text).toBe('This policy covers https://example.com, run by Ann Example.');
-        expect(text).not.toContain('api.v1');
+        expect(text).not.toContain('get(');
     });
 
     test('keeps code, escaped variables and verbatim blocks literal', async () => {
         const source = [
             ':::define',
-            'name: api.v1.author.profile.name',
+            "name: get('https://api.example.com/v1/author', '.profile.name')",
             ':::',
             '',
             'Hi ${name}, write `${name}` or \\${name}.',

@@ -131,7 +131,7 @@ Content with **Markdown**.
 ````
 
 :::callout title="Changelog" icon="list"
-**v${engine_version}.0**: Added `:::define` variable interpolation with live `api.v1.*` data binding, rich media embeds, and custom callouts.
+**v${engine_version}.0**: Added `:::define` variable interpolation with live `get()` data binding, rich media embeds, and custom callouts.
 :::
 
 :::callout title="Pro Tip" icon="zap"
@@ -555,12 +555,12 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 
 ## Live Data Binding
 
-The `api.v1.*` prefix fetches real data from this site's own API at render time, with no manual `curl` and no hardcoded values. The engine resolves paths like `api.v1.author.profile.name` against the live database during server-side rendering.
+`get(url, path)` fetches real data from a JSON API at render time, with no manual `curl` and no hardcoded values. The engine selects one value with a jq-style path like `.profile.name` during server-side rendering.
 
-- Author: **${api.v1.author.profile.name}**
-- Published posts: **${api.v1.blog.length}**
+- Author: **${get('https://api.my-site.example/v1/author', '.profile.name')}**
+- City: **${get('https://api.my-site.example/v1/author', '.profile.city')}**
 
-This is the same data you would get from `GET /api/v1/author?fields=profile` and `GET /api/v1/blog`, but inlined directly into the markdown body at compile time. No client-side fetch, no loading spinner, no layout shift.
+This is the same data you would get from `GET /v1/author`, but inlined directly into the markdown body at compile time. No client-side fetch, no loading spinner, no layout shift.
 
 ---
 
@@ -604,7 +604,7 @@ Unrecognized providers fall back to a styled external link instead of a broken i
 | **Callouts** | Directive Parser | Server HTML | Alerts and Custom Cards |
 | **Timelines** | CSS Counters | Server HTML | Numbered Cards |
 | **Variables** | Expression Engine | Server SSR | Interpolated Text |
-| **Data Binding** | `api.v1.*` Resolver | Server SSR | Live Data |
+| **Data Binding** | `get()` Fetcher | Server SSR | Live Data |
 
 ---
 
@@ -635,10 +635,10 @@ echo "inside a nested details block"
 
 ## Footnotes
 
-The engine compiles `[^label]` markers into superscript links with numbered back-references[^1]. KaTeX math runs entirely at build time[^math], and the `api.v1.*` resolver demonstrated above fetches data from the same database that powers the REST API[^api].
+The engine compiles `[^label]` markers into superscript links with numbered back-references[^1]. KaTeX math runs entirely at build time[^math], and the `get()` call demonstrated above reads the same JSON as the REST API[^api].
 
 :::references
 [^1]: Directives like `:::define`, `:::tabs`, and `:::callout` are parsed in a pre-processing pass over raw markdown before `marked.parse()` runs.
 [^math]: KaTeX renders **server-side during SSR**, so no client JavaScript is required to display formulas. Mermaid diagrams, by contrast, hydrate lazily in the browser.
-[^api]: The `api.v1.*` resolver calls the same data queries as `GET /api/v1/author` and `GET /api/v1/blog`, but at compile time rather than via HTTP.
+[^api]: `get()` requests `GET /v1/author` once per render, however often the page calls it, and inlines the selected value.
 :::

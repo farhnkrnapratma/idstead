@@ -53,10 +53,9 @@ export async function apiErrorEnvelope(
 ): Promise<Response> {
     const status = response.status >= 400 ? response.status : 404;
     const contentType = response.headers.get('content-type') ?? '';
-    let code =
-        options.ard ?
-            (ARD_DEFAULT_CODES[status] ?? 'INTERNAL_ERROR')
-        :   (DEFAULT_CODES[status] ?? 'INTERNAL_ERROR');
+    let code = options.ard
+        ? (ARD_DEFAULT_CODES[status] ?? 'INTERNAL_ERROR')
+        : (DEFAULT_CODES[status] ?? 'INTERNAL_ERROR');
     let message =
         DEFAULT_MESSAGES[status] ?? 'An unexpected error occurred while processing the request.';
     let details: string | undefined;
@@ -87,28 +86,28 @@ export async function apiErrorEnvelope(
         'X-Request-ID': options.requestId,
         ...(retryAfter ? { 'Retry-After': retryAfter } : {}),
         ...(options.noindex ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
-        ...(status === 405 ?
-            {
-                Allow:
-                    options.allow
-                    ?? response.headers.get('allow')
-                    ?? options.fallbackAllow
-                    ?? 'GET, HEAD, OPTIONS'
-            }
-        :   {}),
-        ...(options.publicCors ?
-            {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Expose-Headers': 'X-Request-ID, Retry-After'
-            }
-        :   {}),
+        ...(status === 405
+            ? {
+                  Allow:
+                      options.allow ??
+                      response.headers.get('allow') ??
+                      options.fallbackAllow ??
+                      'GET, HEAD, OPTIONS'
+              }
+            : {}),
+        ...(options.publicCors
+            ? {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Expose-Headers': 'X-Request-ID, Retry-After'
+              }
+            : {}),
         ...options.headers
     };
     return new Response(
         JSON.stringify(
-            options.ard ?
-                { errorCode: code, message }
-            :   { error: { code, message, ...(details ? { details } : {}) } }
+            options.ard
+                ? { errorCode: code, message }
+                : { error: { code, message, ...(details ? { details } : {}) } }
         ),
         { status, headers }
     );

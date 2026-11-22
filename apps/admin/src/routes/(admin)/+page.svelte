@@ -71,6 +71,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         Lock,
         LogOut,
         Logs,
+        Mail,
         Menu,
         MessageCircle,
         PanelLeftClose,
@@ -123,6 +124,8 @@ SPDX-License-Identifier: AGPL-3.0-only
     const loadActivityWorkspace = () => import('#app/components/admin/ActivityWorkspace.svelte');
     const loadActivityLogWorkspace = () =>
         import('#app/components/admin/ActivityLogWorkspace.svelte');
+    const loadSubscribersWorkspace = () =>
+        import('#app/components/admin/SubscribersWorkspace.svelte');
     const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
     const loadIdentityProviderSettings = () =>
         import('#app/components/admin/IdentityProviderSettings.svelte');
@@ -386,6 +389,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         'reports',
         'feedback',
         'notifications',
+        'subscribers',
         'logs',
         'posts',
         'projects',
@@ -2325,7 +2329,8 @@ SPDX-License-Identifier: AGPL-3.0-only
     let postsLoaded = false;
     const tabRequests: Partial<Record<string, Promise<void>>> = {};
     async function ensureTabData(tab: AdminTab) {
-        if (['home', 'reports', 'feedback', 'notifications', 'logs'].includes(tab)) return;
+        if (['home', 'reports', 'feedback', 'notifications', 'subscribers', 'logs'].includes(tab))
+            return;
         const group =
             tab === 'posts' ? 'posts'
             : isLegalSlug(tab) ? 'legal'
@@ -3276,6 +3281,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         { id: 'home', label: 'Overview', icon: LayoutDashboard, section: 'overview' },
         { id: 'reports', label: 'Reports', icon: Flag, section: 'community' },
         { id: 'feedback', label: 'Feedback', icon: Users, section: 'community' },
+        { id: 'subscribers', label: 'Subscribers', icon: Mail, section: 'community' },
         { id: 'notifications', label: 'Notifications', icon: Bell, section: 'overview' },
         { id: 'logs', label: 'Activity Log', icon: Logs, section: 'administration' },
         { id: 'account', label: 'Settings', icon: Bolt, section: 'administration' },
@@ -3571,7 +3577,8 @@ SPDX-License-Identifier: AGPL-3.0-only
         {:else if activeAdminTab === 'home'}
             <AdminHome
                 onNavigate={openWorkspace}
-                onPublished={showPublishedPosts} />
+                onPublished={showPublishedPosts}
+                onSubscribers={() => selectTab('subscribers')} />
         {:else if activeAdminTab === 'reports' || activeAdminTab === 'feedback' || activeAdminTab === 'notifications'}
             {#key activeAdminTab}
                 {#await loadActivityWorkspace()}
@@ -3584,6 +3591,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                         onSelectNotification={selectNotification} />
                 {/await}
             {/key}
+        {:else if activeAdminTab === 'subscribers'}
+            {#await loadSubscribersWorkspace()}
+                <LoadingState
+                    variant="spinner"
+                    label="Loading subscribers..." />
+            {:then { default: SubscribersWorkspace }}
+                <SubscribersWorkspace />
+            {/await}
         {:else if activeAdminTab === 'logs'}
             {#await loadActivityLogWorkspace()}
                 <LoadingState

@@ -23,8 +23,9 @@ mock.module('mermaid', () => ({
     }
 }));
 
-const { enhanceMermaidBlocks, getMermaid, initMermaidThemeObserver } =
-    await import('../packages/mdrs/dom/src/mermaid.ts');
+const { enhanceMermaidBlocks, getMermaid, initMermaidThemeObserver } = await import(
+    '../packages/mdrs/dom/src/mermaid.ts'
+);
 
 const flush = () => new Promise(resolve => setTimeout(resolve, 0));
 const fire = (node: Element | Window, type: string) =>

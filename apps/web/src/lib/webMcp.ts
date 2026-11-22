@@ -64,8 +64,8 @@ function optionalChoices<T extends string>(input: ToolInput, key: string, choice
     const value = input[key];
     if (value === undefined) return undefined;
     if (
-        !Array.isArray(value)
-        || value.some(
+        !Array.isArray(value) ||
+        value.some(
             item => typeof item !== 'string' || !(choices as readonly string[]).includes(item)
         )
     )
@@ -190,13 +190,13 @@ export function createWebMcpTools(endpoint: Endpoint): WebMcpTool[] {
             input => {
                 const id = requireText(input, 'id');
                 const part = optionalChoice(input, 'part', POST_PARTS) ?? 'metadata';
-                return part === 'content' ?
-                        fetchValue(
-                            endpoint,
-                            `/blog/content${queryString({ id, output: 'md' })}`,
-                            'text'
-                        )
-                    :   fetchValue(endpoint, `/blog${queryString({ id })}`, 'json');
+                return part === 'content'
+                    ? fetchValue(
+                          endpoint,
+                          `/blog/content${queryString({ id, output: 'md' })}`,
+                          'text'
+                      )
+                    : fetchValue(endpoint, `/blog${queryString({ id })}`, 'json');
             }
         ),
         defineTool(

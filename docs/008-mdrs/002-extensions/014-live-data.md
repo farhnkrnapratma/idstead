@@ -1,96 +1,77 @@
-# Live data
+# Live data: `get()`
 
-Expressions can read data from the site's own database through the `api.v1.*` root: in `${…}`, inside `:::define`, and in [conditionals](016-conditionals.md). Values are fetched on the server while the page is rendered, so the text is always current without a client-side request.
+`get(url, path)` reads one value from a JSON API while the page is rendered. It works in every expression: in `:::define` values, in `${…}`, in [conditionals](016-conditionals.md) and in `? :`. Values are fetched on the server, so readers get finished HTML without a client-side request.
 
-In `${…}`, live data needs a document that starts with a non-empty [`:::define`](013-variables.md) block; without one, `${…}` stays plain text. `:::if` conditions can read `api.v1.*` without a `:::define` block.
-
-```mdrs
-:::define
-author: api.v1.author.profile.name
-post_count: api.v1.blog.length
-:::
-
-Written by **${author}**. ${post_count} posts published so far.
-
-${if post_count > 0}Latest post: [${api.v1.blog[0].title}](/blog/${api.v1.blog[0].slug})${endif}
-```
-
-The last line is an inline conditional: the link only renders, and `api.v1.blog[0]` is only read, when at least one post is published.
-
-## `api.v1.author`
-
-The author profile, shaped like the public API's `GET /v1/author` response:
-
-| Path                    | Contains                                                           |
-| ----------------------- | ------------------------------------------------------------------ |
-| `api.v1.author.profile` | Name, bio, avatar, site URL and other profile fields, plus `email` |
-| `api.v1.author.resume`  | Resume entries                                                     |
-| `api.v1.author.funding` | Funding links                                                      |
-| `api.v1.author.contact` | Contact information                                                |
-| `api.v1.author.skills`  | Skills, grouped                                                    |
-| `api.v1.author.socials` | Social profiles                                                    |
+In `${…}`, `get()` needs a document that starts with a non-empty [`:::define`](013-variables.md) block; without one, `${…}` stays plain text. `:::if` conditions can call `get()` without a `:::define` block.
 
 ```mdrs
 :::define
-profile: api.v1.author.profile
+author: get('https://api.my-site.example/v1/author', '.profile.name')
+city: get('https://api.my-site.example/v1/author', '.profile.city')
 :::
 
-Contact me at ${profile.email}.
-I list ${api.v1.author.socials.length} social profiles.
+Written by **${author}** in ${city}.
 ```
 
-## `api.v1.blog`
+## Arguments
 
-| Path | Contains |
+| Argument | Value |
 | --- | --- |
-| `api.v1.blog` | The 20 most recent published posts, newest first. Each has `id` (the public 64-hex ID), `title`, `slug`, `excerpt`, `collaborators`, `created_at`, `updated_at` |
-| `api.v1.blog.length` | How many of those posts there are (at most 20) |
-| `api.v1.blog[0].title` | A field of one post |
-| `api.v1.blog["my-post-slug"]` | One published post by slug: `id` (the public ID), `title`, `slug`, `pinned`, `created_at`, `updated_at`, `excerpt`, `tags`, `collaborators` and `content` |
+| `url` | An `https://` URL without a username or password. The response must have a JSON content type (`application/json` or `…+json`). |
+| `path` | A jq-style path to one value in the response. It starts with `.`. |
+
+Both arguments are expressions, so they can be built from variables: ``get(`${api}/author`, '.profile.name')``.
+
+## Paths
+
+Paths follow jq's syntax for selecting a value:
+
+| Path                        | Selects                                    |
+| --------------------------- | ------------------------------------------ |
+| `.name`                     | The `name` property                        |
+| `.profile.name`             | A nested property                          |
+| `.items[0]` or `.items.[0]` | The first item of an array                 |
+| `.items[0].title`           | A property of an array item                |
+| `.["odd-key"]`              | A property whose name is not an identifier |
+
+Given `{ "foo": { "bar": true, "baz": 123 } }`, `.foo.baz` gives `123` and `.foo.bar` gives `true`.
+
+## Values
+
+Each call returns exactly one value, which must be a string, a number or a boolean. Strings and numbers print as text. Numbers keep working in arithmetic and comparisons, and booleans drive conditions directly:
 
 ```mdrs
-:::define
-post: api.v1.blog["hello-world"]
-:::
-
-Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
-```
-
-`api.v1.blog["slug"]` reads the post body from its markdown file in R2. Posts without a markdown file return an empty `content`.
-
-## `api.v1.analytics`
-
-The analytics setting chosen in the admin, shaped like the public API's `GET /v1/analytics` response. It never contains IDs, tokens or script URLs.
-
-| Path | Contains |
-| --- | --- |
-| `api.v1.analytics.enabled` | `true` when a provider is set |
-| `api.v1.analytics.provider` | `none`, `ga4`, `gtm`, `umami`, `plausible` or `cloudflare` |
-| `api.v1.analytics.name` | The provider's display name, such as `Google Analytics 4` or `None` |
-| `api.v1.analytics.cookies` | `true` when the provider sets cookies, so the site asks for consent |
-
-```mdrs
-:::if api.v1.analytics.cookies
-We use ${api.v1.analytics.name}, which sets cookies only after you agree in the cookie banner.
-:::elif api.v1.analytics.enabled
-We use ${api.v1.analytics.name}, which sets no cookies.
+:::if get('https://api.my-site.example/v1/analytics', '.cookies')
+This site sets analytics cookies only after you agree in the cookie banner.
+:::elif get('https://api.my-site.example/v1/analytics', '.enabled')
+This site measures visits with ${get('https://api.my-site.example/v1/analytics', '.name')}, which sets no cookies.
 :::else
 This site uses no analytics.
 :::endif
 ```
 
-Legal pages use it to keep the privacy policy in line with the setting; see [Conditionals](016-conditionals.md#examples-with-analytics).
+An object, array or `null` at the path is an error: select a scalar inside it instead.
 
 ## Rules
 
-- Only `v1` exists, with the resources the site registers: `author`, `blog` and `analytics` (`Unknown api.v1 resource 'x' (supported: author, blog, analytics)`). `@mdrs/core` itself names no resource; it lists whatever the resolvers passed to it provide.
-- An unknown slug gives `api.v1.blog['x'] does not resolve to a published post`. In the examples, `hello-world` stands for a real slug.
-- Indexing past the end of the list fails with `Index [0] is out of range`, so `api.v1.blog[0]` errors (and blocks saving) while no post is published. Guard it with a conditional, as in the first example: a branch's `${…}` is only evaluated when the branch is chosen ([Conditionals](016-conditionals.md)).
-- Rendering without resolvers (for example in tests) gives `Database access is unavailable in this context.`
-- Internal database IDs are never exposed: posts carry their public ID as `id`.
-- Within one render, `api.v1.author`, `api.v1.analytics`, the `api.v1.blog` list and each `api.v1.blog['slug']` are fetched once and reused, however often they are referenced.
-- Published posts show live data as of their last render: when the post was saved, when any post was last published or unpublished, or the daily refresh. It can therefore be up to a day old. The admin preview always renders fresh.
+- Within one render, each URL is fetched once and its response is reused, however often it is called and with whatever path.
+- A document can call `get()` with at most 10 different URLs.
+- The response must be a 2xx status with a JSON content type, at most 256 KB, and arrive within 5 seconds. Redirects are not followed.
+- Requests send no cookies or credentials, so only public endpoints work. `localhost`, `*.localhost`, private, loopback, link-local and shared IPv4 ranges, and IPv6 address literals are rejected before any request.
+- Published posts show the value as of their last render: when the post was saved, when any post was last published or unpublished, or the daily refresh. It can therefore be up to a day old. Legal pages fetch on every request, and the admin preview always fetches fresh, through the admin host.
+
+## Errors
 
 Errors render the same `[define error]` marker as other [variables](013-variables.md#errors), and block saving.
 
-Source: `packages/mdrs/core/src/define/evaluate.ts` (`evaluateReference`, `unavailableResolvers`, `ApiRegistry`), `packages/lib/src/server/api/analytics.ts` (`analyticsData`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`), `packages/lib/src/server/mdrsData.ts` (`mdrsResolvers`, `mdrsLoaders`).
+| Message | Cause |
+| --- | --- |
+| `get() URL 'x' is not a valid URL` / `must use https` / `must not contain credentials` / `must point to a public host` | The URL is rejected before any request |
+| `get() path 'x' must start with '.'` / `Invalid get() path 'x' at position n` | The path is not jq syntax |
+| `Property 'x' does not exist` / `Index [n] is out of range` | The response has no value at the path |
+| `get('…', '…') must resolve to a string, number or boolean` | The path selects an object, array or `null` |
+| `get() received HTTP 404 from …` / `get() requires a JSON response from …` / `get() received invalid JSON from …` | The response is not usable JSON |
+| `A document can call get() with at most 10 different URLs` | Too many different URLs |
+| `Network access is unavailable in this context.` | The host rendered without a fetcher |
+
+Source: `packages/mdrs/core/src/define/evaluate.ts` (`evaluateGet`), `packages/mdrs/core/src/define/jsonPath.ts`, `packages/mdrs/core/src/define/fetcher.ts` (`documentFetcher`, `checkGetUrl`), `packages/lib/src/server/mdrsFetch.ts` (`fetchJson`).

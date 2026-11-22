@@ -61,9 +61,9 @@ export function prefersMarkdown(accept: string | null): boolean {
 
 export function negotiablePath(pathname: string): boolean {
     return (
-        !pathname.startsWith('/api/')
-        && !pathname.startsWith('/.well-known/')
-        && !/\.[a-z0-9]+$/i.test(pathname)
+        !pathname.startsWith('/api/') &&
+        !pathname.startsWith('/.well-known/') &&
+        !/\.[a-z0-9]+$/i.test(pathname)
     );
 }
 
@@ -82,9 +82,9 @@ export function htmlToMarkdown(html: string): string {
     const title = decodeHtmlEntities(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? '').trim();
     const description = metaContent(html, 'description');
     const main =
-        html.match(/<main\b[^>]*>([\s\S]*)<\/main>/i)?.[1]
-        ?? html.match(/<body\b[^>]*>([\s\S]*)<\/body>/i)?.[1]
-        ?? html;
+        html.match(/<main\b[^>]*>([\s\S]*)<\/main>/i)?.[1] ??
+        html.match(/<body\b[^>]*>([\s\S]*)<\/body>/i)?.[1] ??
+        html;
     const frontmatter = [
         title && `title: ${JSON.stringify(title)}`,
         description && `description: ${JSON.stringify(description)}`

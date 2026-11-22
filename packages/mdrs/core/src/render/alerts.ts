@@ -14,10 +14,10 @@ export function convertGithubAlerts(markdown: string): string {
         const boundary = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
         if (fence) {
             if (
-                boundary
-                && boundary[1][0] === fence[0]
-                && boundary[1].length >= fence.length
-                && !boundary[2].trim()
+                boundary &&
+                boundary[1][0] === fence[0] &&
+                boundary[1].length >= fence.length &&
+                !boundary[2].trim()
             )
                 fence = '';
             output.push(line);
@@ -37,9 +37,9 @@ export function convertGithubAlerts(markdown: string): string {
         const quote = new RegExp(`^${indent}> ?`);
         const body: string[] = [];
         while (
-            i + 1 < lines.length
-            && quote.test(lines[i + 1])
-            && !/^\s*>\s*>/.test(lines[i + 1].slice(indent.length))
+            i + 1 < lines.length &&
+            quote.test(lines[i + 1]) &&
+            !/^\s*>\s*>/.test(lines[i + 1].slice(indent.length))
         ) {
             body.push(indent + lines[++i].replace(quote, ''));
         }

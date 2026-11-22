@@ -12,9 +12,9 @@ function readMessages(body: unknown): string[] {
     if (!body || typeof body !== 'object') return [];
     const record = body as Record<string, unknown>;
     const source =
-        record.error && typeof record.error === 'object' ?
-            (record.error as Record<string, unknown>)
-        :   record;
+        record.error && typeof record.error === 'object'
+            ? (record.error as Record<string, unknown>)
+            : record;
     const details = typeof source.details === 'string' ? source.details : '';
     const message = typeof source.message === 'string' ? source.message : '';
     return (details || message).split(/\n| \| /).filter(Boolean);

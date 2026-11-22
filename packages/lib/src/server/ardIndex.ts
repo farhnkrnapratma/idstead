@@ -23,8 +23,8 @@ function normalizedEntries(value: unknown): ArdEntry[] {
     if (!Array.isArray(value)) throw new Error('Stored ARD entries must be an array.');
     const entries: (ArdEntry | undefined)[] = value.map(normalizeArdEntry);
     if (
-        entries.some(entry => entry === undefined)
-        || new Set(entries.map(entry => entry?.identifier)).size !== entries.length
+        entries.some(entry => entry === undefined) ||
+        new Set(entries.map(entry => entry?.identifier)).size !== entries.length
     )
         throw new Error('Stored ARD entries are invalid or duplicated.');
     return entries.filter((entry): entry is ArdEntry => entry !== undefined);

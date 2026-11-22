@@ -44,9 +44,11 @@ function memoryBucket(pageSize = 2) {
         async put(key, value, options) {
             if (options?.onlyIf?.get('If-None-Match') === '*' && store.has(key)) return null;
             const bytes =
-                typeof value === 'string' ? new TextEncoder().encode(value)
-                : value instanceof ArrayBuffer ? new Uint8Array(value)
-                : new Uint8Array((value as ArrayBufferView<ArrayBuffer>).buffer);
+                typeof value === 'string'
+                    ? new TextEncoder().encode(value)
+                    : value instanceof ArrayBuffer
+                      ? new Uint8Array(value)
+                      : new Uint8Array((value as ArrayBufferView<ArrayBuffer>).buffer);
             store.set(key, { bytes, httpMetadata: options?.httpMetadata });
             return meta(key);
         },

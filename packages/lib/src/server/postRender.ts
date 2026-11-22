@@ -6,7 +6,7 @@ import {
     RENDER_VERSION,
     prepareMarkdownPage,
     usesLiveData,
-    type ApiRegistry,
+    type JsonFetcher,
     type HeadingItem,
     type RenderOptions
 } from '@mdrs/core';
@@ -27,10 +27,10 @@ const MAX_RENDER_BYTES = 4_000_000;
 
 export async function buildPostRender(
     markdown: string,
-    resolvers: ApiRegistry,
+    fetcher: JsonFetcher,
     options: RenderOptions = {}
 ): Promise<PostRender> {
-    const { html, headings } = await prepareMarkdownPage(markdown, resolvers, options);
+    const { html, headings } = await prepareMarkdownPage(markdown, fetcher, options);
     return {
         version: RENDER_VERSION,
         live: usesLiveData(markdown),
@@ -44,9 +44,9 @@ function isHeading(value: unknown): value is HeadingItem {
     if (!value || typeof value !== 'object') return false;
     const heading = value as Record<string, unknown>;
     return (
-        typeof heading.id === 'string'
-        && typeof heading.text === 'string'
-        && typeof heading.level === 'number'
+        typeof heading.id === 'string' &&
+        typeof heading.text === 'string' &&
+        typeof heading.level === 'number'
     );
 }
 
@@ -61,12 +61,12 @@ export function parsePostRender(text: string): PostRender | null {
     if (!value || typeof value !== 'object') return null;
     const render = value as Record<string, unknown>;
     if (
-        render.version !== RENDER_VERSION
-        || typeof render.live !== 'boolean'
-        || typeof render.html !== 'string'
-        || typeof render.readTime !== 'string'
-        || !Array.isArray(render.headings)
-        || !render.headings.every(isHeading)
+        render.version !== RENDER_VERSION ||
+        typeof render.live !== 'boolean' ||
+        typeof render.html !== 'string' ||
+        typeof render.readTime !== 'string' ||
+        !Array.isArray(render.headings) ||
+        !render.headings.every(isHeading)
     )
         return null;
     return {
@@ -89,7 +89,7 @@ export const RENDER_REFRESH_MAX_RENDERS = 5;
 
 export async function refreshPostRenders(
     store: PostRenderStore,
-    resolvers: ApiRegistry,
+    fetcher: JsonFetcher,
     options: RenderOptions = {},
     maxRenders = RENDER_REFRESH_MAX_RENDERS
 ): Promise<RenderRefreshResult> {
@@ -106,7 +106,7 @@ export async function refreshPostRenders(
             if (markdown === null) throw new Error('Markdown file is missing.');
             await store.writeRender(
                 source,
-                JSON.stringify(await buildPostRender(markdown, resolvers, options))
+                JSON.stringify(await buildPostRender(markdown, fetcher, options))
             );
             result.rendered++;
         } catch (error) {

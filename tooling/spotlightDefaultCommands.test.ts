@@ -10,8 +10,9 @@ mock.module('$app/env/public', () => ({ PUBLIC_API_BASE_URL: 'https://api.exampl
 
 import { page } from '$app/state';
 
-const { createDefaultCommands } =
-    await import('../apps/web/src/lib/components/spotlight/defaultCommands.ts');
+const { createDefaultCommands } = await import(
+    '../apps/web/src/lib/components/spotlight/defaultCommands.ts'
+);
 
 type Call = { name: string; args: unknown[] };
 

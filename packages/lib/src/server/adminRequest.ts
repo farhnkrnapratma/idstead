@@ -31,7 +31,8 @@ export async function requireSameOriginAdmin(
 }
 
 export type AdminServices =
-    { service: ServiceStores; response?: never } | { service?: never; response: Response };
+    | { service: ServiceStores; response?: never }
+    | { service?: never; response: Response };
 
 export async function adminServices(
     req: Request,

@@ -128,8 +128,8 @@ export function compareCombos(a: string, b: string): number {
     const keyA = normalizeKey(a);
     const keyB = normalizeKey(b);
     return (
-        comboRank(keyA) - comboRank(keyB)
-        || LEADING_KEYS.indexOf(keyA) - LEADING_KEYS.indexOf(keyB)
-        || keyA.localeCompare(keyB)
+        comboRank(keyA) - comboRank(keyB) ||
+        LEADING_KEYS.indexOf(keyA) - LEADING_KEYS.indexOf(keyB) ||
+        keyA.localeCompare(keyB)
     );
 }

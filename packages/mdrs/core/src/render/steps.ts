@@ -68,12 +68,12 @@ export function parseSteps(html: string): string {
                     } else if (/<h[2-4]\b/i.test(innerContent)) {
                         const parts = innerContent.split(/(?=<h[2-4]\b)/i);
                         const intro =
-                            parts[0] && !/^<h[2-4]\b/i.test(parts[0].trim()) ?
-                                parts.shift() || ''
-                            :   '';
+                            parts[0] && !/^<h[2-4]\b/i.test(parts[0].trim())
+                                ? parts.shift() || ''
+                                : '';
                         processed =
-                            intro
-                            + parts
+                            intro +
+                            parts
                                 .filter(p => p.trim())
                                 .map(part => `<div class="mdrs-step">${part.trim()}</div>`)
                                 .join('\n');

@@ -39,45 +39,27 @@ if [ "${#existing[@]}" -eq 0 ]; then
   exit 0
 fi
 
-fmt_out=$(bunx prettier --check --ignore-unknown "${existing[@]}" 2>&1)
-if [ $? -ne 0 ]; then
-  unformatted=$(printf '%s\n' "$fmt_out" | sed -n 's/^\[warn\] //p' | sed '/Code style issues/d')
-  deny "Commit blocked: these files to be committed are not Prettier-formatted:
-${unformatted:-$fmt_out}
+biome_out=$(bunx biome check --no-errors-on-unmatched --files-ignore-unknown=true "${existing[@]}" 2>&1)
+biome_status=$?
 
-Format only these files with \`bunx prettier --write <files>\`, \`git add\` them, and retry. The hook does not rewrite files itself."
-fi
-
-lintable=()
-for f in "${existing[@]}"; do
-  case "$f" in
-    *.ts | *.js | *.mjs | *.cjs | *.svelte) lintable+=("$f") ;;
-  esac
-done
-
-lint_status=0
-lint_out=''
-if [ "${#lintable[@]}" -gt 0 ]; then
-  lint_out=$(bunx eslint "${lintable[@]}" 2>&1)
-  lint_status=$?
-fi
-
-check_out=$(bun run check 2>&1)
+check_out=$(bun run typecheck 2>&1)
 check_status=$?
 
-if [ $check_status -ne 0 ] || [ $lint_status -ne 0 ]; then
-  msg="Commit blocked: check/lint found issues."
+if [ $biome_status -ne 0 ] || [ $check_status -ne 0 ]; then
+  msg="Commit blocked: Biome or typecheck found issues."
+  if [ $biome_status -ne 0 ]; then
+    msg="$msg
+
+biome check (files to be committed):
+$(printf '%s' "$biome_out" | tail -n 40)
+
+Fix formatting with \`bunx biome check --write <files>\`, \`git add\` them, and retry. The hook does not rewrite files itself."
+  fi
   if [ $check_status -ne 0 ]; then
     msg="$msg
 
-check (bun run check):
+typecheck (bun run typecheck):
 $(printf '%s' "$check_out" | tail -n 40)"
-  fi
-  if [ $lint_status -ne 0 ]; then
-    msg="$msg
-
-lint (eslint on files to be committed):
-$(printf '%s' "$lint_out" | tail -n 40)"
   fi
   deny "$msg"
 fi

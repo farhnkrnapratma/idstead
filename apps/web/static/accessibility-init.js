@@ -18,9 +18,7 @@
         return list.media !== 'not all' && list.matches;
     };
     const pick = (key, query) =>
-        typeof overrides[key] === 'boolean' ? overrides[key]
-        : query ? device(query)
-        : false;
+        typeof overrides[key] === 'boolean' ? overrides[key] : query ? device(query) : false;
     root.setAttribute(
         'data-reduce-motion',
         String(pick('reduceMotion', '(prefers-reduced-motion: reduce)'))

@@ -42,9 +42,9 @@ export function safeKeyserverUrl(value: unknown) {
     if (!/^https:\/\/[A-Za-z0-9\-._~:/?#[\]@!&()*+,;=%]+$/.test(value)) return null;
     try {
         const url = new URL(value);
-        return url.protocol === 'https:' && !url.username && !url.password && url.href === value ?
-                url.href
-            :   null;
+        return url.protocol === 'https:' && !url.username && !url.password && url.href === value
+            ? url.href
+            : null;
     } catch {
         return null;
     }

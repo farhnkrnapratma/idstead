@@ -6,8 +6,9 @@ import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env', () => ({ browser: false, dev: false, building: false, version: 'v1' }));
 
-const { pageDataCache, pageDataCacheKey } =
-    await import('../packages/lib/src/server/pageDataCache.ts');
+const { pageDataCache, pageDataCacheKey } = await import(
+    '../packages/lib/src/server/pageDataCache.ts'
+);
 
 const key = (path: string, version = 'v1') =>
     pageDataCacheKey(new URL(`https://example.com${path}`), version);

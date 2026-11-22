@@ -38,10 +38,10 @@ export interface MarkdownEnhanceOptions {
 export async function enhanceMarkdownContent(options: MarkdownEnhanceOptions = {}) {
     const container = (options.container as HTMLElement) || document.body;
     const isDark =
-        options.isDark
-        ?? (typeof document !== 'undefined' ?
-            document.documentElement.classList.contains('dark')
-        :   true);
+        options.isDark ??
+        (typeof document !== 'undefined'
+            ? document.documentElement.classList.contains('dark')
+            : true);
     const onCopy = options.onCodeCopy || (() => {});
 
     enhanceCodeBlocks(onCopy, container);

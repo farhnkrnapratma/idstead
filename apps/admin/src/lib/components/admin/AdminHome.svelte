@@ -53,9 +53,13 @@ SPDX-License-Identifier: AGPL-3.0-only
     const siteUrl = $derived(publicSiteUrl(page.data));
     let {
         onNavigate,
-        onPublished
-    }: { onNavigate: (area: WorkspaceArea, id?: string) => void; onPublished: () => void } =
-        $props();
+        onPublished,
+        onSubscribers
+    }: {
+        onNavigate: (area: WorkspaceArea, id?: string) => void;
+        onPublished: () => void;
+        onSubscribers: () => void;
+    } = $props();
     let data = $state.raw<WorkspaceOverview | null>(null);
     let calendar = $state.raw<WorkspaceCalendar | null>(null);
     let calendarError = $state('');
@@ -256,7 +260,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                 data && subscribers ?
                     `${formatCount(subscribers.pending)} awaiting confirmation`
                 :   'Email list',
-            componentIcon: Mail
+            componentIcon: Mail,
+            onclick: onSubscribers
         }
     ]);
     onMount(() => {

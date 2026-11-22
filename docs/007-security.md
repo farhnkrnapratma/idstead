@@ -44,7 +44,7 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-sign-i
 - **D1 has no row-level security**, so every read and write goes through the server-only data layer (`dataStores()` in `packages/lib/src/server/data.ts`):
     - `public` stores return only published posts, approved comments and the public profile fields; the API worker uses nothing else.
     - `service` stores (writers, admin, newsletter, resume, activity) are used only in server code after the endpoint has checked its caller: same-origin and Turnstile checks for public writes, `requireAdminAuth`/`blogAdmin` (the Cloudflare Access identity) for admin endpoints.
-    - ESLint forbids `@idstead/data` and `server/` imports in browser code.
+    - Biome forbids `@idstead/data` and `server/` imports in browser code.
 - **No database IDs in public output:** posts are exposed by their 64-hex `public_id`, and comments by no identifier at all.
 - **Error scrubbing:** API error messages that mention database internals are replaced with a generic message (`apiEnvelope.ts`).
 - **IP privacy:**

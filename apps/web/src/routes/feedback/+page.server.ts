@@ -14,10 +14,9 @@ export const load: PageServerLoad = async ({ fetch }) => {
     const emailItem = contactInfo.find(
         c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')
     );
-    const contactEmail =
-        emailItem ?
-            (emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')).trim()
-        :   (authorProfile?.email || '').trim();
+    const contactEmail = emailItem
+        ? (emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')).trim()
+        : (authorProfile?.email || '').trim();
 
     return { contactEmail };
 };

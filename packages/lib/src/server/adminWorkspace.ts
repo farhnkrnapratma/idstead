@@ -49,18 +49,16 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
         params,
         'range',
         ['1d', '7d', '30d', '90d', '1y', 'custom', 'all'],
-        (
-            [
-                'reports',
-                'report_events',
-                'notifications',
-                'notification_events',
-                'comments',
-                'summary'
-            ].includes(section)
-        ) ?
-            'all'
-        :   '7d'
+        [
+            'reports',
+            'report_events',
+            'notifications',
+            'notification_events',
+            'comments',
+            'summary'
+        ].includes(section)
+            ? 'all'
+            : '7d'
     );
     if (range === 'all' && ['overview', 'feedback', 'feedback_events'].includes(section))
         throw new ActivityInputError('Choose an analytics period of up to one year.');
@@ -69,16 +67,18 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     if (range === '1y') start.setUTCFullYear(start.getUTCFullYear() - 1);
     else start = new Date(start.getTime() - Number(range.match(/^\d+/)?.[0] ?? 7) * 86400000);
     const from =
-        range === 'all' ? null
-        : params.has('from') ? timestamp(params.get('from'))
-        : start.toISOString();
+        range === 'all'
+            ? null
+            : params.has('from')
+              ? timestamp(params.get('from'))
+              : start.toISOString();
     if (range === 'custom' && (!params.has('from') || !params.has('to')))
         throw new ActivityInputError('Choose both dates.');
     const earliest = new Date(to);
     earliest.setUTCFullYear(earliest.getUTCFullYear() - 1);
     if (
-        Date.parse(to) > now.getTime() + 60000
-        || (from && (Date.parse(from) >= Date.parse(to) || Date.parse(from) < earliest.getTime()))
+        Date.parse(to) > now.getTime() + 60000 ||
+        (from && (Date.parse(from) >= Date.parse(to) || Date.parse(from) < earliest.getTime()))
     )
         throw new ActivityInputError(
             'Choose a valid period of up to one year, ending no later than today.'
@@ -133,8 +133,9 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
             'date'
         ),
         direction: option(params, 'direction', ['asc', 'desc'], 'desc'),
-        notificationId:
-            params.has('notificationId') ? activityUuid(params.get('notificationId')) : null,
+        notificationId: params.has('notificationId')
+            ? activityUuid(params.get('notificationId'))
+            : null,
         focus: params.has('focus') ? activityUuid(params.get('focus')) : null,
         meta: params.get('meta') !== 'false',
         events: params.get('history') !== 'false',
@@ -193,9 +194,9 @@ export async function adminWorkspace({
             }
 
             if (
-                !['read_group', 'delete_group'].includes(String(body.action))
-                || typeof body.id !== 'string'
-                || body.id.length > 1500
+                !['read_group', 'delete_group'].includes(String(body.action)) ||
+                typeof body.id !== 'string' ||
+                body.id.length > 1500
             )
                 throw new ActivityInputError('Invalid notification action.');
             const asOf = timestamp(body.asOf);

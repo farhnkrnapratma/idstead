@@ -31,7 +31,7 @@ Renders "**Welcome to my-site.example.** Engine v2.1, © 2026.", then "First loc
 - Each entry is `name: expression`. Separate entries with new lines or commas.
 - `//` starts a comment that runs to the end of the line.
 - Entries are evaluated top to bottom. To use an earlier entry, write `this.name`; a bare `name` is an error inside the block.
-- Names follow identifier rules (`[A-Za-z_][A-Za-z0-9_]*`) and can't be JavaScript reserved words (including `if` and `else`) or `this`, `api`, `elif`, `endif`, `null`, `undefined`, `NaN` or `Infinity`.
+- Names follow identifier rules (`[A-Za-z_][A-Za-z0-9_]*`) and can't be JavaScript reserved words (including `if` and `else`) or `this`, `get`, `elif`, `endif`, `null`, `undefined`, `NaN` or `Infinity`.
 - Defining the same name twice keeps the first value and reports the second as an error.
 
 ```mdrs
@@ -170,6 +170,6 @@ Common messages:
 | `Only one :::define block is allowed, and it must be the first thing in the document.` | Misplaced or second block (save validation) |
 | `A :::define block needs at least one entry.` | Empty block (save validation) |
 
-To pull data from the site itself (author profile, posts), see [Live data](014-live-data.md).
+To read values from a JSON API, such as the site's own public API, see [Live data: `get()`](014-live-data.md).
 
 Source: `packages/mdrs/core/src/define/lexer.ts` (`tokenize`), `packages/mdrs/core/src/define/parser.ts` (`Parser`), `packages/mdrs/core/src/define/evaluate.ts` (`evaluateExpr`), `packages/mdrs/core/src/define/block.ts` (`extractDefineBlock`, `hasDefineEntries`), `packages/mdrs/core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs/core/src/define/validate.ts` (`validateDefineForSave`), `apps/admin/src/lib/mdrsValidation.ts`, `apps/admin/src/routes/api/internal/blog/validate-define/+server.ts`, `apps/admin/src/routes/api/internal/admin/posts/+server.ts`.

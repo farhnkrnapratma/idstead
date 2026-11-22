@@ -26,14 +26,14 @@ Renders only the heading and the paragraph.
 
 ```mdrs
 ---
-title: Live counters
+title: Live values
 tags: [mdrs]
 ---
 :::define
-posts: api.v1.blog.length
+city: get('https://api.my-site.example/v1/author', '.profile.city')
 :::
 
-There are ${posts} published posts.
+Written in ${city}.
 ```
 
 ## Keys the admin understands

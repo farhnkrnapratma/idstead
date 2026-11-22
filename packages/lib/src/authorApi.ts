@@ -14,28 +14,28 @@ export function sanitizePublicApiData(obj: any): any {
         const cleaned: Record<string, any> = {};
 
         const hasEndDate =
-            obj.endMonth !== null
-            && obj.endMonth !== undefined
-            && obj.endYear !== null
-            && obj.endYear !== undefined;
+            obj.endMonth !== null &&
+            obj.endMonth !== undefined &&
+            obj.endYear !== null &&
+            obj.endYear !== undefined;
 
         for (const [key, value] of Object.entries(obj)) {
             if (
-                key === 'updatedAt'
-                || key === 'createdAt'
-                || key === 'revision'
-                || key === 'avatarVersion'
-                || key === 'bannerVersion'
-                || key === 'manifestSettings'
-                || key === 'id'
-                || key === 'authorId'
-                || key === 'author_id'
-                || key === 'icon'
-                || key === 'sortOrder'
-                || key === 'sort_order'
-                || key === 'firstName'
-                || key === 'lastName'
-                || key === 'email'
+                key === 'updatedAt' ||
+                key === 'createdAt' ||
+                key === 'revision' ||
+                key === 'avatarVersion' ||
+                key === 'bannerVersion' ||
+                key === 'manifestSettings' ||
+                key === 'id' ||
+                key === 'authorId' ||
+                key === 'author_id' ||
+                key === 'icon' ||
+                key === 'sortOrder' ||
+                key === 'sort_order' ||
+                key === 'firstName' ||
+                key === 'lastName' ||
+                key === 'email'
             ) {
                 continue;
             }
@@ -51,12 +51,12 @@ export function sanitizePublicApiData(obj: any): any {
             const valCleaned = sanitizePublicApiData(value);
 
             if (
-                valCleaned === null
-                || valCleaned === undefined
-                || (Array.isArray(valCleaned) && valCleaned.length === 0)
-                || (typeof valCleaned === 'object'
-                    && !Array.isArray(valCleaned)
-                    && Object.keys(valCleaned).length === 0)
+                valCleaned === null ||
+                valCleaned === undefined ||
+                (Array.isArray(valCleaned) && valCleaned.length === 0) ||
+                (typeof valCleaned === 'object' &&
+                    !Array.isArray(valCleaned) &&
+                    Object.keys(valCleaned).length === 0)
             ) {
                 continue;
             }
@@ -97,10 +97,9 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
             lines.push('');
             data.resume.experience.forEach((exp: any) => {
                 const start = `${exp.startMonth || ''} ${exp.startYear || ''}`.trim();
-                const end =
-                    exp.currentlyIn ? 'Present' : (
-                        `${exp.endMonth || ''} ${exp.endYear || ''}`.trim()
-                    );
+                const end = exp.currentlyIn
+                    ? 'Present'
+                    : `${exp.endMonth || ''} ${exp.endYear || ''}`.trim();
                 const locParts = [exp.location, exp.locType ? `(${exp.locType})` : '']
                     .filter(Boolean)
                     .join(' ');
@@ -120,10 +119,9 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
             lines.push('');
             data.resume.education.forEach((edu: any) => {
                 const start = `${edu.startMonth || ''} ${edu.startYear || ''}`.trim();
-                const end =
-                    edu.currentlyIn ? 'Present' : (
-                        `${edu.endMonth || ''} ${edu.endYear || ''}`.trim()
-                    );
+                const end = edu.currentlyIn
+                    ? 'Present'
+                    : `${edu.endMonth || ''} ${edu.endYear || ''}`.trim();
                 lines.push(`### ${edu.degree} in ${edu.field} — ${edu.institution}`);
                 lines.push(`*${start} – ${end}${edu.grade ? ` | GPA: ${edu.grade}` : ''}*`);
                 if (edu.description) {
@@ -139,10 +137,11 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
         lines.push('## Technical Skills');
         lines.push('');
         data.skills.forEach((cat: any) => {
-            const itemsList =
-                Array.isArray(cat.items) ? cat.items.join(', ')
-                : Array.isArray(cat.skills) ? cat.skills.join(', ')
-                : '';
+            const itemsList = Array.isArray(cat.items)
+                ? cat.items.join(', ')
+                : Array.isArray(cat.skills)
+                  ? cat.skills.join(', ')
+                  : '';
             lines.push(`- **${cat.category}**: ${itemsList}`);
         });
         lines.push('');

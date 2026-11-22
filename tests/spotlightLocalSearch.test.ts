@@ -138,9 +138,9 @@ describe('resolveHistoryItem', () => {
     const historySource = {
         defaultCommands: [item('cmd-theme', '/theme')],
         dynamicCommands: (query: string) =>
-            query === '/code clean' ?
-                [item('dyn-code-clean', '/code clean')]
-            :   [item('dyn-x', query)],
+            query === '/code clean'
+                ? [item('dyn-code-clean', '/code clean')]
+                : [item('dyn-x', query)],
         projects: [{ name: 'idstead', desc: 'Site', url: 'https://example.com/idstead' }],
         results: [item('res-1', 'Result one')]
     };

@@ -28,8 +28,9 @@ export const POST: RequestHandler = async ({ request, url, getClientAddress, pla
         if (!publicId) {
             return apiError(400, 'BLOG_VIEW_POST_ID_REQUIRED', 'postId is required.');
         }
-        const lookup =
-            PUBLIC_ID_PATTERN.test(publicId) ? await data.blog.findPublished(publicId) : null;
+        const lookup = PUBLIC_ID_PATTERN.test(publicId)
+            ? await data.blog.findPublished(publicId)
+            : null;
         if (lookup?.status !== 'found') {
             return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
         }

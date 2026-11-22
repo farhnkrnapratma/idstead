@@ -30,13 +30,13 @@ mock.module('@sveltejs/kit/hooks', () => ({
         (...handlers: Array<(input: any) => Promise<Response>>) =>
         ({ event, resolve }: any) => {
             const run = (index: number, current: any, options?: any): Promise<Response> =>
-                index < handlers.length ?
-                    handlers[index]({
-                        event: current,
-                        resolve: (next: any, nextOptions?: any) =>
-                            run(index + 1, next, nextOptions ?? options)
-                    })
-                :   resolve(current, options);
+                index < handlers.length
+                    ? handlers[index]({
+                          event: current,
+                          resolve: (next: any, nextOptions?: any) =>
+                              run(index + 1, next, nextOptions ?? options)
+                      })
+                    : resolve(current, options);
             return run(0, event);
         }
 }));

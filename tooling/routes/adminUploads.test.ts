@@ -43,10 +43,12 @@ slot.putContentAsset = async (
     state.puts.push([key, type]);
 };
 
-const image =
-    await import('../../apps/admin/src/routes/api/internal/admin/blog/content-image/+server.ts');
-const video =
-    await import('../../apps/admin/src/routes/api/internal/admin/blog/content-video/+server.ts');
+const image = await import(
+    '../../apps/admin/src/routes/api/internal/admin/blog/content-image/+server.ts'
+);
+const video = await import(
+    '../../apps/admin/src/routes/api/internal/admin/blog/content-video/+server.ts'
+);
 
 function event(form: FormData | string) {
     const url = new URL('https://admin.example.com/api/internal/admin/blog/content');

@@ -5,9 +5,8 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { requireSameOriginAdmin } from '#lib/server/adminRequest.ts';
-import { dataStores } from '#lib/server/data.ts';
 import { validateDefineForSave } from '@mdrs/core';
-import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { fetchJson } from '#lib/server/mdrsFetch.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     const denied = await requireSameOriginAdmin(request, url, platform);
@@ -27,8 +26,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_DEFINE_MARKDOWN_REQUIRED', 'Markdown content is required.');
     }
 
-    const apiRegistry = mdrsResolvers(dataStores(platform).service);
-    const { ok, errors } = await validateDefineForSave(markdown, apiRegistry);
+    const { ok, errors } = await validateDefineForSave(markdown, fetchJson);
 
     if (!ok) {
         const messages = errors.map(e => (e.key ? `${e.key}: ${e.message}` : e.message));

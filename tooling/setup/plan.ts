@@ -34,8 +34,8 @@ export function resolveSetupAnswers(value: unknown): SetupAnswers {
     if (domain !== undefined && typeof domain !== 'string')
         throw new SetupAnswersError('domain must be a string.');
     if (
-        adminEmail !== undefined
-        && (typeof adminEmail !== 'string' || !EMAIL.test(adminEmail.trim()))
+        adminEmail !== undefined &&
+        (typeof adminEmail !== 'string' || !EMAIL.test(adminEmail.trim()))
     )
         throw new SetupAnswersError('adminEmail must be an email address.');
     if (instance !== undefined && !isRecord(instance))
@@ -127,10 +127,9 @@ export function withAccess(
 
 export function nextSteps(config: InstanceConfig): string[] {
     const { site, admin, api } = config.domains;
-    const enrollUrl =
-        config.access ?
-            `https://${config.access.teamDomain}/AddMfaDevice`
-        :   'the Access enrollment page';
+    const enrollUrl = config.access
+        ? `https://${config.access.teamDomain}/AddMfaDevice`
+        : 'the Access enrollment page';
     return [
         `Enroll a passkey, security key or authenticator app first at ${enrollUrl}, then require two-factor authentication for the ${admin} application in Cloudflare Zero Trust. If you are locked out, remove the requirement from the application or policy, enroll, and require it again.`,
         `Turnstile: allow the hostname ${site} on the widget whose site key is PUBLIC_TURNSTILE_SITE_KEY.`,

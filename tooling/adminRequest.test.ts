@@ -22,8 +22,9 @@ mock.module('../packages/lib/src/server/adminAuth.ts', () => ({
     adminActor: async () => auth.actor ?? null
 }));
 
-const { requireAdminAuth, requireSameOriginAdmin, adminServices, logAdminActivity } =
-    await import('../packages/lib/src/server/adminRequest.ts');
+const { requireAdminAuth, requireSameOriginAdmin, adminServices, logAdminActivity } = await import(
+    '../packages/lib/src/server/adminRequest.ts'
+);
 
 const origin = 'https://admin.example.com';
 const url = new URL(`${origin}/api/internal/admin/posts`);

@@ -4,11 +4,12 @@
 
 import { protectFencedCode, protectInlineCode, restoreAllPlaceholders } from '../placeholders';
 import { DefineError, type DefineErrorInfo } from './errors';
-import { type ApiRegistry, evaluateExpr } from './evaluate';
+import { evaluateExpr } from './evaluate';
+import type { JsonFetcher } from './fetcher';
 import { renderDefineErrorMarker, scanInterpolationTokens } from './interpolation';
 import { tokenize } from './lexer';
 import { Parser } from './parser';
-import { type DefineValue } from './values';
+import type { DefineValue } from './values';
 
 export type ConditionalMode = 'render' | 'validate';
 
@@ -19,7 +20,7 @@ export interface ConditionalOptions {
 
 interface Context {
     scope: Map<string, DefineValue>;
-    apiRegistry: ApiRegistry;
+    fetcher: JsonFetcher;
     mode: ConditionalMode;
     errors: DefineErrorInfo[];
 }
@@ -44,7 +45,8 @@ const MAX_BLOCK_DEPTH = 16;
 const MAX_INLINE_DEPTH = 8;
 
 type Directive =
-    { kind: 'if' | 'elif'; condition: string } | { kind: 'else' | 'endif'; condition?: never };
+    | { kind: 'if' | 'elif'; condition: string }
+    | { kind: 'else' | 'endif'; condition?: never };
 
 const BLOCK_DIRECTIVE_LINE_RE = /^ {0,3}:::(if|elif|else|endif)(?:[ \t]+(\S.*?))?[ \t]*$/i;
 
@@ -110,7 +112,7 @@ async function evaluateCondition(source: string, ctx: Context): Promise<boolean>
     const value = await evaluateExpr(expr, {
         scope: ctx.scope,
         allowThis: false,
-        apiRegistry: ctx.apiRegistry
+        fetcher: ctx.fetcher
     });
     if (value.type !== 'boolean') {
         throw new DefineError(`Expected a boolean condition, got a ${value.type}: ${source}`);
@@ -193,9 +195,9 @@ async function renderBlocks(nodes: BlockNode[], ctx: Context): Promise<string[]>
 }
 
 function strayMessage(next: Directive): string {
-    return next.kind === 'if' ?
-            `\${if} is nested more than ${MAX_INLINE_DEPTH} levels deep`
-        :   `\${${next.kind}} has no matching \${if}`;
+    return next.kind === 'if'
+        ? `\${if} is nested more than ${MAX_INLINE_DEPTH} levels deep`
+        : `\${${next.kind}} has no matching \${if}`;
 }
 
 function closeInline(stack: BranchStack<InlineNode>, ctx: Context): void {
@@ -248,10 +250,10 @@ async function renderInline(nodes: InlineNode[], ctx: Context): Promise<string> 
 export async function resolveConditionals(
     markdown: string,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry,
+    fetcher: JsonFetcher,
     options: ConditionalOptions
 ): Promise<{ output: string; errors: DefineErrorInfo[] }> {
-    const ctx: Context = { scope, apiRegistry, mode: options.mode ?? 'render', errors: [] };
+    const ctx: Context = { scope, fetcher, mode: options.mode ?? 'render', errors: [] };
     const code = new Map<string, string>();
     let text = protectFencedCode(markdown, 'CONDITIONAL_FENCE', code);
     text = protectInlineCode(text, 'CONDITIONAL_CODE', code);

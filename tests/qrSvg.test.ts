@@ -40,9 +40,9 @@ describe('renderQrSvg', () => {
             .flatMap((row, y) =>
                 row.map(
                     (dark, x) =>
-                        dark
-                        && qr.types[y][x] !== QrCodeDataType.Position
-                        && qr.types[y][x] !== QrCodeDataType.Alignment
+                        dark &&
+                        qr.types[y][x] !== QrCodeDataType.Position &&
+                        qr.types[y][x] !== QrCodeDataType.Alignment
                 )
             )
             .filter(Boolean).length;

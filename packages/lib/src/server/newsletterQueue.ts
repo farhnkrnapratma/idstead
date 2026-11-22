@@ -19,9 +19,9 @@ export function isNewsletterMessage(value: unknown): value is NewsletterMessage 
     if (!value || typeof value !== 'object') return false;
     const message = value as Record<string, unknown>;
     return (
-        typeof message.postId === 'string'
-        && UUID_PATTERN.test(message.postId)
-        && (message.force === undefined || typeof message.force === 'boolean')
+        typeof message.postId === 'string' &&
+        UUID_PATTERN.test(message.postId) &&
+        (message.force === undefined || typeof message.force === 'boolean')
     );
 }
 

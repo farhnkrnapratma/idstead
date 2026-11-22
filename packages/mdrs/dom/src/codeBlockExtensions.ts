@@ -51,12 +51,12 @@ export function sanitizeFilename(value: string | undefined): string {
         .filter(char => {
             const code = char.charCodeAt(0);
             return (
-                code > 31
-                && code !== 127
-                && !(code >= 0x202a && code <= 0x202e)
-                && !(code >= 0x2066 && code <= 0x2069)
-                && code !== 0x200e
-                && code !== 0x200f
+                code > 31 &&
+                code !== 127 &&
+                !(code >= 0x202a && code <= 0x202e) &&
+                !(code >= 0x2066 && code <= 0x2069) &&
+                code !== 0x200e &&
+                code !== 0x200f
             );
         })
         .join('')

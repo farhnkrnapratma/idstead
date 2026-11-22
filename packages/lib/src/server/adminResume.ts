@@ -61,10 +61,10 @@ function resumeStores(platform?: unknown) {
 
 async function resumeStorage(platform?: any) {
     const rawCdnUrl =
-        platform?.env?.PUBLIC_CDN_BASE_URL
-        || publicEnv.PUBLIC_CDN_BASE_URL
-        || process.env.PUBLIC_CDN_BASE_URL
-        || '';
+        platform?.env?.PUBLIC_CDN_BASE_URL ||
+        publicEnv.PUBLIC_CDN_BASE_URL ||
+        process.env.PUBLIC_CDN_BASE_URL ||
+        '';
     const cdnUrl = rawCdnUrl.trim().replace(/\/+$/, '');
     const bucket = await findAssetBucket(platform);
     return bucket && cdnUrl ? { bucket, cdnUrl } : null;
@@ -166,10 +166,10 @@ async function storedSignature(fileUrl: string) {
 
 async function siteUrlFor(documents: ResumeDocumentStore, platform: unknown) {
     return (
-        (await documents.siteUrl().catch(() => ''))
-        || (platform as { env?: { PUBLIC_SITE_URL?: string } } | undefined)?.env?.PUBLIC_SITE_URL
-        || (publicEnv as Record<string, string | undefined>).PUBLIC_SITE_URL
-        || ''
+        (await documents.siteUrl().catch(() => '')) ||
+        (platform as { env?: { PUBLIC_SITE_URL?: string } } | undefined)?.env?.PUBLIC_SITE_URL ||
+        (publicEnv as Record<string, string | undefined>).PUBLIC_SITE_URL ||
+        ''
     ).replace(/\/+$/, '');
 }
 
@@ -215,9 +215,11 @@ async function refreshResumeBundle(
     const pdf = known.pdf ?? (await fetchBytes(doc.file_url));
     const { digests, files } = await resumeChecksums(pdf, doc.filename);
     const signature =
-        known.signature !== undefined ? known.signature
-        : doc.signed_at ? await storedSignature(doc.file_url)
-        : null;
+        known.signature !== undefined
+            ? known.signature
+            : doc.signed_at
+              ? await storedSignature(doc.file_url)
+              : null;
     if (signature && known.signature === undefined)
         await storeResumeSignature(platform, doc.filename, signature);
     const key = await stores.keys.active();
@@ -310,10 +312,10 @@ export async function processResumeGenerate(
         const projects: ProjectData[] = [...repositories]
             .sort(
                 (a, b) =>
-                    Number(pinned.has(b.name.toLowerCase()))
-                        - Number(pinned.has(a.name.toLowerCase()))
-                    || b.stars - a.stars
-                    || (b.pushedAt ?? '').localeCompare(a.pushedAt ?? '')
+                    Number(pinned.has(b.name.toLowerCase())) -
+                        Number(pinned.has(a.name.toLowerCase())) ||
+                    b.stars - a.stars ||
+                    (b.pushedAt ?? '').localeCompare(a.pushedAt ?? '')
             )
             .slice(0, RESUME_PROJECT_LIMIT)
             .map(repo => ({ name: repo.name, url: repo.url, desc: repo.desc, lang: repo.lang }));
@@ -353,10 +355,9 @@ export async function processResumeGenerate(
         const activeDoc = await documents.active();
         const previousSnapshot = activeDoc ? await documents.snapshot(activeDoc.id) : null;
 
-        let bump =
-            activeDoc ?
-                resumeVersionBump((previousSnapshot as ResumeSnapshot | null) ?? null, snapshot)
-            :   null;
+        let bump = activeDoc
+            ? resumeVersionBump((previousSnapshot as ResumeSnapshot | null) ?? null, snapshot)
+            : null;
         if (activeDoc && !bump && !force)
             return jsonResponse({
                 success: true,
@@ -367,10 +368,9 @@ export async function processResumeGenerate(
                 )
             });
         if (activeDoc && !bump) bump = { level: 'minor', reasons: ['Regenerated on request'] };
-        const version =
-            activeDoc ?
-                nextResumeVersion(parseResumeVersion(activeDoc.filename), bump!.level)
-            :   { major: 1, minor: 0 };
+        const version = activeDoc
+            ? nextResumeVersion(parseResumeVersion(activeDoc.filename), bump!.level)
+            : { major: 1, minor: 0 };
         const reasons = activeDoc ? bump!.reasons : ['First version'];
         const versionLabel = formatResumeVersion(version);
 
@@ -640,9 +640,9 @@ function requestedKeyservers(value: unknown) {
         if (seen.has(url)) return [];
         seen.add(url);
         const label =
-            typeof item?.label === 'string' && item.label.trim() ?
-                item.label.trim().slice(0, 80)
-            :   new URL(url).host;
+            typeof item?.label === 'string' && item.label.trim()
+                ? item.label.trim().slice(0, 80)
+                : new URL(url).host;
         return [{ label, url }];
     });
 }
@@ -698,15 +698,18 @@ export async function processOpenPgpKey(
                 new TextDecoder().decode(await readLimited(req.body, OPENPGP_KEY_LIMIT * 2))
             );
         } catch (err) {
-            return err instanceof RangeError ?
-                    apiError(413, 'RESUME_UPLOAD_TOO_LARGE', 'Public keys must be at most 64 KiB.')
-                :   apiError(400, 'RESUME_INVALID_REQUEST', 'Invalid request body.');
+            return err instanceof RangeError
+                ? apiError(413, 'RESUME_UPLOAD_TOO_LARGE', 'Public keys must be at most 64 KiB.')
+                : apiError(400, 'RESUME_INVALID_REQUEST', 'Invalid request body.');
         }
         const upload =
-            typeof body?.key?.armored === 'string' ? new TextEncoder().encode(body.key.armored)
-            : typeof body?.key?.base64 === 'string' ? base64Bytes(body.key.base64)
-            : existing ? new TextEncoder().encode(existing.armored)
-            : null;
+            typeof body?.key?.armored === 'string'
+                ? new TextEncoder().encode(body.key.armored)
+                : typeof body?.key?.base64 === 'string'
+                  ? base64Bytes(body.key.base64)
+                  : existing
+                    ? new TextEncoder().encode(existing.armored)
+                    : null;
         if (!upload)
             return apiError(400, 'RESUME_INVALID_REQUEST', 'Upload your OpenPGP public key.');
         const parsed = await parsePublicKey(upload);
@@ -716,9 +719,13 @@ export async function processOpenPgpKey(
                 keyservers.map(server => verifyKeyserver(server.url, parsed.fingerprint))
             )
         ).flatMap(result =>
-            result.status === 'rejected' ?
-                [result.reason instanceof Error ? result.reason.message : 'Keyserver check failed.']
-            :   []
+            result.status === 'rejected'
+                ? [
+                      result.reason instanceof Error
+                          ? result.reason.message
+                          : 'Keyserver check failed.'
+                  ]
+                : []
         );
         if (failures.length) return apiError(422, 'RESUME_INVALID_INPUT', failures.join(' '));
 
@@ -752,9 +759,9 @@ export async function processOpenPgpKey(
             platform,
             'resume.openpgp_key',
             parsed.fingerprint,
-            existing?.fingerprint === parsed.fingerprint ?
-                'Updated the OpenPGP key keyservers.'
-            :   `Published OpenPGP key ${parsed.fingerprint}.`,
+            existing?.fingerprint === parsed.fingerprint
+                ? 'Updated the OpenPGP key keyservers.'
+                : `Published OpenPGP key ${parsed.fingerprint}.`,
             getClientAddress
         );
         const { key: _key, ...publicKey } = parsed;

@@ -14,9 +14,9 @@ export function inspectWebp(
 ) {
     const invalid = () => {
         throw new Error(
-            limits.width !== undefined ?
-                `Banner must be a valid, still WebP image at ${limits.width} × ${limits.height} pixels and no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
-            :   `Image must be a valid, still WebP image no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
+            limits.width !== undefined
+                ? `Banner must be a valid, still WebP image at ${limits.width} × ${limits.height} pixels and no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
+                : `Image must be a valid, still WebP image no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
         );
     };
     if (bytes.length < 20 || bytes.length > limits.maxBytes) return invalid();
@@ -43,22 +43,22 @@ export function inspectWebp(
         chunks.add(name);
         if (name === 'VP8X') {
             if (
-                offset !== 12
-                || size !== 10
-                || bytes[start] & 0xc3
-                || bytes[start + 1]
-                || bytes[start + 2]
-                || bytes[start + 3]
+                offset !== 12 ||
+                size !== 10 ||
+                bytes[start] & 0xc3 ||
+                bytes[start + 1] ||
+                bytes[start + 2] ||
+                bytes[start + 3]
             )
                 return invalid();
             canvasWidth = u24(start + 4) + 1;
             canvasHeight = u24(start + 7) + 1;
         } else if (name === 'VP8 ') {
             if (
-                size < 11
-                || bytes[start] & 1
-                || !(bytes[start] & 16)
-                || tag(start + 3).slice(0, 3) !== '\x9d\x01\x2a'
+                size < 11 ||
+                bytes[start] & 1 ||
+                !(bytes[start] & 16) ||
+                tag(start + 3).slice(0, 3) !== '\x9d\x01\x2a'
             )
                 return invalid();
             if (u24(start) >>> 5 > size - 10) return invalid();
@@ -77,10 +77,10 @@ export function inspectWebp(
         offset = end + (size % 2);
     }
     if (
-        imageChunks !== 1
-        || (limits.width !== undefined && (width !== limits.width || height !== limits.height))
-        || (limits.maxPixels !== undefined && width * height > limits.maxPixels)
-        || (canvasWidth && (canvasWidth !== width || canvasHeight !== height))
+        imageChunks !== 1 ||
+        (limits.width !== undefined && (width !== limits.width || height !== limits.height)) ||
+        (limits.maxPixels !== undefined && width * height > limits.maxPixels) ||
+        (canvasWidth && (canvasWidth !== width || canvasHeight !== height))
     )
         return invalid();
     return { width, height, bytes: bytes.length, type: 'image/webp' as const };

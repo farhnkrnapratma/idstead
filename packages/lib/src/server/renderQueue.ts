@@ -14,9 +14,9 @@ interface QueueProducer<T> {
 
 export function isRenderRefreshMessage(value: unknown): value is RenderRefreshMessage {
     return (
-        !!value
-        && typeof value === 'object'
-        && (value as Record<string, unknown>).kind === 'refresh-renders'
+        !!value &&
+        typeof value === 'object' &&
+        (value as Record<string, unknown>).kind === 'refresh-renders'
     );
 }
 

@@ -33,8 +33,8 @@ export const GET: RequestHandler = async ({ request, params, url, platform }) =>
         });
     }
     if (
-        !profile?.avatarVersion
-        || !emailHashMatches(params.hash, publishedEmail(profile.email, contact))
+        !profile?.avatarVersion ||
+        !emailHashMatches(params.hash, publishedEmail(profile.email, contact))
     )
         return notFound();
 

@@ -16,13 +16,13 @@
     },
     "dependencies": {
         "@idstead/lib": "workspace:*",
-        "@sentry/cloudflare": "11.15.0",
+        "@sentry/cloudflare": "11.16.0",
         "hono": "^4.13.19",
         "yaml": "^2.9.1"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261120.1",
+        "@cloudflare/workers-types": "^5.20261121.1",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
-        "wrangler": "^4.165.0"
+        "wrangler": "^4.166.0"
     }
 }

@@ -26,20 +26,20 @@ export { hashIp, hashToken };
 
 export function resendApiKey(platform: unknown): string {
     return (
-        (platform as { env?: { RESEND_API_KEY?: string } } | undefined)?.env?.RESEND_API_KEY
-        ?? privateEnv.RESEND_API_KEY
-        ?? process.env.RESEND_API_KEY
-        ?? ''
+        (platform as { env?: { RESEND_API_KEY?: string } } | undefined)?.env?.RESEND_API_KEY ??
+        privateEnv.RESEND_API_KEY ??
+        process.env.RESEND_API_KEY ??
+        ''
     );
 }
 
 export function senderAddress(platform: unknown): string {
     return (
         (platform as { env?: { SUBSCRIBER_FROM_EMAIL?: string } } | undefined)?.env
-            ?.SUBSCRIBER_FROM_EMAIL
-        ?? privateEnv.SUBSCRIBER_FROM_EMAIL
-        ?? process.env.SUBSCRIBER_FROM_EMAIL
-        ?? ''
+            ?.SUBSCRIBER_FROM_EMAIL ??
+        privateEnv.SUBSCRIBER_FROM_EMAIL ??
+        process.env.SUBSCRIBER_FROM_EMAIL ??
+        ''
     );
 }
 
@@ -60,9 +60,9 @@ function payload(from: string, mail: OutgoingEmail) {
         html: mail.html,
         text: mail.text,
         ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
-        ...(mail.unsubscribeUrl ?
-            { headers: { 'List-Unsubscribe': `<${mail.unsubscribeUrl}>` } }
-        :   {})
+        ...(mail.unsubscribeUrl
+            ? { headers: { 'List-Unsubscribe': `<${mail.unsubscribeUrl}>` } }
+            : {})
     };
 }
 
@@ -244,9 +244,10 @@ export function contactMessageEmail(
 ): Pick<OutgoingEmail, 'subject' | 'html' | 'text' | 'replyTo'> {
     const name = singleLine(details.name);
     const subject = (
-        details.kind === 'feedback' && details.pageUrl ?
-            `[Feedback] Report on ${singleLine(pagePath(details.pageUrl))} from ${name}`
-        :   `[Contact] Message from ${name}`).slice(0, 200);
+        details.kind === 'feedback' && details.pageUrl
+            ? `[Feedback] Report on ${singleLine(pagePath(details.pageUrl))} from ${name}`
+            : `[Contact] Message from ${name}`
+    ).slice(0, 200);
     const headers = [
         ['From', `${name} <${details.email}>`],
         ['Date', formatMailDate(details.sentAt, details.timeZone)],

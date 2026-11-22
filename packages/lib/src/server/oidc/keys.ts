@@ -17,10 +17,10 @@ let parsed: { raw: string; key: Promise<OidcSigningKey | null> } | undefined;
 
 function rawSigningKey(platform: unknown): string {
     const value =
-        (platform as { env?: { OIDC_SIGNING_KEY?: string } } | undefined)?.env?.OIDC_SIGNING_KEY
-        ?? (privateEnv as Record<string, string | undefined>).OIDC_SIGNING_KEY
-        ?? process.env.OIDC_SIGNING_KEY
-        ?? '';
+        (platform as { env?: { OIDC_SIGNING_KEY?: string } } | undefined)?.env?.OIDC_SIGNING_KEY ??
+        (privateEnv as Record<string, string | undefined>).OIDC_SIGNING_KEY ??
+        process.env.OIDC_SIGNING_KEY ??
+        '';
     return value.trim();
 }
 
@@ -32,11 +32,11 @@ export async function parseSigningKey(raw: string): Promise<OidcSigningKey | nul
         return null;
     }
     if (
-        jwk?.kty !== 'EC'
-        || jwk.crv !== 'P-256'
-        || typeof jwk.x !== 'string'
-        || typeof jwk.y !== 'string'
-        || typeof jwk.d !== 'string'
+        jwk?.kty !== 'EC' ||
+        jwk.crv !== 'P-256' ||
+        typeof jwk.x !== 'string' ||
+        typeof jwk.y !== 'string' ||
+        typeof jwk.d !== 'string'
     )
         return null;
 

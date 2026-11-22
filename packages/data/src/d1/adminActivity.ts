@@ -36,9 +36,9 @@ function parseObject(value: unknown): Record<string, unknown> {
     if (typeof value !== 'string') return {};
     try {
         const parsed: unknown = JSON.parse(value);
-        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ?
-                (parsed as Record<string, unknown>)
-            :   {};
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+            ? (parsed as Record<string, unknown>)
+            : {};
     } catch {
         return {};
     }
@@ -211,10 +211,8 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 const head = reports[0];
                 if (o.postId && head.post_id !== o.postId) continue;
                 if (
-                    query
-                    && !matches(
-                        `${text(head.content)} ${text(head.author_name)} ${text(head.title)}`
-                    )
+                    query &&
+                    !matches(`${text(head.content)} ${text(head.author_name)} ${text(head.title)}`)
                 )
                     continue;
                 const counts = new Map<string, number>();
@@ -233,10 +231,9 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                         id: commentId,
                         title: head.title,
                         postId: head.post_id,
-                        author:
-                            flag(head.is_anonymous) ? 'Anonymous' : (
-                                (head.author_name ?? 'Anonymous')
-                            ),
+                        author: flag(head.is_anonymous)
+                            ? 'Anonymous'
+                            : (head.author_name ?? 'Anonymous'),
                         content: head.content,
                         total: reports.length,
                         latest,
@@ -291,9 +288,11 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                         latest
                     },
                     n:
-                        sort === 'total' ? events.length
-                        : sort === 'helpful' ? Math.round((helpful / events.length) * 1e6) / 1e6
-                        : 0,
+                        sort === 'total'
+                            ? events.length
+                            : sort === 'helpful'
+                              ? Math.round((helpful / events.length) * 1e6) / 1e6
+                              : 0,
                     t: sort === 'page' ? title.toLowerCase() : latest
                 });
             }
@@ -325,9 +324,11 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                     },
                     n: 0,
                     t:
-                        sort === 'reason' ? `${row.reason} ${createdAt}`
-                        : sort === 'details' ? `${text(row.details).toLowerCase()} ${createdAt}`
-                        : createdAt
+                        sort === 'reason'
+                            ? `${row.reason} ${createdAt}`
+                            : sort === 'details'
+                              ? `${text(row.details).toLowerCase()} ${createdAt}`
+                              : createdAt
                 });
             }
         } else if (section === 'feedback_events') {
@@ -370,59 +371,56 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 )
             ).filter(
                 row =>
-                    matchesType(row, text(o.type) || 'all')
-                    && (!query || matches(metaSearchText(row)))
+                    matchesType(row, text(o.type) || 'all') &&
+                    (!query || matches(metaSearchText(row)))
             );
             const group = section === 'notification_events' ? parseGroupId(text(o.id)) : null;
-            const selected =
-                group ?
-                    rows.filter(
-                        row =>
-                            row.kind === group[0]
-                            && groupTarget(row) === group[1]
-                            && groupVote(row) === group[2]
-                            && localDate(Date.parse(String(row.created_at)), timeZone) === group[3]
-                            && (!focus || row.id === focus)
-                    )
-                :   rows;
+            const selected = group
+                ? rows.filter(
+                      row =>
+                          row.kind === group[0] &&
+                          groupTarget(row) === group[1] &&
+                          groupVote(row) === group[2] &&
+                          localDate(Date.parse(String(row.created_at)), timeZone) === group[3] &&
+                          (!focus || row.id === focus)
+                  )
+                : rows;
             const items = await notificationItems(selected.map(row => String(row.id)));
             for (const row of selected) {
                 const item = items.get(String(row.id));
                 if (!item) continue;
                 const createdAt = String(row.created_at);
                 sources.push(
-                    group ?
-                        {
-                            id: String(row.id),
-                            payload: {
-                                id: row.id,
-                                title: text(parseObject(row.meta).page_title) || 'Notification',
-                                total: 1,
-                                latest: createdAt,
-                                event: item
-                            },
-                            n: 0,
-                            t: createdAt
-                        }
-                    :   {
-                            id: String(row.id),
-                            payload: {
-                                id: row.id,
-                                title: item.page_title ?? 'Notification',
-                                total: 1,
-                                latest: createdAt,
-                                event: item
-                            },
-                            n:
-                                item.pinned_at === null ? 0
-                                : asc ? -1
-                                : 1,
-                            t:
-                                sort === 'type' ? String(row.kind)
-                                : sort === 'page' ?
-                                    text(item.page_title ?? 'Notification').toLowerCase()
-                                :   createdAt
-                        }
+                    group
+                        ? {
+                              id: String(row.id),
+                              payload: {
+                                  id: row.id,
+                                  title: text(parseObject(row.meta).page_title) || 'Notification',
+                                  total: 1,
+                                  latest: createdAt,
+                                  event: item
+                              },
+                              n: 0,
+                              t: createdAt
+                          }
+                        : {
+                              id: String(row.id),
+                              payload: {
+                                  id: row.id,
+                                  title: item.page_title ?? 'Notification',
+                                  total: 1,
+                                  latest: createdAt,
+                                  event: item
+                              },
+                              n: item.pinned_at === null ? 0 : asc ? -1 : 1,
+                              t:
+                                  sort === 'type'
+                                      ? String(row.kind)
+                                      : sort === 'page'
+                                        ? text(item.page_title ?? 'Notification').toLowerCase()
+                                        : createdAt
+                          }
                 );
             }
         } else if (section === 'comments') {
@@ -466,8 +464,8 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         const direction = asc ? 1 : -1;
         sources.sort(
             (a, b) =>
-                direction
-                * (compareKeys(a.n, b.n) || compareKeys(a.t, b.t) || compareKeys(a.id, b.id))
+                direction *
+                (compareKeys(a.n, b.n) || compareKeys(a.t, b.t) || compareKeys(a.id, b.id))
         );
         const limit = Math.min(20, Math.max(1, Number(o.limit ?? 20) || 20));
         const page = Math.min(10000, Math.max(1, Number(o.page ?? 1) || 1));
@@ -576,10 +574,9 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         const result: Record<string, unknown> = await workspaceList(section, o);
         if (section === 'report_events') {
             const notificationId = typeof o.notificationId === 'string' ? o.notificationId : '';
-            const saved =
-                notificationId ?
-                    (await notificationItems([notificationId])).get(notificationId)
-                :   null;
+            const saved = notificationId
+                ? (await notificationItems([notificationId])).get(notificationId)
+                : null;
             const comment = await first(
                 `SELECT c.id, c.post_id, p.title, c.is_anonymous, c.author_name, c.content, c.created_at,
                      (SELECT count(*) FROM db_comment_reports WHERE comment_id = c.id) AS total
@@ -601,21 +598,19 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                     reasons.set(String(row.reason), (reasons.get(String(row.reason)) ?? 0) + 1);
             Object.assign(result, {
                 savedNotification: saved ?? null,
-                context:
-                    comment ?
-                        {
-                            id: comment.id,
-                            postId: comment.post_id,
-                            title: comment.title,
-                            author:
-                                flag(comment.is_anonymous) ? 'Anonymous' : (
-                                    (comment.author_name ?? 'Anonymous')
-                                ),
-                            content: comment.content,
-                            commentedAt: comment.created_at,
-                            total: Number(comment.total)
-                        }
-                    :   null,
+                context: comment
+                    ? {
+                          id: comment.id,
+                          postId: comment.post_id,
+                          title: comment.title,
+                          author: flag(comment.is_anonymous)
+                              ? 'Anonymous'
+                              : (comment.author_name ?? 'Anonymous'),
+                          content: comment.content,
+                          commentedAt: comment.created_at,
+                          total: Number(comment.total)
+                      }
+                    : null,
                 reasons: [...reasons.entries()].map(([reason, count]) => ({ reason, count }))
             });
         } else if (section === 'feedback_events' && o.meta !== false && o.meta !== 'false') {
@@ -673,9 +668,9 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 }
                 const ranked = [...groups.values()].sort(
                     (a, b) =>
-                        compareKeys(b.latest, a.latest)
-                        || compareKeys(a.target_type, b.target_type)
-                        || compareKeys(a.target_id, b.target_id)
+                        compareKeys(b.latest, a.latest) ||
+                        compareKeys(a.target_type, b.target_type) ||
+                        compareKeys(a.target_id, b.target_id)
                 );
                 const start = windowStart(
                     ranked.findIndex(
@@ -801,11 +796,11 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         inbox: (query: InboxQuery) =>
             guarded('activity.db_admin_inbox', async () => {
                 if (
-                    query.query.length > 200
-                    || !['date', 'type', 'page'].includes(query.sort)
-                    || !['asc', 'desc'].includes(query.direction)
-                    || !['all', 'read', 'unread'].includes(query.read)
-                    || !INBOX_TYPES.includes(query.type)
+                    query.query.length > 200 ||
+                    !['date', 'type', 'page'].includes(query.sort) ||
+                    !['asc', 'desc'].includes(query.direction) ||
+                    !['all', 'read', 'unread'].includes(query.read) ||
+                    !INBOX_TYPES.includes(query.type)
                 )
                     throw new DataError('activity.db_admin_inbox', 'INBOX_FILTER_INVALID');
                 const search = query.query.toLowerCase();
@@ -813,14 +808,14 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                     .map(notificationItem)
                     .filter(
                         item =>
-                            (query.read === 'all'
-                                || (query.read === 'read') === (item.read_at !== null))
-                            && matchesType(
+                            (query.read === 'all' ||
+                                (query.read === 'read') === (item.read_at !== null)) &&
+                            matchesType(
                                 { kind: item.kind, meta: JSON.stringify(item.meta) },
                                 query.type
-                            )
-                            && (search === ''
-                                || [
+                            ) &&
+                            (search === '' ||
+                                [
                                     item.page_title,
                                     item.type_label,
                                     item.meta.author,
@@ -836,36 +831,37 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                     .map(item => ({
                         item,
                         sortValue:
-                            query.sort === 'type' ? String(item.type_label).toLowerCase()
-                            : query.sort === 'page' ? text(item.page_title).toLowerCase()
-                            : ''
+                            query.sort === 'type'
+                                ? String(item.type_label).toLowerCase()
+                                : query.sort === 'page'
+                                  ? text(item.page_title).toLowerCase()
+                                  : ''
                     }));
                 const dateAsc = query.sort === 'date' && query.direction === 'asc';
                 const newerFirst = (a: (typeof items)[number], b: (typeof items)[number]) =>
-                    compareKeys(b.item.created_at, a.item.created_at)
-                    || compareKeys(b.item.id, a.item.id);
+                    compareKeys(b.item.created_at, a.item.created_at) ||
+                    compareKeys(b.item.id, a.item.id);
                 const ordered = [...items].sort((a, b) => {
                     const bySort =
-                        query.direction === 'asc' ?
-                            compareKeys(a.sortValue, b.sortValue)
-                        :   compareKeys(b.sortValue, a.sortValue);
+                        query.direction === 'asc'
+                            ? compareKeys(a.sortValue, b.sortValue)
+                            : compareKeys(b.sortValue, a.sortValue);
                     return bySort || (dateAsc ? -newerFirst(a, b) : newerFirst(a, b));
                 });
                 const cursor = query.cursor;
-                const remaining =
-                    cursor ?
-                        ordered.filter(({ item, sortValue }) => {
-                            const position =
-                                compareKeys(item.created_at, cursor.date)
-                                || compareKeys(item.id, cursor.id);
-                            if (query.sort === 'date') return dateAsc ? position > 0 : position < 0;
-                            const value = compareKeys(sortValue, cursor.value);
-                            return (
-                                (query.direction === 'asc' ? value > 0 : value < 0)
-                                || (value === 0 && position < 0)
-                            );
-                        })
-                    :   ordered;
+                const remaining = cursor
+                    ? ordered.filter(({ item, sortValue }) => {
+                          const position =
+                              compareKeys(item.created_at, cursor.date) ||
+                              compareKeys(item.id, cursor.id);
+                          if (query.sort === 'date') return dateAsc ? position > 0 : position < 0;
+                          const value = compareKeys(sortValue, cursor.value);
+                          return (
+                              (query.direction === 'asc' ? value > 0 : value < 0) ||
+                              (value === 0 && position < 0)
+                          );
+                      })
+                    : ordered;
                 const page = remaining.slice(0, 21);
                 const last = page[19];
                 const unread = await first(
@@ -874,9 +870,13 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 return {
                     items: page.slice(0, 20).map(entry => entry.item),
                     nextCursor:
-                        page.length > 20 && last ?
-                            { value: last.sortValue, date: last.item.created_at, id: last.item.id }
-                        :   null,
+                        page.length > 20 && last
+                            ? {
+                                  value: last.sortValue,
+                                  date: last.item.created_at,
+                                  id: last.item.id
+                              }
+                            : null,
                     total: items.length,
                     unreadCount: Number(unread?.total ?? 0)
                 };
@@ -958,8 +958,8 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                         operationId,
                         count: targets.length,
                         completed:
-                            operation?.completed_at !== null
-                            && operation?.completed_at !== undefined,
+                            operation?.completed_at !== null &&
+                            operation?.completed_at !== undefined,
                         deletedCount: operation?.deleted_count ?? null
                     }
                 };
@@ -971,9 +971,9 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         notificationGroupAction: (action: NotificationGroupAction) =>
             guarded('activity.db_admin_notification_group_action', async () => {
                 if (
-                    Date.parse(action.asOf) > Date.now()
-                    || action.id.length > 1500
-                    || !isTimeZone(action.timeZone)
+                    Date.parse(action.asOf) > Date.now() ||
+                    action.id.length > 1500 ||
+                    !isTimeZone(action.timeZone)
                 )
                     throw new DataError(
                         'activity.db_admin_notification_group_action',
@@ -1001,12 +1001,12 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 if (!ids.length) return { affected: 0 };
                 const affected = await changes(
                     'activity.db_admin_notification_group_action',
-                    action.remove ?
-                        'DELETE FROM db_admin_notifications WHERE id IN (SELECT value FROM json_each(?1)) AND dismissed_at IS NULL'
-                    :   'UPDATE db_admin_notifications SET read_at = ?2 WHERE id IN (SELECT value FROM json_each(?1)) AND read_at IS NULL AND dismissed_at IS NULL',
-                    ...(action.remove ?
-                        [JSON.stringify(ids)]
-                    :   [JSON.stringify(ids), new Date().toISOString()])
+                    action.remove
+                        ? 'DELETE FROM db_admin_notifications WHERE id IN (SELECT value FROM json_each(?1)) AND dismissed_at IS NULL'
+                        : 'UPDATE db_admin_notifications SET read_at = ?2 WHERE id IN (SELECT value FROM json_each(?1)) AND read_at IS NULL AND dismissed_at IS NULL',
+                    ...(action.remove
+                        ? [JSON.stringify(ids)]
+                        : [JSON.stringify(ids), new Date().toISOString()])
                 );
                 return { affected };
             }),

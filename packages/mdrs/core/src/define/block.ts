@@ -2,17 +2,18 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { type Assignment } from './ast';
-import { type DefineErrorInfo } from './errors';
-import { type ApiRegistry, evaluateExpr } from './evaluate';
+import type { Assignment } from './ast';
+import type { DefineErrorInfo } from './errors';
+import { evaluateExpr } from './evaluate';
+import type { JsonFetcher } from './fetcher';
 import { isValidIdentifierName } from './identifiers';
 import { tokenize } from './lexer';
 import { Parser } from './parser';
-import { type DefineValue } from './values';
+import type { DefineValue } from './values';
 
 export async function evaluateDefineBlock(
     raw: string | null,
-    apiRegistry: ApiRegistry
+    fetcher: JsonFetcher
 ): Promise<{ scope: Map<string, DefineValue>; errors: DefineErrorInfo[] }> {
     const scope = new Map<string, DefineValue>();
     const errors: DefineErrorInfo[] = [];
@@ -41,7 +42,7 @@ export async function evaluateDefineBlock(
             continue;
         }
         try {
-            const result = await evaluateExpr(value, { scope, allowThis: true, apiRegistry });
+            const result = await evaluateExpr(value, { scope, allowThis: true, fetcher });
             scope.set(key, result);
             seenKeys.add(key);
         } catch (err) {

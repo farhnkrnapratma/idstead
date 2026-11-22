@@ -125,10 +125,9 @@ Bun.plugin({
         });
         build.onLoad({ filter: /\.svelte\.(ts|js)$/ }, async ({ path }) => {
             const source = await Bun.file(path).text();
-            const code =
-                path.endsWith('.ts') ?
-                    new Bun.Transpiler({ loader: 'ts' }).transformSync(source)
-                :   source;
+            const code = path.endsWith('.ts')
+                ? new Bun.Transpiler({ loader: 'ts' }).transformSync(source)
+                : source;
             const { js } = compileModule(code, { filename: path, generate: 'client', dev: false });
             return { contents: js.code, loader: 'js' };
         });

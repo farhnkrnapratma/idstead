@@ -28,16 +28,16 @@ export async function oidcEndpointDeps(
         ip: clientIp(request, getClientAddress),
         profile: async () => {
             const profile = await publicRepositories().author.profile({ includeEmail: true });
-            return profile ?
-                    {
-                        name: profile.name,
-                        username: profile.username,
-                        email: profile.email,
-                        siteUrl: profile.siteUrl,
-                        avatarVersion: profile.avatarVersion,
-                        updatedAt: profile.updatedAt
-                    }
-                :   null;
+            return profile
+                ? {
+                      name: profile.name,
+                      username: profile.username,
+                      email: profile.email,
+                      siteUrl: profile.siteUrl,
+                      avatarVersion: profile.avatarVersion,
+                      updatedAt: profile.updatedAt
+                  }
+                : null;
         },
         lockout: {
             retryAfter: async keys =>
