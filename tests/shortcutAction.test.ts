@@ -12,6 +12,8 @@ const cleanups: Array<() => void> = [];
 
 afterEach(() => {
     for (const cleanup of cleanups.splice(0)) cleanup();
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+    shortcutStore.disarm();
     document.body.innerHTML = '';
 });
 

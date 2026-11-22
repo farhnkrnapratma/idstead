@@ -729,13 +729,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                 placeholder="Write your markdown content here..."
                 minHeight="500px"
                 stickyTopClass="top-12 md:top-0"
+                stickyBottomClass="bottom-0 sm:bottom-15"
                 render={renderMdrsPreview}
                 onImport={importFile}
                 onImageUpload={handleImageUploadFile}
                 onVideoUpload={handleVideoUploadFile} />
         </fieldset>
         <div
-            class="mt-4 mb-10 flex flex-col gap-2.5 select-none sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+            class="mt-4 mb-10 flex flex-col gap-2.5 border-line-subtle bg-canvas select-none sm:sticky sm:bottom-0 sm:z-30 sm:border-t sm:py-3 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
             <div class="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-3">
                 <Button
                     type="danger"

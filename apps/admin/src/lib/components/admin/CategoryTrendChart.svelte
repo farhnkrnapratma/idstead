@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import { activityDate } from '#lib/adminActivity.ts';
-    import { formatCount, hasChartActivity } from '#lib/adminWorkspace.ts';
+    import { formatCount, hasChartActivity, integerTicks } from '#lib/adminWorkspace.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
     import { VIEWS_RANGES, type ViewsRange } from '#lib/components/admin/viewsRange.ts';
     import {
@@ -98,7 +98,10 @@ SPDX-License-Identifier: AGPL-3.0-only
             })
         )
     );
-    const tickCount = $derived(Math.min(6, rows.length));
+    let chartWidth = $state(0);
+    const tickCount = $derived(
+        Math.min(6, rows.length, Math.max(2, Math.floor(chartWidth / 110)))
+    );
 
     let chartType = $state<'spline' | 'bar' | 'donut'>('spline');
 
@@ -127,7 +130,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <p class="text-xs text-fg-muted">{description}</p>
             {/if}
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             {#if showControls}
                 <div
                     class="flex items-center gap-1"
@@ -201,6 +204,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     {:else}
         <div
             class="h-56 w-full"
+            bind:clientWidth={chartWidth}
             role="img"
             aria-label={`${title} over time, by category. Hover a point for exact values.`}>
             <Chart
@@ -224,6 +228,8 @@ SPDX-License-Identifier: AGPL-3.0-only
                         classes={ADMIN_CHART_AXIS_CLASSES} />
                     <Axis
                         placement="left"
+                        format={(value: number) => formatCount(value)}
+                        ticks={integerTicks(maxValue)}
                         grid={{
                             stroke: 'var(--color-line-subtle)',
                             dashArray: '3 3',

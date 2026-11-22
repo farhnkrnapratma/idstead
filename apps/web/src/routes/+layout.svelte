@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
     const isBlogPost = $derived(page.route.id === '/blog/[slug]');
     const isLegalPage = $derived(isLegalSlug(page.route.id?.slice(1) ?? ''));
-    const isArticleLikePage = $derived(isBlogPost || isLegalPage);
+    const isArticleLikePage = $derived(!page.error && (isBlogPost || isLegalPage));
     const isPageWithFeedback = $derived(!page.error && page.url.pathname !== '/feedback');
 
     onMount(() => {

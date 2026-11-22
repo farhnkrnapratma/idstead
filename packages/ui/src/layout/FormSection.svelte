@@ -37,6 +37,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         headerActions,
         actions
     }: Props = $props();
+    const card = 'rounded-md glass-card p-3.5 sm:p-6';
+    const pageLevel = $derived(titleTag === 'h1' && !bare);
+
     function handleSubmit(e: SubmitEvent) {
         if (onsubmit) {
             e.preventDefault();
@@ -50,11 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     {method}
     onsubmit={handleSubmit}
     novalidate
-    class={cn(
-        'flex flex-col gap-4 sm:gap-6',
-        bare ? '' : 'rounded-md glass-card p-3.5 sm:p-6',
-        className
-    )}
+    class={cn('flex flex-col gap-4 sm:gap-6', !pageLevel && !bare && card, !pageLevel && className)}
     autocomplete="off">
     {#if title || description || headerActions}
         <div class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
@@ -78,7 +77,15 @@ SPDX-License-Identifier: AGPL-3.0-only
         </div>
     {/if}
 
-    {@render children?.()}
+    {#if pageLevel}
+        <div class={cn('flex flex-col gap-4 sm:gap-6', card, className)}>
+            {@render children?.()}
 
-    {@render actions?.()}
+            {@render actions?.()}
+        </div>
+    {:else}
+        {@render children?.()}
+
+        {@render actions?.()}
+    {/if}
 </form>

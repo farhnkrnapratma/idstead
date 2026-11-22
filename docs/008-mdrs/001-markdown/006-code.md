@@ -35,7 +35,7 @@ print("Hello, World!")
 
 To show a fence inside a code block, make the outer fence longer than the inner one, as this page does.
 
-Syntax highlighting runs in the browser with [highlight.js](https://highlightjs.org): any language highlight.js knows works, and unknown languages are shown as plain text. The header bar shows the language's display name (`ts` becomes "TypeScript"), or "Code" when there's no language.
+Syntax highlighting runs in the browser with [highlight.js](https://highlightjs.org): any language highlight.js knows works, and unknown languages are shown as plain text. MDRS itself is one of them: a fence tagged `mdrs` highlights directives and their attributes, `:::define` blocks, `:::if` conditions, `${…}` expressions, `get()` calls, math, frontmatter and task states, and the admin editor uses the same highlighting. The header bar shows the language's display name (`ts` becomes "TypeScript"), or "Code" when there's no language.
 
 ## Indented code blocks
 

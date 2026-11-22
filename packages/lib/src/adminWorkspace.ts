@@ -88,6 +88,13 @@ export function majorityPercent(yes: number, no: number) {
     return `${percent}% ${helpfulMajority ? 'helpful' : 'unhelpful'}`;
 }
 
+export function integerTicks(max: number, count = 5): number[] {
+    const step = Math.max(1, Math.ceil(max / (count - 1)));
+    const ticks: number[] = [];
+    for (let tick = 0; tick <= max; tick += step) ticks.push(tick);
+    return ticks;
+}
+
 export function hasChartActivity(values: readonly number[]) {
     return values.some(value => value > 0);
 }

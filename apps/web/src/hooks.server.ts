@@ -37,6 +37,7 @@ const sentryInitHandle = persistAcrossHmr<Handle>(import.meta.hot, 'sentryInitHa
         ? ({ event, resolve }) => resolve(event)
         : Sentry.initCloudflareSentryHandle({
               dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
+              enabled: !dev,
               environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
               tracesSampleRate: dev ? 0 : 1.0,
               integrations: privateRequestIntegrations()

@@ -159,7 +159,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 bind:this={pre}
                 data-code-theme={theme}
                 class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-x-auto! overflow-y-hidden! border-0! bg-transparent pt-0! pr-5! pb-5! pl-2! break-normal! wrap-normal! [word-break:normal]! whitespace-pre! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
-                    class="hljs language-markdown m-0! block! w-max! min-w-full! overflow-x-visible! p-0! wrap-normal! [word-break:normal]! whitespace-pre!"
+                    class="hljs language-mdrs m-0! block! w-max! min-w-full! overflow-x-visible! p-0! wrap-normal! [word-break:normal]! whitespace-pre!"
                     data-code-theme={theme}
                     >{#each highlightedLines as lineHtml, i (i)}<div
                             class={cn(
@@ -205,7 +205,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 bind:this={pre}
                 data-code-theme={theme}
                 class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-hidden! border-0! bg-transparent pt-0! pr-0! pb-5! pl-0! break-normal! wrap-break-word! whitespace-pre-wrap! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
-                    class="hljs language-markdown m-0! block! w-full! min-w-full! overflow-x-visible! p-0! [overflow-wrap:inherit]! [word-break:inherit]! [white-space:inherit]!"
+                    class="hljs language-mdrs m-0! block! w-full! min-w-full! overflow-x-visible! p-0! [overflow-wrap:inherit]! [word-break:inherit]! [white-space:inherit]!"
                     data-code-theme={theme}
                     >{#each highlightedLines as lineHtml, i (i)}<div
                             class={cn(

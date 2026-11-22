@@ -9,6 +9,8 @@ import * as env from '$app/env/public';
 if (!Sentry.getClient()) {
     Sentry.init({
         dsn: env.PUBLIC_SENTRY_DSN || '',
+        enabled: !import.meta.env.DEV,
+        ignoreErrors: ['Non-Error promise rejection captured with value: null'],
         environment: env.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
         tracesSampleRate: 1.0,
         replaysSessionSampleRate: 0.1,

@@ -3563,7 +3563,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 });
             if (typeof scroll === 'number') queueMicrotask(() => element.scrollTo({ top: scroll }));
         }}
-        class="flex-1 p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
+        class="min-w-0 flex-1 p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
             isLegalSlug(activeAdminTab) || (activeAdminTab === 'posts' && !!editPostParam)
         ) ?
             'pt-0! pb-0!'
@@ -4641,7 +4641,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <EmptyState
                                 icon={FileUser}
                                 title="No experience entries yet"
-                                description="Add your first experience entry below." />
+                                description="Use Add Experience to list your first role." />
                         {/if}
                         {#each resumeState.experience as exp, idx (exp.id)}
                             <div
@@ -5031,7 +5031,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <EmptyState
                                 icon={FileUser}
                                 title="No education entries yet"
-                                description="Add your first education entry below." />
+                                description="Use Add Education to list your first degree." />
                         {/if}
                         {#each resumeState.education as edu, idx (edu.id)}
                             <div
@@ -5566,7 +5566,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                                 </p>
                             {:else if resumeSignedByKey}
                                 <dl
-                                    class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
+                                    class="grid grid-cols-1 gap-x-4 gap-y-0.5 text-sm sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-y-1.5">
                                     {#each openPgpKey.userIds as user, index (index)}
                                         <dt class="text-fg-muted">Signed by</dt>
                                         <dd class="min-w-0 wrap-break-word text-fg">
@@ -5834,13 +5834,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                         type="primary"
                         size="md"
                         responsiveIconOnly
-                        aria-label="Add Skill"
-                        title="Add Skill"
+                        aria-label="Add Category"
+                        title="Add Category"
                         onclick={handleAddSkill}>
                         {#snippet leading()}
                             <Plus class="size-3.5" />
                         {/snippet}
-                        Add Skill
+                        Add Category
                     </Button>
                 {/snippet}
 
@@ -5853,7 +5853,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <EmptyState
                             icon={Layers}
                             title="No skill groups yet"
-                            description="Add your first skill group below." />
+                            description="Use Add Category to group your first skills." />
                     {/if}
                     {#each skillsState as item, idx (item.id)}
                         <div
@@ -5924,7 +5924,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
                             <FormField
                                 id={'sk-list-' + idx}
-                                label="Skills Set"
+                                label="Skills"
                                 variant="floating"
                                 counter={`${item.skills.length}/20`}>
                                 <PillInput
@@ -6014,7 +6014,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <EmptyState
                             icon={Share2}
                             title="No social links yet"
-                            description="Add your first social link below." />
+                            description="Use Add Social Link to add your first profile." />
                     {/if}
                     {#each socialState as item, idx (item.id)}
                         <div
@@ -6227,7 +6227,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <EmptyState
                             icon={HeartHandshake}
                             title="No funding platforms yet"
-                            description="Add your first funding platform below." />
+                            description="Use Add Funding to add your first platform." />
                     {/if}
                     {#each sponsorshipState as item, idx (item.id)}
                         <div
@@ -6473,7 +6473,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <EmptyState
                             icon={AtSign}
                             title="No contact channels yet"
-                            description="Add your first contact channel below." />
+                            description="Use Add Contact to add your first channel." />
                     {/if}
                     {#each contactState as item, idx (item.id)}
                         <div

@@ -108,7 +108,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             <table
                 class={cn(
                     'w-full border-separate border-spacing-0 text-xs text-fg',
-                    fixed && 'table-fixed',
+                    fixed && 'min-w-xl table-fixed',
                     className
                 )}>
                 {#if caption}
@@ -125,7 +125,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                             <th
                                 scope="col"
                                 class={cn(
-                                    'h-9 border-b border-line-subtle px-3 text-xs font-semibold tracking-wide text-fg first:pl-4 last:pr-4',
+                                    'h-9 overflow-hidden border-b border-line-subtle px-3 text-xs font-semibold tracking-wide text-ellipsis whitespace-nowrap text-fg first:pl-4 last:pr-4',
                                     alignStyles[col.align || 'left'],
                                     col.class
                                 )}>

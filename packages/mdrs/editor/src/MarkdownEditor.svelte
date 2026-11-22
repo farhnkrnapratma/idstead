@@ -26,6 +26,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         placeholder?: string;
         minHeight?: string;
         stickyTopClass?: string;
+        stickyBottomClass?: string;
         class?: string;
         render?: (markdown: string) => Promise<string>;
         onblur?: () => void;
@@ -41,6 +42,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         placeholder = 'Write your markdown content here...',
         minHeight = '400px',
         stickyTopClass = 'top-0',
+        stickyBottomClass = 'bottom-0',
         class: className = '',
         render = markdown => renderMarkdown(markdown),
         onblur,
@@ -161,6 +163,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             line={cursor.line}
             column={cursor.column}
             {lineEnding}
+            stickyClass={stickyBottomClass}
             showAutosave={Boolean(autosaveKey)}
             onFocusEditor={() => codeArea?.focus()} />
     {/if}

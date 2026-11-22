@@ -58,7 +58,6 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `renderMarkdownUnsafe(markdown, fetcher?)` | `@mdrs/core` | The same without `sanitizeHtml`; only for trusted post-processing |
 | `prepareMarkdownPage(markdown, fetcher?)` | `@mdrs/core` | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings`, returns `{ html, headings }` |
 | `injectHeadingIds(html)`, `prefixHashLinks(html)`, `extractHeadings(html)` | `@mdrs/core` | Heading IDs, same-document links and table of contents |
-| `replaceMathBlocks`, `MATH_INLINE_RE` | `@mdrs/core` | Math helpers for the editor's syntax highlighting |
 | `extractFrontmatter(markdown)`, `importPostDocument(text)` | `@mdrs/core` | YAML frontmatter and the admin file import |
 | `sanitizeHtml(html)`, `sanitizeUrl(href)` | `@mdrs/core` | The allowlist sanitizer and URL check |
 | `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@mdrs/core` | `:::define` placement, save validation (including conditionals) and the size limit |
@@ -67,6 +66,7 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
 | `fetchJson(url)` | `packages/lib/src/server/mdrsFetch.ts` | The site's `get()` fetcher on the server: https only, JSON only, 256 KB, 5 s, no redirects |
 | `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
+| `mdrsLanguage(hljs)` | `packages/mdrs/dom/src/mdrsHighlight.ts` | The highlight.js language for MDRS source: `mdrs` code fences and the admin editor |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
 | `enhanceHeadingAnchors(container, options)` | `packages/mdrs/dom/src/headingAnchors.ts` | Heading actions after the last word: a ¶ anchor link by default, or whatever `mountActions(slot, link)` mounts into the `mdrs-heading-actions` slot; `bareFragments: true` links to `#setup` instead of `#mdrs-setup`. Returns a cleanup that runs every `mountActions` cleanup |

@@ -15,7 +15,6 @@ export {
     prefixHashLinks,
     type HeadingItem
 } from './render/headings';
-export { replaceMathBlocks, MATH_INLINE_RE } from './render/math';
 export {
     MAX_DOCUMENT_LENGTH,
     DefineError,

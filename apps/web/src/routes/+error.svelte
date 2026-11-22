@@ -64,6 +64,10 @@ SPDX-License-Identifier: AGPL-3.0-only
     });
 </script>
 
+<svelte:head>
+    <title>{errorTitle}</title>
+</svelte:head>
+
 <div class="flex min-h-screen flex-col">
     <main
         id="main"

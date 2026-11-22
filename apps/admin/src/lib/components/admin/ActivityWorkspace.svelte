@@ -534,8 +534,8 @@ SPDX-License-Identifier: AGPL-3.0-only
             [
                 { key: 'activity', header: 'Activity', width: '12%' },
                 { key: 'page', header: 'Page', width: '22%' },
-                { key: 'details', header: 'Details', width: '40%' },
-                { key: 'time', header: 'Time', width: '12%' },
+                { key: 'details', header: 'Details', width: '36%' },
+                { key: 'time', header: 'Time', width: '16%' },
                 {
                     key: 'actions',
                     header: '',
