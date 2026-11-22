@@ -31,14 +31,32 @@ git-flow init --preset=classic --defaults --main main
 
 By contributing you agree that your contribution is licensed under the license of the path it changes: AGPL-3.0-only for Idstead code and MIT OR Apache-2.0 for `packages/mdrs/**` ([LICENSING.md](LICENSING.md)). The sign-off certifies the [Developer Certificate of Origin](https://developercertificate.org). New files start with the two SPDX header lines used across the repository; files that cannot hold comments go in `REUSE.toml`. Check with `uvx reuse lint`. Contributions grant no rights in the Idstead name or marks ([TRADEMARKS.md](TRADEMARKS.md)).
 
+## Repository layout
+
+| Path | Deploys as | What it is |
+| --- | --- | --- |
+| `apps/web` | the site's apex domain | Public site (SvelteKit): pages, blog, legal pages, feeds and discovery. |
+| `apps/admin` | `admin.` subdomain | Admin portal (SvelteKit). |
+| `apps/api` | `api.` subdomain, `/v1` | Public read-only REST API (Hono). |
+| `apps/jobs` | queue consumer and cron | Newsletter delivery, post render refreshes and storage cleanup. |
+| `packages/lib` |  | Site feature components, server helpers and API handlers. |
+| `packages/ui` |  | The design system (`@idstead/ui`): tokens, styles, UI primitives and stores. |
+| `packages/domain` |  | Pure helpers and types (`@idstead/domain`), including the instance configuration schema. |
+| `packages/data` |  | The server-only data layer (`@idstead/data`): repository ports and their adapters. |
+| `packages/mdrs/core` |  | The MDRS engine (`@mdrs/core`). |
+| `packages/mdrs/dom` |  | The browser side of MDRS (`@mdrs/dom`) and `mdrs.css`. |
+| `packages/mdrs/editor` |  | The Markdown editor (`@mdrs/editor`). |
+| `tooling/`, `scripts/` |  | Build tooling, Git hooks and one-off migration commands. |
+
 ## Before you push
 
 CircleCI (`.circleci/config.yml`) runs these checks on every push, but it does not gate Workers Builds, so run them locally before merging to `main`:
 
 ```sh
-bun run test
-bun run check
-bun run lint
+bun run test     # regression and contract tests
+bun run check    # biome check, instance config, svelte-check and tsc
+bun run lint     # biome lint: import boundaries, deprecated imports and recommended rules
+bun run build    # every app
 ```
 
 ## Rules of thumb
