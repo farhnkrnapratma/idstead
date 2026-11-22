@@ -30,8 +30,13 @@ describe('fetchJson', () => {
         const calls = respond('{"provider":"umami"}');
         expect(await fetchJson(URL)).toEqual({ provider: 'umami' });
         expect(calls[0][0]).toBe(URL);
-        expect(calls[0][1]?.redirect).toBe('error');
+        expect(calls[0][1]?.redirect).toBe('manual');
         expect(new Headers(calls[0][1]?.headers).get('accept')).toBe('application/json');
+    });
+
+    test('rejects a redirect instead of following it', async () => {
+        respond('', { status: 301, headers: { Location: 'https://elsewhere.example/' } });
+        await expect(fetchJson(URL)).rejects.toThrow('received HTTP 301');
     });
 
     test('accepts JSON media types with a suffix', async () => {

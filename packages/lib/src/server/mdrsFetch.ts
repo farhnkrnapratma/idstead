@@ -11,7 +11,7 @@ export async function fetchJson(value: string): Promise<unknown> {
     const url = checkGetUrl(value);
     const response = await fetch(url, {
         headers: { Accept: 'application/json' },
-        redirect: 'error',
+        redirect: 'manual',
         signal: AbortSignal.timeout(TIMEOUT_MS)
     }).catch(() => {
         throw new DefineError(`get() could not reach ${url}`);
