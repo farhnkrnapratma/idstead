@@ -8,6 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { sentrySvelteKit } from '@sentry/sveltekit/vite';
+import { bundledOpenTelemetryApiPlugin } from '../../tooling/vite/opentelemetry-api-plugin.ts';
 import { webpWasmPlugin } from '../../tooling/vite/webp-wasm-plugin.ts';
 
 const ENV_DIR = '../..';
@@ -17,6 +18,7 @@ export default defineConfig({
     envDir: ENV_DIR,
     plugins: [
         webpWasmPlugin(),
+        bundledOpenTelemetryApiPlugin(),
         sentrySvelteKit({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             telemetry: false,
