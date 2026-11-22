@@ -42,27 +42,27 @@ export function matchFuzzy(
     if (t.startsWith(q)) return { matched: true, score: 80 };
     if (t.includes(q)) return { matched: true, score: 60 };
 
-    let tIdx = 0;
+    return subsequenceMatch(t, q);
+}
+
+function subsequenceMatch(t: string, q: string): { matched: boolean; score: number } {
     let qIdx = 0;
     let score = 0;
     let consecutive = 0;
-
-    while (tIdx < t.length && qIdx < q.length) {
-        if (t[tIdx] === q[qIdx]) {
-            score += 10 + consecutive * 5;
-            consecutive++;
-            qIdx++;
-        } else {
+    let first = -1;
+    let tIdx = 0;
+    for (; tIdx < t.length && qIdx < q.length; tIdx++) {
+        if (t[tIdx] !== q[qIdx]) {
             consecutive = 0;
+            continue;
         }
-        tIdx++;
+        if (first === -1) first = tIdx;
+        score += 10 + consecutive * 5;
+        consecutive++;
+        qIdx++;
     }
-
-    if (qIdx === q.length) {
-        return { matched: true, score };
-    }
-
-    return { matched: false, score: 0 };
+    const close = qIdx === q.length && tIdx - first <= q.length * 3;
+    return close ? { matched: true, score: Math.min(score, 50) } : { matched: false, score: 0 };
 }
 
 export function compileSearchRegex(regexStr: string, options: SearchFlags): RegExp | null {

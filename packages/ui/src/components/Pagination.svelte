@@ -104,11 +104,14 @@ SPDX-License-Identifier: AGPL-3.0-only
                 <Button
                     type={entry === page ? 'primary' : 'outline'}
                     size={compact ? '3xs' : 'md'}
-                    class={cn(controlClass, 'text-xs font-bold sm:text-xs')}
+                    class={cn(
+                        compact ? 'h-6 min-w-6 shrink-0 px-1' : 'h-6! min-w-6 shrink-0 px-1.5 sm:h-9! sm:min-w-9',
+                        'text-xs font-bold tabular-nums sm:text-xs'
+                    )}
                     onclick={() => goTo(entry)}
                     aria-label="Go to page {entry}"
                     aria-current={entry === page ? 'page' : undefined}>
-                    {entry}
+                    {entry.toLocaleString('en-US')}
                 </Button>
             {/if}
         {/each}

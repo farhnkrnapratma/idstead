@@ -56,15 +56,15 @@ SPDX-License-Identifier: AGPL-3.0-only
     role="region"
     aria-label={title || 'Filter and sort options'}
     class={cn(
-        'relative z-20 flex flex-col gap-2.5 select-none',
+        '@container relative z-20 flex flex-col gap-2.5 select-none',
         embedded ? 'border-b border-line-subtle px-4 pb-3' : 'rounded-md glass-card p-3 sm:p-4',
         className
     )}>
-    <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center">
+    <div class="flex min-w-0 flex-col gap-2 @2xl:flex-row @2xl:flex-nowrap @2xl:items-center">
         {#if searchSlot || mobileGroups}
-            <div class="flex min-w-0 items-center gap-2 sm:contents">
+            <div class="flex min-w-0 items-center gap-2 @2xl:contents">
                 {#if searchSlot}
-                    <div class="min-w-0 flex-1 sm:min-w-20 sm:flex-[1_0_5rem]">
+                    <div class="min-w-0 flex-1 @2xl:min-w-48 @2xl:flex-[1_0_12rem]">
                         {@render searchSlot()}
                     </div>
                 {/if}
@@ -72,26 +72,26 @@ SPDX-License-Identifier: AGPL-3.0-only
                     <FilterMenu
                         groups={mobileGroups}
                         onClear={onClearFilters}
-                        class="ml-auto sm:hidden" />
+                        class="ml-auto @2xl:hidden" />
                 {/if}
             </div>
         {/if}
         <div
             class={cn(
-                'min-w-0 items-center justify-between gap-2 overflow-x-auto sm:contents',
+                'min-w-0 items-center justify-between gap-2 overflow-x-auto @2xl:contents',
                 mobileGroups ? 'hidden' : 'flex'
             )}>
             {#if filterControlsSlot}
                 <div
                     class={cn(
-                        'flex min-w-0 items-center gap-2 sm:contents',
+                        'flex min-w-0 items-center gap-2 @2xl:contents',
                         sortSlot ? 'flex-initial' : 'flex-1'
                     )}>
                     {@render filterControlsSlot()}
                 </div>
             {/if}
             {#if sortSlot}
-                <div class="min-w-0 flex-1 sm:contents">
+                <div class="min-w-0 flex-1 @2xl:contents">
                     {@render sortSlot()}
                 </div>
             {/if}
@@ -103,7 +103,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     {/if}
 
     {#if chipsSlot}
-        <div class={mobileGroups ? 'hidden sm:contents' : 'contents'}>
+        <div class={mobileGroups ? 'hidden @2xl:contents' : 'contents'}>
             {@render chipsSlot()}
         </div>
     {/if}

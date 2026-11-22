@@ -168,6 +168,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#if !author}
                 <EmptyState
                     icon={Sprout}
+                    headingLevel={1}
                     title="This site is being set up"
                     description="Check back soon." />
             {:else}
