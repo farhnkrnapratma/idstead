@@ -7,6 +7,11 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { faker } from '@faker-js/faker';
 
+type Counts = Record<
+    'posts' | 'comments' | 'reports' | 'feedback' | 'views' | 'activity' | 'subscribers',
+    number
+>;
+
 export const SEED_PROFILES = {
     small: {
         posts: 10,
@@ -35,10 +40,9 @@ export const SEED_PROFILES = {
         activity: 60_000,
         subscribers: 25_000
     }
-} as const;
+} satisfies Record<string, Counts>;
 
 export type SeedProfile = keyof typeof SEED_PROFILES;
-type Counts = (typeof SEED_PROFILES)[SeedProfile];
 
 const REPORT_REASONS = [
     'spam',
