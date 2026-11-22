@@ -2,7 +2,7 @@
 <p align="center">A self-hostable personal site and identity home: profile, blog, projects, resume, funding and contact pages, an admin portal and a public API, running on Cloudflare Workers.</p>
 <p align="center"><a href="https://fkp.my.id/">Live example</a></p>
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main) ![Coverage](https://img.shields.io/badge/coverage-90.0%25%20lines-brightgreen) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue) ![Runtime](https://img.shields.io/badge/runtime-Bun-black?logo=bun) ![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white) ![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white) ![Tests](https://img.shields.io/badge/tests-bun%20test-black?logo=bun)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue)
 
 ---
 
@@ -31,7 +31,7 @@ All personal content (name, bio, resume, skills, links, posts) lives in the data
 ## Getting started
 
 ```sh
-git clone <repository-url> idstead
+git clone https://github.com/farhnkrnapratma/idstead.git
 cd idstead
 bun install
 ```
@@ -53,33 +53,9 @@ bun install
 
 `bun run setup` does steps 1, 5 and 6 for you, along with the Cloudflare resources and the admin account, and an AI coding agent can drive it through the `setup-idstead` skill. See [setting up an instance](docs/001-getting-started/README.md).
 
-## Repository layout
+## Documentation
 
-| Path | Deploys as | What it is |
-| --- | --- | --- |
-| `apps/web` | the site's apex domain | Public site (SvelteKit): pages, blog, legal pages, feeds and discovery. |
-| `apps/admin` | `admin.` subdomain | Admin portal (SvelteKit). |
-| `apps/api` | `api.` subdomain, `/v1` | Public read-only REST API (Hono). |
-| `apps/jobs` | queue consumer and cron | Newsletter delivery, post render refreshes and storage cleanup. |
-| `packages/lib` |  | Site feature components, server helpers and API handlers. |
-| `packages/ui` |  | The design system (`@idstead/ui`): tokens, styles, UI primitives and stores. |
-| `packages/domain` |  | Pure helpers and types (`@idstead/domain`), including the instance configuration schema. |
-| `packages/data` |  | The server-only data layer (`@idstead/data`): repository ports and their adapters. |
-| `packages/mdrs/core` |  | The MDRS engine (`@mdrs/core`). |
-| `packages/mdrs/dom` |  | The browser side of MDRS (`@mdrs/dom`) and `mdrs.css`. |
-| `packages/mdrs/editor` |  | The Markdown editor (`@mdrs/editor`). |
-| `tooling/`, `scripts/` |  | Build tooling, Git hooks and one-off migration commands. |
-
-## Development
-
-```sh
-bun run test     # regression and contract tests
-bun run check    # biome check, instance config, svelte-check and tsc
-bun run lint     # biome lint: import boundaries, deprecated imports and recommended rules
-bun run build    # every app
-```
-
-CircleCI (`.circleci/config.yml`) runs these checks plus a secret scan and commitlint on every push. It does not gate Workers Builds, so run them locally before merging to `main`. Architecture, API, operations and security documentation is in [`docs/`](docs/README.md).
+Architecture, configuration, API, operations and security documentation is in [`docs/`](docs/README.md). The apps run on SvelteKit and Hono with Bun, and deploy as Cloudflare Workers.
 
 ## Public API
 
