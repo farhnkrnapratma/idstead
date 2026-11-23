@@ -77,6 +77,15 @@ jobs:
                       - bun-v1-
             - run: bun install --frozen-lockfile
             - run: bun run coverage
+            - run:
+                  name: Upload coverage to Codecov
+                  command: |
+                      if [ -z "${CODECOV_TOKEN:-}" ]; then echo "CODECOV_TOKEN is not set; skipping the upload."; exit 0; fi
+                      curl -fsSL -o codecov https://cli.codecov.io/v11.3.2/linux/codecov
+                      echo "8e1bfb71661378530f6ea21e82b414095899e565cbb4cf555c613064be17b973  codecov" | sha256sum -c -
+                      chmod +x codecov
+                      ./codecov upload-process --fail-on-error --disable-search --git-service github \
+                          --slug farhnkrnapratma/idstead --file coverage/lcov.info
 
     secrets:
         docker:
@@ -116,6 +125,7 @@ workflows:
         jobs:
             - reuse
             - check
-            - coverage
+            - coverage:
+                  context: codecov
             - secrets
             - commitlint
