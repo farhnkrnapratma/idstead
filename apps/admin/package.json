@@ -23,7 +23,7 @@
         "@idstead/lib": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@jsquash/avif": "^2.1.1",
-        "@lucide/svelte": "^1.77.0",
+        "@lucide/svelte": "^1.78.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/editor": "workspace:*",
