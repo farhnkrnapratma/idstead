@@ -119,13 +119,6 @@ function parseGroupId(id: string): [string, string, string, string] {
     ];
 }
 
-function matchesType(row: Row, type: string): boolean {
-    if (type === 'all' || row.kind === type) return true;
-    if (!FEEDBACK_KINDS.includes(String(row.kind))) return false;
-    const vote = parseObject(row.meta).vote;
-    return (type === 'helpful' && vote === 'yes') || (type === 'unhelpful' && vote === 'no');
-}
-
 function metaSearchText(row: Row): string {
     const meta = parseObject(row.meta);
     return ['page_title', 'author', 'comment', 'reason', 'details']
@@ -244,7 +237,13 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         const focus = typeof o.focus === 'string' ? o.focus : null;
         const sort = text(o.sort);
         const asc = o.direction === 'asc';
-        const sources: Array<{ id: string; payload: unknown; n: number; t: string | null }> = [];
+        const sources: Array<{
+            id: string;
+            payload: unknown;
+            row?: Row;
+            n: number;
+            t: string | null;
+        }> = [];
 
         if (section === 'reports') {
             const rows = await all(
@@ -413,22 +412,23 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                 });
         } else if (section === 'notifications' || section === 'notification_events') {
             const timeZone = text(o.timeZone) || 'UTC';
+            const group = section === 'notification_events' ? parseGroupId(text(o.id)) : null;
+            const columns = group || query ? '*' : 'id, kind, created_at, pinned_at';
             const rows = (
                 await all(
-                    `SELECT * FROM db_admin_notifications
+                    `SELECT ${columns} FROM db_admin_notifications
                      WHERE dismissed_at IS NULL AND created_at <= ?1 AND (?2 IS NULL OR created_at >= ?2) AND created_at < ?3
-                         AND (?4 = 'all' OR (?4 = 'read') = (read_at IS NOT NULL))`,
+                         AND (?4 = 'all' OR (?4 = 'read') = (read_at IS NOT NULL))
+                         AND (?5 = 'all' OR kind = ?5 OR (kind IN ('post_feedback', 'legal_feedback')
+                             AND ((?5 = 'helpful' AND json_extract(meta, '$.vote') = 'yes')
+                                 OR (?5 = 'unhelpful' AND json_extract(meta, '$.vote') = 'no'))))`,
                     asOf,
                     from,
                     to,
-                    text(o.read) || 'all'
+                    text(o.read) || 'all',
+                    text(o.type) || 'all'
                 )
-            ).filter(
-                row =>
-                    matchesType(row, text(o.type) || 'all') &&
-                    (!query || matches(metaSearchText(row)))
-            );
-            const group = section === 'notification_events' ? parseGroupId(text(o.id)) : null;
+            ).filter(row => !query || matches(metaSearchText(row)));
             const selected = group
                 ? rows.filter(
                       row =>
@@ -439,43 +439,42 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
                           (!focus || row.id === focus)
                   )
                 : rows;
-            const items = await notificationItems(selected.map(row => String(row.id)));
-            for (const row of selected) {
-                const item = items.get(String(row.id));
-                if (!item) continue;
-                const createdAt = String(row.created_at);
-                sources.push(
-                    group
-                        ? {
-                              id: String(row.id),
-                              payload: {
-                                  id: row.id,
-                                  title: text(parseObject(row.meta).page_title) || 'Notification',
-                                  total: 1,
-                                  latest: createdAt,
-                                  event: item
-                              },
-                              n: 0,
-                              t: createdAt
-                          }
-                        : {
-                              id: String(row.id),
-                              payload: {
-                                  id: row.id,
-                                  title: item.page_title ?? 'Notification',
-                                  total: 1,
-                                  latest: createdAt,
-                                  event: item
-                              },
-                              n: item.pinned_at === null ? 0 : asc ? -1 : 1,
-                              t:
-                                  sort === 'type'
-                                      ? String(row.kind)
-                                      : sort === 'page'
-                                        ? text(item.page_title ?? 'Notification').toLowerCase()
-                                        : createdAt
-                          }
-                );
+            if (!group && sort !== 'page') {
+                for (const row of selected) {
+                    const createdAt = String(row.created_at);
+                    sources.push({
+                        id: String(row.id),
+                        payload: null,
+                        row,
+                        n: row.pinned_at == null ? 0 : asc ? -1 : 1,
+                        t: sort === 'type' ? String(row.kind) : createdAt
+                    });
+                }
+            } else {
+                const items = await notificationItems(selected.map(row => String(row.id)));
+                for (const row of selected) {
+                    const item = items.get(String(row.id));
+                    if (!item) continue;
+                    const createdAt = String(row.created_at);
+                    sources.push({
+                        id: String(row.id),
+                        payload: {
+                            id: row.id,
+                            title: group
+                                ? text(parseObject(row.meta).page_title) || 'Notification'
+                                : (item.page_title ?? 'Notification'),
+                            total: 1,
+                            latest: createdAt,
+                            event: item
+                        },
+                        n: group || item.pinned_at === null ? 0 : asc ? -1 : 1,
+                        t: group
+                            ? createdAt
+                            : sort === 'page'
+                              ? text(item.page_title ?? 'Notification').toLowerCase()
+                              : createdAt
+                    });
+                }
             }
         } else if (section === 'comments') {
             const rows = await all(
@@ -523,8 +522,22 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
         );
         const limit = Math.min(20, Math.max(1, Number(o.limit ?? 20) || 20));
         const page = Math.min(10000, Math.max(1, Number(o.page ?? 1) || 1));
+        const visible = sources.slice((page - 1) * limit, page * limit);
+        const unloaded = visible.filter(source => source.row);
+        const loaded = await notificationItems(unloaded.map(source => source.id));
+        for (const source of unloaded) {
+            const item = loaded.get(source.id);
+            if (item)
+                source.payload = {
+                    id: source.row?.id,
+                    title: item.page_title ?? 'Notification',
+                    total: 1,
+                    latest: String(source.row?.created_at),
+                    event: item
+                };
+        }
         return {
-            items: sources.slice((page - 1) * limit, page * limit).map(source => source.payload),
+            items: visible.filter(source => source.payload !== null).map(source => source.payload),
             total: sources.length,
             page,
             asOf
