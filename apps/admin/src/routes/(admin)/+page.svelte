@@ -957,10 +957,6 @@ SPDX-License-Identifier: AGPL-3.0-only
     let savedAvatarPreview = $state('');
     let savedBannerPreview = $state('');
 
-    const adminAvatarUrl = $derived(
-        savedAvatarPreview || avatarSource(authorState) || '/avatar.png'
-    );
-
     const authorValidation = new FieldValidation();
     const authorLabels: Record<string, string> = {
         name: 'Name',
@@ -1038,6 +1034,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     };
 
     const avatarSeedValue = $derived(avatarSeed(authorState.name, authorState.id));
+    const adminAvatarUrl = $derived(
+        savedAvatarPreview || avatarSource(authorState) || avatarPreview(avatarSeedValue)
+    );
     const bannerInput = $derived<BannerInput>({
         name: authorState.name,
         siteUrl: authorState.siteUrl.trim() || publicEnv.PUBLIC_SITE_URL || '',
