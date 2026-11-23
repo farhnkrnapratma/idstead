@@ -10,10 +10,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     import { splitHighlightedHtmlLines } from '@mdrs/dom/codeBlocks.ts';
     import { highlightMarkdown } from './highlight';
     import type { EditorPreferences } from './preferences.svelte';
+    import type { ProblemSeverity } from './problems';
     import {
         continueBlock,
         cursorPosition,
         insertIndent,
+        offsetAt,
         wrapSelection,
         type CursorPosition,
         type TextEdit
@@ -26,6 +28,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         placeholder: string;
         minHeight: string;
         cursor?: CursorPosition;
+        problemLines?: Map<number, ProblemSeverity>;
         onblur?: () => void;
     }
 
@@ -36,8 +39,19 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         placeholder,
         minHeight,
         cursor = $bindable({ line: 1, column: 1 }),
+        problemLines = new Map(),
         onblur
     }: Props = $props();
+
+    const PROBLEM_LINE_NUMBER = { error: 'text-fg-danger', warning: 'text-fg-warning' } as const;
+
+    function lineNumberClass(line: number) {
+        const problem = problemLines.get(line);
+        if (problem) return cn('font-medium', PROBLEM_LINE_NUMBER[problem]);
+        return cursor.line === line ?
+                'editor-line-number-active font-medium'
+            :   'editor-gutter-muted';
+    }
 
     let textarea = $state<HTMLTextAreaElement | null>(null);
     let pre = $state<HTMLPreElement | null>(null);
@@ -93,6 +107,17 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         textarea?.focus();
     }
 
+    export function goTo(position: CursorPosition) {
+        if (!textarea) return;
+        const offset = offsetAt(value || '', position);
+        textarea.focus({ preventScroll: true });
+        textarea.setSelectionRange(offset, offset);
+        updateCursor();
+        pre?.querySelectorAll('.editor-code-line')[position.line - 1]?.scrollIntoView({
+            block: 'center'
+        });
+    }
+
     function handleKeyDown(event: KeyboardEvent) {
         const target = event.currentTarget as HTMLTextAreaElement;
         if (event.key === 'Tab') {
@@ -144,9 +169,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                     <div
                         class={cn(
                             'editor-gutter-num box-border flex items-start justify-center px-1 text-center font-mono leading-6 tabular-nums select-none',
-                            cursor.line === i + 1 ?
-                                'editor-line-number-active font-medium'
-                            :   'editor-gutter-muted'
+                            lineNumberClass(i + 1)
                         )}>
                         {i + 1}
                     </div>
@@ -214,9 +237,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                             )}>{#if preferences.showLineNumbers}<span
                                     class={cn(
                                         'editor-gutter-num sticky left-0 z-20 box-border! inline-flex! shrink-0! items-start! justify-center! self-stretch! border-r px-1 text-center font-mono tabular-nums select-none',
-                                        cursor.line === i + 1 ?
-                                            'editor-line-number-active font-medium'
-                                        :   'editor-gutter-muted'
+                                        lineNumberClass(i + 1)
                                     )}
                                     style:width="var(--editor-gutter-width)"
                                     style:min-width="var(--editor-gutter-width)"

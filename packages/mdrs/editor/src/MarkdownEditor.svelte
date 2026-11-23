@@ -19,6 +19,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     import EditorPreview from './EditorPreview.svelte';
     import EditorStatusBar from './EditorStatusBar.svelte';
     import { EditorPreferences } from './preferences.svelte';
+    import { editorProblems, problemLines, type EditorProblem } from './problems';
 
     interface Props {
         value?: string;
@@ -63,6 +64,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
     const editorTheme = $derived<'light' | 'dark'>(themeStore.isDark ? 'dark' : 'light');
     const lineEnding = $derived<'LF' | 'CRLF'>((value || '').includes('\r\n') ? 'CRLF' : 'LF');
+    let problems = $state<EditorProblem[]>([]);
+    const linesWithProblems = $derived(problemLines(problems));
+
+    $effect(() => {
+        const content = value || '';
+        const timer = setTimeout(() => {
+            problems = editorProblems(content);
+        }, 300);
+        return () => clearTimeout(timer);
+    });
 
     $effect(() => {
         if (!preferences.ready || !preferences.autosaveEnabled || !autosaveKey || !value) return;
@@ -143,6 +154,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 bind:this={codeArea}
                 bind:value
                 bind:cursor
+                problemLines={linesWithProblems}
                 {preferences}
                 theme={editorTheme}
                 {placeholder}
@@ -163,8 +175,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             line={cursor.line}
             column={cursor.column}
             {lineEnding}
+            {problems}
             stickyClass={stickyBottomClass}
             showAutosave={Boolean(autosaveKey)}
-            onFocusEditor={() => codeArea?.focus()} />
+            onFocusEditor={() => codeArea?.focus()}
+            onGoTo={problem => codeArea?.goTo(problem)} />
     {/if}
 </div>
