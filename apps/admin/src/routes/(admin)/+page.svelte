@@ -672,14 +672,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 
     const LOCATION_TYPES = ['On-Site', 'Remote', 'Hybrid'] as const;
 
-    let siteAuthorName = $state('');
+    let siteProfile = $state<AuthorProfile | null>(null);
+    const siteAuthorName = $derived(siteProfile?.name ?? '');
     async function loadSiteAuthorName() {
-        if (siteAuthorName) return;
+        if (siteProfile) return;
         try {
             const { profile } = await adminRequest<{ profile: AuthorProfile | null }>('author', {
                 params: { part: 'profile' }
             });
-            siteAuthorName = profile?.name ?? '';
+            siteProfile = profile;
         } catch {}
     }
     let authorState = $state<AuthorProfile>({
@@ -697,7 +698,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         siteUrl: '',
         skills: []
     });
-    const adminUserName = $derived(authorState.name);
+    const adminUserName = $derived(authorState.name || siteAuthorName);
 
     let legalPagesData = $state<Record<string, { title: string; content: string }>>({
         privacy: { title: 'Privacy Policy', content: '' },
@@ -1035,7 +1036,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
     const avatarSeedValue = $derived(avatarSeed(authorState.name, authorState.id));
     const adminAvatarUrl = $derived(
-        savedAvatarPreview || avatarSource(authorState) || avatarPreview(avatarSeedValue)
+        savedAvatarPreview
+            || avatarSource(authorState)
+            || (authorInitial ? '' : avatarSource(siteProfile))
+            || avatarPreview(avatarSeedValue)
     );
     const bannerInput = $derived<BannerInput>({
         name: authorState.name,
@@ -2163,6 +2167,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         (async () => {
             if (!active) return;
             adminUserEmail = page.data.admin?.email ?? '';
+            void loadSiteAuthorName();
 
             const pendingToast = sessionStorage.getItem('admin_toast');
             if (pendingToast) {
@@ -3313,7 +3318,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </script>
 
 <svelte:head>
-    <title>Admin Console</title>
+    <title>{page.data.localData ? 'Local · Admin Console' : 'Admin Console'}</title>
 </svelte:head>
 
 <SkipLink />
@@ -3427,10 +3432,19 @@ SPDX-License-Identifier: AGPL-3.0-only
                         <span class="truncate text-xs leading-tight font-bold text-fg">
                             {adminUserName}
                         </span>
-                        <span
-                            class="truncate text-xxs leading-tight text-fg-muted"
-                            title={adminUserEmail}>
-                            {adminUserEmail}
+                        <span class="flex min-w-0 items-baseline gap-1 text-xxs leading-tight">
+                            <span
+                                class="truncate text-fg-muted"
+                                title={adminUserEmail}>
+                                {adminUserEmail}
+                            </span>
+                            {#if page.data.localData}
+                                <span
+                                    class="shrink-0 font-bold text-fg-warning"
+                                    title="This dev server reads the local database, not production.">
+                                    · Local
+                                </span>
+                            {/if}
                         </span>
                     {/if}
                 </span>

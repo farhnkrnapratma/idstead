@@ -11,6 +11,7 @@ export const load: LayoutServerLoad = async ({ locals, platform }) => {
         admin: admin
             ? { email: admin.email, signedInAt: new Date(admin.authTime * 1000).toISOString() }
             : null,
-        accessTeamDomain: accessConfig(platform)?.teamDomain ?? null
+        accessTeamDomain: accessConfig(platform)?.teamDomain ?? null,
+        localData: import.meta.env.DEV === true
     };
 };
