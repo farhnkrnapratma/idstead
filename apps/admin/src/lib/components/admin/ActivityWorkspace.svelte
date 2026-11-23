@@ -54,6 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import Avatar from '@idstead/ui/components/Avatar.svelte';
     import Card from '@idstead/ui/components/Card.svelte';
     import Button from '@idstead/ui/components/Button.svelte';
+    import { toastStore } from '@idstead/ui';
     import Input from '@idstead/ui/components/Input.svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import Pagination from '@idstead/ui/components/Pagination.svelte';
@@ -94,7 +95,8 @@ SPDX-License-Identifier: AGPL-3.0-only
     let autoRefresh: ReturnType<typeof setTimeout> | undefined;
     let busy = $state(false);
     let actionError = $state('');
-    let confirmation = $state<'group' | 'all' | null>(null);
+    let confirmation = $state<'group' | 'all' | 'comment' | null>(null);
+    let commentToDelete = $state<string | null>(null);
     let clearOperation = $state.raw<ClearOperation | null>(null);
     let preparedGroup = $state.raw<{
         id: string;
@@ -496,7 +498,25 @@ SPDX-License-Identifier: AGPL-3.0-only
             busy = false;
         }
     }
+    async function deleteReportedComment() {
+        if (!commentToDelete) return;
+        busy = true;
+        try {
+            await adminActivityRequest('workspace', {}, { action: 'delete_comment', id: commentToDelete });
+            confirmation = null;
+            commentToDelete = null;
+            detail.invalidate();
+            navigate({ selected: null, detailPage: null, focus: null });
+            await refresh();
+            toastStore.success('Comment deleted.');
+        } catch (caught) {
+            actionError = caught instanceof Error ? caught.message : 'Unable to delete the comment.';
+        } finally {
+            busy = false;
+        }
+    }
     async function confirmDelete() {
+        if (confirmation === 'comment') return deleteReportedComment();
         if (confirmation === 'group') return groupAction(true);
         if (!clearOperation) return;
         busy = true;
@@ -934,6 +954,19 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             {detail.data.context.id}
                                         </span>
                                     </div>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        <Button
+                                            size="sm"
+                                            type="danger"
+                                            disabled={busy}
+                                            onclick={() => {
+                                                commentToDelete = detail.data!.context!.id;
+                                                confirmation = 'comment';
+                                            }}>
+                                            {#snippet leading()}<Trash class="size-3.5" />{/snippet}
+                                            Delete comment
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </Card>
@@ -1347,9 +1380,10 @@ SPDX-License-Identifier: AGPL-3.0-only
                 : area === 'feedback' ? Users
                 : Bell}
                 title={listFiltersActive ? 'No matching activity' : `No ${area} yet`}
-                description={listFiltersActive ?
-                    'Try another period or filter.'
-                :   'Activity will appear here when it becomes available.'} />
+                description={listFiltersActive ? 'Try another period or filter.'
+                : area === 'reports' ? 'Comments that readers report appear here.'
+                : area === 'feedback' ? 'Helpful and unhelpful votes on your pages appear here.'
+                : 'New comments, reports, feedback and contact messages appear here.'} />
         {/if}
     </div>
 {/snippet}
@@ -1382,16 +1416,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <ConfirmationDialog
     isOpen={confirmation !== null}
-    title={confirmation === 'all' ? 'Clear read notifications?' : 'Delete this notification group?'}
-    message={confirmation === 'all' ?
+    title={confirmation === 'comment' ? 'Delete this comment?'
+    : confirmation === 'all' ? 'Clear read notifications?'
+    : 'Delete this notification group?'}
+    message={confirmation === 'comment' ?
+        'The comment, its replies and every report about it are removed for good. This cannot be undone.'
+    : confirmation === 'all' ?
         `Delete ${pluralize(clearOperation?.count ?? 0, 'read notification', undefined, formatCount)}? Unread notifications stay, and reports and feedback remain saved.`
     :   `Delete ${pluralize(preparedGroup?.count ?? 0, 'event', undefined, formatCount)} in this group? Reports and feedback remain saved.`}
-    confirmLabel={confirmation === 'all' ? 'Clear read' : 'Delete group'}
+    confirmLabel={confirmation === 'comment' ? 'Delete comment'
+    : confirmation === 'all' ? 'Clear read'
+    : 'Delete group'}
     isDestructive
     isLoading={busy}
     onConfirm={confirmDelete}
     onCancel={() => {
         confirmation = null;
+        commentToDelete = null;
         preparedGroup = null;
         clearOperation = null;
         actionError = '';

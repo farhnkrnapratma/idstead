@@ -9,6 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { scaleThreshold } from 'd3-scale';
     import { ChevronLeft, ChevronRight, CalendarDays } from '@lucide/svelte';
     import {
+        calendarThresholds,
         calendarWeekColumns,
         formatCount,
         hasChartActivity,
@@ -47,13 +48,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         })
     );
     const hasActivity = $derived(hasChartActivity(data.days.map(row => row.views)));
-    const maximum = $derived(Math.max(1, ...data.days.map(row => row.views)));
-    const thresholds = $derived([
-        1,
-        Math.ceil(maximum / 4) + 1,
-        Math.ceil(maximum / 2) + 1,
-        Math.ceil((maximum * 3) / 4) + 1
-    ]);
+    const thresholds = $derived(calendarThresholds(data.days.map(row => row.views)));
     const colors = [
         'var(--color-calendar-0)',
         'var(--color-calendar-1)',

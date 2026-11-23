@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { VIEWS_RANGES, type ViewsRange } from '#lib/components/admin/viewsRange.ts';
     import {
         ADMIN_CHART_AXIS_CLASSES,
-        ADMIN_CHART_PADDING,
+        adminChartPadding,
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
@@ -216,7 +216,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 yDomain={[0, maxValue]}
                 series={series.map(s => ({ key: s.key, color: s.color, value: s.key }))}
                 seriesLayout={chartType === 'bar' ? 'stack' : undefined}
-                padding={ADMIN_CHART_PADDING}>
+                padding={adminChartPadding(maxValue)}>
                 <Svg clip>
                     <Axis
                         placement="bottom"

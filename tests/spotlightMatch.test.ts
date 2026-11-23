@@ -46,3 +46,15 @@ describe('spotlight matching', () => {
         expect(highlightChunks('text', '   ', plain)).toEqual([{ text: 'text', match: false }]);
     });
 });
+
+test('fuzzy matches need the letters close together', () => {
+    const flags = { caseSensitive: false, wholeWord: false, regex: false };
+    expect(
+        matchFuzzy('Toggle distraction-free reading mode for articles', 'mdrs', flags).matched
+    ).toBe(false);
+    expect(matchFuzzy('markdown rich syntax', 'mrs', flags).matched).toBe(false);
+    expect(matchFuzzy('mdx-rs', 'mdrs', flags)).toEqual({ matched: true, score: 50 });
+    expect(matchFuzzy('mdrs', 'mdrs', flags).score).toBeGreaterThan(
+        matchFuzzy('mdx-rs', 'mdrs', flags).score
+    );
+});

@@ -56,6 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#if isEmpty}
                 <EmptyState
                     icon={FileUser}
+                    headingLevel={1}
                     title="No resume yet"
                     description="Check back soon." />
             {:else}

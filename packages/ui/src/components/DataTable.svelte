@@ -86,14 +86,13 @@ SPDX-License-Identifier: AGPL-3.0-only
                     {title}
                 </h2>
             {/if}
-            {#if title && meta}
+            {#if meta}
                 <span
-                    class="text-fg-muted"
-                    aria-hidden="true">
-                    ·
-                </span>
+                    class={cn(
+                        'flex min-w-0 items-center gap-1.5 empty:hidden',
+                        title && "sm:before:text-fg-muted sm:before:content-['·']"
+                    )}>{@render meta()}</span>
             {/if}
-            {#if meta}{@render meta()}{/if}
             {#if header}{@render header()}{/if}
             {#if actions}
                 <div class="ml-auto flex shrink-0 items-center gap-2">{@render actions()}</div>

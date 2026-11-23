@@ -50,6 +50,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         Bell,
         Bolt,
         Bot,
+        ChevronDown,
         CircleCheckBig,
         CircleDotDashed,
         Copy,
@@ -193,6 +194,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     import { copyText, downloadUrl as downloadFrom } from '@idstead/ui/utils/fileActions.ts';
     import {
         KEYSERVER_PRESETS,
+        keyserverFor,
         formatFingerprint,
         formatUserId,
         wkdEmails,
@@ -1367,8 +1369,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     let keyError = $state('');
     let keyserverError = $state('');
     let showRemoveSignatureDialog = $state(false);
-    let keyserverChoice = $state<Record<string, boolean>>({});
-    let customKeyserver = $state('');
+    let keyserverDraft = $state('');
+    let replaceKeyInput = $state<HTMLInputElement | null>(null);
+    let replaceSignatureInput = $state<HTMLInputElement | null>(null);
     let showRemoveKeyDialog = $state(false);
 
     const resumeSignedByKey = $derived(
@@ -1446,20 +1449,6 @@ SPDX-License-Identifier: AGPL-3.0-only
         return resumeFileUrl(output, publicEnv.PUBLIC_API_BASE_URL);
     }
 
-    function syncKeyserverChoice(key: PublicOpenPgpKey | null) {
-        const urls = new Set(key?.keyservers.map(server => server.url) ?? []);
-        keyserverChoice = Object.fromEntries(
-            KEYSERVER_PRESETS.map(preset => [
-                preset.id,
-                Boolean(key && urls.has(preset.url(key.fingerprint)))
-            ])
-        );
-        const presetUrls = new Set(
-            key ? KEYSERVER_PRESETS.map(preset => preset.url(key.fingerprint)) : []
-        );
-        customKeyserver = key?.keyservers.find(server => !presetUrls.has(server.url))?.url ?? '';
-    }
-
     async function responseMessage(response: Response, fallback: string) {
         const res = await response.json().catch(() => ({}));
         if (response.ok && res.success) return { res, error: '' };
@@ -1514,67 +1503,93 @@ SPDX-License-Identifier: AGPL-3.0-only
         }
     }
 
-    function chosenKeyservers(fingerprint: string): OpenPgpKeyserver[] {
-        const servers: OpenPgpKeyserver[] = KEYSERVER_PRESETS.filter(
-            preset => keyserverChoice[preset.id]
-        ).map(preset => ({ label: preset.label, url: preset.url(fingerprint) }));
-        const custom = customKeyserver.trim();
-        if (custom) {
-            const parsed = new URL(custom);
-            if (parsed.protocol !== 'https:') throw new Error('Keyservers must use https.');
-            servers.push({ label: parsed.host, url: custom });
+    const suggestedKeyservers = $derived(
+        openPgpKey ?
+            KEYSERVER_PRESETS.filter(
+                preset =>
+                    !openPgpKey!.keyservers.some(server => server.url === preset.url(openPgpKey!.fingerprint))
+            ).map(preset => preset.host)
+        :   []
+    );
+
+    async function saveKeyservers(keyservers: OpenPgpKeyserver[]) {
+        keyserverError = '';
+        isSavingKey = true;
+        try {
+            const response = await adminFetch('/api/internal/admin/openpgp-key', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ keyservers })
+            });
+            const { res, error } = await responseMessage(response, 'Could not save the keyservers.');
+            if (error) throw new Error(error);
+            openPgpKey = { ...res.key, armored: res.key.armored ?? '' };
+            return true;
+        } catch (err) {
+            keyserverError = err instanceof Error ? err.message : 'Could not save the keyservers.';
+            return false;
+        } finally {
+            isSavingKey = false;
         }
-        return servers;
     }
 
-    async function saveOpenPgpKey(file: File | null = null) {
+    async function addKeyserver(input: string) {
+        if (!openPgpKey || !input.trim()) return;
+        const server = keyserverFor(input, openPgpKey.fingerprint);
+        if (!server) {
+            keyserverError = 'Enter a keyserver host such as keys.openpgp.org, or a full https:// URL.';
+            return;
+        }
+        if (openPgpKey.keyservers.some(item => item.url === server.url)) {
+            keyserverError = `${server.label} is already listed.`;
+            return;
+        }
+        if (openPgpKey.keyservers.length >= 8) {
+            keyserverError = 'Use at most 8 keyservers.';
+            return;
+        }
+        if (await saveKeyservers([...openPgpKey.keyservers, server])) {
+            keyserverDraft = '';
+            toastStore.success(`${server.label} added.`);
+        }
+    }
+
+    async function removeKeyserver(url: string) {
+        if (!openPgpKey) return;
+        const server = openPgpKey.keyservers.find(item => item.url === url);
+        if (await saveKeyservers(openPgpKey.keyservers.filter(item => item.url !== url)))
+            toastStore.success(`${server?.label ?? 'Keyserver'} removed.`);
+    }
+
+    async function saveOpenPgpKey(file: File) {
         keyError = '';
-        keyserverError = '';
-        if (file && file.size > 64 * 1024) {
+        if (file.size > 64 * 1024) {
             keyError = 'Public keys must be at most 64 KiB.';
             return;
         }
         isSavingKey = true;
         try {
-            let key: { armored?: string; base64?: string } | undefined;
-            if (file) {
-                const bytes = new Uint8Array(await file.arrayBuffer());
-                const text = new TextDecoder().decode(bytes);
-                key =
-                    text.trimStart().startsWith('-----BEGIN PGP ') ?
-                        { armored: text }
-                    :   {
-                            base64: btoa(
-                                Array.from(bytes, byte => String.fromCharCode(byte)).join('')
-                            )
-                        };
-            }
-            let keyservers: OpenPgpKeyserver[] = [];
-            try {
-                keyservers = openPgpKey && !file ? chosenKeyservers(openPgpKey.fingerprint) : [];
-            } catch {
-                throw new Error('The custom keyserver must be a full https:// URL.');
-            }
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            const text = new TextDecoder().decode(bytes);
+            const key =
+                text.trimStart().startsWith('-----BEGIN PGP ') ?
+                    { armored: text }
+                :   { base64: btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join('')) };
             const response = await adminFetch('/api/internal/admin/openpgp-key', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    key,
-                    keyservers: file ? (openPgpKey?.keyservers ?? []) : keyservers
-                })
+                body: JSON.stringify({ key, keyservers: openPgpKey?.keyservers ?? [] })
             });
             const { res, error } = await responseMessage(response, 'Could not save the key.');
             if (error) throw new Error(error);
             openPgpKey = { ...res.key, armored: res.key.armored ?? '' };
-            syncKeyserverChoice(openPgpKey);
             if (res.signatureCleared) {
                 resumeDocState = { ...resumeDocState, signedAt: null, signerFingerprint: null };
                 toastStore.success('Key saved. Sign the resume again with the new key.');
-            } else toastStore.success(file ? 'OpenPGP key published.' : 'Keyservers saved.');
+            } else toastStore.success('OpenPGP key published.');
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Could not save the key.';
-            if (file) keyError = message;
-            else keyserverError = message;
+            keyError = err instanceof Error ? err.message : 'Could not save the key.';
+            if (openPgpKey) toastStore.error(keyError);
         } finally {
             isSavingKey = false;
         }
@@ -1591,7 +1606,6 @@ SPDX-License-Identifier: AGPL-3.0-only
             const { error } = await responseMessage(response, 'Could not delete the key.');
             if (error) throw new Error(error);
             openPgpKey = null;
-            syncKeyserverChoice(null);
             resumeDocState = { ...resumeDocState, signedAt: null, signerFingerprint: null };
             toastStore.success('OpenPGP key deleted.');
         } catch (err) {
@@ -2247,7 +2261,6 @@ SPDX-License-Identifier: AGPL-3.0-only
             }
             resumeDocState = doc || { filename: '', fileUrl: '', hash: '', isActive: false };
             openPgpKey = pgpKey;
-            syncKeyserverChoice(pgpKey);
         } catch (err) {
             console.error('Failed to load admin supplementary data:', err);
         }
@@ -3563,7 +3576,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 });
             if (typeof scroll === 'number') queueMicrotask(() => element.scrollTo({ top: scroll }));
         }}
-        class="min-w-0 flex-1 p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
+        class="relative min-w-0 flex-1 overscroll-contain p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
             isLegalSlug(activeAdminTab) || (activeAdminTab === 'posts' && !!editPostParam)
         ) ?
             'pt-0! pb-0!'
@@ -5389,11 +5402,40 @@ SPDX-License-Identifier: AGPL-3.0-only
                             ariaLabel="More resume actions"
                             items={[
                                 {
+                                    label: 'View PDF',
+                                    icon: ArrowUpRight,
+                                    onSelect: () =>
+                                        window.open(resumeDocState.fileUrl, '_blank', 'noopener')
+                                },
+                                {
+                                    label: 'Download all files (ZIP)',
+                                    icon: FileArchive,
+                                    onSelect: () => downloadFrom(resumeApiFile('zip'))
+                                },
+                                {
                                     label: 'Regenerate',
                                     icon: RefreshCw,
                                     disabled: isGeneratingPdf,
                                     onSelect: () => executeGenerateResumePdf({ force: true })
                                 },
+                                ...(resumeSignedByKey ?
+                                    [
+                                        { divider: true as const },
+                                        {
+                                            label: 'Replace signature',
+                                            icon: ShieldCheck,
+                                            disabled: isSavingSignature,
+                                            onSelect: () => replaceSignatureInput?.click()
+                                        },
+                                        {
+                                            label: 'Delete signature',
+                                            icon: ShieldAlert,
+                                            danger: true,
+                                            disabled: isSavingSignature,
+                                            onSelect: () => (showRemoveSignatureDialog = true)
+                                        }
+                                    ]
+                                :   []),
                                 { divider: true },
                                 {
                                     label: 'Delete resume',
@@ -5448,20 +5490,21 @@ SPDX-License-Identifier: AGPL-3.0-only
                         {/snippet}
                     </EmptyState>
                 {:else}
-                    <div class="rounded-sm border border-line-subtle bg-surface">
-                        <div
-                            class="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-                            <div class="flex min-w-0 items-center gap-3.5">
+                    <div class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-center gap-3">
                                 <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
-                                    <FileUser class="size-5.5" />
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
+                                    <FileUser class="size-5" />
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="font-mono text-sm font-semibold break-all text-fg">
+                                    <p
+                                        class="truncate font-mono text-sm font-semibold text-fg"
+                                        title={resumeDocState.filename}>
                                         {resumeDocState.filename}
                                     </p>
                                     <div
-                                        class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
+                                        class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
                                         {#if resumeVersion}
                                             <Badge size="sm">{resumeVersion}</Badge>
                                         {/if}
@@ -5474,15 +5517,6 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                     aria-hidden="true" />
                                                 Signed
                                             </Badge>
-                                        {:else if resumeDocState.signedAt}
-                                            <Badge
-                                                size="sm"
-                                                variant="warning">
-                                                <ShieldAlert
-                                                    class="size-3 shrink-0"
-                                                    aria-hidden="true" />
-                                                Signed with another key
-                                            </Badge>
                                         {:else}
                                             <Badge
                                                 size="sm"
@@ -5490,7 +5524,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                                                 <ShieldAlert
                                                     class="size-3 shrink-0"
                                                     aria-hidden="true" />
-                                                Unsigned
+                                                {resumeDocState.signedAt ? 'Signed with another key' : 'Unsigned'}
                                             </Badge>
                                         {/if}
                                         {#if resumeLastUpdated}
@@ -5499,91 +5533,30 @@ SPDX-License-Identifier: AGPL-3.0-only
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                                <Button
-                                    htmlType="button"
-                                    type="secondary"
-                                    size="sm"
-                                    onclick={() =>
-                                        window.open(resumeDocState.fileUrl, '_blank', 'noopener')}>
-                                    {#snippet leading()}
-                                        <ArrowUpRight
-                                            strokeWidth={1.5}
-                                            class="size-3.5" />
-                                    {/snippet}
-                                    <span>View PDF</span>
-                                </Button>
-                                <Button
-                                    htmlType="button"
-                                    type="secondary"
-                                    size="sm"
-                                    onclick={() => downloadFrom(resumeApiFile('zip'))}>
-                                    {#snippet leading()}
-                                        <FileArchive class="size-3.5" />
-                                    {/snippet}
-                                    <span>Download all</span>
-                                </Button>
-                                <Button
-                                    htmlType="button"
-                                    type="primary"
-                                    size="sm"
-                                    class="col-span-2 sm:col-auto"
-                                    disabled={isDownloadingResume}
-                                    isLoading={isDownloadingResume}
-                                    onclick={downloadResumeDocument}>
-                                    {#snippet leading()}
-                                        <Download class="size-3.5" />
-                                    {/snippet}
-                                    <span>Download PDF</span>
-                                </Button>
-                            </div>
+                            <Button
+                                htmlType="button"
+                                type="primary"
+                                size="sm"
+                                class="shrink-0"
+                                disabled={isDownloadingResume}
+                                isLoading={isDownloadingResume}
+                                onclick={downloadResumeDocument}>
+                                {#snippet leading()}
+                                    <Download class="size-3.5" />
+                                {/snippet}
+                                <span>Download PDF</span>
+                            </Button>
                         </div>
 
-                        <section
-                            aria-labelledby="resume-checksums-heading"
-                            class="border-t border-line-subtle p-4">
-                            {@render bandLabel('resume-checksums-heading', 'Checksums')}
-                            {#if resumeChecksumTabs.length}
-                                <CodeTabs
-                                    class="mt-3"
-                                    tabs={resumeChecksumTabs}
-                                    ariaLabel="Checksums" />
-                            {:else}
-                                <p class="mt-2 text-xs text-fg-muted">
-                                    Checksums are recorded on the next build.
+                        {#if resumeSignedByKey}
+                            <div
+                                class="flex flex-col gap-2 border-t border-line-subtle pt-3 text-xs text-fg-muted sm:flex-row sm:items-center sm:justify-between">
+                                <p class="min-w-0 wrap-break-word">
+                                    Signed by {formatUserId(openPgpKey!.userIds[0])}{resumeSignedAt ?
+                                        ` on ${resumeSignedAt}`
+                                    :   ''}
                                 </p>
-                            {/if}
-                        </section>
-
-                        <section
-                            aria-labelledby="resume-signature-heading"
-                            class="flex flex-col gap-3 border-t border-line-subtle p-4">
-                            {@render bandLabel('resume-signature-heading', 'GPG signature')}
-                            {#if !openPgpKey}
-                                <p class="text-sm text-fg-secondary">
-                                    Add your OpenPGP public key below first. Visitors use it to
-                                    confirm that you signed this file.
-                                </p>
-                            {:else if resumeSignedByKey}
-                                <dl
-                                    class="grid grid-cols-1 gap-x-4 gap-y-0.5 text-sm sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-y-1.5">
-                                    {#each openPgpKey.userIds as user, index (index)}
-                                        <dt class="text-fg-muted">Signed by</dt>
-                                        <dd class="min-w-0 wrap-break-word text-fg">
-                                            {formatUserId(user)}
-                                        </dd>
-                                    {/each}
-                                    <dt class="text-fg-muted">Fingerprint</dt>
-                                    <dd
-                                        class="min-w-0 font-mono text-xs leading-5 wrap-break-word text-fg tabular-nums">
-                                        {formatFingerprint(openPgpKey.fingerprint)}
-                                    </dd>
-                                    {#if resumeSignedAt}
-                                        <dt class="text-fg-muted">Signed</dt>
-                                        <dd class="text-fg">{resumeSignedAt}</dd>
-                                    {/if}
-                                </dl>
-                                <div class="flex flex-wrap items-center gap-2">
+                                <div class="flex shrink-0 items-center gap-1.5">
                                     <Button
                                         htmlType="button"
                                         type="secondary"
@@ -5604,48 +5577,68 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         {/snippet}
                                         <span>.asc</span>
                                     </Button>
-                                    <Button
-                                        htmlType="button"
-                                        type="ghost"
-                                        tone="critical"
-                                        size="xs"
-                                        disabled={isSavingSignature}
-                                        onclick={() => (showRemoveSignatureDialog = true)}>
-                                        <span>Delete signature</span>
-                                    </Button>
                                 </div>
-                            {:else}
-                                {#if resumeDocState.signedAt}
-                                    <StatusBanner
-                                        variant="warning"
-                                        message="The stored signature was made with a different key. Sign this PDF again with your active key." />
-                                {/if}
-                                <p class="text-sm text-fg-secondary">
-                                    Sign this exact PDF on your machine in either format, then
-                                    upload the file. Both formats are published.
+                            </div>
+                            {#if signatureError}
+                                <p class="text-xs text-fg-danger">{signatureError}</p>
+                            {/if}
+                        {:else if !openPgpKey}
+                            <p class="border-t border-line-subtle pt-3 text-xs text-fg-muted">
+                                Add your OpenPGP key below to sign this PDF.
+                            </p>
+                        {:else}
+                            <section
+                                aria-labelledby="resume-signature-heading"
+                                class="flex flex-col gap-3 border-t border-line-subtle pt-3">
+                                {@render bandLabel('resume-signature-heading', 'Sign this PDF')}
+                                <p class="text-xs text-fg-muted">
+                                    Run one command on your machine, then upload the signature it
+                                    writes.
                                 </p>
                                 <CodeTabs
                                     command
                                     tabs={resumeSignTabs}
                                     ariaLabel="Signing commands" />
-                            {/if}
-                            {#if openPgpKey}
                                 <FileUploadField
                                     id="resume-signature-file"
                                     compact
-                                    label={resumeSignedByKey ? 'Replace the signature' : (
-                                        'Upload the signature'
-                                    )}
-                                    hint=".sig, .gpg or .asc · detached signature, at most 16 KiB"
+                                    label="Upload the signature"
+                                    hint=".sig, .gpg or .asc · at most 16 KiB"
                                     accept=".asc,.sig,.gpg,application/pgp-signature,application/octet-stream,text/plain"
                                     disabled={isSavingSignature}
                                     isUploading={isSavingSignature}
                                     uploadingLabel="Verifying signature…"
                                     error={signatureError}
                                     onFileSelect={updateResumeSignature} />
-                            {/if}
-                        </section>
+                            </section>
+                        {/if}
+
+                        {#if resumeChecksumTabs.length}
+                            <details class="group border-t border-line-subtle pt-3">
+                                <summary
+                                    class="flex cursor-pointer list-none items-center gap-1 text-xxs font-bold tracking-widest text-fg-secondary uppercase select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&::-webkit-details-marker]:hidden">
+                                    Checksums
+                                    <ChevronDown
+                                        class="size-3.5 transition-transform group-open:rotate-180"
+                                        aria-hidden="true" />
+                                </summary>
+                                <CodeTabs
+                                    class="mt-3"
+                                    tabs={resumeChecksumTabs}
+                                    ariaLabel="Checksums" />
+                            </details>
+                        {/if}
                     </div>
+                    <input
+                        bind:this={replaceSignatureInput}
+                        type="file"
+                        class="hidden"
+                        accept=".asc,.sig,.gpg,application/pgp-signature,application/octet-stream,text/plain"
+                        onchange={event => {
+                            const file = event.currentTarget.files?.[0] ?? null;
+                            event.currentTarget.value = '';
+                            void updateResumeSignature(file);
+                        }} />
                 {/if}
             </Card>
 
@@ -5669,6 +5662,12 @@ SPDX-License-Identifier: AGPL-3.0-only
                             ariaLabel="More key actions"
                             disabled={isSavingKey}
                             items={[
+                                {
+                                    label: 'Replace key',
+                                    icon: KeyRound,
+                                    onSelect: () => replaceKeyInput?.click()
+                                },
+                                { divider: true },
                                 {
                                     label: 'Delete key',
                                     icon: Trash,
@@ -5694,11 +5693,11 @@ SPDX-License-Identifier: AGPL-3.0-only
                         error={keyError}
                         onFileSelect={file => file && saveOpenPgpKey(file)} />
                 {:else}
-                    <div class="rounded-sm border border-line-subtle bg-surface">
-                        <div class="flex min-w-0 items-start gap-3.5 p-4">
+                    <div class="flex flex-col gap-4 rounded-sm border border-line-subtle bg-surface p-4">
+                        <div class="flex min-w-0 items-start gap-3">
                             <div
-                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
-                                <KeyRound class="size-5.5" />
+                                class="flex size-10 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent-subtle text-fg-accent">
+                                <KeyRound class="size-5" />
                             </div>
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start gap-1">
@@ -5710,13 +5709,12 @@ SPDX-License-Identifier: AGPL-3.0-only
                                         ariaLabel="Copy fingerprint"
                                         variant="ghost"
                                         size="xs"
-                                        onclick={() =>
-                                            copyText(openPgpKey!.fingerprint, 'Fingerprint')}>
+                                        onclick={() => copyText(openPgpKey!.fingerprint, 'Fingerprint')}>
                                         <Copy class="size-3.5" />
                                     </IconButton>
                                 </div>
                                 <div
-                                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
+                                    class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
                                     <span>{openPgpKey.algorithm}</span>
                                     {#if keyCreated}
                                         <span aria-hidden="true">·</span>
@@ -5730,95 +5728,131 @@ SPDX-License-Identifier: AGPL-3.0-only
                                             Expires {keyExpires}
                                         </Badge>
                                     {:else}
-                                        <span>
-                                            {keyExpires ? `Expires ${keyExpires}` : 'Never expires'}
-                                        </span>
+                                        <span>{keyExpires ? `Expires ${keyExpires}` : 'Never expires'}</span>
                                     {/if}
                                 </div>
+                                <ul class="mt-2 flex flex-col gap-0.5 text-sm text-fg">
+                                    {#each openPgpKey.userIds as user, index (index)}
+                                        <li class="wrap-break-word">{formatUserId(user)}</li>
+                                    {/each}
+                                </ul>
+                                <p class="mt-1 text-xs text-fg-muted">
+                                    {keyWkdEmails.length ?
+                                        `WKD lookup works for ${keyWkdEmails.join(', ')}.`
+                                    :   "No user ID uses your site's domain, so WKD lookups will not find this key."}
+                                </p>
                             </div>
                         </div>
 
                         <section
-                            aria-labelledby="openpgp-identity-heading"
-                            class="border-t border-line-subtle p-4">
-                            {@render bandLabel('openpgp-identity-heading', 'Identity')}
-                            <ul class="mt-2 flex flex-col gap-1 text-sm text-fg">
-                                {#each openPgpKey.userIds as user, index (index)}
-                                    <li class="wrap-break-word">{formatUserId(user)}</li>
-                                {/each}
-                            </ul>
-                            <p class="mt-2 text-xs text-fg-muted">
-                                {#if keyWkdEmails.length}
-                                    WKD lookup works for {keyWkdEmails.join(', ')}.
-                                {:else}
-                                    No user ID uses your site's domain, so WKD lookups will not find
-                                    this key.
-                                {/if}
-                            </p>
-                        </section>
-
-                        <section
                             aria-labelledby="openpgp-keyservers-heading"
-                            class="flex flex-col gap-3 border-t border-line-subtle p-4">
-                            <div>
+                            class="flex flex-col gap-2.5 border-t border-line-subtle pt-3">
+                            <div class="flex items-baseline justify-between gap-2">
                                 {@render bandLabel('openpgp-keyservers-heading', 'Keyservers')}
-                                <p class="mt-1 text-xs text-fg-muted">
-                                    Listed as independent sources on your resume. Each one is
-                                    checked for this exact key when you save.
+                                <span class="text-xs text-fg-muted tabular-nums">
+                                    {openPgpKey.keyservers.length}/8
+                                </span>
+                            </div>
+                            <p class="text-xs text-fg-muted">
+                                Listed on your resume as independent sources. Each one is checked
+                                for this exact key when you add it.
+                            </p>
+                            {#if openPgpKey.keyservers.length}
+                                <ul
+                                    class="divide-y divide-line-subtle rounded-sm border border-line-subtle">
+                                    {#each openPgpKey.keyservers as server (server.url)}
+                                        <li class="flex items-center gap-1 py-1 pr-1 pl-3 text-sm">
+                                            <span
+                                                class="min-w-0 flex-1 truncate text-fg"
+                                                title={server.url}>
+                                                {server.label}
+                                            </span>
+                                            <IconButton
+                                                ariaLabel={`Open ${server.label}`}
+                                                variant="ghost"
+                                                size="xs"
+                                                onclick={() => window.open(server.url, '_blank', 'noopener')}>
+                                                <ArrowUpRight class="size-3.5" />
+                                            </IconButton>
+                                            <IconButton
+                                                ariaLabel={`Remove ${server.label}`}
+                                                variant="ghost"
+                                                size="xs"
+                                                disabled={isSavingKey}
+                                                onclick={() => removeKeyserver(server.url)}>
+                                                <X class="size-3.5" />
+                                            </IconButton>
+                                        </li>
+                                    {/each}
+                                </ul>
+                            {/if}
+                            {#if openPgpKey.keyservers.length < 8}
+                                <div class="flex items-start gap-2">
+                                    <Input
+                                        id="openpgp-keyserver"
+                                        class="min-w-0 flex-1"
+                                        size="sm"
+                                        bind:value={keyserverDraft}
+                                        aria-label="Keyserver host or URL"
+                                        placeholder="keys.example.org or https://…"
+                                        maxlength={500}
+                                        error={Boolean(keyserverError)}
+                                        onkeydown={event => {
+                                            if (event.key !== 'Enter') return;
+                                            event.preventDefault();
+                                            void addKeyserver(keyserverDraft);
+                                        }} />
+                                    <Button
+                                        htmlType="button"
+                                        type="secondary"
+                                        size="sm"
+                                        disabled={isSavingKey || !keyserverDraft.trim()}
+                                        isLoading={isSavingKey && Boolean(keyserverDraft.trim())}
+                                        onclick={() => addKeyserver(keyserverDraft)}>
+                                        {#snippet leading()}
+                                            <Plus class="size-3.5" />
+                                        {/snippet}
+                                        <span>Add</span>
+                                    </Button>
+                                </div>
+                                {#if suggestedKeyservers.length}
+                                    <div class="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
+                                        <span>Suggested:</span>
+                                        {#each suggestedKeyservers as host (host)}
+                                            <Button
+                                                htmlType="button"
+                                                type="ghost"
+                                                size="xs"
+                                                disabled={isSavingKey}
+                                                onclick={() => addKeyserver(host)}>
+                                                {#snippet leading()}
+                                                    <Plus class="size-3" />
+                                                {/snippet}
+                                                <span>{host}</span>
+                                            </Button>
+                                        {/each}
+                                    </div>
+                                {/if}
+                            {/if}
+                            {#if keyserverError}
+                                <p
+                                    class="text-xs text-fg-danger"
+                                    role="alert">
+                                    {keyserverError}
                                 </p>
-                            </div>
-                            <div class="flex flex-col gap-2">
-                                {#each KEYSERVER_PRESETS as preset (preset.id)}
-                                    <Checkbox
-                                        bind:checked={keyserverChoice[preset.id]}
-                                        label={preset.label} />
-                                {/each}
-                            </div>
-                            <FormField
-                                id="openpgp-custom-keyserver"
-                                label="Other keyserver URL"
-                                variant="floating"
-                                hint="Optional. A https:// URL that returns this key."
-                                error={keyserverError}>
-                                <Input
-                                    id="openpgp-custom-keyserver"
-                                    type="url"
-                                    bind:value={customKeyserver}
-                                    maxlength={500} />
-                            </FormField>
-                            <FormActions>
-                                <Button
-                                    htmlType="button"
-                                    type="primary"
-                                    size="sm"
-                                    isLoading={isSavingKey}
-                                    disabled={isSavingKey}
-                                    onclick={() => saveOpenPgpKey()}>
-                                    {#snippet leading()}
-                                        <Save class="size-3.5" />
-                                    {/snippet}
-                                    <span>Save keyservers</span>
-                                </Button>
-                            </FormActions>
-                        </section>
-
-                        <section
-                            aria-labelledby="openpgp-replace-heading"
-                            class="flex flex-col gap-2 border-t border-line-subtle p-4">
-                            {@render bandLabel('openpgp-replace-heading', 'Replace key')}
-                            <FileUploadField
-                                id="openpgp-key-file"
-                                compact
-                                label="Upload a new public key"
-                                hint="A different key removes the current resume signature."
-                                accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
-                                disabled={isSavingKey}
-                                isUploading={isSavingKey}
-                                uploadingLabel="Checking key…"
-                                error={keyError}
-                                onFileSelect={file => file && saveOpenPgpKey(file)} />
+                            {/if}
                         </section>
                     </div>
+                    <input
+                        bind:this={replaceKeyInput}
+                        type="file"
+                        class="hidden"
+                        accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
+                        onchange={event => {
+                            const file = event.currentTarget.files?.[0];
+                            event.currentTarget.value = '';
+                            if (file) void saveOpenPgpKey(file);
+                        }} />
                 {/if}
             </Card>
         {:else if activeAdminTab === 'skills'}

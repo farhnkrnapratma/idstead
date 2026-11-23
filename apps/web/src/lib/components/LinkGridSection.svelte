@@ -58,6 +58,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         {#if items.length === 0 && showEmpty}
             <EmptyState
                 icon={emptyIcon}
+                headingLevel={1}
                 title={emptyTitle}
                 description={emptyDescription} />
         {:else}

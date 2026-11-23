@@ -21,6 +21,7 @@ Copy `.env.example` to `.env` in the repository root and fill in the values. Eve
 
 ```sh
 bun run db:local                         # create or migrate the shared local D1 database
+bun run seed:local <empty|small|large|huge|restore>  # fill the local database with test data
 bun run dev                              # public site (Vite)
 bun run dev:admin                        # admin portal, http://localhost:5174
 bun run --filter @idstead/api dev        # API worker, http://localhost:8787
@@ -28,6 +29,7 @@ bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (-
 ```
 
 - **Local database:** the dev servers never touch production data. `bun run db:local` applies `packages/data/d1/migrations/` to a local D1 database in `.wrangler/state/v3` at the repository root, which the web and admin dev servers share (`platformProxy.persist` in their Vite configs). Run it again after pulling a new migration. It starts empty; open the local admin portal to create a profile and posts.
+- **Test data:** `bun run seed:local` (`tooling/seedLocal.ts`) fills the local database with [Faker](https://fakerjs.dev) data so pages can be checked empty and under load. The first run saves the current local data as `.wrangler/state/seed-baseline.sqlite`; every run starts from that baseline. `empty` deletes every row; `small`, `large` and `huge` add posts, comments, reports, feedback, views, activity log entries and subscribers (`huge` adds 250 posts, 25,000 comments, 250,000 views and 60,000 activity entries); `restore` puts the baseline back. New posts reuse the newest real post's content path, so it only writes the local D1 file, never R2.
 - **Remote bindings:** the `ASSET_BUCKET` R2 bucket and the `AI` binding are `remote: true`, so uploads in local dev reach the real bucket.
 - At minimum, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` must be set.
 - **Local admin sign-in:** with no `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `ADMIN_EMAILS`, the admin dev server on `localhost` signs you in as `admin@localhost` without Cloudflare Access. A production build never does.

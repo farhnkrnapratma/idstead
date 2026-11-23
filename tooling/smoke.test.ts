@@ -100,9 +100,7 @@ const adminTabs = [
 const adminSearches = [
     '',
     ...adminTabs.map(tab => `?tab=${tab}`),
-    ...['appearance', 'security', 'content', 'data'].map(
-        section => `?tab=account&settings=${section}`
-    ),
+    ...['general', 'site', 'data'].map(section => `?tab=account&settings=${section}`),
     '?tab=posts&editPost=new'
 ];
 

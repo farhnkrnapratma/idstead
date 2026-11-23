@@ -30,9 +30,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         aria-live="polite"
         aria-atomic="true">
         Showing
-        <span class="font-bold text-fg-accent">{count}</span>
+        <span class="font-bold text-fg-accent">{count.toLocaleString('en-US')}</span>
         of
-        <span class="font-bold text-fg-accent">{total}</span>
+        <span class="font-bold text-fg-accent">{total.toLocaleString('en-US')}</span>
         {itemLabel}
     </div>
 {/if}

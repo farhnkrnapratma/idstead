@@ -23,7 +23,7 @@ sequenceDiagram
 ## Site setting
 
 - **Storage:** the `contentLicense` key in `db_site_settings`, `{ "license": "<id>" }`. A missing or invalid value reads as `all-rights-reserved`. Reads are cached under the `site` generation.
-- **Admin:** Settings → **Content license** (`ContentLicenseSettings.svelte`, section `content` in `adminUrl.ts`) through `GET`/`POST /api/internal/admin/site-settings/content-license`, behind `blogAdmin`. A rejected value answers `400 SITE_SETTINGS_INVALID`. Saving logs `settings.contentLicense` (category `settings`).
+- **Admin:** Settings → Site → **Content license** (`ContentLicenseSettings.svelte`, section `site` in `adminUrl.ts`) through `GET`/`POST /api/internal/admin/site-settings/content-license`, behind `blogAdmin`. A rejected value answers `400 SITE_SETTINGS_INVALID`. Saving logs `settings.contentLicense` (category `settings`).
 
 ## Post license and banner credit
 

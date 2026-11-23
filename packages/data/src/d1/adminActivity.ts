@@ -133,6 +133,60 @@ function metaSearchText(row: Row): string {
         .join(' ');
 }
 
+const INBOX_FILTERS = `(?1 = 'all' OR (?1 = 'read') = (read_at IS NOT NULL))
+    AND (?2 = 'all' OR kind = ?2 OR (kind IN ('post_feedback', 'legal_feedback')
+        AND ((?2 = 'helpful' AND json_extract(meta, '$.vote') = 'yes')
+            OR (?2 = 'unhelpful' AND json_extract(meta, '$.vote') = 'no'))))
+    AND (?3 = '' OR instr(lower(coalesce(page_title, '') || ' ' || type_label || ' '
+        || coalesce(json_extract(meta, '$.author'), '') || ' '
+        || coalesce(json_extract(meta, '$.comment'), '') || ' '
+        || coalesce(json_extract(meta, '$.reason'), '') || ' '
+        || coalesce(json_extract(meta, '$.details'), '')), ?3) > 0)`;
+
+const INBOX_SORT_VALUE: Record<string, string> = {
+    date: "''",
+    type: 'lower(type_label)',
+    page: "lower(coalesce(page_title, ''))"
+};
+
+function isInboxQuery(query: InboxQuery) {
+    return (
+        query.query.length <= 200 &&
+        query.sort in INBOX_SORT_VALUE &&
+        ['asc', 'desc'].includes(query.direction) &&
+        ['all', 'read', 'unread'].includes(query.read) &&
+        INBOX_TYPES.includes(query.type)
+    );
+}
+
+function inboxOrder(query: InboxQuery) {
+    const direction = query.direction === 'asc' ? 'ASC' : 'DESC';
+    if (query.sort === 'date') return `created_at ${direction}, id ${direction}`;
+    return `${INBOX_SORT_VALUE[query.sort]} ${direction}, created_at DESC, id DESC`;
+}
+
+function inboxAfter(query: InboxQuery) {
+    const comparison = query.direction === 'asc' ? '>' : '<';
+    if (!query.cursor) return { clause: '1', params: 3 };
+    if (query.sort === 'date')
+        return { clause: `(created_at, id) ${comparison} (?4, ?5)`, params: 5 };
+    const value = INBOX_SORT_VALUE[query.sort];
+    return {
+        clause: `(${value} ${comparison} ?6 OR (${value} = ?6 AND (created_at, id) < (?4, ?5)))`,
+        params: 6
+    };
+}
+
+function inboxNextCursor(rows: Row[]) {
+    const last = rows[19];
+    if (rows.length <= 20 || !last) return null;
+    return {
+        value: String(last.sort_value ?? ''),
+        date: String(last.created_at),
+        id: String(last.id)
+    };
+}
+
 export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
     async function all(sql: string, ...params: unknown[]) {
         return (
@@ -795,89 +849,35 @@ export function createD1AdminActivityStore(db: D1Like): AdminActivityStore {
 
         inbox: (query: InboxQuery) =>
             guarded('activity.db_admin_inbox', async () => {
-                if (
-                    query.query.length > 200 ||
-                    !['date', 'type', 'page'].includes(query.sort) ||
-                    !['asc', 'desc'].includes(query.direction) ||
-                    !['all', 'read', 'unread'].includes(query.read) ||
-                    !INBOX_TYPES.includes(query.type)
-                )
+                if (!isInboxQuery(query))
                     throw new DataError('activity.db_admin_inbox', 'INBOX_FILTER_INVALID');
-                const search = query.query.toLowerCase();
-                const items = (await all('SELECT * FROM db_admin_notification_items'))
-                    .map(notificationItem)
-                    .filter(
-                        item =>
-                            (query.read === 'all' ||
-                                (query.read === 'read') === (item.read_at !== null)) &&
-                            matchesType(
-                                { kind: item.kind, meta: JSON.stringify(item.meta) },
-                                query.type
-                            ) &&
-                            (search === '' ||
-                                [
-                                    item.page_title,
-                                    item.type_label,
-                                    item.meta.author,
-                                    item.meta.comment,
-                                    item.meta.reason,
-                                    item.meta.details
-                                ]
-                                    .filter(value => typeof value === 'string' && value)
-                                    .join(' ')
-                                    .toLowerCase()
-                                    .includes(search))
+                const after = inboxAfter(query);
+                const params = [
+                    query.read,
+                    query.type,
+                    query.query.toLowerCase(),
+                    query.cursor?.date,
+                    query.cursor?.id,
+                    query.cursor?.value
+                ].slice(0, after.params);
+                const [rows, count, unread] = await Promise.all([
+                    all(
+                        `SELECT *, ${INBOX_SORT_VALUE[query.sort]} AS sort_value FROM db_admin_notification_items
+                         WHERE ${INBOX_FILTERS} AND ${after.clause} ORDER BY ${inboxOrder(query)} LIMIT 21`,
+                        ...params
+                    ),
+                    first(
+                        `SELECT count(*) AS total FROM db_admin_notification_items WHERE ${INBOX_FILTERS}`,
+                        ...params.slice(0, 3)
+                    ),
+                    first(
+                        'SELECT count(*) AS total FROM db_admin_notifications WHERE dismissed_at IS NULL AND read_at IS NULL'
                     )
-                    .map(item => ({
-                        item,
-                        sortValue:
-                            query.sort === 'type'
-                                ? String(item.type_label).toLowerCase()
-                                : query.sort === 'page'
-                                  ? text(item.page_title).toLowerCase()
-                                  : ''
-                    }));
-                const dateAsc = query.sort === 'date' && query.direction === 'asc';
-                const newerFirst = (a: (typeof items)[number], b: (typeof items)[number]) =>
-                    compareKeys(b.item.created_at, a.item.created_at) ||
-                    compareKeys(b.item.id, a.item.id);
-                const ordered = [...items].sort((a, b) => {
-                    const bySort =
-                        query.direction === 'asc'
-                            ? compareKeys(a.sortValue, b.sortValue)
-                            : compareKeys(b.sortValue, a.sortValue);
-                    return bySort || (dateAsc ? -newerFirst(a, b) : newerFirst(a, b));
-                });
-                const cursor = query.cursor;
-                const remaining = cursor
-                    ? ordered.filter(({ item, sortValue }) => {
-                          const position =
-                              compareKeys(item.created_at, cursor.date) ||
-                              compareKeys(item.id, cursor.id);
-                          if (query.sort === 'date') return dateAsc ? position > 0 : position < 0;
-                          const value = compareKeys(sortValue, cursor.value);
-                          return (
-                              (query.direction === 'asc' ? value > 0 : value < 0) ||
-                              (value === 0 && position < 0)
-                          );
-                      })
-                    : ordered;
-                const page = remaining.slice(0, 21);
-                const last = page[19];
-                const unread = await first(
-                    'SELECT count(*) AS total FROM db_admin_notifications WHERE dismissed_at IS NULL AND read_at IS NULL'
-                );
+                ]);
                 return {
-                    items: page.slice(0, 20).map(entry => entry.item),
-                    nextCursor:
-                        page.length > 20 && last
-                            ? {
-                                  value: last.sortValue,
-                                  date: last.item.created_at,
-                                  id: last.item.id
-                              }
-                            : null,
-                    total: items.length,
+                    items: rows.slice(0, 20).map(notificationItem),
+                    nextCursor: inboxNextCursor(rows),
+                    total: Number(count?.total ?? 0),
                     unreadCount: Number(unread?.total ?? 0)
                 };
             }),

@@ -189,6 +189,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#if posts.length === 0}
                 <EmptyState
                     icon={Quote}
+                    headingLevel={1}
                     title="No posts yet"
                     description="Articles will appear here once published." />
             {:else}
