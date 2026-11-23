@@ -2,7 +2,7 @@
 <p align="center">A self-hostable personal site and identity home: profile, blog, projects, resume, funding and contact pages, an admin portal and a public API, running on Cloudflare Workers.</p>
 <p align="center"><a href="https://fkp.my.id/">Live example</a></p>
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/stZqvYiNAK17m5zy7ERCb/BDLW7JXAHEyjA2xUDLSUa5/tree/main) [![codecov](https://codecov.io/gh/farhnkrnapratma/idstead/graph/badge.svg)](https://codecov.io/gh/farhnkrnapratma/idstead) ![License](https://img.shields.io/badge/license-AGPL--3.0--only-blue)
 
 ---
 

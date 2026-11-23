@@ -99,6 +99,16 @@ export function hasChartActivity(values: readonly number[]) {
     return values.some(value => value > 0);
 }
 
+export function calendarThresholds(values: readonly number[]): number[] {
+    const active = values.filter(value => value > 0).sort((a, b) => a - b);
+    const thresholds = [1];
+    for (const fraction of [0.25, 0.5, 0.75]) {
+        const at = active[Math.floor((active.length - 1) * fraction)] ?? 0;
+        thresholds.push(Math.max(at + 1, thresholds[thresholds.length - 1] + 1));
+    }
+    return thresholds;
+}
+
 export function calendarWeekColumns(year: number) {
     const start = new Date(year, 0, 1);
     const days = Math.round((new Date(year + 1, 0, 1).getTime() - start.getTime()) / 86_400_000);

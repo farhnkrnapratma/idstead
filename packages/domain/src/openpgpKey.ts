@@ -24,18 +24,40 @@ export interface PublicOpenPgpKey {
 
 export const KEYSERVER_PRESETS = [
     {
-        id: 'openpgp',
-        label: 'keys.openpgp.org',
+        host: 'keys.openpgp.org',
         url: (fingerprint: string) =>
             `https://keys.openpgp.org/vks/v1/by-fingerprint/${fingerprint}`
     },
     {
-        id: 'ubuntu',
-        label: 'keyserver.ubuntu.com',
+        host: 'keyserver.ubuntu.com',
         url: (fingerprint: string) =>
             `https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0x${fingerprint}`
+    },
+    {
+        host: 'keys.mailvelope.com',
+        url: (fingerprint: string) =>
+            `https://keys.mailvelope.com/pks/lookup?op=get&options=mr&search=0x${fingerprint}`
     }
 ] as const;
+
+const HOST_RE = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+export function keyserverFor(input: string, fingerprint: string): OpenPgpKeyserver | null {
+    const value = input.trim();
+    if (/^https:\/\//i.test(value)) {
+        const url = safeKeyserverUrl(value);
+        return url ? { label: new URL(url).host, url } : null;
+    }
+    const host = value.toLowerCase().replace(/\/+$/, '');
+    if (!HOST_RE.test(host)) return null;
+    const preset = KEYSERVER_PRESETS.find(item => item.host === host);
+    return {
+        label: host,
+        url: preset
+            ? preset.url(fingerprint)
+            : `https://${host}/pks/lookup?op=get&options=mr&search=0x${fingerprint}`
+    };
+}
 
 export function safeKeyserverUrl(value: unknown) {
     if (typeof value !== 'string' || value.length > 500) return null;

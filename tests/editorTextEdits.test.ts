@@ -8,8 +8,10 @@ import {
     continueBlock,
     cursorPosition,
     insertIndent,
+    offsetAt,
     wrapSelection
 } from '../packages/mdrs/editor/src/textEdits.ts';
+import { editorProblems, problemLines } from '../packages/mdrs/editor/src/problems.ts';
 
 describe('editor text edits', () => {
     test('wrapSelection wraps the selection and keeps it selected', () => {
@@ -49,6 +51,31 @@ describe('editor text edits', () => {
 
     test('cursorPosition reports 1-based line and column', () => {
         expect(cursorPosition('ab\ncde', 5)).toEqual({ line: 2, column: 3 });
+    });
+
+    test('offsetAt reverses cursorPosition and clamps to the text', () => {
+        expect(offsetAt('ab\ncde', { line: 2, column: 3 })).toBe(5);
+        expect(offsetAt('ab\r\ncde', { line: 2, column: 1 })).toBe(4);
+        expect(offsetAt('ab', { line: 9, column: 9 })).toBe(2);
+    });
+
+    test('editorProblems reports MDRS diagnostics with 1-based positions', () => {
+        const problems = editorProblems(':::callout\nBody\n:::\n:::');
+        expect(problems).toEqual([
+            { line: 1, column: 1, message: ':::callout requires title="..."', severity: 'error' },
+            {
+                line: 4,
+                column: 1,
+                message: '`:::` has no open block to close. It renders as plain text.',
+                severity: 'warning'
+            }
+        ]);
+        expect(problemLines([...problems, { ...problems[1], line: 1 }])).toEqual(
+            new Map([
+                [1, 'error'],
+                [4, 'warning']
+            ])
+        );
     });
 
     test('assetMarkdown strips characters that would break the image syntax', () => {

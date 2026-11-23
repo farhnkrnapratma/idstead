@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-export type AdminSettingsSection = 'appearance' | 'security' | 'analytics' | 'content' | 'data';
+export type AdminSettingsSection = 'general' | 'site' | 'data';
 
 export function resolveAdminSettings(value: string | null): AdminSettingsSection {
-    return value === 'security' || value === 'analytics' || value === 'content' || value === 'data'
-        ? value
-        : 'appearance';
+    return value === 'site' || value === 'data' ? value : 'general';
 }
 
 export function cleanAdminParams(params: URLSearchParams, currentYear = new Date().getFullYear()) {

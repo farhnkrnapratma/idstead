@@ -18,6 +18,13 @@ export function cursorPosition(value: string, offset: number): CursorPosition {
     return { line: lines.length, column: lines[lines.length - 1].length + 1 };
 }
 
+export function offsetAt(value: string, { line, column }: CursorPosition): number {
+    const lines = value.split('\n');
+    let offset = 0;
+    for (let i = 0; i < Math.min(line, lines.length) - 1; i++) offset += lines[i].length + 1;
+    return Math.min(offset + column - 1, value.length);
+}
+
 export function wrapSelection(
     value: string,
     start: number,

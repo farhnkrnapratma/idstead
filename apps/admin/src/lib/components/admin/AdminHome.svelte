@@ -123,9 +123,9 @@ SPDX-License-Identifier: AGPL-3.0-only
         {
             area: 'reports' as const,
             title: 'Reported comments',
-            empty: 'No reports',
+            empty: 'No reports yet',
             emptyIcon: Flag,
-            emptyDescription: 'Comments readers report will appear here.',
+            emptyDescription: 'Comments that readers report appear here.',
             feed: reportsFeed
         },
         {

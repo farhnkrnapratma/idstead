@@ -297,6 +297,7 @@ SPDX-License-Identifier: AGPL-3.0-only
             {#if !contactEmail}
                 <EmptyState
                     icon={MessageSquareWarning}
+                    headingLevel={1}
                     title="Feedback is not available yet"
                     description="This site cannot receive feedback until its owner adds a contact email." />
             {:else}

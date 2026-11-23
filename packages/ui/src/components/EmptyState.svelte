@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         title: string;
         description: string;
         class?: string;
+        headingLevel?: 1 | 2 | 3;
         actions?: Snippet;
     }
 
@@ -23,6 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         title,
         description,
         class: className = '',
+        headingLevel = 3,
         actions
     }: Props = $props();
 </script>
@@ -33,7 +35,9 @@ SPDX-License-Identifier: AGPL-3.0-only
     <div class="mb-3 flex items-center justify-center text-fg-muted">
         <Icon class={cn('size-7', iconClass)} />
     </div>
-    <h3 class="type-card-title">{title}</h3>
+    <svelte:element
+        this={`h${headingLevel}`}
+        class="type-card-title">{title}</svelte:element>
     <p class="mt-1 max-w-xs type-body text-fg-muted">{description}</p>
 
     {#if actions}

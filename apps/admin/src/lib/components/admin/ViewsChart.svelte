@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     } from '#lib/components/admin/viewsRange.ts';
     import {
         ADMIN_CHART_AXIS_CLASSES,
-        ADMIN_CHART_PADDING,
+        adminChartPadding,
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
@@ -175,7 +175,7 @@ SPDX-License-Identifier: AGPL-3.0-only
                 y="views"
                 yScale={scaleLinear()}
                 yDomain={[0, maxViews]}
-                padding={ADMIN_CHART_PADDING}>
+                padding={adminChartPadding(maxViews)}>
                 <Svg clip>
                     <Axis
                         placement="bottom"

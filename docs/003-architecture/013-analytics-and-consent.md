@@ -2,7 +2,7 @@
 
 Which analytics the public site loads, how its Content-Security-Policy and cookie banner follow that choice, and how pages read it.
 
-The owner picks one provider in the admin under **Settings → Analytics & cookies**. The choice lives in D1, so it changes without a deploy, and no analytics ID is an environment variable.
+The owner picks one provider in the admin under **Settings → Site → Analytics & cookies**. The choice lives in D1, so it changes without a deploy, and no analytics ID is an environment variable.
 
 ```mermaid
 sequenceDiagram
