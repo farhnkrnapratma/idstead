@@ -18,7 +18,7 @@ Reserved on 2026-10-17:
 | crates.io | [`mdrs`](https://crates.io/crates/mdrs) | `0.0.0`, exposes `FILE_EXTENSION` and `is_mdrs_path` |
 | npm | org [`@mdrs`](https://www.npmjs.com/org/mdrs), package [`@mdrs/core`](https://www.npmjs.com/package/@mdrs/core) | `0.0.0`, exposes `FILE_EXTENSION` and `isMdrsPath` |
 
-The unscoped npm name `mdrs` can't be used: npm rejects it as "too similar to existing packages md5, ms, mri, cors". Owning the `@mdrs` org covers every future package, such as `@mdrs/wasm`, `@mdrs/lsp`, `@mdrs/cli` and `@mdrs/prettier-plugin`.
+The unscoped npm name `mdrs` can't be used: npm rejects it as "too similar to existing packages md5, ms, mri, cors". Owning the `@mdrs` org covers every future package, such as `@mdrs/language-server` (published), `@mdrs/wasm`, `@mdrs/cli` and `@mdrs/prettier-plugin`.
 
 Still free on crates.io on 2026-10-17, to claim when they're actually built: `mdrs-core`, `mdrs-cli`, `mdrs-lsp`, `mdrs-wasm`, `mdrs-fmt`, `tree-sitter-mdrs`.
 
@@ -67,7 +67,7 @@ These parts are hard-coded for my-site.example today and become options in the p
 
 | Tool | Plan |
 | --- | --- |
-| Language server | `mdrs-lsp` on `tower-lsp`: diagnostics from the parser and define validation, completion for directive names, attributes, icon names and `${…}` variables, hover for variables, go to definition for variables and footnotes |
+| Language server | Shipped as [`@mdrs/language-server`](https://www.npmjs.com/package/@mdrs/language-server): diagnostics, completion, hover, symbols, folding and variable navigation over LSP. Its analysis also runs in the browser, where the editor uses it for live diagnostics. Still planned: icon name completion and footnote navigation |
 | Syntax highlighting | A `tree-sitter-mdrs` grammar, plus a TextMate grammar for VS Code and GitHub Linguist |
 | Formatter | `mdrs fmt` in the core, exposed to Prettier through a plugin |
 | Linter | `mdrs lint`: unclosed or unknown directives, missing required attributes, unused variables, broken footnote and heading links |
