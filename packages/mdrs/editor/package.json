@@ -19,10 +19,11 @@
     },
     "dependencies": {
         "@idstead/domain": "workspace:*",
-        "@mdrs/core": "workspace:*",
-        "@mdrs/dom": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@lucide/svelte": "^1.77.0",
+        "@mdrs/core": "workspace:*",
+        "@mdrs/dom": "workspace:*",
+        "@mdrs/language-server": "^0.2.0",
         "highlight.js": "^11.12.0",
         "katex": "^0.19.1"
     }
