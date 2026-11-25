@@ -16,6 +16,11 @@ interface CspEnv {
 
 const SCRIPT_SOURCES = ['https://challenges.cloudflare.com', 'https://api.dashboard.instatus.com'];
 
+const SVELTE_EVENT_REPLAY = [
+    "'unsafe-hashes'",
+    "'sha256-7dQwUgLau1NFCCGjfn9FsYptB6ZtWxJin6VohGIu20I='"
+];
+
 const IMAGE_SOURCES = [
     'https://github.com',
     'https://avatars.githubusercontent.com',
@@ -56,6 +61,7 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
         'script-src': [
             "'self'",
             ...SCRIPT_SOURCES,
+            ...SVELTE_EVENT_REPLAY,
             ...(env.analytics?.script ?? []),
             ...(env.scriptHashes ?? [])
         ],
