@@ -223,7 +223,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 aria-hidden="true">
             </div>
         {/if}
-        <div class="relative grid min-h-full w-full [grid-template-areas:'editor']">
+        <div class="relative grid min-h-full w-full flex-1 [grid-template-areas:'editor']">
             <pre
                 bind:this={pre}
                 data-code-theme={theme}
