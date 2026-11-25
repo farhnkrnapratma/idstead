@@ -3741,10 +3741,12 @@ SPDX-License-Identifier: AGPL-3.0-only
                         {#if posts.length > 0 && filterStore.isFiltered}
                             <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
                         {:else}
-                            <EmptyState
-                                icon={Quote}
-                                title="No posts yet"
-                                description="Create a post to get started." />
+                            <Card>
+                                <EmptyState
+                                    icon={Quote}
+                                    title="No posts yet"
+                                    description="Create a post to get started." />
+                            </Card>
                         {/if}
                     {:else}
                         <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
