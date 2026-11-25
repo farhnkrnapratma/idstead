@@ -20,7 +20,7 @@
     "dependencies": {
         "@idstead/domain": "workspace:*",
         "@idstead/ui": "workspace:*",
-        "@lucide/svelte": "^1.78.0",
+        "@lucide/svelte": "^1.80.0",
         "@mdrs/core": "workspace:*",
         "@mdrs/dom": "workspace:*",
         "@mdrs/language-server": "^0.2.0",
