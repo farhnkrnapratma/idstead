@@ -335,6 +335,41 @@ describe('D1 admin activity store', () => {
         expect(helpful.total).toBe(1);
     });
 
+    test('keeps quarter-hour buckets for time zones off the whole hour', async () => {
+        const shim = seededActivity();
+        insertRows(shim.sqlite, 'db_views', [
+            { post_id: uuid(1), ip_hash: 'k1', viewed_at: '2026-10-04T18:20:00.000Z' },
+            { post_id: uuid(1), ip_hash: 'k2', viewed_at: '2026-10-04T18:40:00.000Z' }
+        ]);
+        const range = {
+            from: '2026-10-01T00:00:00.000Z',
+            to: '2026-10-08T00:00:00.000Z',
+            asOf: '2026-10-07T00:00:00.000Z'
+        };
+        const views = async (timeZone: string) => {
+            const overview = (await shim.activity.workspace('overview', {
+                ...range,
+                timeZone
+            })) as { series: Array<{ bucket: string; views: number }> };
+            const calendar = (await shim.activity.workspace('calendar', {
+                ...range,
+                timeZone
+            })) as { days: Array<{ date: string; views: number }> };
+            return {
+                series: Object.fromEntries(overview.series.map(p => [p.bucket, p.views])),
+                calendar: Object.fromEntries(calendar.days.map(d => [d.date, d.views]))
+            };
+        };
+        const kolkata = await views('Asia/Kolkata');
+        expect(kolkata.series['2026-10-03T18:30:00.000Z']).toBe(3);
+        expect(kolkata.series['2026-10-04T18:30:00.000Z']).toBe(2);
+        expect(kolkata.calendar['2026-10-04']).toBe(3);
+        expect(kolkata.calendar['2026-10-05']).toBe(2);
+        const jakarta = await views('Asia/Jakarta');
+        expect(jakarta.series['2026-10-04T17:00:00.000Z']).toBe(4);
+        expect(jakarta.calendar['2026-10-05']).toBe(4);
+    });
+
     test('builds workspace sections with time zones and web search', async () => {
         const { activity } = seededActivity();
         const range = {

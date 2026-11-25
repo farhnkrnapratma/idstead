@@ -21,7 +21,7 @@ describe('content security policy', () => {
         for (const part of policy.split('; ')) {
             for (const source of part.split(' ').slice(1)) {
                 expect(source).toMatch(
-                    /^(?:'[a-z-]+'|data:|blob:|https:\/\/[\w*.-]+(?::\d+)?|wss:\/\/[\w*.-]+|ws:\/\/localhost:\*|http:\/\/localhost:\*)$/
+                    /^(?:'[a-z-]+'|'sha256-[A-Za-z0-9+/]+={0,2}'|data:|blob:|https:\/\/[\w*.-]+(?::\d+)?|wss:\/\/[\w*.-]+|ws:\/\/localhost:\*|http:\/\/localhost:\*)$/
                 );
             }
         }
@@ -91,7 +91,14 @@ describe('content security policy', () => {
         expect(directive('script-src')).toContain("'self'");
         const hashed = buildContentSecurityPolicy({ scriptHashes: ["'sha256-abc='"] });
         expect(hashed).toContain(
-            "script-src 'self' https://challenges.cloudflare.com https://api.dashboard.instatus.com 'sha256-abc='"
+            "script-src 'self' https://challenges.cloudflare.com https://api.dashboard.instatus.com 'unsafe-hashes' 'sha256-7dQwUgLau1NFCCGjfn9FsYptB6ZtWxJin6VohGIu20I=' 'sha256-abc='"
+        );
+    });
+
+    test("allows only Svelte's image event replay handler by hash", () => {
+        const digest = new Bun.CryptoHasher('sha256').update('this.__e=event').digest('base64');
+        expect(directive('script-src')).toEqual(
+            expect.arrayContaining(["'unsafe-hashes'", `'sha256-${digest}'`])
         );
     });
 
