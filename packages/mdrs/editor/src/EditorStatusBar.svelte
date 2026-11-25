@@ -55,10 +55,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 <div
     class="editor-chrome editor-status-bar sticky {stickyClass} z-20 flex min-h-8 items-center justify-between gap-3 rounded-b-md border-t px-3 font-mono text-xxs select-none sm:px-4">
-    <div class="flex min-w-0 items-center gap-3 overflow-x-auto">
+    <div
+        class="flex min-w-0 scrollbar-none items-center gap-3 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <Dropdown
             ariaLabel="Problems"
-            placement="top-start">
+            placement="top-start"
+            class="shrink-0">
             {#snippet trigger({ isOpen, toggle })}
                 <button
                     type="button"
