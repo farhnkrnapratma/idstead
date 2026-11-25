@@ -16,6 +16,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         cursorPosition,
         insertIndent,
         offsetAt,
+        placeBlock,
+        toggleLinePrefix,
         wrapSelection,
         type CursorPosition,
         type TextEdit
@@ -99,6 +101,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 prefix,
                 suffix
             ),
+            true
+        );
+    }
+
+    export function insertBlock(opening: string, closing = '') {
+        if (!textarea) return;
+        applyEdit(
+            placeBlock(value || '', textarea.selectionStart, textarea.selectionEnd, opening, closing),
+            true
+        );
+    }
+
+    export function prefixLines(prefix: string) {
+        if (!textarea) return;
+        applyEdit(
+            toggleLinePrefix(value || '', textarea.selectionStart, textarea.selectionEnd, prefix),
             true
         );
     }

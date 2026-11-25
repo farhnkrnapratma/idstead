@@ -119,6 +119,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     export function insertMarkdown(prefix: string, suffix = '') {
         codeArea?.insert(prefix, suffix);
     }
+
+    function insertBlock(opening: string, closing = '') {
+        codeArea?.insertBlock(opening, closing);
+    }
+
+    function prefixLines(prefix: string) {
+        codeArea?.prefixLines(prefix);
+    }
 </script>
 
 <div
@@ -141,6 +149,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         {#if activeTab === 'editor'}
             <EditorToolbar
                 insert={insertMarkdown}
+                {prefixLines}
+                {insertBlock}
                 {onImageUpload}
                 {onVideoUpload} />
         {/if}

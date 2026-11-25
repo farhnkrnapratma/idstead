@@ -43,11 +43,13 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
     interface Props {
         insert: (prefix: string, suffix?: string) => void;
+        prefixLines: (prefix: string) => void;
+        insertBlock: (opening: string, closing?: string) => void;
         onImageUpload?: (file: File) => Promise<string | null>;
         onVideoUpload?: (file: File) => Promise<string | null>;
     }
 
-    let { insert, onImageUpload, onVideoUpload }: Props = $props();
+    let { insert, prefixLines, insertBlock, onImageUpload, onVideoUpload }: Props = $props();
 
     let imageFileInput = $state<HTMLInputElement | null>(null);
     let videoFileInput = $state<HTMLInputElement | null>(null);
@@ -91,9 +93,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     }
 
     const headingTools: Tool[] = [
-        { label: 'H1 heading', icon: Heading1, action: () => insert('# ') },
-        { label: 'H2 heading', icon: Heading2, action: () => insert('## ') },
-        { label: 'H3 heading', icon: Heading3, action: () => insert('### ') }
+        { label: 'H1 heading', icon: Heading1, action: () => prefixLines('# ') },
+        { label: 'H2 heading', icon: Heading2, action: () => prefixLines('## ') },
+        { label: 'H3 heading', icon: Heading3, action: () => prefixLines('### ') }
     ];
 
     const inlineTools: Tool[] = [
@@ -106,16 +108,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
     const blockTools: Tool[] = [
         { label: 'Insert link', icon: LinkIcon, action: () => insert('[', '](url)') },
-        { label: 'Numbered list', icon: ListOrdered, action: () => insert('1. ') },
-        { label: 'Bulleted list', icon: List, action: () => insert('- ') },
-        { label: 'Task list', icon: ListTodo, action: () => insert('- [ ] ') },
-        { label: 'Blockquote', icon: Quote, action: () => insert('> ') }
+        { label: 'Numbered list', icon: ListOrdered, action: () => prefixLines('1. ') },
+        { label: 'Bulleted list', icon: List, action: () => prefixLines('- ') },
+        { label: 'Task list', icon: ListTodo, action: () => prefixLines('- [ ] ') },
+        { label: 'Blockquote', icon: Quote, action: () => prefixLines('> ') }
     ];
 
     const codeBlockTool: Tool = {
         label: 'Code block',
         icon: SquareCode,
-        action: () => insert('```\n', '\n```')
+        action: () => insertBlock('```\n', '\n```')
     };
 </script>
 
@@ -149,9 +151,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         <Dropdown
             ariaLabel="More headings"
             actions={[
-                { label: 'Heading 4', icon: Heading4, onSelect: () => insert('#### ') },
-                { label: 'Heading 5', icon: Heading5, onSelect: () => insert('##### ') },
-                { label: 'Heading 6', icon: Heading6, onSelect: () => insert('###### ') }
+                { label: 'Heading 4', icon: Heading4, onSelect: () => prefixLines('#### ') },
+                { label: 'Heading 5', icon: Heading5, onSelect: () => prefixLines('##### ') },
+                { label: 'Heading 6', icon: Heading6, onSelect: () => prefixLines('###### ') }
             ]}>
             {#snippet trigger({ isOpen, toggle })}
                 <button
@@ -227,18 +229,18 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 },
                 {
                     onSelect: () =>
-                        insert(
-                            '| Header 1 | Header 2 |\n|----------|-----------|\n|  Cell 1  |  Cell 2  |\n'
+                        insertBlock(
+                            '| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |'
                         ),
                     icon: TableIcon,
                     label: 'Add table'
                 },
                 {
-                    onSelect: () => insert(':::details summary="Details"\n', '\n:::\n'),
+                    onSelect: () => insertBlock(':::details summary="Details"\n', '\n:::'),
                     icon: ChevronsUpDown,
                     label: 'Collapsible details'
                 },
-                { onSelect: () => insert('\n---\n'), icon: Minus, label: 'Horizontal rule' }
+                { onSelect: () => insertBlock('---'), icon: Minus, label: 'Horizontal rule' }
             ]}>
             {#snippet trigger({ isOpen, toggle })}
                 <button

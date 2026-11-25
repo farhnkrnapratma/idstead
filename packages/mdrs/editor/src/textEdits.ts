@@ -25,6 +25,23 @@ export function offsetAt(value: string, { line, column }: CursorPosition): numbe
     return Math.min(offset + column - 1, value.length);
 }
 
+function markerRun(value: string, at: number, step: 1 | -1, char: string): number {
+    let length = 0;
+    while (value[at + length * step] === char) length++;
+    return length;
+}
+
+function wrappedBy(value: string, start: number, end: number, prefix: string, suffix: string) {
+    if (!value.substring(0, start).endsWith(prefix) || !value.substring(end).startsWith(suffix))
+        return false;
+    const char = prefix[0];
+    if (prefix !== char.repeat(prefix.length) || suffix !== prefix) return true;
+    return (
+        markerRun(value, start - 1, -1, char) === prefix.length &&
+        markerRun(value, end, 1, char) === suffix.length
+    );
+}
+
 export function wrapSelection(
     value: string,
     start: number,
@@ -33,10 +50,81 @@ export function wrapSelection(
     suffix = ''
 ): TextEdit {
     const selected = value.substring(start, end);
+    if (suffix && wrappedBy(value, start, end, prefix, suffix))
+        return {
+            value:
+                value.substring(0, start - prefix.length) +
+                selected +
+                value.substring(end + suffix.length),
+            selectionStart: start - prefix.length,
+            selectionEnd: end - prefix.length
+        };
+    if (
+        suffix &&
+        selected.length >= prefix.length + suffix.length &&
+        wrappedBy(selected, prefix.length, selected.length - suffix.length, prefix, suffix)
+    ) {
+        const inner = selected.slice(prefix.length, selected.length - suffix.length);
+        return {
+            value: value.substring(0, start) + inner + value.substring(end),
+            selectionStart: start,
+            selectionEnd: start + inner.length
+        };
+    }
     return {
         value: value.substring(0, start) + prefix + selected + suffix + value.substring(end),
         selectionStart: start + prefix.length,
         selectionEnd: start + prefix.length + selected.length
+    };
+}
+
+const LINE_PREFIX_FAMILIES = [/^#{1,6} /, /^(?:[-*+] \[[ xX]\] |[-*+] |\d+[.)] )/, /^> /];
+
+export function toggleLinePrefix(
+    value: string,
+    start: number,
+    end: number,
+    prefix: string
+): TextEdit {
+    const family = LINE_PREFIX_FAMILIES.find(pattern => pattern.test(prefix)) ?? /^$/;
+    const numbered = /^\d+[.)] $/.test(prefix);
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+    const lastChar = end > start && value[end - 1] === '\n' ? end - 1 : end;
+    const nextBreak = value.indexOf('\n', lastChar);
+    const lineEnd = nextBreak === -1 ? value.length : nextBreak;
+    const lines = value
+        .substring(lineStart, lineEnd)
+        .split('\n')
+        .map(line => {
+            const indent = /^[ \t]*/.exec(line)?.[0] ?? '';
+            const body = line.slice(indent.length);
+            const existing = family.exec(body)?.[0] ?? '';
+            return { indent, existing, rest: body.slice(existing.length) };
+        });
+    const content = lines.filter(line => line.existing || line.rest);
+    const targets = content.length ? content : lines;
+    const remove = targets.every(line =>
+        numbered ? /^\d+[.)] $/.test(line.existing) : line.existing === prefix
+    );
+    let number = 0;
+    const next = lines.map(line => {
+        if (!targets.includes(line)) return line.indent + line.rest;
+        const marker = remove ? '' : numbered ? `${++number}. ` : prefix;
+        return line.indent + marker + line.rest;
+    });
+    const block = next.join('\n');
+    const edited = value.substring(0, lineStart) + block + value.substring(lineEnd);
+    if (lines.length > 1)
+        return { value: edited, selectionStart: lineStart, selectionEnd: lineStart + block.length };
+    const shift = next[0].length - (lines[0].indent + lines[0].existing + lines[0].rest).length;
+    const floor =
+        lineStart +
+        lines[0].indent.length +
+        (next[0].length - lines[0].indent.length - lines[0].rest.length);
+    return {
+        value: edited,
+        selectionStart: Math.max(start + shift, floor),
+        selectionEnd: Math.max(end + shift, floor)
     };
 }
 
@@ -89,4 +177,37 @@ export function continueBlock(value: string, start: number, end: number): TextEd
 export function assetMarkdown(url: string, alt: string): string {
     const text = alt.replace(/[[\]"]/g, '');
     return `![${text}](${url} "${text}")`;
+}
+
+function blankLineGap(text: string, atEnd: boolean): string {
+    if (!text) return '';
+    const edge = atEnd ? text.slice(-2) : text.slice(0, 2);
+    if (edge === '\n\n') return '';
+    return (atEnd ? edge.endsWith('\n') : edge.startsWith('\n')) ? '\n' : '\n\n';
+}
+
+export function placeBlock(
+    value: string,
+    start: number,
+    end: number,
+    opening: string,
+    closing = ''
+): TextEdit {
+    if (closing) {
+        const wrapped = wrapSelection(value, start, end, opening, closing);
+        if (wrapped.value.length < value.length) return wrapped;
+        const lead = start > 0 && value[start - 1] !== '\n' ? '\n' : '';
+        const trail = end < value.length && value[end] !== '\n' ? '\n' : '';
+        return wrapSelection(value, start, end, lead + opening, closing + trail);
+    }
+    const before = value.substring(0, end);
+    const after = value.substring(end);
+    const lead = blankLineGap(before, true);
+    const trail = after ? blankLineGap(after, false) : '\n';
+    const cursor = before.length + lead.length + opening.length;
+    return {
+        value: before + lead + opening + trail + after,
+        selectionStart: cursor,
+        selectionEnd: cursor
+    };
 }
