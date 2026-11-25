@@ -19,6 +19,8 @@
             "!tests/__snapshots__",
             "!**/skills-lock.json",
             "!.claude/skills/graphify",
+            "!.claude/skills/caveman-*",
+            "!.claude/skills/security-audit",
             "!.agents/skills"
         ]
     },

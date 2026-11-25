@@ -14,8 +14,14 @@ import {
 } from './time';
 
 const HOUR_MS = 60 * 60 * 1000;
-const SLOT = (column: string) =>
-    `substr(${column}, 1, 14) || printf('%02d', (CAST(substr(${column}, 15, 2) AS INTEGER) / 15) * 15)`;
+const SLOT = (column: string, hourly: boolean) =>
+    hourly
+        ? `substr(${column}, 1, 14) || '00'`
+        : `substr(${column}, 1, 14) || printf('%02d', (CAST(substr(${column}, 15, 2) AS INTEGER) / 15) * 15)`;
+
+function onWholeHours(boundaries: number[]): boolean {
+    return boundaries.every(boundary => boundary % HOUR_MS === 0);
+}
 
 function slotInstant(slot: string): number {
     return Date.parse(`${slot}:00.000Z`);
@@ -26,12 +32,13 @@ async function slotCounts(
     table: string,
     column: string,
     extra: { select?: string; where?: string },
-    params: unknown[]
+    params: unknown[],
+    hourly = false
 ): Promise<D1Row[]> {
     const group = extra.select ? `, ${extra.select}` : '';
     const { results } = await db
         .prepare(
-            `SELECT ${SLOT(column)} AS slot${group}, count(*) AS total FROM ${table}
+            `SELECT ${SLOT(column, hourly)} AS slot${group}, count(*) AS total FROM ${table}
              WHERE ${column} >= ?1 AND ${column} < ?2${extra.where ? ` AND ${extra.where}` : ''}
              GROUP BY slot${group}`
         )
@@ -85,8 +92,9 @@ export async function analyticsSeries(
             ? localHourStart(instant, timeZone)
             : localMidnight(localDate(instant, timeZone), timeZone);
     const range = [iso(from), iso(to)];
+    const wholeHours = onWholeHours(starts);
     const [views, feedback, reports] = await Promise.all([
-        target ? [] : slotCounts(db, 'db_views', 'viewed_at', {}, range),
+        target ? [] : slotCounts(db, 'db_views', 'viewed_at', {}, range, wholeHours),
         slotCounts(
             db,
             'db_feedback_events',
@@ -94,11 +102,19 @@ export async function analyticsSeries(
             target
                 ? { select: 'vote', where: "target_type || ':' || target_id = ?3" }
                 : { select: 'vote' },
-            target ? [...range, target] : range
+            target ? [...range, target] : range,
+            wholeHours
         ),
         target
             ? []
-            : slotCounts(db, 'db_comment_reports', 'created_at', { select: 'reason' }, range)
+            : slotCounts(
+                  db,
+                  'db_comment_reports',
+                  'created_at',
+                  { select: 'reason' },
+                  range,
+                  wholeHours
+              )
     ]);
     for (const row of views) {
         const point = points.get(bucketOf(slotInstant(String(row.slot))));
@@ -124,10 +140,17 @@ export async function viewCalendar(db: D1Like, snapshotIso: string, timeZone: st
     const today = localDate(snapshot, timeZone);
     const firstDay = `${today.slice(0, 4)}-01-01`;
     const counts = new Map<string, number>();
-    for (const row of await slotCounts(db, 'db_views', 'viewed_at', {}, [
-        iso(localMidnight(firstDay, timeZone)),
-        snapshotIso
-    ])) {
+    const midnights: number[] = [];
+    for (let day = firstDay; day <= addDays(today, 1); day = addDays(day, 1))
+        midnights.push(localMidnight(day, timeZone));
+    for (const row of await slotCounts(
+        db,
+        'db_views',
+        'viewed_at',
+        {},
+        [iso(midnights[0]), snapshotIso],
+        onWholeHours(midnights)
+    )) {
         const day = localDate(slotInstant(String(row.slot)), timeZone);
         counts.set(day, (counts.get(day) ?? 0) + Number(row.total));
     }
