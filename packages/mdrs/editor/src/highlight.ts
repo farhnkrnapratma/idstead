@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import hljs from 'highlight.js';
-import { mdrsLanguage } from '@mdrs/dom/mdrsHighlight.ts';
+import { mdrsLanguage } from '@mdrs/language-server/highlight';
 
 hljs.registerLanguage('mdrs', mdrsLanguage);
 
