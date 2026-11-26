@@ -16,6 +16,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         cursorPosition,
         insertIndent,
         offsetAt,
+        placeBlock,
+        placeDefine,
+        verbatimFence,
+        toggleLinePrefix,
         wrapSelection,
         type CursorPosition,
         type TextEdit
@@ -99,6 +103,37 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 prefix,
                 suffix
             ),
+            true
+        );
+    }
+
+    export function insertBlock(opening: string, closing = '') {
+        if (!textarea) return;
+        applyEdit(
+            placeBlock(value || '', textarea.selectionStart, textarea.selectionEnd, opening, closing),
+            true
+        );
+    }
+
+    export function insertVerbatim() {
+        if (!textarea) return;
+        const { selectionStart, selectionEnd } = textarea;
+        const fence = verbatimFence((value || '').substring(selectionStart, selectionEnd));
+        applyEdit(
+            placeBlock(value || '', selectionStart, selectionEnd, `${fence}verbatim\n`, `\n${fence}`),
+            true
+        );
+    }
+
+    export function insertDefine() {
+        if (!textarea) return;
+        applyEdit(placeDefine(value || ''), true);
+    }
+
+    export function prefixLines(prefix: string) {
+        if (!textarea) return;
+        applyEdit(
+            toggleLinePrefix(value || '', textarea.selectionStart, textarea.selectionEnd, prefix),
             true
         );
     }
@@ -223,7 +258,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 aria-hidden="true">
             </div>
         {/if}
-        <div class="relative grid min-h-full w-full [grid-template-areas:'editor']">
+        <div class="relative grid min-h-full w-full flex-1 [grid-template-areas:'editor']">
             <pre
                 bind:this={pre}
                 data-code-theme={theme}

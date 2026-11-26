@@ -18,6 +18,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     import EditorCodeArea from './EditorCodeArea.svelte';
     import EditorPreview from './EditorPreview.svelte';
     import EditorStatusBar from './EditorStatusBar.svelte';
+    import EditorBlocksMenu from './EditorBlocksMenu.svelte';
     import { EditorPreferences } from './preferences.svelte';
     import { editorProblems, problemLines, type EditorProblem } from './problems';
 
@@ -119,6 +120,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     export function insertMarkdown(prefix: string, suffix = '') {
         codeArea?.insert(prefix, suffix);
     }
+
+    function insertBlock(opening: string, closing = '') {
+        codeArea?.insertBlock(opening, closing);
+    }
+
+    function insertVerbatim() {
+        codeArea?.insertVerbatim();
+    }
+
+    function insertDefine() {
+        codeArea?.insertDefine();
+    }
+
+    function prefixLines(prefix: string) {
+        codeArea?.prefixLines(prefix);
+    }
 </script>
 
 <div
@@ -137,10 +154,20 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             bind:activeTab
             {preferences}
             {importAccept}
-            {onImport} />
+            {onImport}>
+            {#snippet blocks()}
+                <EditorBlocksMenu
+                    {insertBlock}
+                    {insertDefine}
+                    {insertVerbatim} />
+            {/snippet}
+        </EditorViewBar>
         {#if activeTab === 'editor'}
             <EditorToolbar
                 insert={insertMarkdown}
+                {prefixLines}
+                {insertBlock}
+
                 {onImageUpload}
                 {onVideoUpload} />
         {/if}

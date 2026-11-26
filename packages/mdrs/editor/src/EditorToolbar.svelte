@@ -6,11 +6,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 <script lang="ts">
     import {
+        Baseline,
         Bold,
         ChevronDown,
-        ChevronsUpDown,
         Code,
-        Ellipsis,
         Heading,
         Heading1,
         Heading2,
@@ -36,6 +35,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         Underline,
         Video
     } from '@lucide/svelte';
+    import type { DropdownAction } from '@idstead/ui/components/Dropdown.svelte';
     import { assetAltText } from '@idstead/domain/assetNaming.ts';
     import type { Component } from 'svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
@@ -43,11 +43,17 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
     interface Props {
         insert: (prefix: string, suffix?: string) => void;
+        prefixLines: (prefix: string) => void;
+        insertBlock: (opening: string, closing?: string) => void;
         onImageUpload?: (file: File) => Promise<string | null>;
         onVideoUpload?: (file: File) => Promise<string | null>;
     }
 
-    let { insert, onImageUpload, onVideoUpload }: Props = $props();
+    let {
+        insert,
+        prefixLines,
+        insertBlock,
+        onImageUpload, onVideoUpload }: Props = $props();
 
     let imageFileInput = $state<HTMLInputElement | null>(null);
     let videoFileInput = $state<HTMLInputElement | null>(null);
@@ -91,12 +97,18 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     }
 
     const headingTools: Tool[] = [
-        { label: 'H1 heading', icon: Heading1, action: () => insert('# ') },
-        { label: 'H2 heading', icon: Heading2, action: () => insert('## ') },
-        { label: 'H3 heading', icon: Heading3, action: () => insert('### ') }
+        { label: 'H1 heading', icon: Heading1, action: () => prefixLines('# ') },
+        { label: 'H2 heading', icon: Heading2, action: () => prefixLines('## ') },
+        { label: 'H3 heading', icon: Heading3, action: () => prefixLines('### ') }
     ];
 
-    const inlineTools: Tool[] = [
+    const moreHeadings: DropdownAction[] = [
+        { label: 'Heading 4', icon: Heading4, onSelect: () => prefixLines('#### ') },
+        { label: 'Heading 5', icon: Heading5, onSelect: () => prefixLines('##### ') },
+        { label: 'Heading 6', icon: Heading6, onSelect: () => prefixLines('###### ') }
+    ];
+
+    const textTools: Tool[] = [
         { label: 'Bold', icon: Bold, action: () => insert('**', '**') },
         { label: 'Italic', icon: Italic, action: () => insert('*', '*') },
         { label: 'Underline', icon: Underline, action: () => insert('<u>', '</u>') },
@@ -104,19 +116,33 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         { label: 'Inline code', icon: Code, action: () => insert('`', '`') }
     ];
 
-    const blockTools: Tool[] = [
-        { label: 'Insert link', icon: LinkIcon, action: () => insert('[', '](url)') },
-        { label: 'Numbered list', icon: ListOrdered, action: () => insert('1. ') },
-        { label: 'Bulleted list', icon: List, action: () => insert('- ') },
-        { label: 'Task list', icon: ListTodo, action: () => insert('- [ ] ') },
-        { label: 'Blockquote', icon: Quote, action: () => insert('> ') }
+    const moreTextStyles: DropdownAction[] = [
+        { label: 'Highlight', icon: Highlighter, onSelect: () => insert('<mark>', '</mark>') },
+        { label: 'Keyboard key', icon: Keyboard, onSelect: () => insert('<kbd>', '</kbd>') },
+        { label: 'Subscript', icon: Subscript, onSelect: () => insert('<sub>', '</sub>') },
+        { label: 'Superscript', icon: Superscript, onSelect: () => insert('<sup>', '</sup>') }
     ];
 
-    const codeBlockTool: Tool = {
-        label: 'Code block',
-        icon: SquareCode,
-        action: () => insert('```\n', '\n```')
-    };
+    const structureTools: Tool[] = [
+        { label: 'Bulleted list', icon: List, action: () => prefixLines('- ') },
+        { label: 'Numbered list', icon: ListOrdered, action: () => prefixLines('1. ') },
+        { label: 'Task list', icon: ListTodo, action: () => prefixLines('- [ ] ') },
+        { label: 'Blockquote', icon: Quote, action: () => prefixLines('> ') }
+    ];
+
+    const insertTools: Tool[] = [
+        { label: 'Insert link', icon: LinkIcon, action: () => insert('[', '](url)') },
+        { label: 'Insert image', icon: ImageIcon, action: handleImageClick },
+        { label: 'Insert video', icon: Video, action: handleVideoClick },
+        {
+            label: 'Insert table',
+            icon: TableIcon,
+            action: () =>
+                insertBlock('| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |')
+        },
+        { label: 'Code block', icon: SquareCode, action: () => insertBlock('```\n', '\n```') },
+        { label: 'Horizontal rule', icon: Minus, action: () => insertBlock('---') }
+    ];
 </script>
 
 {#snippet toolButton(tool: Tool)}
@@ -136,6 +162,26 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     </div>
 {/snippet}
 
+{#snippet menu(label: string, Icon: Component, actions: DropdownAction[])}
+    <Dropdown
+        ariaLabel={label}
+        {actions}>
+        {#snippet trigger({ isOpen, toggle })}
+            <button
+                type="button"
+                onclick={toggle}
+                aria-label={label}
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                class="touch-target relative flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-fg">
+                <Icon class="size-4" />
+                <ChevronDown
+                    class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
+            </button>
+        {/snippet}
+    </Dropdown>
+{/snippet}
+
 <div
     class="editor-chrome editor-toolbar flex min-h-10 items-stretch border-b p-0 text-xs select-none">
     <div
@@ -145,40 +191,26 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         {#each headingTools as tool (tool.label)}
             {@render toolButton(tool)}
         {/each}
-
-        <Dropdown
-            ariaLabel="More headings"
-            actions={[
-                { label: 'Heading 4', icon: Heading4, onSelect: () => insert('#### ') },
-                { label: 'Heading 5', icon: Heading5, onSelect: () => insert('##### ') },
-                { label: 'Heading 6', icon: Heading6, onSelect: () => insert('###### ') }
-            ]}>
-            {#snippet trigger({ isOpen, toggle })}
-                <button
-                    type="button"
-                    onclick={toggle}
-                    aria-label="More headings (H4-H6)"
-                    aria-haspopup="menu"
-                    aria-expanded={isOpen}
-                    class="touch-target relative flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-fg">
-                    <Heading class="size-4" />
-                    <ChevronDown
-                        class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : (
-                            ''
-                        )}" />
-                </button>
-            {/snippet}
-        </Dropdown>
+        {@render menu('More headings (H4-H6)', Heading, moreHeadings)}
 
         {@render separator()}
 
-        {#each inlineTools as tool (tool.label)}
+        {#each textTools as tool (tool.label)}
+            {@render toolButton(tool)}
+        {/each}
+        {@render menu('More text styles', Baseline, moreTextStyles)}
+
+        {@render separator()}
+
+        {#each structureTools as tool (tool.label)}
             {@render toolButton(tool)}
         {/each}
 
         {@render separator()}
 
-        {@render toolButton({ label: 'Insert image', icon: ImageIcon, action: handleImageClick })}
+        {#each insertTools as tool (tool.label)}
+            {@render toolButton(tool)}
+        {/each}
         <input
             type="file"
             bind:this={imageFileInput}
@@ -187,7 +219,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             onchange={handleFileSelected}
             class="hidden"
             aria-label="Upload image file" />
-        {@render toolButton({ label: 'Insert video', icon: Video, action: handleVideoClick })}
         <input
             type="file"
             bind:this={videoFileInput}
@@ -196,61 +227,5 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             onchange={handleVideoFileSelected}
             class="hidden"
             aria-label="Upload video file" />
-        {#each blockTools as tool (tool.label)}
-            {@render toolButton(tool)}
-        {/each}
-
-        {@render separator()}
-
-        {@render toolButton(codeBlockTool)}
-
-        {@render separator()}
-
-        <Dropdown
-            ariaLabel="More formatting options"
-            actions={[
-                {
-                    onSelect: () => insert('<kbd>', '</kbd>'),
-                    icon: Keyboard,
-                    label: 'Keyboard key'
-                },
-                {
-                    onSelect: () => insert('<mark>', '</mark>'),
-                    icon: Highlighter,
-                    label: 'Highlight'
-                },
-                { onSelect: () => insert('<sub>', '</sub>'), icon: Subscript, label: 'Subscript' },
-                {
-                    onSelect: () => insert('<sup>', '</sup>'),
-                    icon: Superscript,
-                    label: 'Superscript'
-                },
-                {
-                    onSelect: () =>
-                        insert(
-                            '| Header 1 | Header 2 |\n|----------|-----------|\n|  Cell 1  |  Cell 2  |\n'
-                        ),
-                    icon: TableIcon,
-                    label: 'Add table'
-                },
-                {
-                    onSelect: () => insert(':::details summary="Details"\n', '\n:::\n'),
-                    icon: ChevronsUpDown,
-                    label: 'Collapsible details'
-                },
-                { onSelect: () => insert('\n---\n'), icon: Minus, label: 'Horizontal rule' }
-            ]}>
-            {#snippet trigger({ isOpen, toggle })}
-                <button
-                    type="button"
-                    onclick={toggle}
-                    aria-label="More formatting options"
-                    aria-haspopup="menu"
-                    aria-expanded={isOpen}
-                    class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-fg">
-                    <Ellipsis class="size-4" />
-                </button>
-            {/snippet}
-        </Dropdown>
     </div>
 </div>
