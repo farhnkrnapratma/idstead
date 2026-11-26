@@ -11,7 +11,7 @@ import { createCodeScrollbar } from './codeScrollbar';
 import { shortcut, type ShortcutParams } from '@idstead/ui/utils/shortcut.svelte.ts';
 import { focusScope } from '@idstead/ui/utils/focusScope.ts';
 import { argKey } from '@idstead/ui/shortcuts.ts';
-import { mdrsLanguage } from './mdrsHighlight';
+import { mdrsLanguage } from '@mdrs/language-server/highlight';
 
 hljs.registerLanguage('mdrs', mdrsLanguage);
 

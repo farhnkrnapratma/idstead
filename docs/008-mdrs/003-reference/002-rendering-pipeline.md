@@ -66,7 +66,7 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
 | `fetchJson(url)` | `packages/lib/src/server/mdrsFetch.ts` | The site's `get()` fetcher on the server: https only, JSON only, 256 KB, 5 s, no redirects |
 | `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
-| `mdrsLanguage(hljs)` | `packages/mdrs/dom/src/mdrsHighlight.ts` | The highlight.js language for MDRS source: `mdrs` code fences and the admin editor |
+| `mdrsLanguage(hljs)` | `@mdrs/language-server/highlight` (npm) | The highlight.js language for MDRS source: `mdrs` code fences and the admin editor |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
 | `enhanceHeadingAnchors(container, options)` | `packages/mdrs/dom/src/headingAnchors.ts` | Heading actions after the last word: a ¶ anchor link by default, or whatever `mountActions(slot, link)` mounts into the `mdrs-heading-actions` slot; `bareFragments: true` links to `#setup` instead of `#mdrs-setup`. Returns a cleanup that runs every `mountActions` cleanup |
