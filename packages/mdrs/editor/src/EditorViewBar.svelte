@@ -5,10 +5,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
 <script lang="ts">
-    import { ChevronDown, FileUp, SlidersHorizontal } from '@lucide/svelte';
+    import { FileUp, SlidersHorizontal } from '@lucide/svelte';
+    import type { Snippet } from 'svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
     import Checkbox from '@idstead/ui/components/Checkbox.svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
     import { INDENT_SIZES, type EditorPreferences, type IndentSize } from './preferences.svelte';
 
     interface Props {
@@ -16,19 +18,19 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         preferences: EditorPreferences;
         importAccept?: string;
         onImport?: (file: File) => void;
+        blocks?: Snippet;
     }
 
     let {
         activeTab = $bindable('editor'),
         preferences,
         importAccept = '.md,.mdrs,.markdown,text/markdown',
-        onImport
+        onImport,
+        blocks
     }: Props = $props();
 
     let importInput = $state<HTMLInputElement | null>(null);
 
-    const groupButton =
-        'touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-2 font-mono text-xs font-medium text-fg-secondary transition-colors hover:bg-fg/5 hover:text-fg focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-2.5';
     const segment = (active: boolean) =>
         cn(
             'touch-target relative inline-flex h-7 flex-1 cursor-pointer items-center justify-center rounded-sm px-2 font-mono text-xs transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none',
@@ -77,18 +79,18 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         </div>
 
         <div
-            class="editor-tab-list ml-auto flex h-8 items-center rounded-md border p-0.5"
+            class="editor-tab-list ml-auto flex h-8 items-center gap-0.5 rounded-md border p-0.5"
             role="group"
             aria-label="Editor options">
             {#if onImport}
-                <button
-                    type="button"
-                    class={groupButton}
-                    aria-label="Import a Markdown or MDRS file"
+                <IconButton
+                    ariaLabel="Import a Markdown or MDRS file"
+                    tooltip="Import file"
+                    variant="ghost"
+                    size="2xs"
                     onclick={() => importInput?.click()}>
-                    <FileUp class="size-3.5" />
-                    <span class="hidden sm:inline">Import</span>
-                </button>
+                    <FileUp class="size-4" />
+                </IconButton>
                 <input
                     bind:this={importInput}
                     type="file"
@@ -99,22 +101,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                     onchange={handleImport} />
             {/if}
             {#if activeTab === 'editor'}
+                {@render blocks?.()}
                 <Dropdown
                     ariaLabel="View options"
                     placement="bottom-end">
                     {#snippet trigger({ isOpen, toggle })}
-                        <button
-                            type="button"
-                            class={cn(groupButton, isOpen && 'bg-fg/5 text-fg')}
-                            aria-label="View options"
+                        <IconButton
+                            ariaLabel="View options"
+                            tooltip="View options"
+                            variant="ghost"
+                            size="2xs"
+                            class={cn(isOpen && 'bg-surface-hover text-fg')}
                             aria-haspopup="dialog"
                             aria-expanded={isOpen}
                             onclick={toggle}>
-                            <SlidersHorizontal class="size-3.5" />
-                            <span class="hidden sm:inline">View</span>
-                            <ChevronDown
-                                class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
-                        </button>
+                            <SlidersHorizontal class="size-4" />
+                        </IconButton>
                     {/snippet}
                     <div class="flex w-64 max-w-[calc(100vw-1rem)] flex-col gap-3 p-3 text-xs">
                         <section class="flex flex-col gap-2">
