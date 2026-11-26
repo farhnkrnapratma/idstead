@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 <script lang="ts">
     import {
         Baseline,
+        Blocks,
         Bold,
         BookOpen,
         ChartLine,
@@ -38,7 +39,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         Minus,
         MonitorPlay,
         PanelsTopLeft,
-        Plus,
         Quote,
         Sigma,
         Split,
@@ -313,8 +313,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             onchange={handleVideoFileSelected}
             class="hidden"
             aria-label="Upload video file" />
-
-        <div class="ml-auto shrink-0 pl-2">
+    </div>
+    <div class="flex shrink-0 items-center border-l border-line-subtle px-2 sm:px-3">
             <Dropdown
                 ariaLabel="Insert an MDRS block"
                 placement="bottom-end"
@@ -326,14 +326,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                         aria-label="Insert an MDRS block"
                         aria-haspopup="menu"
                         aria-expanded={isOpen}
-                        class="editor-tab-list touch-target relative flex h-7 cursor-pointer items-center gap-1 rounded-md border px-2 font-mono text-xs font-medium transition-colors hover:bg-fg/5 hover:text-fg {isOpen ? 'bg-fg/5 text-fg' : 'text-fg-secondary'}">
-                        <Plus class="size-3.5" />
-                        <span>Blocks</span>
+                        class="editor-tab-list touch-target relative flex h-7 cursor-pointer items-center gap-0.5 rounded-md border px-1.5 transition-colors hover:bg-fg/5 hover:text-fg {isOpen ? 'bg-fg/5 text-fg' : 'text-fg-secondary'}">
+                        <Blocks class="size-4" />
                         <ChevronDown
                             class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
                     </button>
                 {/snippet}
             </Dropdown>
-        </div>
     </div>
 </div>
