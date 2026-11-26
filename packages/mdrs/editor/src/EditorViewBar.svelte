@@ -5,19 +5,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
 <script lang="ts">
-    import {
-        ArrowRightToLine,
-        Bolt,
-        FileUp,
-        ListOrdered,
-        RulerDimensionLine,
-        Space,
-        Summary,
-        TextAlignJustify,
-        TextWrap
-    } from '@lucide/svelte';
+    import { ChevronDown, FileUp, SlidersHorizontal } from '@lucide/svelte';
     import { cn } from '@idstead/ui/utils/cn.ts';
-    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import Checkbox from '@idstead/ui/components/Checkbox.svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import { INDENT_SIZES, type EditorPreferences, type IndentSize } from './preferences.svelte';
 
@@ -36,6 +26,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     }: Props = $props();
 
     let importInput = $state<HTMLInputElement | null>(null);
+
+    const groupButton =
+        'touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-2 font-mono text-xs font-medium text-fg-secondary transition-colors hover:bg-fg/5 hover:text-fg focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-2.5';
+    const segment = (active: boolean) =>
+        cn(
+            'touch-target relative inline-flex h-7 flex-1 cursor-pointer items-center justify-center rounded-sm px-2 font-mono text-xs transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none',
+            active ? 'bg-accent-strong font-medium text-on-accent shadow-xs' : 'text-fg-secondary hover:bg-fg/5 hover:text-fg'
+        );
 
     function handleImport(event: Event) {
         const input = event.currentTarget as HTMLInputElement;
@@ -78,16 +76,19 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             </button>
         </div>
 
-        <div class="ml-auto flex items-center gap-1 select-none">
+        <div
+            class="editor-tab-list ml-auto flex h-8 items-center rounded-md border p-0.5"
+            role="group"
+            aria-label="Editor options">
             {#if onImport}
-                <IconButton
-                    ariaLabel="Import a Markdown or MDRS file"
-                    tooltip="Import Markdown file"
-                    size="sm"
-                    class="editor-control-button"
+                <button
+                    type="button"
+                    class={groupButton}
+                    aria-label="Import a Markdown or MDRS file"
                     onclick={() => importInput?.click()}>
                     <FileUp class="size-3.5" />
-                </IconButton>
+                    <span class="hidden sm:inline">Import</span>
+                </button>
                 <input
                     bind:this={importInput}
                     type="file"
@@ -98,161 +99,81 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                     onchange={handleImport} />
             {/if}
             {#if activeTab === 'editor'}
-                <div class="hidden items-center gap-1 sm:flex">
-                    <IconButton
-                        ariaLabel="Indent mode: {preferences.indentMode === 'spaces' ?
-                            'Spaces'
-                        :   'Tabs'}"
-                        tooltip="Indent mode: {preferences.indentMode === 'spaces' ?
-                            'Spaces'
-                        :   'Tabs'}"
-                        size="sm"
-                        class="editor-control-button"
-                        onclick={() => preferences.toggleIndentMode()}>
-                        {#if preferences.indentMode === 'spaces'}
-                            <Space class="size-3.5" />
-                        {:else}
-                            <ArrowRightToLine class="size-3.5" />
-                        {/if}
-                    </IconButton>
-                    <Dropdown
-                        ariaLabel="Indent size"
-                        options={INDENT_SIZES.map(size => ({
-                            value: size,
-                            label: `${size} spaces`
-                        }))}
-                        value={preferences.indentSize}
-                        onChange={(size: IndentSize) => preferences.setIndentSize(size)}>
-                        {#snippet trigger({ isOpen, toggle })}
-                            <IconButton
-                                ariaLabel="Indent size: {preferences.indentSize} spaces"
-                                tooltip="Indent size: {preferences.indentSize}"
-                                size="sm"
-                                class="editor-control-button"
-                                aria-haspopup="listbox"
-                                aria-expanded={isOpen}
-                                onclick={toggle}>
-                                <RulerDimensionLine class="size-3.5" />
-                            </IconButton>
-                        {/snippet}
-                    </Dropdown>
-                    <IconButton
-                        ariaLabel="Line wrapping: {preferences.lineWrapMode === 'soft' ?
-                            'Wrap'
-                        :   'Nowrap'}"
-                        tooltip="Line wrapping: {preferences.lineWrapMode === 'soft' ?
-                            'Wrap'
-                        :   'Nowrap'}"
-                        size="sm"
-                        class="editor-control-button"
-                        onclick={() => preferences.toggleLineWrap()}>
-                        {#if preferences.lineWrapMode === 'soft'}
-                            <TextWrap class="size-3.5" />
-                        {:else}
-                            <Summary class="size-3.5" />
-                        {/if}
-                    </IconButton>
-                    <IconButton
-                        ariaLabel="Line numbers: {preferences.showLineNumbers ? 'on' : 'off'}"
-                        tooltip="Line numbers: {preferences.showLineNumbers ? 'on' : 'off'}"
-                        size="sm"
-                        class="editor-control-button"
-                        onclick={() => preferences.toggleLineNumbers()}>
-                        {#if preferences.showLineNumbers}
-                            <ListOrdered class="size-3.5" />
-                        {:else}
-                            <TextAlignJustify class="size-3.5" />
-                        {/if}
-                    </IconButton>
-                </div>
-
-                <div class="flex items-center sm:hidden">
-                    <Dropdown
-                        ariaLabel="Editor settings"
-                        placement="bottom-end">
-                        {#snippet trigger({ isOpen, toggle })}
-                            <IconButton
-                                ariaLabel="Editor settings"
-                                tooltip="Editor settings"
-                                size="sm"
-                                class="editor-control-button"
-                                aria-haspopup="dialog"
-                                aria-expanded={isOpen}
-                                onclick={toggle}>
-                                <Bolt class="size-3.5" />
-                            </IconButton>
-                        {/snippet}
-                        <div class="flex max-w-[calc(100vw-1rem)] min-w-56 flex-col text-xs">
-                            <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-fg-muted">Indent mode</span>
-                                <IconButton
-                                    ariaLabel="Indent mode: {preferences.indentMode === 'spaces' ?
-                                        'Spaces'
-                                    :   'Tabs'}"
-                                    size="xs"
-                                    class="text-fg-secondary hover:text-fg-accent"
-                                    onclick={() => preferences.toggleIndentMode()}>
-                                    {#if preferences.indentMode === 'spaces'}
-                                        <Space class="size-3.5" />
-                                    {:else}
-                                        <ArrowRightToLine class="size-3.5" />
-                                    {/if}
-                                </IconButton>
+                <Dropdown
+                    ariaLabel="View options"
+                    placement="bottom-end">
+                    {#snippet trigger({ isOpen, toggle })}
+                        <button
+                            type="button"
+                            class={cn(groupButton, isOpen && 'bg-fg/5 text-fg')}
+                            aria-label="View options"
+                            aria-haspopup="dialog"
+                            aria-expanded={isOpen}
+                            onclick={toggle}>
+                            <SlidersHorizontal class="size-3.5" />
+                            <span class="hidden sm:inline">View</span>
+                            <ChevronDown
+                                class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
+                        </button>
+                    {/snippet}
+                    <div class="flex w-64 max-w-[calc(100vw-1rem)] flex-col gap-3 p-3 text-xs">
+                        <section class="flex flex-col gap-2">
+                            <h3 class="font-medium text-fg-muted">Display</h3>
+                            <Checkbox
+                                label="Wrap long lines"
+                                checked={preferences.lineWrapMode === 'soft'}
+                                onchange={() => preferences.toggleLineWrap()} />
+                            <Checkbox
+                                label="Line numbers"
+                                checked={preferences.showLineNumbers}
+                                onchange={() => preferences.toggleLineNumbers()} />
+                        </section>
+                        <div
+                            class="h-px bg-line-subtle"
+                            aria-hidden="true">
+                        </div>
+                        <section class="flex flex-col gap-2">
+                            <h3 class="font-medium text-fg-muted">Indentation</h3>
+                            <div
+                                class="flex rounded-md border border-line-subtle p-0.5"
+                                role="radiogroup"
+                                aria-label="Indent with">
+                                {#each ['spaces', 'tabs'] as const as mode (mode)}
+                                    <button
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={preferences.indentMode === mode}
+                                        class={segment(preferences.indentMode === mode)}
+                                        onclick={() => {
+                                            if (preferences.indentMode !== mode)
+                                                preferences.toggleIndentMode();
+                                        }}>
+                                        {mode === 'spaces' ? 'Spaces' : 'Tabs'}
+                                    </button>
+                                {/each}
                             </div>
-                            <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-fg-muted">Indent size</span>
-                                <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-2">
+                                <span class="shrink-0 text-fg-muted">Width</span>
+                                <div
+                                    class="flex flex-1 rounded-md border border-line-subtle p-0.5"
+                                    role="radiogroup"
+                                    aria-label="Indent width">
                                     {#each INDENT_SIZES as size (size)}
                                         <button
                                             type="button"
-                                            aria-pressed={preferences.indentSize === size}
-                                            onclick={() => preferences.setIndentSize(size)}
-                                            class={cn(
-                                                'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-fg-accent',
-                                                preferences.indentSize === size ?
-                                                    'bg-accent/10 font-semibold text-fg-accent'
-                                                :   'text-fg-secondary'
-                                            )}>
+                                            role="radio"
+                                            aria-checked={preferences.indentSize === size}
+                                            aria-label="{size} {preferences.indentMode === 'tabs' ? 'columns' : 'spaces'}"
+                                            class={segment(preferences.indentSize === size)}
+                                            onclick={() => preferences.setIndentSize(size as IndentSize)}>
                                             {size}
                                         </button>
                                     {/each}
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-fg-muted">Line wrapping</span>
-                                <IconButton
-                                    ariaLabel="Line wrapping: {preferences.lineWrapMode === 'soft' ?
-                                        'Wrap'
-                                    :   'Nowrap'}"
-                                    size="xs"
-                                    class="text-fg-secondary hover:text-fg-accent"
-                                    onclick={() => preferences.toggleLineWrap()}>
-                                    {#if preferences.lineWrapMode === 'soft'}
-                                        <TextWrap class="size-3.5" />
-                                    {:else}
-                                        <Summary class="size-3.5" />
-                                    {/if}
-                                </IconButton>
-                            </div>
-                            <div class="flex items-center justify-between gap-3 px-3 py-1.5">
-                                <span class="text-fg-muted">Line numbers</span>
-                                <IconButton
-                                    ariaLabel="Line numbers: {preferences.showLineNumbers ? 'on' : (
-                                        'off'
-                                    )}"
-                                    size="xs"
-                                    class="text-fg-secondary hover:text-fg-accent"
-                                    onclick={() => preferences.toggleLineNumbers()}>
-                                    {#if preferences.showLineNumbers}
-                                        <ListOrdered class="size-3.5" />
-                                    {:else}
-                                        <TextAlignJustify class="size-3.5" />
-                                    {/if}
-                                </IconButton>
-                            </div>
-                        </div>
-                    </Dropdown>
-                </div>
+                        </section>
+                    </div>
+                </Dropdown>
             {/if}
         </div>
     </div>
