@@ -4,6 +4,7 @@
 
 import { expect, test } from 'bun:test';
 import { flushSync, mount, unmount } from 'svelte';
+import EditorBlocksMenu from '../packages/mdrs/editor/src/EditorBlocksMenu.svelte';
 import EditorToolbar from '../packages/mdrs/editor/src/EditorToolbar.svelte';
 import EditorViewBar from '../packages/mdrs/editor/src/EditorViewBar.svelte';
 import { EditorPreferences } from '../packages/mdrs/editor/src/preferences.svelte';
@@ -35,9 +36,7 @@ test('every toolbar button and menu item sends its edit', () => {
     const { target, done } = setup(EditorToolbar as never, {
         insert: record('insert'),
         prefixLines: record('prefixLines'),
-        insertBlock: record('insertBlock'),
-        insertDefine: record('insertDefine'),
-        insertVerbatim: record('insertVerbatim')
+        insertBlock: record('insertBlock')
     });
 
     const buttons = [...target.querySelectorAll<HTMLButtonElement>('button[aria-label]')];
@@ -62,17 +61,51 @@ test('every toolbar button and menu item sends its edit', () => {
         }
     }
 
-    expect(menuCounts).toEqual([3, 4, 18]);
-    expect(calls.length).toBe(buttons.length - triggers.length + 3 + 4 + 18);
+    expect(menuCounts).toEqual([3, 4]);
+    expect(calls.length).toBe(buttons.length - triggers.length + 3 + 4);
     expect(calls).toContainEqual(['prefixLines', '# ']);
     expect(calls).toContainEqual(['prefixLines', '#### ']);
     expect(calls).toContainEqual(['insert', '**', '**']);
     expect(calls).toContainEqual(['insert', '<mark>', '</mark>']);
     expect(calls).toContainEqual(['insert', '![', '](url)']);
-    expect(calls).toContainEqual(['insertBlock', ':::note\n', '\n:::']);
     expect(calls).toContainEqual(['insertBlock', '```\n', '\n```']);
+    done();
+});
+
+test('every MDRS block in the blocks panel inserts its block', () => {
+    const calls: unknown[][] = [];
+    const record =
+        (name: string) =>
+        (...args: unknown[]) =>
+            calls.push([name, ...args]);
+    const { target, done } = setup(EditorBlocksMenu as never, {
+        insertBlock: record('insertBlock'),
+        insertDefine: record('insertDefine'),
+        insertVerbatim: record('insertVerbatim')
+    });
+    const trigger = target.querySelector<HTMLButtonElement>(
+        'button[aria-label="Insert an MDRS block"]'
+    );
+    const panelButtons = () => [
+        ...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')
+    ];
+    trigger?.click();
+    flushSync();
+    const total = panelButtons().length;
+    for (let index = 0; index < total; index++) {
+        if (!panelButtons().length) {
+            trigger?.click();
+            flushSync();
+        }
+        panelButtons()[index].click();
+        flushSync();
+    }
+    expect(total).toBe(18);
+    expect(calls.length).toBe(18);
     expect(calls).toContainEqual(['insertDefine']);
     expect(calls).toContainEqual(['insertVerbatim']);
+    expect(calls).toContainEqual(['insertBlock', ':::note\n', '\n:::']);
+    expect(calls).toContainEqual(['insertBlock', ':::if true\n', '\n:::endif']);
     done();
 });
 

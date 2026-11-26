@@ -7,16 +7,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 <script lang="ts">
     import {
         Baseline,
-        Blocks,
         Bold,
-        BookOpen,
-        ChartLine,
         ChevronDown,
-        ChevronsUpDown,
-        CircleAlert,
         Code,
-        FileCode,
-        Footprints,
         Heading,
         Heading1,
         Heading2,
@@ -26,33 +19,21 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         Heading6,
         Highlighter,
         Image as ImageIcon,
-        Info,
         Italic,
         Keyboard,
-        Lightbulb,
         Link2 as LinkIcon,
         List,
         ListOrdered,
         ListTodo,
-        MessageSquareText,
-        MessageSquareWarning,
         Minus,
-        MonitorPlay,
-        PanelsTopLeft,
         Quote,
-        Sigma,
-        Split,
         SquareCode,
         Strikethrough,
         Subscript,
         Superscript,
         Table as TableIcon,
-        TriangleAlert,
-        Type,
         Underline,
-        Variable,
-        Video,
-        Workflow
+        Video
     } from '@lucide/svelte';
     import type { DropdownAction } from '@idstead/ui/components/Dropdown.svelte';
     import { assetAltText } from '@idstead/domain/assetNaming.ts';
@@ -64,8 +45,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         insert: (prefix: string, suffix?: string) => void;
         prefixLines: (prefix: string) => void;
         insertBlock: (opening: string, closing?: string) => void;
-        insertDefine: () => void;
-        insertVerbatim: () => void;
         onImageUpload?: (file: File) => Promise<string | null>;
         onVideoUpload?: (file: File) => Promise<string | null>;
     }
@@ -74,8 +53,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         insert,
         prefixLines,
         insertBlock,
-        insertDefine,
-        insertVerbatim,
         onImageUpload, onVideoUpload }: Props = $props();
 
     let imageFileInput = $state<HTMLInputElement | null>(null);
@@ -166,69 +143,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         { label: 'Code block', icon: SquareCode, action: () => insertBlock('```\n', '\n```') },
         { label: 'Horizontal rule', icon: Minus, action: () => insertBlock('---') }
     ];
-
-    const container = (name: string) => () => insertBlock(`:::${name}\n`, '\n:::');
-
-    const mdrsBlocks: DropdownAction[] = [
-        { label: 'Variables (define)', icon: Variable, onSelect: () => insertDefine() },
-        { label: 'Conditional (if)', icon: Split, onSelect: () => insertBlock(':::if true\n', '\n:::endif') },
-        {
-            label: 'Callout',
-            icon: MessageSquareText,
-            onSelect: () => insertBlock(':::callout title="Title"\n', '\n:::')
-        },
-        { label: 'Note', icon: Info, onSelect: container('note') },
-        { label: 'Tip', icon: Lightbulb, onSelect: container('tip') },
-        { label: 'Important', icon: MessageSquareWarning, onSelect: container('important') },
-        { label: 'Warning', icon: TriangleAlert, onSelect: container('warning') },
-        { label: 'Caution', icon: CircleAlert, onSelect: container('caution') },
-        {
-            label: 'Collapsible details',
-            icon: ChevronsUpDown,
-            onSelect: () => insertBlock(':::details summary="Details"\n', '\n:::')
-        },
-        {
-            label: 'Tabs',
-            icon: PanelsTopLeft,
-            onSelect: () =>
-                insertBlock(':::tabs\n::tab label="First"\n', '\n::\n::tab label="Second"\n\n::\n:::')
-        },
-        {
-            label: 'Code snippets',
-            icon: FileCode,
-            onSelect: () =>
-                insertBlock(
-                    ':::snippets\n::tab label="JavaScript"\n```js\n',
-                    '\n```\n::\n::tab label="Python"\n```python\n\n```\n::\n:::'
-                )
-        },
-        { label: 'Steps', icon: Footprints, onSelect: container('steps') },
-        { label: 'Math', icon: Sigma, onSelect: container('math') },
-        {
-            label: 'Embed',
-            icon: MonitorPlay,
-            onSelect: () => insertBlock(':::embed url="https://youtu.be/"')
-        },
-        {
-            label: 'Chart',
-            icon: ChartLine,
-            onSelect: () =>
-                insertBlock(
-                    '```chart\ntype: line\nx: month\ny: users\ndata:\n  - { month: "Jan", users: 10 }\n  - { month: "Feb", users: 20 }\n```'
-                )
-        },
-        {
-            label: 'Diagram',
-            icon: Workflow,
-            onSelect: () => insertBlock('```mermaid\nflowchart LR\n  A --> B\n```')
-        },
-        {
-            label: 'References',
-            icon: BookOpen,
-            onSelect: () => insertBlock(':::references\n[^1]: Source\n\n:::')
-        },
-        { label: 'Verbatim', icon: Type, onSelect: () => insertVerbatim() }
-    ];
 </script>
 
 {#snippet toolButton(tool: Tool)}
@@ -313,25 +227,5 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             onchange={handleVideoFileSelected}
             class="hidden"
             aria-label="Upload video file" />
-    </div>
-    <div class="flex shrink-0 items-center border-l border-line-subtle px-2 sm:px-3">
-            <Dropdown
-                ariaLabel="Insert an MDRS block"
-                placement="bottom-end"
-                actions={mdrsBlocks}>
-                {#snippet trigger({ isOpen, toggle })}
-                    <button
-                        type="button"
-                        onclick={toggle}
-                        aria-label="Insert an MDRS block"
-                        aria-haspopup="menu"
-                        aria-expanded={isOpen}
-                        class="editor-tab-list touch-target relative flex h-7 cursor-pointer items-center gap-0.5 rounded-md border px-1.5 transition-colors hover:bg-fg/5 hover:text-fg {isOpen ? 'bg-fg/5 text-fg' : 'text-fg-secondary'}">
-                        <Blocks class="size-4" />
-                        <ChevronDown
-                            class="size-3 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
-                    </button>
-                {/snippet}
-            </Dropdown>
     </div>
 </div>
