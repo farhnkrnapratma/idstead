@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import { compile, compileModule } from 'svelte/compiler';
+import { compileModule } from 'svelte/compiler';
+import { compileSvelteComponent } from '../tooling/svelteCompile.ts';
 
 const natives = [
     'Request',
@@ -116,7 +117,7 @@ Bun.plugin({
         }));
         build.onLoad({ filter: /\.svelte$/ }, async ({ path }) => {
             const source = await Bun.file(path).text();
-            const { js } = compile(source, { filename: path, generate: 'client', dev: false });
+            const js = compileSvelteComponent(path, source);
             const map = Buffer.from(JSON.stringify(js.map)).toString('base64');
             return {
                 contents: `${js.code}\n//# sourceMappingURL=data:application/json;base64,${map}`,

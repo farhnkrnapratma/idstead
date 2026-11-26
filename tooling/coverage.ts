@@ -5,6 +5,7 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { svelteSourceLines } from './svelteCompile.ts';
 
 interface FileCoverage {
     lines: Map<number, number>;
@@ -114,6 +115,12 @@ for (const [name, target] of [
         failed = true;
     }
     parse(await Bun.file(join(dir, 'lcov.info')).text(), merged);
+}
+
+for (const [path, file] of merged) {
+    if (!path.endsWith('.svelte')) continue;
+    const source = await Bun.file(join(root, path)).text();
+    file.lines = svelteSourceLines(path, source, file.lines);
 }
 
 let lines = 0;
