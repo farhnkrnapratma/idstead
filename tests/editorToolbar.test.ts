@@ -23,8 +23,15 @@ function setup<T extends Record<string, unknown>>(component: never, props: T) {
     };
 }
 
-function menuItems() {
-    return [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+function menuItems(trigger: HTMLElement) {
+    if (trigger.getAttribute('aria-expanded') !== 'true') {
+        trigger.click();
+        flushSync();
+    }
+    const menu = document.querySelector(
+        `[role="menu"][aria-label="${trigger.getAttribute('aria-label')}"]`
+    );
+    return [...(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
 }
 
 test('every toolbar button and menu item sends its edit', () => {
@@ -47,16 +54,10 @@ test('every toolbar button and menu item sends its edit', () => {
     }
     const menuCounts: number[] = [];
     for (const trigger of triggers) {
-        trigger.click();
-        flushSync();
-        const count = menuItems().length;
+        const count = menuItems(trigger).length;
         menuCounts.push(count);
         for (let index = 0; index < count; index++) {
-            if (!menuItems().length) {
-                trigger.click();
-                flushSync();
-            }
-            menuItems()[index].click();
+            menuItems(trigger)[index].click();
             flushSync();
         }
     }
