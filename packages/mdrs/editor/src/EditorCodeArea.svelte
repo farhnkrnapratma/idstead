@@ -17,6 +17,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         insertIndent,
         offsetAt,
         placeBlock,
+        placeDefine,
+        verbatimFence,
         toggleLinePrefix,
         wrapSelection,
         type CursorPosition,
@@ -111,6 +113,21 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             placeBlock(value || '', textarea.selectionStart, textarea.selectionEnd, opening, closing),
             true
         );
+    }
+
+    export function insertVerbatim() {
+        if (!textarea) return;
+        const { selectionStart, selectionEnd } = textarea;
+        const fence = verbatimFence((value || '').substring(selectionStart, selectionEnd));
+        applyEdit(
+            placeBlock(value || '', selectionStart, selectionEnd, `${fence}verbatim\n`, `\n${fence}`),
+            true
+        );
+    }
+
+    export function insertDefine() {
+        if (!textarea) return;
+        applyEdit(placeDefine(value || ''), true);
     }
 
     export function prefixLines(prefix: string) {

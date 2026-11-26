@@ -211,3 +211,32 @@ export function placeBlock(
         selectionEnd: cursor
     };
 }
+
+const FRONTMATTER = /^---\n[\s\S]*?\n---(?:\n|$)/;
+const DEFINE_TEMPLATE = ':::define\nname: "value"\n:::\n';
+
+export function placeDefine(value: string): TextEdit {
+    const frontmatter = FRONTMATTER.exec(value)?.[0] ?? '';
+    const rest = value.slice(frontmatter.length);
+    const blank = /^\s*/.exec(rest)?.[0] ?? '';
+    if (rest.startsWith(':::define', blank.length)) {
+        const open = frontmatter.length + blank.length;
+        const close = value.indexOf('\n:::', open + ':::define'.length);
+        const cursor = close === -1 ? value.length : close;
+        return { value, selectionStart: cursor, selectionEnd: cursor };
+    }
+    const name = frontmatter.length + ':::define\n'.length;
+    return {
+        value: frontmatter + DEFINE_TEMPLATE + (rest ? '\n' : '') + rest,
+        selectionStart: name,
+        selectionEnd: name + 'name'.length
+    };
+}
+
+export function verbatimFence(text: string): string {
+    const longest = Math.max(
+        0,
+        ...[...text.matchAll(/^ {0,3}(:+)/gm)].map(match => match[1].length)
+    );
+    return ':'.repeat(Math.max(3, longest + 1));
+}

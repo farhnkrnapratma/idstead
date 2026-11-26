@@ -8,9 +8,11 @@ import {
     continueBlock,
     cursorPosition,
     placeBlock,
+    placeDefine,
     insertIndent,
     offsetAt,
     toggleLinePrefix,
+    verbatimFence,
     wrapSelection
 } from '../packages/mdrs/editor/src/textEdits.ts';
 import { editorProblems, problemLines } from '../packages/mdrs/editor/src/problems.ts';
@@ -75,6 +77,34 @@ describe('editor text edits', () => {
             selectionEnd: 13
         });
         expect(placeBlock('```\ncode\n```', 4, 8, '```\n', '\n```').value).toBe('code');
+    });
+
+    test('placeDefine puts one define block at the top, after frontmatter', () => {
+        expect(placeDefine('Hello')).toEqual({
+            value: ':::define\nname: "value"\n:::\n\nHello',
+            selectionStart: 10,
+            selectionEnd: 14
+        });
+        expect(placeDefine('---\ntitle: x\n---\nBody').value).toBe(
+            '---\ntitle: x\n---\n:::define\nname: "value"\n:::\n\nBody'
+        );
+        expect(placeDefine('')).toEqual({
+            value: ':::define\nname: "value"\n:::\n',
+            selectionStart: 10,
+            selectionEnd: 14
+        });
+        const existing = ':::define\na: 1\n:::\nBody';
+        expect(placeDefine(existing)).toEqual({
+            value: existing,
+            selectionStart: 14,
+            selectionEnd: 14
+        });
+    });
+
+    test('verbatimFence uses more colons than any directive line inside', () => {
+        expect(verbatimFence('plain text')).toBe(':::');
+        expect(verbatimFence(':::note\nx\n:::')).toBe('::::');
+        expect(verbatimFence('a\n  :::::details\n::')).toBe('::::::');
     });
 
     test('insertIndent replaces the selection with the indent', () => {

@@ -124,6 +124,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         codeArea?.insertBlock(opening, closing);
     }
 
+    function insertVerbatim() {
+        codeArea?.insertVerbatim();
+    }
+
+    function insertDefine() {
+        codeArea?.insertDefine();
+    }
+
     function prefixLines(prefix: string) {
         codeArea?.prefixLines(prefix);
     }
@@ -151,6 +159,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
                 insert={insertMarkdown}
                 {prefixLines}
                 {insertBlock}
+                {insertDefine}
+                {insertVerbatim}
                 {onImageUpload}
                 {onVideoUpload} />
         {/if}
