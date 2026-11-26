@@ -13,6 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         type ContentLicenseSettings
     } from '@idstead/domain/contentLicense.ts';
     import Button from '@idstead/ui/components/Button.svelte';
+    import FormActions from '@idstead/ui/components/FormActions.svelte';
     import Card from '@idstead/ui/components/Card.svelte';
     import Dropdown from '@idstead/ui/components/Dropdown.svelte';
     import ErrorState from '@idstead/ui/components/ErrorState.svelte';
@@ -132,12 +133,14 @@ SPDX-License-Identifier: AGPL-3.0-only
         </div>
     {/if}
     {#snippet actions()}
-        <Button
-            htmlType="submit"
-            size="md"
-            isLoading={saving}
-            disabled={saving || loading || !!loadError}>
-            Save
-        </Button>
+        <FormActions class="mt-0">
+            <Button
+                htmlType="submit"
+                size="md"
+                isLoading={saving}
+                disabled={saving || loading || !!loadError}>
+                Save
+            </Button>
+        </FormActions>
     {/snippet}
 </FormSection>
