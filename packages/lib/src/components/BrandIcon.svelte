@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
     }
 
     const lucideIconModules = import.meta.glob<{ default: Component<Record<string, unknown>> }>(
-        '../../../node_modules/@lucide/svelte/dist/icons/*.svelte'
+        '../../../../node_modules/@lucide/svelte/dist/icons/*.svelte'
     );
 
     async function loadLucideIcon(name: string) {
