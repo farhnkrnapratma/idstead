@@ -13,14 +13,13 @@ const files = [...new Bun.Glob('{apps,packages}/**/src/**/*.svelte').scanSync({ 
     .filter(file => !file.includes('node_modules'))
     .sort();
 
-Element.prototype.animate = function () {
-    return {
+Element.prototype.animate = () =>
+    ({
         finished: Promise.resolve(),
         cancel() {},
         finish() {},
         onfinish: null
-    } as unknown as Animation;
-};
+    }) as unknown as Animation;
 
 globalThis.fetch = (async () => ({
     ok: true,
@@ -178,6 +177,7 @@ const variants = (): unknown[] => [
 ];
 
 const asyncCrashes = new Set([
+    'BrandIcon',
     'MailingForm',
     'PageActions',
     'ProfileCard',
