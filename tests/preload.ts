@@ -3,8 +3,24 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { basename, dirname, join, resolve } from 'node:path';
 import { compileModule } from 'svelte/compiler';
 import { compileSvelteComponent } from '../tooling/svelteCompile.ts';
+
+function expandGlobImports(code: string, path: string) {
+    return code.replace(
+        /import\.meta\.glob\((['"])([^'"]+)\1\)/g,
+        (_match, _quote, pattern: string) => {
+            const folder = dirname(pattern);
+            const base = resolve(dirname(path), folder);
+            const files = [...new Bun.Glob(basename(pattern)).scanSync({ cwd: base })].map(file => [
+                `${folder}/${file}`,
+                join(base, file)
+            ]);
+            return `Object.fromEntries(${JSON.stringify(files)}.map(([key, file]) => [key, () => import(file)]))`;
+        }
+    );
+}
 
 const natives = [
     'Request',
@@ -120,7 +136,7 @@ Bun.plugin({
             const js = compileSvelteComponent(path, source);
             const map = Buffer.from(JSON.stringify(js.map)).toString('base64');
             return {
-                contents: `${js.code}\n//# sourceMappingURL=data:application/json;base64,${map}`,
+                contents: `${expandGlobImports(js.code, path)}\n//# sourceMappingURL=data:application/json;base64,${map}`,
                 loader: 'js'
             };
         });
