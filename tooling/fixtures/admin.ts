@@ -238,7 +238,15 @@ export const snapshot = {
         { id: 's1', category: 'Languages', skills: ['TypeScript', 'Rust'] },
         { id: 's2', category: 'Tools', skills: ['Git'] }
     ],
-    social: [{ id: 'so1', platform: 'GitHub', url: 'https://github.com/ada', icon: 'github' }],
+    social: [
+        {
+            id: 'so1',
+            platform: 'GitHub',
+            url: 'https://github.com/ada',
+            icon: 'github',
+            description: ''
+        }
+    ],
     funding: [
         {
             id: 'f1',
@@ -255,7 +263,8 @@ export const snapshot = {
             platform: 'Email',
             displayValue: 'ada@example.com',
             href: 'mailto:ada@example.com',
-            icon: 'mail'
+            icon: 'mail',
+            description: ''
         }
     ],
     repoRules: { excluded: ['hidden'], pinned: ['shown'] },
